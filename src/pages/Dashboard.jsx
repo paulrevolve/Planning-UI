@@ -548,7 +548,7 @@ const Dashboard = () => {
         <TopBar name={userName} onLogout={handleLogout} />
       </div>
 
-      <div className="flex pt-14 fixed min-w-screen min-h-screen overflow-hidden">
+      <div className="flex pt-14 min-h-screen overflow-hidden">
         <div
           onMouseEnter={handleSidebarOpen}
           onMouseLeave={handleSidebarClose}
