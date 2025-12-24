@@ -1342,7 +1342,7 @@ const renderManageGroupsTab = () => {
   );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-white rounded-2xl shadow">
+    <div className="p-6 max-w-6xl mx-auto bg-white rounded-2xl shadow ml-5">
       <h2 className="text-2xl font-bold mb-2">
         User, Group & Org Mapping
       </h2>
@@ -1354,8 +1354,8 @@ const renderManageGroupsTab = () => {
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
             activeMainTab === "projectUsers"
-              ? "bg-white shadow text-blue-700 border border-blue-300"
-              : "text-gray-700 hover:bg-gray-200"
+              ? "bg-white shadow text-blue-700 border border-blue-300 cursor-pointer"
+              : "text-gray-700 hover:bg-gray-200 cursor-pointer"
           }`}
           onClick={() => setActiveMainTab("projectUsers")}
         >
@@ -1364,8 +1364,8 @@ const renderManageGroupsTab = () => {
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
             activeMainTab === "userGroups"
-              ? "bg-white shadow text-blue-700 border border-blue-300"
-              : "text-gray-700 hover:bg-gray-200"
+              ? "bg-white shadow text-blue-700 border border-blue-300 cursor-pointer"
+              : "text-gray-700 hover:bg-gray-200 cursor-pointer"
           }`}
           onClick={() => setActiveMainTab("userGroups")}
         >
@@ -1374,8 +1374,8 @@ const renderManageGroupsTab = () => {
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
             activeMainTab === "groupOrgs"
-              ? "bg-white shadow text-blue-700 border border-blue-300"
-              : "text-gray-700 hover:bg-gray-200"
+              ? "bg-white shadow text-blue-700 border border-blue-300 cursor-pointer"
+              : "text-gray-700 hover:bg-gray-200 cursor-pointer"
           }`}
           onClick={() => setActiveMainTab("groupOrgs")}
         >
@@ -1394,8 +1394,8 @@ const renderManageGroupsTab = () => {
         <button
   className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
     activeMainTab === "manageGroups"
-      ? "bg-white shadow text-blue-700 border border-blue-300"
-      : "text-gray-700 hover:bg-gray-200"
+      ? "bg-white shadow text-blue-700 border border-blue-300 cursor-pointer"
+      : "text-gray-700 hover:bg-gray-200 cursor-pointer"
   }`}
   onClick={() => setActiveMainTab("manageGroups")}
 >

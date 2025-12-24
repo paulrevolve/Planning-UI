@@ -175,7 +175,7 @@ const TemplatePoolMapping = () => {
   }
 
   return (
-    <div className="p-4 sm:p-5 max-w-6xl mx-auto font-roboto bg-gray-50 rounded-xl shadow-md">
+    <div className="p-4 sm:p-5 max-w-6xl mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
       <ToastContainer
         position="top-right"
         autoClose={3000}

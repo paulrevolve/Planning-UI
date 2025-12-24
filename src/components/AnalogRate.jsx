@@ -82,7 +82,7 @@ useEffect(() => {
 
  
   return (
-    <div className="max-w-7xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+    <div className="max-w-7xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg ml-5">
       <h1 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
         NBIs Analogous Rate
       </h1>
