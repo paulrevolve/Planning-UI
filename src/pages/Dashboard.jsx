@@ -548,7 +548,7 @@ const Dashboard = () => {
         <TopBar name={userName} onLogout={handleLogout} />
       </div>
 
-      <div className="flex pt-14 h-screen overflow-hidden">
+      <div className="flex pt-14 fixed min-w-screen min-h-screen overflow-hidden">
         <div
           onMouseEnter={handleSidebarOpen}
           onMouseLeave={handleSidebarClose}
@@ -558,9 +558,11 @@ const Dashboard = () => {
         >
           <NavigationSidebar onHoverChange={isSideBarOpen} />
         </div>
-{/* bg-gradient-to-b from-blue-100 to-white */}
+        {/* bg-gradient-to-b from-blue-100 to-white */}
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto bg-[#E6F2F5] p-2">
+        <div
+          className={`flex-1 ${isSideBarOpen ? "ml-4" : "ml-2"} overflow-y-auto bg-[#E6F2F5] p-2`}
+        >
           <Routes>
             <Route
               path="/"
