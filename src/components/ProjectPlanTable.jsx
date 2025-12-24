@@ -4514,6 +4514,11 @@ const ProjectPlanTable = ({
                         handleRowClick(plan);
                         getMasterAndRelatedProjects(plans, plan.projId);
                       }}
+                      onDoubleClick={() => {
+                        if(plan.plType){
+                          onOpenDetails?.();
+                        }
+                      }}
                     >
                       <td className="px-1 py-1 h-1 text-xs text-gray-700  text-center">
                         <button
