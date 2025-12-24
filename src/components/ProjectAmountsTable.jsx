@@ -65,6 +65,7 @@ const ProjectAmountsTable = ({
   fiscalYear: propFiscalYear,
   onSaveSuccess,
   refreshKey,
+  onColumnTotalsChange,
 }) => {
   // Normalize fiscal year - add after component definition
   const normalizedFiscalYear =
@@ -368,6 +369,12 @@ const getSortIcon = (key) => {
     normalizedFiscalYear,
     startDate,
   ]);
+
+  useEffect(() => {
+  if (typeof onColumnTotalsChange === "function") {
+    onColumnTotalsChange(columnTotals);
+  }
+}, [columnTotals, onColumnTotalsChange]);
 
   useEffect(() => {
     setCachedProjectData(null);

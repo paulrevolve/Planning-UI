@@ -38,6 +38,9 @@ const ProjectBudgetStatus = () => {
   const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [hoursColumnTotalsFromHours, setHoursColumnTotalsFromHours] = useState({});
+const [otherColumnTotalsFromAmounts, setOtherColumnTotalsFromAmounts] = useState({});
+
 
   const hoursRefs = useRef({});
   const amountsRefs = useRef({});
@@ -579,72 +582,46 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
   }
 
   return (
-    <div className="p-1 sm:p-2  space-y-6 text-sm sm:text-base text-gray-800 font-inter ">
-      {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 relative w-full sm:w-auto">
-          <label className="font-semibold text-xs sm:text-sm">
-            Project ID:
-          </label>
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white"
-              value={searchTerm}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyPress}
-              ref={inputRef}
-              autoComplete="off"
-            />
-          </div>
-          <button
-            onClick={handleSearch}
-            className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer text-xs sm:text-sm font-normal hover:bg-blue-700 transition w-full sm:w-auto"
-          >
-            Search
-          </button>
-        </div>
-      </div> */}
-      {viewMode === "plans" && (
-  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 relative w-full sm:w-auto ">
-      <label className="font-semibold text-xs sm:text-sm">Project ID:</label>
-      <div className="relative w-full sm:w-64">
-        <input
-          type="text"
-          className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white"
-          value={searchTerm}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyPress}
-          ref={inputRef}
-          autoComplete="off"
-        />
-      </div>
-      <button
-        onClick={handleSearch}
-        className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer text-xs sm:text-sm font-normal hover:bg-blue-700 transition w-full sm:w-auto"
-      >
-        Search
-      </button>
-    </div>
-  </div>
-)}
+    <div className="p-2 sm:p-4  space-y-6 text-sm sm:text-base text-gray-800 font-inter ">
 
-      {/* {searched && errorMessage ? (
-        <div className="text-red-500 italic text-xs sm:text-sm">
-          {errorMessage}
+      {viewMode === "plans" && (
+        <div className="bg-white p-2 rounded shadow-sm border border-gray-100 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <label className="font-semibold text-xs sm:text-sm whitespace-nowrap">Project ID:</label>
+              <input
+                type="text"
+                className="border border-gray-300 rounded px-2 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64 bg-white shadow-inner"
+                placeholder="Search Project ID..."
+                value={searchTerm}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyPress}
+                ref={inputRef}
+                autoComplete="off"
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              className="bg-blue-600 text-white px-6 py-1.5 rounded cursor-pointer text-xs sm:text-sm font-semibold hover:bg-blue-700 transition-all shadow-md active:scale-95 w-full sm:w-auto"
+            >
+              Search
+            </button>
+          </div>
         </div>
-      ) : searched && filteredProjects.length === 0 ? (
-        <div className="text-gray-500 italic text-xs sm:text-sm">
-          No project found with that ID.
-        </div>
-      ) : ( */}
-      {/* { filteredProjects.length >= 0 &&  */}
-      {/* ( */}
+      )}
 
       <div
-        key={searchTerm}
-        className="space-y-4 sm:p-2 border-overall  bg-white mt-10"
+        // key={searchTerm}
+        // className="space-y-4 sm:p-2 border-overall  bg-white   "
+        className="space-y-4 bg-white rounded-lg"
       >
+      
+
+
+      
+
+        
+
         {viewMode === "plans" && selectedPlan && (
           <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-1">
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
@@ -652,50 +629,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
                 <span className="font-semibold blue-text">Project ID:</span>{" "}
                 <span className="text-gray-700">{selectedPlan.projId}</span>
               </div>
-              {/* <div>
-                    <span className="font-semibold text-green-800">
-                      Project Name:
-                    </span>{" "}
-                    <span className="text-gray-700">
-                      {selectedPlan.projName}
-                    </span>
-                  </div> */}
-              {/* <div>
-                <span className="font-semibold blue-text">
-                  Period of Performance :
-                </span>
-                Start Date:
-                <span className="text-gray-700">
-                  {formatDate(selectedPlan.projStartDt)}
-                 
-                </span>
-                
-                End Date:
-               
-                <span className="text-gray-700">
-                  {formatDate(selectedPlan.projEndDt)}
-                 
-                </span>
-              </div> */}
-              {/* <div>
-  <span className="font-semibold blue-text">
-    Period of Performance :
-  </span>
-  {" "}
-  Start Date:{" "}
-  <span className="text-gray-700">
-    {selectedPlan.projStartDt
-      ? formatDate(selectedPlan.projStartDt)
-      : "N/A"}
-  </span>
-  {" | "}
-  End Date:{" "}
-  <span className="text-gray-700">
-    {selectedPlan.projEndDt
-      ? formatDate(selectedPlan.projEndDt)
-      : "N/A"}
-  </span>
-</div> */}
+             
 <div>
   <span className="font-semibold blue-text">Period of Performance:</span>{" "}
    Start Date:{" "}
@@ -772,14 +706,16 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
             </div>
           </div>
         )}
+
+
         {/* Flex container to keep buttons on the left of ProjectPlanTable */}
         <div className="flex flex-col lg:flex-row gap-4">
 
 
 {viewMode === "details" && showTabs && (
   // <div className="flex flex-row gap-2 text-blue-600 text-xs sm:text-sm w-full flex-wrap mt-4 ">
-   <div className=" px-4 py-2 flex gap-2 overflow-x-auto">
-    <button
+   <div className=" px-4 py-2 flex gap-2 overflow-x-auto relative w-full border-none border-gray-200 mt-6">
+    {/* <button
         className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
         onClick={handleCloseTab}
         title="Close project details"
@@ -798,7 +734,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
             d="M6 18L18 6M6 6l12 12"
           />
         </svg>
-      </button>
+      </button> */}
     <span
       // className={`btn ${activeTab === "hours" ? "btn-active" : "btn-inactive"}`}
  className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors
@@ -1156,6 +1092,8 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
             endDate={selectedPlan.projEndDt}
             fiscalYear={fiscalYear}
             onSaveSuccess={() => {}}
+            //  onColumnTotalsChange={setHoursColumnTotalsFromHours}
+            onColumnTotalsChange={setHoursColumnTotalsFromHours}  // NEW
           />
         </div>
       </div>
@@ -1176,6 +1114,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
             fiscalYear={fiscalYear}
             refreshKey={refreshKey}
             onSaveSuccess={() => setRefreshKey((prev) => prev + 1)}
+              onColumnTotalsChange={setOtherColumnTotalsFromAmounts}
           />
         </div>
       </div>
@@ -1187,6 +1126,8 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
             startDate={selectedPlan.projStartDt} 
             endDate={selectedPlan.projEndDt} 
             fiscalYear={fiscalYear} 
+         hoursColumnTotals={hoursColumnTotalsFromHours}
+        otherColumnTotals={otherColumnTotalsFromAmounts}
           />
         </div>
       </div>
@@ -1785,3 +1726,349 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
 };
 
 export default ProjectBudgetStatus;
+
+// import React, { useState, useRef, useEffect } from "react";
+// import axios from "axios";
+// import { toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+// import ProjectHoursDetails from "./ProjectHoursDetails";
+// import ProjectPlanTable from "./ProjectPlanTable";
+// import RevenueAnalysisTable from "./RevenueAnalysisTable";
+// import AnalysisByPeriodContent from "./AnalysisByPeriodContent";
+// import ProjectAmountsTable from "./ProjectAmountsTable";
+// import PLCComponent from "./PLCComponent";
+// import FundingComponent from "./FundingComponent";
+// import RevenueSetupComponent from "./RevenueSetupComponent";
+// import RevenueCeilingComponent from "./RevenueCeilingComponent";
+// import ProjectPoolCosts from "./ProjectPoolCosts";
+// import { formatDate } from "./utils";
+// import FinancialDashboard from "./FinancialDashboard";
+// import Warning from "./Warning";
+// import { backendUrl } from "./config";
+
+// const ProjectBudgetStatus = () => {
+//   const [projects, setProjects] = useState([]);
+//   const [prefixes, setPrefixes] = useState(new Set());
+//   const [filteredProjects, setFilteredProjects] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [selectedPlan, setSelectedPlan] = useState(null);
+//   const [revenueAccount, setRevenueAccount] = useState("");
+//   const [activeTab, setActiveTab] = useState(null);
+//   const [viewMode, setViewMode] = useState("plans");
+//   const [showTabs, setShowTabs] = useState(false);
+//   const [loading, setLoading] = useState(false);
+//   const [searched, setSearched] = useState(false);
+//   const [errorMessage, setErrorMessage] = useState("");
+//   const [forecastData, setForecastData] = useState([]);
+//   const [isForecastLoading, setIsForecastLoading] = useState(false);
+//   const [fiscalYear, setFiscalYear] = useState("All");
+//   const [fiscalYearOptions, setFiscalYearOptions] = useState([]);
+//   const [analysisApiData, setAnalysisApiData] = useState([]);
+//   const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
+//   const [analysisError, setAnalysisError] = useState(null);
+//   const [refreshKey, setRefreshKey] = useState(0);
+
+//   const hoursRefs = useRef({});
+//   const amountsRefs = useRef({});
+//   const revenueRefs = useRef({});
+//   const analysisRefs = useRef({});
+//   const revenueSetupRefs = useRef({});
+//   const revenueCeilingRefs = useRef({});
+//   const fundingRefs = useRef({});
+//   const inputRef = useRef(null);
+//   const dashboardRefs = useRef({});
+//   const warningRefs = useRef({});
+
+//   const EXTERNAL_API_BASE_URL = backendUrl;
+//   const CALCULATE_COST_ENDPOINT = "/Forecast/CalculateCost";
+
+//   const [currentUserRole, setCurrentUserRole] = useState(null);
+//   const [userName, setUserName] = useState("User");
+
+//   function capitalizeWords(str) {
+//     return str.replace(/\b\w/g, (char) => char.toUpperCase());
+//   }
+
+//   const safeFormatDate = (value) => {
+//     if (!value) return "N/A";
+//     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+//       const [year, month, day] = value.split('-');
+//       return `${month}/${day}/${year}`;
+//     }
+//     try {
+//       const date = new Date(value);
+//       if (isNaN(date.getTime())) return "N/A";
+//       return date.toLocaleDateString('en-US', {
+//         year: 'numeric',
+//         month: '2-digit',
+//         day: '2-digit'
+//       });
+//     } catch (e) {
+//       return "N/A";
+//     }
+//   };
+
+//   useEffect(() => {
+//     const userString = localStorage.getItem("currentUser");
+//     if (userString) {
+//       try {
+//         const userObj = JSON.parse(userString);
+//         setUserName(userObj.name ? capitalizeWords(userObj.name) : "User");
+//         setCurrentUserRole(userObj.role ? userObj.role.toLowerCase() : null);
+//       } catch {
+//         setCurrentUserRole(null);
+//         setUserName("User");
+//       }
+//     }
+//   }, []);
+
+//   const handleSearch = async () => {
+//     const term = searchTerm.trim();
+//     setSearched(true);
+//     setErrorMessage("");
+//     setLoading(true);
+//     try {
+//       const response = await axios.get(`${backendUrl}/Project/GetAllProjectByProjId/${term}`);
+//       const data = Array.isArray(response.data) ? response.data[0] : response.data;
+//       const project = {
+//         projId: data.projectId || term,
+//         projName: data.name || "",
+//         projTypeDc: data.description || "",
+//         orgId: data.orgId || "",
+//         startDate: data.startDate || "",
+//         endDate: data.endDate || "",
+//         fundedCost: data.proj_f_cst_amt || "",
+//         fundedFee: data.proj_f_fee_amt || "",
+//         fundedRev: data.proj_f_tot_amt || "",
+//         revenue: data.revenue || "",
+//       };
+//       setFilteredProjects([project]);
+//       setRevenueAccount(data.revenueAccount || "");
+//     } catch (error) {
+//       try {
+//         const planResponse = await axios.get(`${backendUrl}/Project/GetProjectPlans/${term}`);
+//         const planData = Array.isArray(planResponse.data) ? planResponse.data[0] : planResponse.data;
+//         if (planData && planData.projId) {
+//           const project = {
+//             projId: planData.projId || term,
+//             projName: planData.name || "",
+//             projTypeDc: planData.description || "",
+//             orgId: planData.orgId || "",
+//             startDate: planData.startDate || "",
+//             endDate: planData.endDate || "",
+//             fundedCost: planData.proj_f_cst_amt || "",
+//             fundedFee: planData.proj_f_fee_amt || "",
+//             fundedRev: planData.proj_f_tot_amt || "",
+//             revenue: planData.revenue || "",
+//           };
+//           setFilteredProjects([project]);
+//           setRevenueAccount(planData.revenueAccount || "");
+//         }
+//       } catch (planError) {
+//         setErrorMessage("No project found.");
+//         setFilteredProjects([]);
+//       }
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleInputChange = (e) => {
+//     setSearchTerm(e.target.value);
+//     setSearched(false);
+//   };
+
+//   const handleKeyPress = (e) => { if (e.key === "Enter") handleSearch(); };
+
+//   const handlePlanSelect = (plan) => {
+//     if (!plan) {
+//       setSelectedPlan(null);
+//       setActiveTab(null);
+//       return;
+//     }
+//     const isPlanIdentityChanged = !selectedPlan || selectedPlan.plId !== plan.plId;
+//     if (isPlanIdentityChanged) {
+//       setSelectedPlan(plan);
+//     }
+//   };
+
+//   const handlePlanCreated = (plan) => {
+//     handlePlanSelect(plan);
+//     if (plan.projId) setSearchTerm(plan.projId);
+//   };
+
+//   const handleTabClick = (tabName) => {
+//     if (tabName !== "dashboard" && !selectedPlan) {
+//       toast.info("Please select a plan first.");
+//       return;
+//     }
+//     if (activeTab !== tabName) setActiveTab(tabName);
+//   };
+
+//   const handleCloseTab = () => {
+//     setActiveTab(null);
+//     setViewMode("plans");
+//     setShowTabs(false);
+//   };
+
+//   const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
+
+//   if (loading) {
+//     return (
+//       <div className="flex justify-center items-center h-64 font-inter">
+//         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="p-1 sm:p-2 space-y-4 text-sm sm:text-base text-gray-800 font-inter w-full overflow-y-auto">
+      
+//       {/* 1. SEARCH SECTION */}
+//       {viewMode === "plans" && (
+//         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 px-2">
+//           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 relative w-full sm:w-auto">
+//             <label className="font-semibold text-xs sm:text-sm whitespace-nowrap">Project ID:</label>
+//             <div className="relative w-full sm:w-64">
+//               <input
+//                 type="text"
+//                 className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white shadow-sm"
+//                 value={searchTerm}
+//                 onChange={handleInputChange}
+//                 onKeyDown={handleKeyPress}
+//                 ref={inputRef}
+//                 autoComplete="off"
+//               />
+//             </div>
+//             <button
+//               onClick={handleSearch}
+//               className="bg-blue-600 text-white px-4 py-1 rounded cursor-pointer text-xs sm:text-sm font-semibold hover:bg-blue-700 transition w-full sm:w-auto"
+//             >
+//               Search
+//             </button>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* 2. HEADER INFO BOX */}
+//       <div className="space-y-4 bg-white rounded-lg pt-2 mt-4">
+//         {viewMode === "plans" && selectedPlan && (
+//           <div className="mx-2 flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] bg-[#e9f6fb] text-[#17414d] border-[#17414d] shadow-sm">
+//             <div><span className="font-bold">Project ID:</span> {selectedPlan.projId}</div>
+//             <div>
+//               <span className="font-bold">Period of Performance:</span> Start Date: {selectedPlan.projStartDt ? formatDate(selectedPlan.projStartDt) : "N/A"} | End Date: {selectedPlan.projEndDt ? formatDate(selectedPlan.projEndDt) : "N/A"}
+//             </div>
+//             <div><span className="font-bold">Funded Fee:</span> {Number(selectedPlan.fundedFee || 0).toLocaleString()}</div>
+//             <div><span className="font-bold">Funded Cost:</span> {Number(selectedPlan.fundedCost || 0).toLocaleString()}</div>
+//             <div><span className="font-bold">Funded Rev:</span> {Number(selectedPlan.fundedRev || 0).toLocaleString()}</div>
+//             <div><span className="font-bold">Revenue:</span> {Number(selectedPlan.revenue || 0).toLocaleString()}</div>
+//             <div><span className="font-bold">Backlog:</span> {Number((selectedPlan.revenue || 0) - (selectedPlan.fundedCost || 0)).toLocaleString()}</div>
+//           </div>
+//         )}
+
+//         {/* 3. TABS NAVIGATION */}
+//         {viewMode === "details" && showTabs && (
+//           <div className="w-full px-2 mt-2">
+//             <div className="flex flex-wrap items-center gap-2 p-1 bg-transparent rounded-none relative">
+//               <span onClick={() => setActiveTab("hours")} 
+//                 className={`rounded px-3 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${activeTab === "hours" ? "text-white bg-[#113d46]" : "text-gray-600 bg-white border border-gray-300 hover:bg-gray-100"}`}>
+//                 Hours
+//               </span>
+//               {currentUserRole === "admin" && (
+//                 <>
+//                   <span onClick={() => handleTabClick("analysisByPeriod")}
+//                     className={`rounded px-3 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${activeTab === "analysisByPeriod" ? "text-white bg-[#113d46]" : "text-gray-600 bg-white border border-gray-300 hover:bg-gray-100"}`}>
+//                     Monthly Forecast
+//                   </span>
+//                   <span onClick={() => handleTabClick("plc")}
+//                     className={`rounded px-3 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${activeTab === "plc" ? "text-white bg-[#113d46]" : "text-gray-600 bg-white border border-gray-300 hover:bg-gray-100"}`}>
+//                     Labor Categories
+//                   </span>
+//                   <span onClick={() => handleTabClick("revenueSetup")}
+//                     className={`rounded px-3 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${activeTab === "revenueSetup" ? "text-white bg-[#113d46]" : "text-gray-600 bg-white border border-gray-300 hover:bg-gray-100"}`}>
+//                     Revenue Definition
+//                   </span>
+//                   <span onClick={() => handleTabClick("revenueCeiling")}
+//                     className={`rounded px-3 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${activeTab === "revenueCeiling" ? "text-white bg-[#113d46]" : "text-gray-600 bg-white border border-gray-300 hover:bg-gray-100"}`}>
+//                     Adjustment
+//                   </span>
+//                   <span onClick={() => handleTabClick("funding")}
+//                     className={`rounded px-3 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${activeTab === "funding" ? "text-white bg-[#113d46]" : "text-gray-600 bg-white border border-gray-300 hover:bg-gray-100"}`}>
+//                     Funding
+//                   </span>
+//                 </>
+//               )}
+//               <span onClick={() => handleTabClick("warning")}
+//                 className={`rounded px-3 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${activeTab === "warning" ? "text-white bg-[#113d46]" : "text-gray-600 bg-white border border-gray-300 hover:bg-gray-100"}`}>
+//                 Warning
+//               </span>
+              
+//               <button className="ml-auto p-2 blue-text hover:text-red-500 cursor-pointer" onClick={handleCloseTab}>
+//                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+//                 </svg>
+//               </button>
+//             </div>
+//           </div>
+//         )}
+
+//         {/* 4. MAIN DATA AREA - Ensuring Scrolling is enabled */}
+//         <div className="w-full min-w-0 overflow-visible mt-6">
+//           {viewMode === "plans" ? (
+//             <div className="mt-4 overflow-auto max-h-screen">
+//               <ProjectPlanTable
+//                 projectId={searchTerm.trim()}
+//                 searched={searched}
+//                 onPlanSelect={handlePlanSelect}
+//                 selectedPlan={selectedPlan}
+//                 fiscalYear={fiscalYear}
+//                 setFiscalYear={setFiscalYear}
+//                 fiscalYearOptions={fiscalYearOptions}
+//                 filteredProjects={filteredProjects}
+//                 onPlanCreated={handlePlanCreated}
+//                 onOpenDetails={() => {
+//                   if (!selectedPlan) return;
+//                   setViewMode("details");
+//                   setShowTabs(true);
+//                   setActiveTab("hours");
+//                 }}
+//               />
+//             </div>
+//           ) : (
+//             <div className="w-full px-2 pb-10 mt-4 overflow-y-visible">
+//               <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 bg-[#e9f6fb] text-[#17414d] border-[#17414d]">
+//                 <span className="font-bold">Project ID: {selectedPlan.projId}</span>
+//                 <span><span className="font-bold">Type:</span> {selectedPlan.plType || "N/A"}</span>
+//                 <span><span className="font-bold">Version:</span> {selectedPlan.version || "N/A"}</span>
+//                 <span><span className="font-bold">Status:</span> {selectedPlan.status || "N/A"}</span>
+//                 <span><span className="font-bold">Period of Performance:</span> Start Date: {selectedPlan.projStartDt ? formatDate(selectedPlan.projStartDt) : "N/A"} | End Date: {selectedPlan.projEndDt ? formatDate(selectedPlan.projEndDt) : "N/A"}</span>
+//               </div>
+
+//               {activeTab === "hours" && selectedPlan && (
+//                 <div className="space-y-4">
+//                   <div className="border border-gray-200 rounded shadow-sm bg-white overflow-auto max-h-[600px]">
+//                     <ProjectHoursDetails planId={selectedPlan.plId} projectId={selectedPlan.projId} status={selectedPlan.status} planType={selectedPlan.plType} closedPeriod={selectedPlan.closedPeriod} startDate={selectedPlan.projStartDt} endDate={selectedPlan.projEndDt} fiscalYear={fiscalYear} onSaveSuccess={() => {}} />
+//                   </div>
+//                   <div className="border border-gray-200 rounded shadow-sm bg-white overflow-auto max-h-[600px]">
+//                     <ProjectAmountsTable initialData={selectedPlan} startDate={selectedPlan.projStartDt} endDate={selectedPlan.projEndDt} planType={selectedPlan.plType} fiscalYear={fiscalYear} refreshKey={refreshKey} onSaveSuccess={() => setRefreshKey(k => k + 1)} />
+//                   </div>
+//                   <div className="border border-gray-200 rounded shadow-sm bg-white overflow-auto max-h-[600px]">
+//                     <ProjectPoolCosts planId={selectedPlan.plId} startDate={selectedPlan.projStartDt} endDate={selectedPlan.projEndDt} fiscalYear={fiscalYear} />
+//                   </div>
+//                 </div>
+//               )}
+//               {activeTab === "analysisByPeriod" && <div className="overflow-auto"><AnalysisByPeriodContent planID={selectedPlan.plId} templateId={selectedPlan.templateId} type={selectedPlan.plType} initialApiData={analysisApiData} fiscalYear={fiscalYear} /></div>}
+//               {activeTab === "plc" && <div className="overflow-auto"><PLCComponent selectedProjectId={selectedPlan.projId} selectedPlan={selectedPlan} showPLC={true} /></div>}
+//               {activeTab === "revenueSetup" && <div className="overflow-auto"><RevenueSetupComponent selectedPlan={selectedPlan} revenueAccount={revenueAccount} /></div>}
+//               {activeTab === "revenueCeiling" && <div className="overflow-auto"><RevenueCeilingComponent selectedPlan={selectedPlan} revenueAccount={revenueAccount} /></div>}
+//               {activeTab === "funding" && <div className="overflow-auto"><FundingComponent selectedProjectId={selectedPlan.projId} selectedPlan={selectedPlan} /></div>}
+//               {activeTab === "warning" && <div className="overflow-auto"><Warning planId={selectedPlan.plId} projectId={selectedPlan.projId} templateId={selectedPlan.templateId} planType={selectedPlan.plType} /></div>}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ProjectBudgetStatus;

@@ -1,25 +1,24 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Select from "react-select";
 import { backendUrl } from "./config";
-import { toast } from "react-toastify";
 
-const cn = (...args) => args.filter(Boolean).join(" ");
+const cn = (...args) => {
+  return args.filter(Boolean).join(" ");
+};
 
 // --- Main LaborForm Component with Tabs ---
 const LaborForm = () => {
-  const [activeTab, setActiveTab] = useState("OrganizationSettings");
+  const [activeTab, setActiveTab] = useState("projectSettings");
 
-  // States from LaborFormContent (project tab – many still only UI)
+  // States from LaborFormContent
   const [projectBudgetPeriodMethod, setProjectBudgetPeriodMethod] = useState(
     "Accounting Periods ONLY"
   );
   const [unlockEACLastClosedPeriod, setUnlockEACLastClosedPeriod] =
     useState(false);
   const [projectAccountGroupCode, setProjectAccountGroupCode] = useState("");
-  const [
-    resourceBudgetCommitFlagDefault,
-    setResourceBudgetCommitFlagDefault,
-  ] = useState(false);
+  const [resourceBudgetCommitFlagDefault, setResourceBudgetCommitFlagDefault] =
+    useState(false);
   const [autoPlugCalculation, setAutoPlugCalculation] = useState("On");
   const [
     importBudgetEACsFromExcelCommitFlagDefault,
@@ -35,15 +34,14 @@ const LaborForm = () => {
     checkTheProjectBudgetEnableSubtaskRowHideOptionByDefault,
     setCheckTheProjectBudgetEnableSubtaskRowHideOptionByDefault,
   ] = useState(false);
-  const [laborEscalationMonth, setLaborEscalationMonth] = useState(""); // project tab
-  const [enableProjectHideBudEAC, setEnableProjectHideBudEAC] =
-    useState(false);
-  const [laborEscalationValue, setLaborEscalationValue] = useState(""); // project tab
+  const [laborEscalationMonth, setLaborEscalationMonth] = useState(""); // Initialize as empty for API data
+  const [enableProjectHideBudEAC, setEnableProjectHideBudEAC] = useState(false);
+  const [laborEscalationValue, setLaborEscalationValue] = useState(""); // Initialize as empty for API data
   const [showBudEACOnlyDefault, setShowBudEACOnlyDefault] = useState(false);
-  const [projectSecurityToBeBasedOn, setProjectSecurityToBeBasedOn] =
-    useState("Project Budget Security");
-  const [enableBudgetAutoInspect, setEnableBudgetAutoInspect] =
-    useState(false);
+  const [projectSecurityToBeBasedOn, setProjectSecurityToBeBasedOn] = useState(
+    "Project Budget Security"
+  );
+  const [enableBudgetAutoInspect, setEnableBudgetAutoInspect] = useState(false);
   const [
     allowBUDEACCreationPriorToPeriodClose,
     setAllowBUDEACCreationPriorToPeriodClose,
@@ -52,92 +50,22 @@ const LaborForm = () => {
     ifLaborSuppressionIsOffDoYouWantToShowEmployeeLaborRatePlanning,
     setIfLaborSuppressionIsOffDoYouWantToShowEmployeeLaborRatePlanning,
   ] = useState("Yes");
-  const [defaultBurdenTemplate, setDefaultBurdenTemplate] =
-    useState("DEFAULT");
+  const [defaultBurdenTemplate, setDefaultBurdenTemplate] = useState("DEFAULT");
   const [projectBudgetSequentialLocking, setProjectBudgetSequentialLocking] =
     useState(false);
-  const [workforceRule, setWorkforceRule] = useState("Enforce"); // shared (org + project)
-  const [orgLevelDisplay, setOrgLevelDisplay] = useState(4); // UI only
-
+  const [workforceRule, setWorkforceRule] = useState("Enforce"); // Default value
+  const [orgLevelDisplay, setOrgLevelDisplay] = useState(4); // Default value
   const [selectedProjectId, setSelectedProjectId] = useState("");
-  const [availableProjects, setAvailableProjects] = useState([]); // project list
-
-  const [closingPeriod, setClosingPeriod] = useState(""); // org
-  const [loading, setLoading] = useState(true); // shared loading
+  const [availableProjects, setAvailableProjects] = useState([]); // To store fetched project IDs/
+  const [closingPeriod, setClosingPeriod] = useState("");
+  const [loading, setLoading] = useState(true); // Initial loading for projects and config
   const [error, setError] = useState(null);
-  const [configValues, setConfigValues] = useState([]); // project tab config list
-
-  // --- ids for organization configs ---
-  const [closingPeriodId, setClosingPeriodId] = useState(0);
-  const [escalationPercentId, setEscalationPercentId] = useState(0);
-  const [escalationMonthId, setEscalationMonthId] = useState(0);
-  const [workforceId, setWorkforceId] = useState(0);
-  const [paidTimeOffExpenseAccountId, setPaidTimeOffExpenseAccountId] =
-    useState(0);
-  const [holidayExpenseAccountId, setHolidayExpenseAccountId] = useState(0);
-  const [ptoCalculationMethodId, setPtoCalculationMethodId] = useState(0);
-  const [defaultPtoAccrualRateId, setDefaultPtoAccrualRateId] = useState(0);
-  const [
-    partTimeHolidayCalculationId,
-    setPartTimeHolidayCalculationId,
-  ] = useState(0);
-  const [defaultFeeRateId, setDefaultFeeRateId] = useState(0);
-  const [defaultUtilizationId, setDefaultUtilizationId] = useState(0);
-  const [laborExpenseOrgLevelsId, setLaborExpenseOrgLevelsId] = useState(0);
-  const [
-    nonLaborExpenseOrgLevelsId,
-    setNonLaborExpenseOrgLevelsId,
-  ] = useState(0);
-  const [
-    orgBudgetRevenueCalculationId,
-    setOrgBudgetRevenueCalculationId,
-  ] = useState(0);
-  const [nlabHistoryMethodId, setNlabHistoryMethodId] = useState(0);
-  const [updateEmployeeHomeOrgId, setUpdateEmployeeHomeOrgId] = useState(0);
-  const [
-    updateEmployeeAccrualRateId,
-    setUpdateEmployeeAccrualRateId,
-  ] = useState(0);
-  const [
-    applyProbabilityToNewBusinessBudgetsId,
-    setApplyProbabilityToNewBusinessBudgetsId,
-  ] = useState(0);
-  const [
-    orgBudgetSequentialLockingId,
-    setOrgBudgetSequentialLockingId,
-  ] = useState(0);
-
-  // --- values for organization configs ---
+  const [configValues, setConfigValues] = useState([]);
+  const [closingPeriodId, setClosingPeriodId] = useState("");
+  const [escalationPercentId, setEscalationPercentId] = useState("");
+  const [escalationMonthId, setEscalationMonthId] = useState("");
   const [escalationPercent, setEscalationPercent] = useState("");
   const [escalationMonth, setEscalationMonth] = useState("");
-  const [paidTimeOffExpenseAccount, setPaidTimeOffExpenseAccount] =
-    useState("60-100-001");
-  const [updateEmployeeHomeOrg, setUpdateEmployeeHomeOrg] = useState(false);
-  const [holidayExpenseAccount, setHolidayExpenseAccount] =
-    useState("60-100-001");
-  const [updateEmployeeAccrualRate, setUpdateEmployeeAccrualRate] =
-    useState(false);
-  const [ptoCalculationMethod, setPtoCalculationMethod] = useState("Hours");
-  const [
-    applyProbabilityToNewBusinessBudgets,
-    setApplyProbabilityToNewBusinessBudgets,
-  ] = useState(false);
-  const [defaultPtoAccrualRate, setDefaultPtoAccrualRate] =
-    useState("10.000000");
-  const [orgBudgetSequentialLocking, setOrgBudgetSequentialLocking] =
-    useState(false);
-  const [partTimeHolidayCalculation, setPartTimeHolidayCalculation] =
-    useState("0.500000");
-  const [defaultFeeRate, setDefaultFeeRate] = useState("0.070000");
-  const [defaultUtilization, setDefaultUtilization] = useState("0.820000");
-  const [laborExpenseOrgLevels, setLaborExpenseOrgLevels] = useState("4");
-  const [nonLaborExpenseOrgLevels, setNonLaborExpenseOrgLevels] =
-    useState("4");
-  const [orgBudgetRevenueCalculation, setOrgBudgetRevenueCalculation] =
-    useState("Project Plus Org Revenue Adjustment");
-  const [nlabHistoryMethod, setNlabHistoryMethod] = useState(
-    "Populate GL Account History"
-  );
 
   // Month options mapping numeric values to display text
   const monthOptions = [
@@ -166,6 +94,35 @@ const LaborForm = () => {
     }
   };
 
+  // States from NewTabContent
+  const [paidTimeOffExpenseAccount, setPaidTimeOffExpenseAccount] =
+    useState("60-100-001");
+  const [updateEmployeeHomeOrg, setUpdateEmployeeHomeOrg] = useState(false);
+  const [holidayExpenseAccount, setHolidayExpenseAccount] =
+    useState("60-100-001");
+  const [updateEmployeeAccrualRate, setUpdateEmployeeAccrualRate] =
+    useState(false);
+  const [ptoCalculationMethod, setPtoCalculationMethod] = useState("Hours");
+  const [
+    applyProbabilityToNewBusinessBudgets,
+    setApplyProbabilityToNewBusinessBudgets,
+  ] = useState(false);
+  const [defaultPtoAccrualRate, setDefaultPtoAccrualRate] =
+    useState("10.000000");
+  const [orgBudgetSequentialLocking, setOrgBudgetSequentialLocking] =
+    useState(false);
+  const [partTimeHolidayCalculation, setPartTimeHolidayCalculation] =
+    useState("0.500000");
+  const [defaultFeeRate, setDefaultFeeRate] = useState("0.070000");
+  const [defaultUtilization, setDefaultUtilization] = useState("0.820000");
+  const [laborExpenseOrgLevels, setLaborExpenseOrgLevels] = useState("4");
+  const [nonLaborExpenseOrgLevels, setNonLaborExpenseOrgLevels] = useState("4");
+  const [orgBudgetRevenueCalculation, setOrgBudgetRevenueCalculation] =
+    useState("Project Plus Org Revenue Adjustment");
+  const [nlabHistoryMethod, setNlabHistoryMethod] = useState(
+    "Populate GL Account History"
+  );
+
   const handleNumericInput = (setter) => (e) => {
     const value = e.target.value;
     const regex = /^[0-9]*(\.[0-9]*)?$/;
@@ -181,7 +138,44 @@ const LaborForm = () => {
       : project.projectId,
   }));
 
-  // ----------------- Organization Settings FETCH (all fields) -----------------
+  // useEffect(() => {
+  //   const fetchClosingPeriod = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const res = await fetch(
+  //         `${backendUrl}/api/Configuration/GetAllConfigValuesByProject/xxxxx`
+  //       );
+  //       if (!res.ok) throw new Error("Failed to fetch closing period");
+
+  //       const data = await res.json(); // 👈 parse JSON
+  //       const rawValue = (data?.value || "").trim();
+  //       setClosingPeriodId(data?.id || null);
+  //       let formattedDate = "";
+
+  //       if (/^\d{4}-\d{2}-\d{2}$/.test(rawValue)) {
+  //         // Already yyyy-MM-dd
+  //         formattedDate = rawValue;
+  //       } else if (/^\d{2}-\d{2}-\d{4}$/.test(rawValue)) {
+  //         // Convert dd-MM-yyyy → yyyy-MM-dd
+  //         const [day, month, year] = rawValue.split("-");
+  //         formattedDate = `${year}-${month}-${day}`;
+  //       } else if (rawValue) {
+  //         // console.warn("Unexpected closing_period format:", rawValue);
+  //       }
+
+  //       setClosingPeriod(formattedDate);
+  //     } catch (err) {
+  //       // console.error("Error fetching closing period:", err);
+  //       setClosingPeriod("");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchClosingPeriod();
+  // }, []);
+
+  // --- API Fetching for ALL available Project IDs ---
 
   useEffect(() => {
     const fetchOrgConfig = async () => {
@@ -191,10 +185,9 @@ const LaborForm = () => {
           `${backendUrl}/api/Configuration/GetAllConfigValuesByProject/xxxxx`
         );
         if (!res.ok) throw new Error("Failed to fetch organization config");
-
         const configArray = await res.json();
 
-        // base 3
+        // Fetch values by name
         const closingConfig = configArray.find(
           (cfg) => cfg.name === "closing_period"
         );
@@ -204,81 +197,12 @@ const LaborForm = () => {
         const monthConfig = configArray.find(
           (cfg) => cfg.name === "escallation_month"
         );
-        const workforceConfig = configArray.find(
-          (cfg) => cfg.name === "workforce"
-        );
-        const paidTimeOffExpenseConfig = configArray.find(
-          (cfg) => cfg.name === "paid_time_off_expense_account"
-        );
-        const holidayExpenseConfig = configArray.find(
-          (cfg) => cfg.name === "holiday_expense_account"
-        );
-        const ptoMethodConfig = configArray.find(
-          (cfg) => cfg.name === "pto_calculation_method"
-        );
-        const defaultPtoRateConfig = configArray.find(
-          (cfg) => cfg.name === "default_pto_accrual_rate"
-        );
-        const partTimeHolidayConfig = configArray.find(
-          (cfg) => cfg.name === "part_time_holiday_calculation"
-        );
-        const defaultFeeRateConfig = configArray.find(
-          (cfg) => cfg.name === "default_fee_rate"
-        );
-        const defaultUtilizationConfig = configArray.find(
-          (cfg) => cfg.name === "default_utilization"
-        );
-        const laborOrgLevelsConfig = configArray.find(
-          (cfg) => cfg.name === "labor_expense_org_levels"
-        );
-        const nonLaborOrgLevelsConfig = configArray.find(
-          (cfg) => cfg.name === "non_labor_expense_org_levels"
-        );
-        const orgRevenueCalcConfig = configArray.find(
-          (cfg) => cfg.name === "org_budget_revenue_calculation"
-        );
-        const nlabHistoryMethodConfig = configArray.find(
-          (cfg) => cfg.name === "nlab_history_method"
-        );
-        const updateHomeOrgConfig = configArray.find(
-          (cfg) => cfg.name === "update_employee_home_org"
-        );
-        const updateAccrualRateConfig = configArray.find(
-          (cfg) => cfg.name === "update_employee_accrual_rate"
-        );
-        const applyProbToNbConfig = configArray.find(
-          (cfg) => cfg.name === "apply_probability_to_new_business"
-        );
-        const orgBudgetSeqLockConfig = configArray.find(
-          (cfg) => cfg.name === "org_budget_sequential_locking"
-        );
 
-        // ids
         setClosingPeriodId(closingConfig?.id || 0);
         setEscalationPercentId(percentConfig?.id || 0);
         setEscalationMonthId(monthConfig?.id || 0);
-        setWorkforceId(workforceConfig?.id || 0);
-        setPaidTimeOffExpenseAccountId(paidTimeOffExpenseConfig?.id || 0);
-        setHolidayExpenseAccountId(holidayExpenseConfig?.id || 0);
-        setPtoCalculationMethodId(ptoMethodConfig?.id || 0);
-        setDefaultPtoAccrualRateId(defaultPtoRateConfig?.id || 0);
-        setPartTimeHolidayCalculationId(partTimeHolidayConfig?.id || 0);
-        setDefaultFeeRateId(defaultFeeRateConfig?.id || 0);
-        setDefaultUtilizationId(defaultUtilizationConfig?.id || 0);
-        setLaborExpenseOrgLevelsId(laborOrgLevelsConfig?.id || 0);
-        setNonLaborExpenseOrgLevelsId(nonLaborOrgLevelsConfig?.id || 0);
-        setOrgBudgetRevenueCalculationId(orgRevenueCalcConfig?.id || 0);
-        setNlabHistoryMethodId(nlabHistoryMethodConfig?.id || 0);
-        setUpdateEmployeeHomeOrgId(updateHomeOrgConfig?.id || 0);
-        setUpdateEmployeeAccrualRateId(updateAccrualRateConfig?.id || 0);
-        setApplyProbabilityToNewBusinessBudgetsId(
-          applyProbToNbConfig?.id || 0
-        );
-        setOrgBudgetSequentialLockingId(
-          orgBudgetSeqLockConfig?.id || 0
-        );
 
-        // values
+        // Format date for input type="date" (yyyy-MM-dd)
         let formattedDate = "";
         if (closingConfig?.value) {
           const rawValue = closingConfig.value.trim();
@@ -292,62 +216,6 @@ const LaborForm = () => {
         setClosingPeriod(formattedDate);
         setEscalationPercent(percentConfig?.value || "");
         setEscalationMonth(monthConfig?.value?.toString() || "");
-
-        setWorkforceRule(
-          workforceConfig?.value?.toString().toLowerCase() === "true"
-            ? "Enforce"
-            : "Do Not Enforce"
-        );
-
-        setPaidTimeOffExpenseAccount(
-          paidTimeOffExpenseConfig?.value ?? "60-100-001"
-        );
-        setHolidayExpenseAccount(
-          holidayExpenseConfig?.value ?? "60-100-001"
-        );
-        setPtoCalculationMethod(ptoMethodConfig?.value || "Hours");
-        setDefaultPtoAccrualRate(
-          defaultPtoRateConfig?.value ?? "10.000000"
-        );
-        setPartTimeHolidayCalculation(
-          partTimeHolidayConfig?.value ?? "0.500000"
-        );
-        setDefaultFeeRate(defaultFeeRateConfig?.value ?? "0.070000");
-        setDefaultUtilization(
-          defaultUtilizationConfig?.value ?? "0.820000"
-        );
-        setLaborExpenseOrgLevels(
-          laborOrgLevelsConfig?.value?.toString() ?? "4"
-        );
-        setNonLaborExpenseOrgLevels(
-          nonLaborOrgLevelsConfig?.value?.toString() ?? "4"
-        );
-        setOrgBudgetRevenueCalculation(
-          orgRevenueCalcConfig?.value ||
-            "Project Plus Org Revenue Adjustment"
-        );
-        setNlabHistoryMethod(
-          nlabHistoryMethodConfig?.value ||
-            "Populate GL Account History"
-        );
-        setUpdateEmployeeHomeOrg(
-          updateHomeOrgConfig?.value?.toString().toLowerCase() ===
-            "true"
-        );
-        setUpdateEmployeeAccrualRate(
-          updateAccrualRateConfig?.value
-            ?.toString()
-            .toLowerCase() === "true"
-        );
-        setApplyProbabilityToNewBusinessBudgets(
-          applyProbToNbConfig?.value?.toString().toLowerCase() ===
-            "true"
-        );
-        setOrgBudgetSequentialLocking(
-          orgBudgetSeqLockConfig?.value
-            ?.toString()
-            .toLowerCase() === "true"
-        );
       } catch (err) {
         setClosingPeriod("");
         setEscalationPercent("");
@@ -356,24 +224,21 @@ const LaborForm = () => {
         setLoading(false);
       }
     };
-
     fetchOrgConfig();
   }, []);
 
-  // --- Fetch ALL projects list ---
   useEffect(() => {
     const fetchAllProjects = async () => {
       setLoading(true); // Set loading to true for initial project list fetch
       setError(null);
-
       try {
         const apiUrl = `${backendUrl}/Project/GetAllProjects`; // Your API endpoint to get ALL projects
+
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const projects = await response.json();
         setAvailableProjects(projects);
 
@@ -392,11 +257,9 @@ const LaborForm = () => {
       }
     };
 
-    // Runs once on component mount to get the list of projects
     fetchAllProjects();
-  }, []);
+  }, []); // Runs once on component mount to get the list of projects
 
-  // --- Fetch project-based escalation/workforce config (Project Settings tab) ---
   useEffect(() => {
     const fetchEscalationData = async () => {
       if (!selectedProjectId) {
@@ -423,24 +286,21 @@ const LaborForm = () => {
 
         if (fetchedConfigValues.length === 0) {
           // ✅ If nothing in backend, initialize defaults
-       const defaults = [
-  // existing three
-  { id: 0, name: "escallation_month", value: "", projId: selectedProjectId },
-  { id: 0, name: "escallation_percent", value: "", projId: selectedProjectId },
-  { id: 0, name: "workforce", value: "", projId: selectedProjectId },
-
-  // NEW per‑project flags
-  { id: 0, name: "unlock_eac_last_closed_period", value: "", projId: selectedProjectId },
-  { id: 0, name: "resource_budget_commit_flag_default", value: "", projId: selectedProjectId },
-  { id: 0, name: "import_budget_eacs_from_excel_commit_flag_default", value: "", projId: selectedProjectId },
-  { id: 0, name: "import_new_business_budget_from_excel_commit_flag", value: "", projId: selectedProjectId },
-  { id: 0, name: "project_enable_subtask_row_hide_default", value: "", projId: selectedProjectId },
-  { id: 0, name: "enable_project_hide_bud_eac", value: "", projId: selectedProjectId },
-  { id: 0, name: "show_budget_eac_only_default", value: "", projId: selectedProjectId },
-  { id: 0, name: "enable_budget_auto_inspect", value: "", projId: selectedProjectId },
-  { id: 0, name: "project_budget_sequential_locking", value: "", projId: selectedProjectId },
-];
-
+          const defaults = [
+            {
+              id: 0,
+              name: "escallation_month",
+              value: "",
+              projId: selectedProjectId,
+            },
+            {
+              id: 0,
+              name: "escallation_percent",
+              value: "",
+              projId: selectedProjectId,
+            },
+            { id: 0, name: "workforce", value: "", projId: selectedProjectId },
+          ];
           setConfigValues(defaults);
         } else {
           setConfigValues(fetchedConfigValues);
@@ -482,16 +342,15 @@ const LaborForm = () => {
     fetchEscalationData();
   }, [selectedProjectId]);
 
-  // ----------------- SAVE: Project Settings tab -----------------
-
   const handleSaveProjectSettings = useCallback(async () => {
     if (!selectedProjectId) {
       alert("Please select a Project ID to save settings.");
       return;
     }
 
-    const updateApiUrl = `${backendUrl}/api/Configuration/BulkUpsertConfigsAsync`;
+    const updateApiUrl = `${backendUrl}/api/Configuration/UpdateConfigValues`;
     const nowIsoString = new Date().toISOString();
+
     let dataToSave = [];
 
     if (configValues.length > 0) {
@@ -499,33 +358,12 @@ const LaborForm = () => {
       dataToSave = configValues.map((config) => {
         let newValue = config.value;
 
-       if (config.name === "escallation_month")
-    newValue = String(laborEscalationMonth);
-  if (config.name === "escallation_percent")
-    newValue = String(laborEscalationValue);
-  if (config.name === "workforce")
-    newValue = workforceRule === "Enforce" ? "true" : "false";
-
-  if (config.name === "unlock_eac_last_closed_period")
-    newValue = unlockEACLastClosedPeriod ? "true" : "false";
-  if (config.name === "resource_budget_commit_flag_default")
-    newValue = resourceBudgetCommitFlagDefault ? "true" : "false";
-  if (config.name === "import_budget_eacs_from_excel_commit_flag_default")
-    newValue = importBudgetEACsFromExcelCommitFlagDefault ? "true" : "false";
-  if (config.name === "import_new_business_budget_from_excel_commit_flag")
-    newValue = importNewBusinessBudgetFromExcelCommitFlag ? "true" : "false";
-  if (config.name === "project_enable_subtask_row_hide_default")
-    newValue = checkTheProjectBudgetEnableSubtaskRowHideOptionByDefault ? "true" : "false";
-  if (config.name === "enable_project_hide_bud_eac")
-    newValue = enableProjectHideBudEAC ? "true" : "false";
-  if (config.name === "show_budget_eac_only_default")
-    newValue = showBudEACOnlyDefault ? "true" : "false";
-  if (config.name === "enable_budget_auto_inspect")
-    newValue = enableBudgetAutoInspect ? "true" : "false";
-  if (config.name === "project_budget_sequential_locking")
-    newValue = projectBudgetSequentialLocking ? "true" : "false";
-
-
+        if (config.name === "escallation_month")
+          newValue = String(laborEscalationMonth);
+        if (config.name === "escallation_percent")
+          newValue = String(laborEscalationValue);
+        if (config.name === "workforce")
+          newValue = workforceRule === "Enforce" ? "true" : "false";
 
         return {
           id: config.id || 0, // ✅ always include id
@@ -536,7 +374,7 @@ const LaborForm = () => {
         };
       });
     } else {
-      // ✅ If nothing came from backend, build payload fresh from UI data
+      // ✅ If nothing came from backend, build payload fresh from UI
       dataToSave = [
         {
           id: 0,
@@ -567,34 +405,23 @@ const LaborForm = () => {
     try {
       const response = await fetch(updateApiUrl, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataToSave),
       });
 
-      // if (!response.ok) {
-      //   const errorData = await response
-      //     .json()
-      //     .catch(() => ({ message: "Server error" }));
-      //   throw new Error(errorData.message || response.statusText);
-      // }
       if (!response.ok) {
-  const errorText = await response.text().catch(() => "");
-  throw new Error(
-    `Failed to save closing period: ${errorText || response.statusText}`
-  );
-}
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Server error" }));
+        throw new Error(errorData.message || response.statusText);
+      }
 
-const resultText = await response.text().catch(() => "");
-
-      // const result = await response.json();
+      const result = await response.json();
       // console.log("Project settings saved successfully:", result);
-      toast.success("Project settings saved successfully!");
+      alert("Project settings saved successfully!");
     } catch (e) {
-      console.error("Error saving project settings:", e);
-      // alert(`Error saving project settings: ${e.message}`);
-      toast.error(`Error Saving Project Settings: ${e.message}`)
+      // console.error("Error saving project settings:", e);
+      alert(`Error saving project settings: ${e.message}`);
     }
   }, [
     selectedProjectId,
@@ -604,8 +431,6 @@ const resultText = await response.text().catch(() => "");
     configValues,
   ]);
 
-  // ----------------- SAVE: Organization Settings tab (all fields) -----------------
-
   const handleSaveOrganizationSettings = useCallback(async () => {
     // if (!selectedProjectId) {
     //   alert("Please select a Project ID first.");
@@ -614,12 +439,12 @@ const resultText = await response.text().catch(() => "");
 
     // console.log("Attempting to save Closing Period...");
 
-    const updateApiUrl = `${backendUrl}/api/Configuration/BulkUpsertConfigsAsync`;
+    const updateApiUrl = `${backendUrl}/api/Configuration/UpdateConfigValues`;
+
     const nowIsoString = new Date().toISOString();
 
-    // Build payload for ALL Organization Settings (closing period + org‑level settings)
+    // Build payload ONLY for closing period
     const closingPeriodPayload = [
-      // --- Existing fields (kept) ---
       {
         id: closingPeriodId, // 0 = let backend assign, or use existing id if you fetched it
         name: "closing_period",
@@ -628,142 +453,16 @@ const resultText = await response.text().catch(() => "");
         projId: "xxxxx",
       },
       {
-        id: escalationMonthId,
+        id: escalationMonthId, // 0 = let backend assign, or use existing id if you fetched it
         name: "escallation_month",
-        value: escalationMonth,
+        value: escalationMonth, // <-- your state variable for closing period
         createdAt: nowIsoString,
         projId: "xxxxx",
       },
       {
-        id: escalationPercentId,
+        id: escalationPercentId, // 0 = let backend assign, or use existing id if you fetched it
         name: "escallation_percent",
-        value: escalationPercent,
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-
-      // --- workforce rule from Organization tab as well ---
-      {
-        id: workforceId,
-        name: "workforce",
-        value: workforceRule === "Enforce" ? "true" : "false",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-
-      // --- PTO / holiday accounts ---
-      {
-        id: paidTimeOffExpenseAccountId,
-        name: "paid_time_off_expense_account",
-        value: paidTimeOffExpenseAccount ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: holidayExpenseAccountId,
-        name: "holiday_expense_account",
-        value: holidayExpenseAccount ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-
-      // --- PTO calculation defaults ---
-      {
-        id: ptoCalculationMethodId,
-        name: "pto_calculation_method",
-        value: ptoCalculationMethod ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: defaultPtoAccrualRateId,
-        name: "default_pto_accrual_rate",
-        value: defaultPtoAccrualRate ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: partTimeHolidayCalculationId,
-        name: "part_time_holiday_calculation",
-        value: partTimeHolidayCalculation ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-
-      // --- fee / utilization defaults ---
-      {
-        id: defaultFeeRateId,
-        name: "default_fee_rate",
-        value: defaultFeeRate ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: defaultUtilizationId,
-        name: "default_utilization",
-        value: defaultUtilization ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-
-      // --- org levels ---
-      {
-        id: laborExpenseOrgLevelsId,
-        name: "labor_expense_org_levels",
-        value: laborExpenseOrgLevels ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: nonLaborExpenseOrgLevelsId,
-        name: "non_labor_expense_org_levels",
-        value: nonLaborExpenseOrgLevels ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-
-      // --- revenue / history methods ---
-      {
-        id: orgBudgetRevenueCalculationId,
-        name: "org_budget_revenue_calculation",
-        value: orgBudgetRevenueCalculation ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: nlabHistoryMethodId,
-        name: "nlab_history_method",
-        value: nlabHistoryMethod ?? "",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-
-      // --- checkboxes on right side ---
-      {
-        id: updateEmployeeHomeOrgId,
-        name: "update_employee_home_org",
-        value: updateEmployeeHomeOrg ? "true" : "false",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: updateEmployeeAccrualRateId,
-        name: "update_employee_accrual_rate",
-        value: updateEmployeeAccrualRate ? "true" : "false",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: applyProbabilityToNewBusinessBudgetsId,
-        name: "apply_probability_to_new_business",
-        value: applyProbabilityToNewBusinessBudgets ? "true" : "false",
-        createdAt: nowIsoString,
-        projId: "xxxxx",
-      },
-      {
-        id: orgBudgetSequentialLockingId,
-        name: "org_budget_sequential_locking",
-        value: orgBudgetSequentialLocking ? "true" : "false",
+        value: escalationPercent, // <-- your state variable for closing period
         createdAt: nowIsoString,
         projId: "xxxxx",
       },
@@ -780,76 +479,25 @@ const resultText = await response.text().catch(() => "");
         body: JSON.stringify(closingPeriodPayload),
       });
 
-      // if (!response.ok) {
-      //   const errorData = await response
-      //     .json()
-      //     .catch(() => ({ message: "Server error" }));
-      //   throw new Error(
-      //     `Failed to save closing period: ${
-      //       errorData.message || response.statusText
-      //     }`
-      //   );
-      // }
       if (!response.ok) {
-  const errorText = await response.text().catch(() => "");
-  throw new Error(
-    `Failed to save closing period: ${errorText || response.statusText}`
-  );
-}
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Server error" }));
+        throw new Error(
+          `Failed to save closing period: ${
+            errorData.message || response.statusText
+          }`
+        );
+      }
 
-const resultText = await response.text().catch(() => "");
-
-
+      const result = await response.json();
       // console.log("Closing period saved successfully:", result);
-      toast.success("Closing period saved successfully!")
-      // alert("Closing period saved successfully!");
+      alert("Closing period saved successfully!");
     } catch (e) {
-      console.error("Error saving Closing Period:", e);
-      toast.error(`Error saving Closing Period: ${e.message}`)
-      // alert(`Error saving Closing Period: ${e.message}`);
+      // console.error("Error saving Closing Period:", e);
+      alert(`Error saving Closing Period: ${e.message}`);
     }
-  }, [
-    closingPeriod,
-    escalationMonth,
-    escalationPercent,
-    closingPeriodId,
-    escalationMonthId,
-    escalationPercentId,
-    paidTimeOffExpenseAccount,
-    holidayExpenseAccount,
-    ptoCalculationMethod,
-    defaultPtoAccrualRate,
-    partTimeHolidayCalculation,
-    defaultFeeRate,
-    defaultUtilization,
-    laborExpenseOrgLevels,
-    nonLaborExpenseOrgLevels,
-    orgBudgetRevenueCalculation,
-    nlabHistoryMethod,
-    updateEmployeeHomeOrg,
-    updateEmployeeAccrualRate,
-    applyProbabilityToNewBusinessBudgets,
-    orgBudgetSequentialLocking,
-    workforceRule,
-    workforceId,
-    paidTimeOffExpenseAccountId,
-    holidayExpenseAccountId,
-    ptoCalculationMethodId,
-    defaultPtoAccrualRateId,
-    partTimeHolidayCalculationId,
-    defaultFeeRateId,
-    defaultUtilizationId,
-    laborExpenseOrgLevelsId,
-    nonLaborExpenseOrgLevelsId,
-    orgBudgetRevenueCalculationId,
-    nlabHistoryMethodId,
-    updateEmployeeHomeOrgId,
-    updateEmployeeAccrualRateId,
-    applyProbabilityToNewBusinessBudgetsId,
-    orgBudgetSequentialLockingId,
-  ]);
-
-  // ----------------- Save All dispatcher -----------------
+  }, [closingPeriod, escalationMonth, escalationPercent, closingPeriodId, escalationMonthId, escalationPercentId]);
 
   const handleSaveAllSettings = async () => {
     // console.log("Saving all settings...");
@@ -873,22 +521,17 @@ const resultText = await response.text().catch(() => "");
 
   if (loading && availableProjects.length === 0 && !error) {
     return (
-      <div className="p-4 text-sm text-gray-600">
-        Loading configuration...
+      <div className="p-4 text-center text-blue-600">
+        Loading available projects...
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="p-4 text-sm text-red-600">
-        {error}
-      </div>
-    );
+    return <div className="p-4 text-center text-red-600">Error: {error}</div>;
   }
 
-  // --- UI (taken from your paste, unchanged except wired to handlers) ---
-   return (
+  return (
     <div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center p-4">
       {/* Retained w-full px-8 for wider display within its parent */}
       <div className="w-full px-8 bg-white border-line p-6 space-y-6">
@@ -898,18 +541,6 @@ const resultText = await response.text().catch(() => "");
 
         {/* Tab Navigation */}
         <div className="flex border-line mb-6">
-          
-          <button
-            className={cn(
-              "py-2 px-4 text-lg font-medium focus:outline-none",
-              activeTab === "OrganizationSettings"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600"
-            )}
-            onClick={() => setActiveTab("OrganizationSettings")}
-          >
-            Organization Settings
-          </button>
           <button
             className={cn(
               "py-2 px-4 text-lg font-medium focus:outline-none",
@@ -920,6 +551,17 @@ const resultText = await response.text().catch(() => "");
             onClick={() => setActiveTab("projectSettings")}
           >
             Project Settings
+          </button>
+          <button
+            className={cn(
+              "py-2 px-4 text-lg font-medium focus:outline-none",
+              activeTab === "OrganizationSettings"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-600 hover:text-blue-600"
+            )}
+            onClick={() => setActiveTab("OrganizationSettings")}
+          >
+            Organization Settings
           </button>
         </div>
 
@@ -1589,32 +1231,7 @@ const resultText = await response.text().catch(() => "");
                         disabled={loading}
                       />
                     </div>
-                    
                   </div>
-                    {/* Workforce Rule */}
-
-                   <div>
-                    <label
-                      htmlFor="workforceRule"
-                      className="block text-sm font-medium"
-                    >
-                      Workforce Rule <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="workforceRule"
-                      value={workforceRule}
-                      onChange={(e) => setWorkforceRule(e.target.value)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={loading}
-                    >
-                      {workforceRules.map((rule) => (
-                        <option key={rule} value={rule}>
-                          {rule}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
                   <div>
                     <label
                       htmlFor="paidTimeOffExpenseAccount"

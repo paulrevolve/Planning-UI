@@ -125,6 +125,7 @@ const ProjectHoursDetails = ({
   endDate,
   fiscalYear,
   onSaveSuccess,
+   onColumnTotalsChange,
 }) => {
   // ADD THIS RIGHT HERE - Normalize fiscal year
   const normalizedFiscalYear =
@@ -4270,6 +4271,12 @@ const columnTotals = useMemo(() => {
 
   return totals;
 }, [durations, localEmployees, hiddenRows, inputValues, sortedDurations, normalizedFiscalYear, startDate]);
+
+useEffect(() => {
+  if (typeof onColumnTotalsChange === "function") {
+    onColumnTotalsChange(columnTotals);
+  }
+}, [columnTotals, onColumnTotalsChange]);
 
   // ADD THIS NEW MEMOIZED VALUE:
   const employeeYearTotals = useMemo(() => {
