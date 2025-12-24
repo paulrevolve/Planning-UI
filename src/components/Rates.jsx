@@ -329,7 +329,7 @@ const Rates = () => {
       setError(null);
 
       const response = await fetch(
-        `${backendUrl}/Orgnization/GetRatesV?fycd=${year}`
+        `${backendUrl}/Orgnization/GetRatesV3?fycd=${year}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch pool rates");
@@ -369,13 +369,13 @@ const poolDisplayNames = {
   GNA: "General & Admin",
 };  
 
-const calculateRate = async () => {
+const calculateRate = async (year) => {
   try {
     setLoading(true);
     setError(null);
 
     const response = await fetch(
-      `${backendUrl}/Orgnization/GetRatesV?fycd=${year}`,
+      `${backendUrl}/Orgnization/GetRatesV3?fycd=${year}`,
       { method: 'POST' }
     );
 
