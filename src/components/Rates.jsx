@@ -329,7 +329,7 @@ const Rates = () => {
       setError(null);
 
       const response = await fetch(
-        `${backendUrl}/Orgnization/GetRatesV?fycd=${year}`
+        `${backendUrl}/Orgnization/GetRatesV3?fycd=${year}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch pool rates");
@@ -369,28 +369,47 @@ const poolDisplayNames = {
   GNA: "General & Admin",
 };  
 
-const calculateRate = async () => {
+
+const handleCalculateClick = () => {
+  const fy = selectedYear?.value ?? selectedYear; // fallback
+  calculateRate(fy);
+};
+
+
+const calculateRate = async (yearArg) => {
+  // Accept plain year or { value } / { fycd }
+  const fy =
+    typeof yearArg === "number" || typeof yearArg === "string"
+      ? yearArg
+      : yearArg?.value ?? yearArg?.fycd ?? "";
+
+  if (!fy) {
+    setError("Invalid year selected");
+    return;
+  }
+
   try {
     setLoading(true);
     setError(null);
 
     const response = await fetch(
-      `${backendUrl}/Orgnization/GetRatesV?fycd=${year}`,
-      { method: 'POST' }
+      `${backendUrl}/Orgnization/GetRatesV3?fycd=${encodeURIComponent(fy)}`,
+      { method: "POST" }
     );
 
     if (!response.ok) {
-      throw new Error('Failed to calculate rates');
+      throw new Error("Failed to calculate rates");
     }
 
-    // Optionally re-fetch rates to refresh table
-    await fetchData(selectedYear);
+    // refresh table with the same year
+    await fetchData(fy);
   } catch (e) {
-    setError(e.message || 'Failed to calculate rates');
+    setError(e.message || "Failed to calculate rates");
   } finally {
     setLoading(false);
   }
 };
+
 
 
   if (loading) {
@@ -448,7 +467,7 @@ const calculateRate = async () => {
           Pool Rates by Month
         </h3> */}
        <button
-  onClick={calculateRate}
+  onClick={handleCalculateClick}
   className="inline-flex items-center px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
 >
   Calculate Rate
