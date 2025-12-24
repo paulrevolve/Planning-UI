@@ -1072,7 +1072,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
     </div>
 
     {/* centered cards, outer div has NO overflow */}
-    <div className="max-w-6xl mx-auto grid gap-4 md:grid-cols-1">
+    <div className="w-full mx-auto grid gap-4 md:grid-cols-1">
       {/* HOURS CARD */}
       <div className="border border-gray-200 rounded-md shadow-sm bg-white">
         {/* <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
@@ -1201,17 +1201,6 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
     </div>
   </div>
 )}
-
-
-
-
-
-
-
-
-      
-
-      
 
 
         {/* Revenue Analysis Tab */}
