@@ -2236,6 +2236,7 @@ const isAllSelected =
                     setIsActionLoading(false);
                   }}
                   disabled={
+                    isActionLoading ||
                     (selectedRows.size > 0 &&
                       !Array.from(selectedRows)
                         .map((id) => safePlans.find((p) => p.plId === id))
@@ -2271,6 +2272,7 @@ const isAllSelected =
                     setIsActionLoading(false);
                   }}
                   disabled={
+                    isActionLoading ||
                       (selectedRows.size > 0 &&
                       !Array.from(selectedRows)
                         .map((id) => safePlans.find((p) => p.plId === id))
@@ -2306,6 +2308,7 @@ const isAllSelected =
                     setIsActionLoading(false);
                   }}
                     disabled={
+                      isActionLoading ||
                     (selectedRows.size > 0 &&
                       !Array.from(selectedRows)
                         .map((id) => safePlans.find((p) => p.plId === id))
@@ -2357,6 +2360,7 @@ const isAllSelected =
                     setIsActionLoading(false);
                   }}
                   disabled={
+                    isActionLoading ||
                     (selectedRows.size > 0 &&
                       !Array.from(selectedRows)
                         .map((id) => safePlans.find((p) => p.plId === id))
@@ -2392,6 +2396,7 @@ const isAllSelected =
                     setIsActionLoading(false);
                   }}
                   disabled={
+                    isActionLoading ||
                     (selectedRows.size > 0 && getMassToggleProps("isCompleted").disabled) ||
                     (selectedRows.size === 0 && (getTopButtonDisabled("isCompleted") || isActionLoading))
                   }
@@ -2416,9 +2421,7 @@ const isAllSelected =
                       : "Submit"
                   }
                 >
-                  {isActionLoading
-                    ? "Processing..."
-                    : selectedRows.size > 0
+                  {  selectedRows.size > 0
                     ? getMassToggleProps("isCompleted").label || "Submit"
                     : getCurrentPlan()?.status === "Submitted"
                     ? "Unsubmit"
@@ -2433,6 +2436,7 @@ const isAllSelected =
                     setIsActionLoading(false);
                   }}
                   disabled={
+                    isActionLoading ||
                     (selectedRows.size > 0 && getMassToggleProps("isApproved").disabled) ||
                     (selectedRows.size === 0 && (getTopButtonDisabled("isApproved") || isActionLoading))
                   }
@@ -2457,9 +2461,7 @@ const isAllSelected =
                       : "Approve"
                   }
                 >
-                  {isActionLoading
-                    ? "Processing..."
-                    : selectedRows.size > 0
+                  {  selectedRows.size > 0
                     ? getMassToggleProps("isApproved").label || "Approve"
                     : getCurrentPlan()?.status === "Approved" || getCurrentPlan()?.finalVersion
                     ? "Unapprove"
@@ -2474,6 +2476,7 @@ const isAllSelected =
                     setIsActionLoading(false);
                   }}
                   disabled={
+                    isActionLoading ||
                     (selectedRows.size > 0 && getMassToggleProps("finalVersion").disabled) ||
                     (selectedRows.size === 0 && (getTopButtonDisabled("finalVersion") || isActionLoading))
                   }
@@ -2498,9 +2501,7 @@ const isAllSelected =
                       : "Conclude"
                   }
                 >
-                  {isActionLoading
-                    ? "Processing..."
-                    : selectedRows.size > 0
+                  {selectedRows.size > 0
                     ? getMassToggleProps("finalVersion").label || "Conclude"
                     : getCurrentPlan()?.finalVersion
                     ? "Unconclude"
@@ -2515,6 +2516,7 @@ const isAllSelected =
                     setIsActionLoading(false);
                   }}
                   disabled={
+                    isActionLoading ||
                     (selectedRows.size > 0 &&
                       !Array.from(selectedRows)
                         .map((id) => safePlans.find((p) => p.plId === id))
