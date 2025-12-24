@@ -2050,7 +2050,7 @@
 //             <table className="min-w-full table-auto divide-y divide-gray-200">
 //               <thead className="bg-gray-200 sticky top-0">
 //                 <tr>
-//                   <th className="px-4 py-2 text-center text-xs font-bold text-gray-600 capitalize tracking-wider">
+//                   <th className="th-thead">
 //                     Export
 //                   </th>
 //                   {columns.map((col) => (
@@ -4481,23 +4481,23 @@ if (newPlans && newPlans.length > 0) {
               showNewBusinessPopup ? "blur-sm pointer-events-none" : ""
             }`}
           >
-            <table className="min-w-full table-auto divide-y divide-gray-200">
-              <thead className="bg-gray-200 sticky top-0">
+            <table className="table">
+              <thead className="thead">
                 <tr>
-                  <th className="px-4 py-2 text-center text-xs font-bold text-gray-600 capitalize tracking-wider">
+                  <th className="th-thead">
                     Export
                   </th>
                   {columns.map((col) => (
                     <th
                       key={col}
-                      className="px-4 py-2 text-xs font-bold text-gray-600 capitalize tracking-widern whitespace-nowrap text-center"
+                      className="th-thead"
                     >
                       {COLUMN_LABELS[col] || col}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
+              <tbody className="tbody">
                 {loading ? (
                   <tr>
                     <td colSpan={columns.length}>
