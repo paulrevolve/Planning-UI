@@ -4147,9 +4147,9 @@ if (newPlans && newPlans.length > 0) {
                     !currentPlan ||
                     !getButtonAvailability(currentPlan, "Create Budget")
                       ? "btn-disabled"
-                      : "btn-blue"
-                  }`}
-                  
+                      : "btn-blue cursor-pointer"
+                    
+                  }`} 
                   title="Create Budget"
                 >
                   New Budget
@@ -4171,7 +4171,7 @@ if (newPlans && newPlans.length > 0) {
                     !currentPlan ||
                     !getButtonAvailability(currentPlan, "Create Blank Budget")
                       ? "btn-disabled"
-                      : "btn-blue"
+                      : "btn-blue cursor-pointer" 
                   }`}
                   title="Create Blank Budget"
                 >
@@ -4194,7 +4194,7 @@ if (newPlans && newPlans.length > 0) {
                     !currentPlan ||
                     !getButtonAvailability(currentPlan, "Create EAC")
                       ? "btn-disabled"
-                      : "btn-blue"
+                      : "btn-blue cursor-pointer"
                   }`}
                   title="Create EAC"
                 >
@@ -4210,7 +4210,7 @@ if (newPlans && newPlans.length > 0) {
                         "Create NB BUD"
                       );
                     }}
-                    className="btn1 btn-blue"
+                    className="btn1 btn-blue cursor-pointer"
                     title="Create BUD"
                   >
                     CREATE NB BUD
@@ -4239,7 +4239,7 @@ if (newPlans && newPlans.length > 0) {
                     !getMasterAndRelatedProjects(plans, currentPlan?.projId)
                       .sameLevelBud
                       ? "btn-disabled"
-                      : "btn-red"
+                      : "btn-red cursor-pointer"
                   }`}
                   title="Delete Selected Plan"
                 >
@@ -4256,7 +4256,7 @@ if (newPlans && newPlans.length > 0) {
                       ? "btn-disabled"
                       : getCurrentPlan()?.status === "Submitted"
                       ? "btn-orange"
-                      : "btn-blue"
+                      : "btn-blue cursor-pointer"
                   }`}
                   title={
                     getCurrentPlan()?.status === "Submitted"
@@ -4282,7 +4282,7 @@ if (newPlans && newPlans.length > 0) {
                       : getCurrentPlan()?.status === "Approved" ||
                         getCurrentPlan()?.finalVersion
                       ? "btn-orange"
-                      : "btn-blue"
+                      : "btn-blue cursor-pointer"
                   }`}
                   title={
                     getCurrentPlan()?.status === "Approved"
@@ -4308,7 +4308,7 @@ if (newPlans && newPlans.length > 0) {
                       ? "btn-disabled"
                       : getCurrentPlan()?.finalVersion
                       ? "btn-orange"
-                      : "btn-blue"
+                      : "btn-blue cursor-pointer"
                   }`}
                   title={
                     getCurrentPlan()?.finalVersion ? "Unconclude" : "Conclude"
@@ -4328,16 +4328,16 @@ if (newPlans && newPlans.length > 0) {
                   }}
                   disabled={getCalcButtonDisabled()}
                   className={`btn1 ${
-                    getCalcButtonDisabled() ? "btn-disabled" : "btn-blue"
+                    getCalcButtonDisabled() ? "btn-disabled" : "btn-blue cursor-pointer"
                   }`}
-                  title="Calculate"
+                  title="Calculate cursor-pointer"
                 >
                   Calc
                 </button>
 
                 <button
                   onClick={() => setBudEacFilter(!budEacFilter)}
-                  className={`btn1 ${budEacFilter ? "btn-orange" : "btn-blue"}`}
+                  className={`btn1 ${budEacFilter ? "btn-orange cursor-pointer" : "btn-blue cursor-pointer"}`}
                   title={
                     budEacFilter ? "Show All Plans" : "Filter BUD/EAC Plans"
                   }
@@ -4347,7 +4347,7 @@ if (newPlans && newPlans.length > 0) {
 
                 <button
                   onClick={() => setShowNewBusinessPopup(true)}
-                  className="btn1 btn-green"
+                  className="btn1 btn-green cursor-pointer"
                   title="New Business"
                 >
                   New Business
@@ -4367,14 +4367,14 @@ if (newPlans && newPlans.length > 0) {
   onClick={handleSaveDatesClick}
   disabled={isActionLoading || isSaveDatesDisabled()}
   className={`btn1 ${
-    isActionLoading || isSaveDatesDisabled() ? "btn-disabled" : "btn-blue"
+    isActionLoading || isSaveDatesDisabled() ? "btn-disabled" : "btn-blue cursor-pointer"
   }`}
   title="Save Project Dates"
 >
   Save Date
 </button>
 
-<button
+{/* <button
   onClick={() => {
     if (!selectedPlan) {
       toast.info("Please select a plan first.", {
@@ -4385,7 +4385,29 @@ if (newPlans && newPlans.length > 0) {
     }
     onOpenDetails?.();
   }}
-  className="btn1 btn-blue"   // or same classes as your other toolbar buttons
+  disabled={!selectedPlan}
+  className="btn1 btn-blue cursor-pointer"   // or same classes as your other toolbar buttons
+  title="View plan details"
+>
+  Detail
+</button> */}
+
+<button
+  onClick={() => {
+    if (!selectedPlan) {
+      toast.info("Please select a plan first.");
+      return;
+    }
+    onOpenDetails?.();
+  }}
+  
+  disabled={!selectedPlan} 
+ 
+  className={`btn1 ${
+    !selectedPlan 
+      ? "btn-disabled" 
+      : "btn-blue cursor-pointer"
+  }`}
   title="View plan details"
 >
   Detail

@@ -11,16 +11,16 @@ const FundingComponent = ({ selectedProjectId }) => {
       percent: "",
     },
     { label: "Cost", funding: "", budget: "", balance: "", percent: "" },
-    // { label: "Profit", funding: "", budget: "", balance: "", percent: "" },
   ]);
+
+  // Font Styling consistent with your other components
+  const geistSans = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
 
   useEffect(() => {
     const roundTwoDecimals = (num) => {
       if (num === null || num === undefined || num === "") return "";
       const parsed = parseFloat(num);
       if (isNaN(parsed)) return "";
-      // toFixed returns a string like "1234.56"
-      // Then format with commas using toLocaleString
       return parsed.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
@@ -44,7 +44,6 @@ const FundingComponent = ({ selectedProjectId }) => {
         setFundingData([
           { label: "Cost Fee + Funding", ...roundedData[0] },
           { label: "Cost", ...roundedData[1] },
-          // { label: "Profit", ...roundedData[2] },
         ]);
       } catch (error) {
         setFundingData([
@@ -57,7 +56,6 @@ const FundingComponent = ({ selectedProjectId }) => {
           },
           { label: "Cost", funding: "", budget: "", balance: "", percent: "" },
           {
-            // label: "Profit",
             funding: "",
             budget: "",
             balance: "",
@@ -73,25 +71,25 @@ const FundingComponent = ({ selectedProjectId }) => {
   }, [selectedProjectId]);
 
   return (
-    <div className="border-line overflow-hidden">
+    <div className="border-line overflow-hidden" style={geistSans}>
       <table className="w-full table">
         <thead className="thead">
           <tr>
-            <th className="th-thead"></th>
-            <th className="th-thead">Funded</th>
-            <th className="th-thead">Budget</th>
-            <th className="th-thead">Balance</th>
-            <th className="th-thead">Percent</th>
+            <th className="th-thead" style={geistSans}></th>
+            <th className="th-thead" style={geistSans}>Funded</th>
+            <th className="th-thead" style={geistSans}>Budget</th>
+            <th className="th-thead" style={geistSans}>Balance</th>
+            <th className="th-thead" style={geistSans}>Percent</th>
           </tr>
         </thead>
         <tbody className="tbody">
           {fundingData.map((row) => (
             <tr key={row.label}>
-              <td className="tbody-td">{row.label}</td>
-              <td className="tbody-td">{row.funding}</td>
-              <td className="tbody-td">{row.budget}</td>
-              <td className="tbody-td">{row.balance}</td>
-              <td className="tbody-td">{row.percent}</td>
+              <td className="tbody-td" style={geistSans}>{row.label}</td>
+              <td className="tbody-td" style={geistSans}>{row.funding}</td>
+              <td className="tbody-td" style={geistSans}>{row.budget}</td>
+              <td className="tbody-td" style={geistSans}>{row.balance}</td>
+              <td className="tbody-td" style={geistSans}>{row.percent}</td>
             </tr>
           ))}
         </tbody>

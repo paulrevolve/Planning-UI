@@ -632,9 +632,9 @@ const FinancialDashboard = ({ planId, templateId, type }) => {
       <div id="financial-dashboard-content" className="min-h-screen"> 
 
         {/* *** FULL WIDTH TABS *** */}
-        <div className="bg-white/90 backdrop-blur-md border-b-2 border-gray-200 shadow-lg sticky z-40    ">
+        <div className="bg-white/90 backdrop-blur-md border-b-2 border-gray-200 shadow-lg sticky z-40 ml-5    ">
           <div className="max-w-full mx-auto px-6 py-1">
-            <div className="flex border-b border-transparent overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <div className="flex border-b border-transparent overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ml-5 ">
               <button className={getTabClasses('forecast')} onClick={() => setActiveTab('forecast')}>
                 📊 Forecast Report
               </button>

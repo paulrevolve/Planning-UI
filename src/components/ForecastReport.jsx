@@ -641,7 +641,7 @@ const ForecastReport = () => {
     // ... (omitting loading/error JSX again for brevity here, but it's in the full code block) ...
 
     return (
-        <div className="p-4 bg-gray-50 min-h-full">
+        <div className="p-4 bg-gray-50 min-h-full ">
             <style>
                 {`
                     .sticky-table {

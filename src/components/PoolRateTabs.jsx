@@ -44,7 +44,7 @@ const PoolRateTabs = () => {
   };
 
   return (
-    <div className="border-overall bg-white p-4">
+    <div className="border-overall bg-white p-4 ml-5">
       <h2 className="text-lg font-semibold mb-4 blue-text">
         Forward Rate
       </h2>
@@ -62,8 +62,8 @@ const PoolRateTabs = () => {
               className={
                 "px-5 py-2 rounded-md text-sm font-medium shadow-sm transition-colors duration-200 " +
                 (isActive
-                  ? "bg-white text-blue-700 border border-blue-500"
-                  : "bg-gray-100 text-gray-700 border border-transparent hover:bg-gray-200")
+                  ? "bg-white text-blue-700 border border-blue-500 cursor-pointer"
+                  : "bg-gray-100 text-gray-700 border border-transparent hover:bg-gray-200 cursor-pointer")
               }
             >
               {tab.label}

@@ -836,9 +836,9 @@ const AccountMapping = () => {
   };
 
   return (
-    <div className="flex justify-center bg-[#f4f7f9] h-screen w-full overflow-hidden p-4 text-[13px] font-sans">
+    <div className="flex justify-center  h-screen w-full overflow-hidden p-4 text-[13px] font-sans ml-3 ">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="w-full max-w-6xl flex flex-col h-full bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+      <div className="w-full max-w-6xl flex flex-col h-full bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden ">
         
         <div className="w-full bg-[#f0f7ff] border-b border-gray-200 p-3 relative shadow-sm shrink-0 text-center">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg"></div>

@@ -180,7 +180,7 @@ const UtilizationChart = () => {
 
 
     return (
-        <div className="p-4 bg-white rounded-lg shadow">
+        <div className="p-4 bg-white rounded-lg shadow ml-5">
             <h2 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
                 Labor Utilization Chart 
             </h2>
