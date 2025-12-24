@@ -1209,7 +1209,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
                 >
                   <div className="flex items-center">
                     <div className="w-8 flex justify-center">
-                      <BarChart2 className="w-6 h-6 text-gray-600 group-hover:text-blue-600" />
+                      <BarChart2 className="w-6 h-6 text-gray-600 group-hover:text-[#17414d]" />
                     </div>
                     <span
                       className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${onHoverChange ? "opacity-100" : "opacity-0"}`}
@@ -1281,7 +1281,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
               {currentUserRole === "admin" && (
                 <div>
                   <div
-                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 group"
+                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:text-[#17414d] "
                     onClick={() => setConfigurationOpen(!configurationOpen)}
                   >
                     <div className="flex items-center">
@@ -1426,25 +1426,45 @@ const NavigationSidebar = ({ onHoverChange }) => {
 };
 
 // Sub-component for individual links to keep code clean
+  // const NavItem = ({ label, path, selected, onClick }) => (
+  //   <Link
+  //     to={path}
+      // className={`block px-3 py-2 text-xs transition-colors rounded-md ${
+      //   selected === path
+      //     ? "text-blue-600 bg-blue-50 font-semibold"
+      //     : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+      // }`}
+//       className={`block px-3 py-2 text-xs transition-colors rounded-md whitespace-nowrap ${
+//     selected === path
+//       ? "text-white font-semibold"
+//       : "text-gray-500 hover:text-gray-900"
+//   }`}
+//   style={{
+//     backgroundColor:
+//       selected === path
+//         ? "oklch(0.205 0 0)"
+//         : "rgb(245,245,245)",
+//   }}
+//       onClick={(e) => {
+//         e.preventDefault();
+//         onClick(path);
+//       }}
+//     >
+//       {label}
+//     </Link>
+// );
 const NavItem = ({ label, path, selected, onClick }) => (
   <Link
     to={path}
-    // className={`block px-3 py-2 text-xs transition-colors rounded-md ${
-    //   selected === path
-    //     ? "text-blue-600 bg-blue-50 font-semibold"
-    //     : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-    // }`}
     className={`block px-3 py-2 text-xs transition-colors rounded-md whitespace-nowrap ${
-  selected === path
-    ? "text-white font-semibold"
-    : "text-gray-500 hover:text-gray-900"
-}`}
-style={{
-  backgroundColor:
-    selected === path
-      ? "oklch(0.205 0 0)"
-      : "rgb(245,245,245)",
-}}
+      selected === path
+        ? "text-white font-semibold"
+        : "text-gray-500 hover:text-gray-900"
+    }`}
+    style={{
+      backgroundColor:
+        selected === path ? "#17414d" : "rgb(245,245,245)",
+    }}
     onClick={(e) => {
       e.preventDefault();
       onClick(path);
@@ -1453,5 +1473,6 @@ style={{
     {label}
   </Link>
 );
+
 
 export default NavigationSidebar;

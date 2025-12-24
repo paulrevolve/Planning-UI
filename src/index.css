@@ -13,7 +13,7 @@
   }
 
   .btn-active {
-    @apply bg-blue-600 text-white shadow-sm;
+    @apply text-white shadow-sm ;
   }
 
   .btn-inactive {
@@ -81,7 +81,9 @@
      /* Primary solid buttons (New Budget / Blank / EAC / Calc / Detail, etc.) */
      .btn-blue {
        /* match "New Budget" style: bg-slate-900 */
-       @apply bg-slate-900 text-white;
+       @apply  text-white;
+        background-color: #17414d;
+      
      }
   
      /* Secondary solid state (Submit/Approve/Conclude toggled, filters, etc.) */
