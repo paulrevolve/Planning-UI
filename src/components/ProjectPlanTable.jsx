@@ -56,8 +56,8 @@
 //   const [editingVersionCodeValue, setEditingVersionCodeValue] = useState("");
 //   const [budEacFilter, setBudEacFilter] = useState(false);
 //   const [showNewBusinessPopup, setShowNewBusinessPopup] = useState(false);
-//   const [editingDates, setEditingDates] = useState({}); 
- 
+//   const [editingDates, setEditingDates] = useState({});
+
 //   const [manualProjectDates, setManualProjectDates] = useState({
 //     startDate: "",
 //     endDate: "",
@@ -91,7 +91,6 @@
 //     fetchTemplates();
 //   }, []);
 
-
 //   const handleTemplateChange = async (plan, newTemplateId) => {
 //   const parsedId = Number(newTemplateId) || 0;
 
@@ -122,14 +121,13 @@
 //       plId: plan.plId,
 //       projId: plan.projId,
 //       templateId: parsedId,
-       
+
 //     });
 //     toast.success("Template updated.");
 //   } catch (err) {
 //     toast.error("Failed to update template.");
 //   }
 // };
-
 
 //   // Track last fetched project ID and full ID
 //   const lastFetchedProjectId = useRef(null);
@@ -138,8 +136,6 @@
 //   // Ref mirror of manual dates (used for non-reactive flows)
 //   // const tempManualDatesRef = useRef({ startDate: "", endDate: "" });
 //   const tempManualDatesRef = useRef({ startDate: "", endDate: "" });
-
- 
 
 //   const isChildProjectId = (projId) => {
 //     return projId && typeof projId === "string" && projId.includes(".");
@@ -525,7 +521,7 @@
 //       setPlans(sortedPlans);
 //       setFilteredPlans(sortedPlans);
 //       return sortedPlans;
-      
+
 //     } catch (error) {
 //       toast.error("Failed to refresh plans.");
 //       return [];
@@ -646,7 +642,6 @@
 //   setShowNewBusinessPopup(false);
 // };
 
-
 //   const handleRowClick = (plan, tempDates = manualProjectDates) => {
 //     const isDateMissing =
 //       filteredProjects.length > 0 &&
@@ -724,12 +719,7 @@
 //   const hasStartDate = isFullDate(newDates.startDate);
 //   const hasEndDate = isFullDate(newDates.endDate);
 
-  
 // };
-
-
-
-
 
 //   const handleExportPlan = async (plan) => {
 //     if (!selectedPlan?.projId || !plan.version || !plan.plType) {
@@ -940,7 +930,6 @@
 //   return originalStart === newStart && originalEnd === newEnd;
 // };
 
-
 //   const handleSaveDatesClick = async () => {
 //   // if (!selectedPlan?.plId) {
 //   //   toast.error("No plan selected to save dates.", {
@@ -1013,7 +1002,6 @@
 //     setIsActionLoading(false);
 //   }
 // };
-
 
 //   const handleCheckboxChange = async (idx, field) => {
 //     const prevPlans = [...plans];
@@ -1165,7 +1153,6 @@
 //     }
 //   };
 
-
 //   const transformSource = (source) => {
 //   if (!source || typeof source !== 'string') return source;
 //   const match = source.match(/^([A-Z])(\d+)$/);
@@ -1176,7 +1163,6 @@
 //   }
 //   return source;
 // };
-
 
 //   const handleActionSelect = async (idx, action) => {
 //     const plan = plans[idx];
@@ -1958,7 +1944,6 @@
 //   Save Date
 // </button>
 
-
 //               </>
 //             )}
 //           </div>
@@ -2050,7 +2035,7 @@
 //             <table className="min-w-full table-auto divide-y divide-gray-200">
 //               <thead className="bg-gray-200 sticky top-0">
 //                 <tr>
-//                   <th className="th-thead">
+//                   <th className="px-4 py-2 text-center text-xs font-bold text-gray-600 capitalize tracking-wider">
 //                     Export
 //                   </th>
 //                   {columns.map((col) => (
@@ -2371,7 +2356,6 @@
 
 // export default ProjectPlanTable;
 
-
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -2412,7 +2396,7 @@ const ProjectPlanTable = ({
   searched,
   filteredProjects,
   onPlanCreated,
-   onOpenDetails, 
+  onOpenDetails,
 }) => {
   const [plans, setPlans] = useState([]);
   const [filteredPlans, setFilteredPlans] = useState([]);
@@ -2429,8 +2413,8 @@ const ProjectPlanTable = ({
   const [editingVersionCodeValue, setEditingVersionCodeValue] = useState("");
   const [budEacFilter, setBudEacFilter] = useState(false);
   const [showNewBusinessPopup, setShowNewBusinessPopup] = useState(false);
-  const [editingDates, setEditingDates] = useState({}); 
- 
+  const [editingDates, setEditingDates] = useState({});
+
   const [manualProjectDates, setManualProjectDates] = useState({
     startDate: "",
     endDate: "",
@@ -2483,7 +2467,7 @@ const ProjectPlanTable = ({
     );
 
     if (!confirmChange) {
-      // If user cancels, we do nothing (the dropdown will stay at its previous value 
+      // If user cancels, we do nothing (the dropdown will stay at its previous value
       // because we haven't updated the state yet)
       return;
     }
@@ -2505,7 +2489,11 @@ const ProjectPlanTable = ({
     );
 
     // 4. Update selectedPlan if necessary
-    if (selectedPlan && selectedPlan.plId === plan.plId && selectedPlan.projId === plan.projId) {
+    if (
+      selectedPlan &&
+      selectedPlan.plId === plan.plId &&
+      selectedPlan.projId === plan.projId
+    ) {
       if (typeof onPlanSelect === "function") {
         onPlanSelect({ ...plan, templateId: parsedId });
       }
@@ -2521,68 +2509,64 @@ const ProjectPlanTable = ({
       toast.success("Template updated successfully.");
     } catch (err) {
       toast.error("Failed to update template in the database.");
-      
+
       // Optional: Revert local state on failure
-      fetchPlans(); 
+      fetchPlans();
     }
   };
 
-//   const handleTemplateChange = async (plan, newTemplateId) => {
+  //   const handleTemplateChange = async (plan, newTemplateId) => {
 
-//      if (plan.status !== "In Progress") {
-//     toast.warning("Template can only be changed when status is In Progress.");
-//     return;
-//   }
-  
-//   const parsedId = Number(newTemplateId) || 0;
-  
+  //      if (plan.status !== "In Progress") {
+  //     toast.warning("Template can only be changed when status is In Progress.");
+  //     return;
+  //   }
 
-//   // update local state first
-//   setPlans((prev) =>
-//     prev.map((p) =>
-//       p.plId === plan.plId && p.projId === plan.projId
-//         ? { ...p, templateId: parsedId }
-//         : p
-//     )
-//   );
-//   setFilteredPlans((prev) =>
-//     prev.map((p) =>
-//       p.plId === plan.plId && p.projId === plan.projId
-//         ? { ...p, templateId: parsedId }
-//         : p
-//     )
-//   );
+  //   const parsedId = Number(newTemplateId) || 0;
 
-//   // optionally update selectedPlan if this is the selected one
-//   if (selectedPlan && selectedPlan.plId === plan.plId && selectedPlan.projId === plan.projId) {
-//     if (typeof onPlanSelect === "function") onPlanSelect({ ...plan, templateId: parsedId });
-//   }
+  //   // update local state first
+  //   setPlans((prev) =>
+  //     prev.map((p) =>
+  //       p.plId === plan.plId && p.projId === plan.projId
+  //         ? { ...p, templateId: parsedId }
+  //         : p
+  //     )
+  //   );
+  //   setFilteredPlans((prev) =>
+  //     prev.map((p) =>
+  //       p.plId === plan.plId && p.projId === plan.projId
+  //         ? { ...p, templateId: parsedId }
+  //         : p
+  //     )
+  //   );
 
-//   // call backend if you have an endpoint to save templateId
-//   try {
-//     await axios.put(`${backendUrl}/Project/UpdateProjectPlan`, {
-//       plId: plan.plId,
-//       projId: plan.projId,
-//       templateId: parsedId,
-       
-//     });
-//     toast.success("Template updated.");
-//   } catch (err) {
-//     toast.error("Failed to update template.");
-//   }
-// };
+  //   // optionally update selectedPlan if this is the selected one
+  //   if (selectedPlan && selectedPlan.plId === plan.plId && selectedPlan.projId === plan.projId) {
+  //     if (typeof onPlanSelect === "function") onPlanSelect({ ...plan, templateId: parsedId });
+  //   }
 
+  //   // call backend if you have an endpoint to save templateId
+  //   try {
+  //     await axios.put(`${backendUrl}/Project/UpdateProjectPlan`, {
+  //       plId: plan.plId,
+  //       projId: plan.projId,
+  //       templateId: parsedId,
+
+  //     });
+  //     toast.success("Template updated.");
+  //   } catch (err) {
+  //     toast.error("Failed to update template.");
+  //   }
+  // };
 
   // Track last fetched project ID and full ID
-  
+
   const lastFetchedProjectId = useRef(null);
   const fullProjectId = useRef(null);
 
   // Ref mirror of manual dates (used for non-reactive flows)
   // const tempManualDatesRef = useRef({ startDate: "", endDate: "" });
   const tempManualDatesRef = useRef({ startDate: "", endDate: "" });
-
- 
 
   const isChildProjectId = (projId) => {
     return projId && typeof projId === "string" && projId.includes(".");
@@ -2723,8 +2707,8 @@ const ProjectPlanTable = ({
           plan.plType === "Budget"
             ? "BUD"
             : plan.plType === "EAC"
-            ? "EAC"
-            : plan.plType || "",
+              ? "EAC"
+              : plan.plType || "",
         source: plan.source || "",
         version: plan.version || 0,
         versionCode: plan.versionCode || "",
@@ -2738,7 +2722,7 @@ const ProjectPlanTable = ({
                 .replace("Completed", "Submitted")
             : "",
         closedPeriod: plan.closedPeriod || "",
-         templateId: plan.templateId || "",
+        templateId: plan.templateId || "",
         createdAt: plan.createdAt || "",
         updatedAt: plan.updatedAt || "",
         modifiedBy: plan.modifiedBy || "",
@@ -2753,7 +2737,7 @@ const ProjectPlanTable = ({
         fundedRev: plan.proj_f_tot_amt || "",
         revenueAccount: plan.revenueAccount || "",
         Rev: plan.revenue || plan.Rev || "",
-        revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0
+        revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
       }));
 
       const sortedPlans = sortPlansByProjIdPlTypeVersion(transformedPlans);
@@ -2830,19 +2814,18 @@ const ProjectPlanTable = ({
   };
 
   const getCurrentUserContext = () => {
-  try {
-    const userString = localStorage.getItem("currentUser");
-    if (!userString) return { userId: "", role: "" };
-    const userObj = JSON.parse(userString);
-    return {
-      userId: userObj.userId  ?? "",
-      role: userObj.role ?? "",
-    };
-  } catch {
-    return { userId: "", role: "" };
-  }
-};
-
+    try {
+      const userString = localStorage.getItem("currentUser");
+      if (!userString) return { userId: "", role: "" };
+      const userObj = JSON.parse(userString);
+      return {
+        userId: userObj.userId ?? "",
+        role: userObj.role ?? "",
+      };
+    } catch {
+      return { userId: "", role: "" };
+    }
+  };
 
   const { userId, role } = getCurrentUserContext();
 
@@ -2912,13 +2895,12 @@ const ProjectPlanTable = ({
   // };
 
   const refreshPlans = async (overrideProjId) => {
-
     const effectiveProjId = (overrideProjId || projectId || "").trim();
-  if (!effectiveProjId) {
-    setPlans([]);
-    setFilteredPlans([]);
-    return;
-  }
+    if (!effectiveProjId) {
+      setPlans([]);
+      setFilteredPlans([]);
+      return;
+    }
     // if (!projectId) {
     //   setPlans([]);
     //   setFilteredPlans([]);
@@ -2928,8 +2910,8 @@ const ProjectPlanTable = ({
     try {
       const response = await axios.get(
         // `${backendUrl}/Project/GetProjectPlans/${projectId}`
-      //  ` ${backendUrl}/Project/GetProjectPlans/${effectiveProjId}`
-      `${backendUrl}/Project/GetProjectPlans/${userId}/${role}/${effectiveProjId}`
+        //  ` ${backendUrl}/Project/GetProjectPlans/${effectiveProjId}`
+        `${backendUrl}/Project/GetProjectPlans/${userId}/${role}/${effectiveProjId}`
       );
 
       const transformedPlans = response.data.map((plan) => ({
@@ -2945,8 +2927,8 @@ const ProjectPlanTable = ({
           plan.plType === "Budget"
             ? "BUD"
             : plan.plType === "EAC"
-            ? "EAC"
-            : plan.plType || "",
+              ? "EAC"
+              : plan.plType || "",
         source: plan.source || "",
         version: plan.version || 0,
         versionCode: plan.versionCode || "",
@@ -2975,14 +2957,13 @@ const ProjectPlanTable = ({
         fundedRev: plan.proj_f_tot_amt || "",
         revenueAccount: plan.revenueAccount || "",
         Rev: plan.revenue || plan.Rev || "",
-        revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0
+        revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
       }));
 
       const sortedPlans = sortPlansByProjIdPlTypeVersion(transformedPlans);
       setPlans(sortedPlans);
       setFilteredPlans(sortedPlans);
       return sortedPlans;
-      
     } catch (error) {
       toast.error("Failed to refresh plans.");
       return [];
@@ -3012,8 +2993,8 @@ const ProjectPlanTable = ({
           plan.plType === "Budget"
             ? "BUD"
             : plan.plType === "EAC"
-            ? "EAC"
-            : plan.plType || "",
+              ? "EAC"
+              : plan.plType || "",
         source: plan.source || "",
         version: plan.version || 0,
         versionCode: plan.versionCode || "",
@@ -3027,7 +3008,7 @@ const ProjectPlanTable = ({
                 .replace("Completed", "Submitted")
             : "",
         closedPeriod: plan.closedPeriod || "",
-         templateId: plan.templateId || "",
+        templateId: plan.templateId || "",
         createdAt: plan.createdAt || "",
         updatedAt: plan.updatedAt || "",
         modifiedBy: plan.modifiedBy || "",
@@ -3042,7 +3023,7 @@ const ProjectPlanTable = ({
         fundedRev: plan.proj_f_tot_amt || "",
         revenueAccount: plan.revenueAccount || "",
         Rev: plan.revenue || plan.Rev || "",
-        revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0
+        revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
       }));
 
       const sortedPlans = sortPlansByProjIdPlTypeVersion(transformedPlans);
@@ -3073,39 +3054,37 @@ const ProjectPlanTable = ({
 
   // ProjectPlanTable.jsx
 
-const handleNewBusinessSave = async (savedData) => {
-  // 1. Get the new project id coming from NewBusiness
-  const newProjId = savedData.projId || savedData.businessBudgetId || "";
+  const handleNewBusinessSave = async (savedData) => {
+    // 1. Get the new project id coming from NewBusiness
+    const newProjId = savedData.projId || savedData.businessBudgetId || "";
 
-  if (!newProjId) {
-    toast.error("New Business saved, but project id is missing.");
-    return;
-  }
+    if (!newProjId) {
+      toast.error("New Business saved, but project id is missing.");
+      return;
+    }
 
-  // 2. Refresh plans specifically for that new project id
-  const newPlans = await refreshPlans(newProjId);
+    // 2. Refresh plans specifically for that new project id
+    const newPlans = await refreshPlans(newProjId);
 
-  if (!newPlans || newPlans.length === 0) {
-    toast.error("NB BUD created, but plans could not be loaded.");
-    return;
-  }
+    if (!newPlans || newPlans.length === 0) {
+      toast.error("NB BUD created, but plans could not be loaded.");
+      return;
+    }
 
-  // 3. Try to find the NB BUD plan; fall back to first plan if not found
-  const planToSelect =
-    newPlans.find(
-      (p) => p.projId === newProjId && p.plType === "NBBUD"
-    ) || newPlans[0];
+    // 3. Try to find the NB BUD plan; fall back to first plan if not found
+    const planToSelect =
+      newPlans.find((p) => p.projId === newProjId && p.plType === "NBBUD") ||
+      newPlans[0];
 
-  // 4. Select the plan in the grid (this calls onPlanSelect)
-  handleRowClick(planToSelect);
+    // 4. Select the plan in the grid (this calls onPlanSelect)
+    handleRowClick(planToSelect);
 
-  // 5. Let the parent know so it can update Project ID textbox + header
-  onPlanCreated?.(planToSelect);
+    // 5. Let the parent know so it can update Project ID textbox + header
+    onPlanCreated?.(planToSelect);
 
-  toast.success(`NB BUD plan for ${newProjId} created and selected.`);
-  setShowNewBusinessPopup(false);
-};
-
+    toast.success(`NB BUD plan for ${newProjId} created and selected.`);
+    setShowNewBusinessPopup(false);
+  };
 
   const handleRowClick = (plan, tempDates = manualProjectDates) => {
     const isDateMissing =
@@ -3133,7 +3112,7 @@ const handleNewBusinessSave = async (savedData) => {
       projEndDt: effectiveEndDate,
       startDate: effectiveStartDate,
       endDate: effectiveEndDate,
-      revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0 
+      revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
     };
 
     //    setEditingDates(prev => ({
@@ -3171,23 +3150,21 @@ const handleNewBusinessSave = async (savedData) => {
     }
   };
 
- const handleDateCellChange = (plId, dateColumn, value) => {
-  const dateType = dateColumn === "projectStartDate" ? "startDate" : "endDate";
-  const currentDates = editingDates[plId] || {};
-  const newDates = { ...currentDates, [dateType]: value };
+  const handleDateCellChange = (plId, dateColumn, value) => {
+    const dateType =
+      dateColumn === "projectStartDate" ? "startDate" : "endDate";
+    const currentDates = editingDates[plId] || {};
+    const newDates = { ...currentDates, [dateType]: value };
 
-  // Update state with new dates
-  setEditingDates((prev) => ({ ...prev, [plId]: newDates }));
+    // Update state with new dates
+    setEditingDates((prev) => ({ ...prev, [plId]: newDates }));
 
-  // Check if we have both dates in valid format
-  const isFullDate = (v) =>
-    typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
-  const hasStartDate = isFullDate(newDates.startDate);
-  const hasEndDate = isFullDate(newDates.endDate);
-
-  
-};
-
+    // Check if we have both dates in valid format
+    const isFullDate = (v) =>
+      typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+    const hasStartDate = isFullDate(newDates.startDate);
+    const hasEndDate = isFullDate(newDates.endDate);
+  };
 
   const handleExportPlan = async (plan) => {
     if (!selectedPlan?.projId || !plan.version || !plan.plType) {
@@ -3381,107 +3358,106 @@ const handleNewBusinessSave = async (savedData) => {
   };
 
   const isSaveDatesDisabled = () => {
-  const currentPlan = getCurrentPlan();
-  if (!currentPlan) return true;
+    const currentPlan = getCurrentPlan();
+    if (!currentPlan) return true;
 
-  const edited = editingDates[currentPlan.plId];
-  if (!edited) return true;
+    const edited = editingDates[currentPlan.plId];
+    if (!edited) return true;
 
-  const originalStart =
-    currentPlan.projStartDt || currentPlan.startDate || "";
-  const originalEnd = currentPlan.projEndDt || currentPlan.endDate || "";
+    const originalStart =
+      currentPlan.projStartDt || currentPlan.startDate || "";
+    const originalEnd = currentPlan.projEndDt || currentPlan.endDate || "";
 
-  const newStart = edited.startDate || "";
-  const newEnd = edited.endDate || "";
+    const newStart = edited.startDate || "";
+    const newEnd = edited.endDate || "";
 
-  // enable only if at least one date changed
-  return originalStart === newStart && originalEnd === newEnd;
-};
-
+    // enable only if at least one date changed
+    return originalStart === newStart && originalEnd === newEnd;
+  };
 
   const handleSaveDatesClick = async () => {
-  // if (!selectedPlan?.plId) {
-  //   toast.error("No plan selected to save dates.", {
-  //     toastId: "no-plan-selected-dates",
-  //   });
-  //   return;
-  // }
+    // if (!selectedPlan?.plId) {
+    //   toast.error("No plan selected to save dates.", {
+    //     toastId: "no-plan-selected-dates",
+    //   });
+    //   return;
+    // }
 
-  const currentDates = editingDates[selectedPlan.plId] || {};
-  const { startDate, endDate } = currentDates;
+    const currentDates = editingDates[selectedPlan.plId] || {};
+    const { startDate, endDate } = currentDates;
 
-  // Reuse exactly the same validation as earlier
-  const isFullDate = (v) =>
-    typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
-  const hasStartDate = isFullDate(startDate);
-  const hasEndDate = isFullDate(endDate);
+    // Reuse exactly the same validation as earlier
+    const isFullDate = (v) =>
+      typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+    const hasStartDate = isFullDate(startDate);
+    const hasEndDate = isFullDate(endDate);
 
-  if (!hasStartDate || !hasEndDate) {
-    toast.warning("Please select both start and end dates to save changes", {
-      autoClose: 3000,
-    });
-    return;
-  }
+    if (!hasStartDate || !hasEndDate) {
+      toast.warning("Please select both start and end dates to save changes", {
+        autoClose: 3000,
+      });
+      return;
+    }
 
-  // Get the plan (same as before)
-  const plan = plans.find((p) => p.plId === selectedPlan.plId);
-  if (!plan?.projId) {
-    toast.error("Missing project id for selected plan.");
-    return;
-  }
+    // Get the plan (same as before)
+    const plan = plans.find((p) => p.plId === selectedPlan.plId);
+    if (!plan?.projId) {
+      toast.error("Missing project id for selected plan.");
+      return;
+    }
 
-  try {
-    setIsActionLoading(true);
+    try {
+      setIsActionLoading(true);
 
-    // Same payload / endpoint as old handleDateCellChange
-    await axios.put(`${backendUrl}/Project/UpdateDates`, {
-      projId: selectedPlan.projId,
-      projStartDt: startDate,
-      projEndDt: endDate,
-    });
-
-    toast.success("Dates updated successfully", { autoClose: 2000 });
-
-    // Refresh the plans to get updated data (same logic)
-    const updatedPlans = projectId?.trim()
-      ? await refreshPlans()
-      : await refreshPlansForSelected();
-
-    // Update the selected plan with new dates (same shape)
-    if (selectedPlan?.plId === plan.plId) {
-      const updatedPlan = {
-        ...selectedPlan,
+      // Same payload / endpoint as old handleDateCellChange
+      await axios.put(`${backendUrl}/Project/UpdateDates`, {
+        projId: selectedPlan.projId,
         projStartDt: startDate,
         projEndDt: endDate,
-        startDate,
-        endDate,
-      };
-      if (typeof onPlanSelect === "function") onPlanSelect(updatedPlan);
-    }
-  } catch (error) {
-    toast.error(
-      `Failed to update dates: ${
-        error.response?.data?.message || error.message
-      }`,
-      {
-        autoClose: 4000,
+      });
+
+      toast.success("Dates updated successfully", { autoClose: 2000 });
+
+      // Refresh the plans to get updated data (same logic)
+      const updatedPlans = projectId?.trim()
+        ? await refreshPlans()
+        : await refreshPlansForSelected();
+
+      // Update the selected plan with new dates (same shape)
+      if (selectedPlan?.plId === plan.plId) {
+        const updatedPlan = {
+          ...selectedPlan,
+          projStartDt: startDate,
+          projEndDt: endDate,
+          startDate,
+          endDate,
+        };
+        if (typeof onPlanSelect === "function") onPlanSelect(updatedPlan);
       }
-    );
-  } finally {
-    setIsActionLoading(false);
-  }
-};
+    } catch (error) {
+      toast.error(
+        `Failed to update dates: ${
+          error.response?.data?.message || error.message
+        }`,
+        {
+          autoClose: 4000,
+        }
+      );
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
 
   const transformSource = (source) => {
-  if (!source || typeof source !== 'string') return source;
-  const match = source.match(/^([A-Z])(\d+)$/);
-  if (match) {
-    const letter = match[1];
-    const number = parseInt(match[2], 10);
-    return `${letter}${number + 1}`;
-  }
-  return source;
-};
+    if (!source || typeof source !== "string") return source;
+    const match = source.match(/^([A-Z])(\d+)$/);
+    if (match) {
+      const letter = match[1];
+      const number = parseInt(match[2], 10);
+      return `${letter}${number + 1}`;
+    }
+    return source;
+  };
 
   const handleCheckboxChange = async (idx, field) => {
     const prevPlans = [...plans];
@@ -3546,8 +3522,8 @@ const handleNewBusinessSave = async (savedData) => {
         i === idx
           ? updated
           : p.plType === updated.plType && p.projId === updated.projId
-          ? { ...p, finalVersion: false }
-          : p
+            ? { ...p, finalVersion: false }
+            : p
       );
     } else {
       newPlans = plans.map((p, i) => (i === idx ? updated : p));
@@ -3587,22 +3563,22 @@ const handleNewBusinessSave = async (savedData) => {
       };
       try {
         await axios.put(updateUrl, payload);
-         // 1) refresh all plans for this project
-    const refreshed = await refreshPlans(payload.projId);
+        // 1) refresh all plans for this project
+        const refreshed = await refreshPlans(payload.projId);
 
-  if (Array.isArray(refreshed) && typeof onPlanSelect === "function") {
-    const reselected =
-      refreshed.find((p) => p.plId === updated.plId && p.projId === updated.projId) ||
-      null;
-    if (reselected) {
-      onPlanSelect(reselected);    // use object from refreshed plans
-    }
-  }
+        if (Array.isArray(refreshed) && typeof onPlanSelect === "function") {
+          const reselected =
+            refreshed.find(
+              (p) => p.plId === updated.plId && p.projId === updated.projId
+            ) || null;
+          if (reselected) {
+            onPlanSelect(reselected); // use object from refreshed plans
+          }
+        }
 
-     toast.success("Status updated successfully.", {
-      toastId: "plan-status-updated",
-    });
-        
+        toast.success("Status updated successfully.", {
+          toastId: "plan-status-updated",
+        });
       } catch (err) {
         setPlans(prevPlans);
         toast.error(
@@ -3708,13 +3684,13 @@ const handleNewBusinessSave = async (savedData) => {
             action === "Create NB BUD"
               ? "NBBUD"
               : action === "Create Budget" || action === "Create Blank Budget"
-              ? "BUD"
-              : "EAC",
+                ? "BUD"
+                : "EAC",
           // source: plan.source || "",
-  //           source: transformSource(
-  //   `${plan.plType === "BUD" ? "B" : plan.plType === "EAC" ? "E" : ""}${plan.version || 0}`
-  // ),
-                source: `${plan.plType === 'BUD' ? 'B' : plan.plType === 'EAC' ? 'E' : ''}${plan.version || 0}`,
+          //           source: transformSource(
+          //   `${plan.plType === "BUD" ? "B" : plan.plType === "EAC" ? "E" : ""}${plan.version || 0}`
+          // ),
+          source: `${plan.plType === "BUD" ? "B" : plan.plType === "EAC" ? "E" : ""}${plan.version || 0}`,
           type:
             typeof isChildProjectId === "function" &&
             isChildProjectId(actionProjId)
@@ -3738,10 +3714,10 @@ const handleNewBusinessSave = async (savedData) => {
             action === "Create Budget"
               ? "Budget"
               : action === "Create Blank Budget"
-              ? "Blank Budget"
-              : action === "Create NB BUD"
-              ? "NB BUD"
-              : "EAC"
+                ? "Blank Budget"
+                : action === "Create NB BUD"
+                  ? "NB BUD"
+                  : "EAC"
           }...`
         );
 
@@ -3788,63 +3764,63 @@ const handleNewBusinessSave = async (savedData) => {
         // }, 100);
 
         if (!normalizedPlan.projId || !normalizedPlan.plType) {
-  toast.error("Plan returned from backend is missing required fields. Please reload and try again.");
-  setIsActionLoading(false);
-  return;
-}
+          toast.error(
+            "Plan returned from backend is missing required fields. Please reload and try again."
+          );
+          setIsActionLoading(false);
+          return;
+        }
 
-// Use created projId to load plans when there was no search
-// const effectiveProjIdForRefresh =
-//   fullProjectId.current ||
-//   normalizedPlan.projId ||
-//   projectId;
-const effectiveProjIdForRefresh = projectId || rawCreatedPlan.projId;
+        // Use created projId to load plans when there was no search
+        // const effectiveProjIdForRefresh =
+        //   fullProjectId.current ||
+        //   normalizedPlan.projId ||
+        //   projectId;
+        const effectiveProjIdForRefresh = projectId || rawCreatedPlan.projId;
 
-const newPlans = await refreshPlans(effectiveProjIdForRefresh);
+        const newPlans = await refreshPlans(effectiveProjIdForRefresh);
 
-if (newPlans && newPlans.length > 0) {
-  const planToSelect =
-    newPlans.find(
-      (p) =>
-        p.plId === normalizedPlan.plId &&
-        p.projId === normalizedPlan.projId &&
-        p.plType === normalizedPlan.plType
-    ) || normalizedPlan;
+        if (newPlans && newPlans.length > 0) {
+          const planToSelect =
+            newPlans.find(
+              (p) =>
+                p.plId === normalizedPlan.plId &&
+                p.projId === normalizedPlan.projId &&
+                p.plType === normalizedPlan.plType
+            ) || normalizedPlan;
 
-  handleRowClick(planToSelect);
-  // onPlanCreated?.(planToSelect);
-  if (typeof onPlanSelect === "function") {
-    onPlanSelect(planToSelect);
-  }
+          handleRowClick(planToSelect);
+          // onPlanCreated?.(planToSelect);
+          if (typeof onPlanSelect === "function") {
+            onPlanSelect(planToSelect);
+          }
 
-  setTimeout(() => {
-    if (tableContainerRef.current) {
-      // Find the index of the newly created plan in the visible list
-      const index = newPlans.findIndex(p => p.plId === planToSelect.plId);
-      if (index !== -1) {
-        const rowHeight = 35; // Standard height for your text-xs rows
-        tableContainerRef.current.scrollTo({
-          top: index * rowHeight,
-          behavior: "smooth"
-        });
-      }
-    }
-  }, 100);
-
-  
-
-
-}
+          setTimeout(() => {
+            if (tableContainerRef.current) {
+              // Find the index of the newly created plan in the visible list
+              const index = newPlans.findIndex(
+                (p) => p.plId === planToSelect.plId
+              );
+              if (index !== -1) {
+                const rowHeight = 35; // Standard height for your text-xs rows
+                tableContainerRef.current.scrollTo({
+                  top: index * rowHeight,
+                  behavior: "smooth",
+                });
+              }
+            }
+          }, 100);
+        }
 
         toast.success(
           `${
             action === "Create Budget"
               ? "Budget"
               : action === "Create Blank Budget"
-              ? "Blank Budget"
-              : action === "Create NB BUD"
-              ? "NB BUD"
-              : "EAC"
+                ? "Blank Budget"
+                : action === "Create NB BUD"
+                  ? "NB BUD"
+                  : "EAC"
           } created successfully!`
         );
       } else {
@@ -3866,115 +3842,60 @@ if (newPlans && newPlans.length > 0) {
     return dotCount;
   };
 
-  // const getActionOptions = (plan) => {
-  //   let options = ["None"];
-
-  //   if (!plan?.projId) {
-  //     return options;
-  //   }
-
-  //   let lockDotLevel = null;
-  //   const masterId = plan.projId.split(".")[0];
-
-  //   for (const p of plans) {
-  //     if (p.plType && p.projId?.startsWith(masterId)) {
-  //       lockDotLevel = getProjectDotLevel(p.projId);
-  //       break;
-  //     }
-  //   }
-
-  //   if (!plan.plType && !plan.version) {
-  //     const currentDotLevel = getProjectDotLevel(plan.projId);
-  //     const creationOptions = [
-  //       "None",
-  //       "Create Budget",
-  //       "Create Blank Budget",
-  //       "Create EAC",
-  //       "Create NB BUD"
-  //     ];
-
-  //     if (lockDotLevel === null) {
-  //       return creationOptions;
-  //     }
-
-  //     if (currentDotLevel === lockDotLevel) {
-  //       return creationOptions;
-  //     }
-
-  //     return options;
-  //   }
-
-  //   if (plan.status === "In Progress") options = ["None", "Delete"];
-  //   else if (plan.status === "Submitted")
-  //     // options = ["None", "Create Budget", "Create Blank Budget"];
-  //   options = ["None" ]
-  //   else if (plan.status === "Approved")
-  //     options = [
-  //       "None",
-  //       "Create Budget",
-  //       "Create Blank Budget",
-  //       "Create EAC",
-  //       "Delete",
-  //     ];
-  //   else if (plan.status === "Concluded")
-  //     options = ["None", "Create Budget", "Create Blank Budget", "Create EAC"];
-
-  //   return options;
-  // };
   const getActionOptions = (plan) => {
-  let options = ["None"];
+    let options = ["None"];
 
-  if (!plan?.projId) {
+    if (!plan?.projId) {
+      return options;
+    }
+
+    let lockDotLevel = null;
+    const masterId = plan.projId.split(".")[0];
+
+    for (const p of plans) {
+      if (p.plType && p.projId?.startsWith(masterId)) {
+        lockDotLevel = getProjectDotLevel(p.projId);
+        break;
+      }
+    }
+
+    if (!plan.plType && !plan.version) {
+      const currentDotLevel = getProjectDotLevel(plan.projId);
+      const creationOptions = [
+        "None",
+        "Create Budget",
+        "Create Blank Budget",
+        "Create EAC",
+      ];
+
+      if (lockDotLevel === null) {
+        return creationOptions;
+      }
+
+      if (currentDotLevel === lockDotLevel) {
+        return creationOptions;
+      }
+
+      return options;
+    }
+
+    if (plan.status === "In Progress") options = ["None", "Delete"];
+    else if (plan.status === "Submitted")
+      // options = ["None", "Create Budget", "Create Blank Budget"];
+      options = ["None"];
+    else if (plan.status === "Approved")
+      options = [
+        "None",
+        "Create Budget",
+        "Create Blank Budget",
+        "Create EAC",
+        "Delete",
+      ];
+    else if (plan.status === "Concluded")
+      options = ["None", "Create Budget", "Create Blank Budget", "Create EAC"];
+
     return options;
-  }
-
-  let lockDotLevel = null;
-  const masterId = plan.projId.split(".")[0];
-
-  for (const p of plans) {
-    if (p.plType && p.projId?.startsWith(masterId)) {
-      lockDotLevel = getProjectDotLevel(p.projId);
-      break;
-    }
-  }
-
-  if (!plan.plType && !plan.version) {
-    const currentDotLevel = getProjectDotLevel(plan.projId);
-    const creationOptions = [
-      "None",
-      "Create Budget",
-      "Create Blank Budget",
-      "Create EAC",
-      "Create NB BUD" // Added here to enable it for new projects
-    ];
-
-    if (lockDotLevel === null) {
-      return creationOptions;
-    }
-
-    if (currentDotLevel === lockDotLevel) {
-      return creationOptions;
-    }
-
-    return options;
-  }
-
-  if (plan.status === "In Progress") options = ["None", "Delete"];
-  else if (plan.status === "Submitted")
-    options = ["None"];
-  else if (plan.status === "Approved")
-    options = [
-      "None",
-      "Create Budget",
-      "Create Blank Budget",
-      "Create EAC",
-      "Delete",
-    ];
-  else if (plan.status === "Concluded")
-    options = ["None", "Create Budget", "Create Blank Budget", "Create EAC"];
-
-  return options;
-};
+  };
 
   const getButtonAvailability = (plan, action) => {
     const options = getActionOptions(plan);
@@ -4139,7 +4060,6 @@ if (newPlans && newPlans.length > 0) {
   };
 
   const currentPlan = getCurrentPlan();
- const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
 
   const isDateMissing =
     filteredProjects.length > 0 &&
@@ -4203,8 +4123,7 @@ if (newPlans && newPlans.length > 0) {
                     !getButtonAvailability(currentPlan, "Create Budget")
                       ? "btn-disabled"
                       : "btn-blue cursor-pointer"
-                    
-                  }`} 
+                  }`}
                   title="Create Budget"
                 >
                   New Budget
@@ -4226,7 +4145,7 @@ if (newPlans && newPlans.length > 0) {
                     !currentPlan ||
                     !getButtonAvailability(currentPlan, "Create Blank Budget")
                       ? "btn-disabled"
-                      : "btn-blue cursor-pointer" 
+                      : "btn-blue cursor-pointer"
                   }`}
                   title="Create Blank Budget"
                 >
@@ -4256,41 +4175,7 @@ if (newPlans && newPlans.length > 0) {
                   New EAC
                 </button>
 
-                {/* {selectedPlan && selectedPlan.plType === "NBBUD" && (
-                  // <button
-                  //   onClick={() => {
-                  //     setIsActionLoading(true);
-                  //     handleActionSelect(
-                  //       plans.findIndex((p) => p.plId === selectedPlan?.plId),
-                  //       "Create NB BUD"
-                  //     );
-                  //   }}
-                  //   className="btn1 btn-blue cursor-pointer"
-                  //   title="Create BUD"
-                  // >
-                  //   CREATE NB BUD
-                  // </button>
-//                   <button
-//   onClick={() => {
-//     setIsActionLoading(true);
-//     handleActionSelect(
-//       plans.findIndex((p) => p.plId === selectedPlan?.plId),
-//       "Create NB BUD"
-//     );
-//   }}
-  
-//   disabled={plans.length > 0 && plans.some(p => p.plType && p.version)} 
-//   className={`btn1 ${
-//     plans.length > 0 && plans.some(p => p.plType && p.version)
-//       ? "btn-disabled"
-//       : "btn-blue cursor-pointer"
-//   }`}
-  
-//   title="Create NB BUD"
-// >
-//   CREATE NB BUD
-// </button>
-{selectedPlan && (!selectedPlan.plType || selectedPlan.plType === "NBBUD") && (
+                {selectedPlan && selectedPlan.plType === "NBBUD" && (
                   <button
                     onClick={() => {
                       setIsActionLoading(true);
@@ -4299,73 +4184,32 @@ if (newPlans && newPlans.length > 0) {
                         "Create NB BUD"
                       );
                     }}
-                    disabled={
-                      !getButtonAvailability(selectedPlan, "Create NB BUD") || isActionLoading
-                    }
-                    className={`btn1 ${
-                      !getButtonAvailability(selectedPlan, "Create NB BUD") || isActionLoading
-                        ? "btn-disabled"
-                        : "btn-blue cursor-pointer"
-                    }`}
-                    title="Create NB BUD"
+                    className="btn1 btn-blue cursor-pointer"
+                    title="Create BUD"
                   >
-                    {isActionLoading ? "Processing..." : "CREATE NB BUD"}
+                    CREATE NB BUD
                   </button>
                 )}
-                )} */}
 
-                {/* CREATE NB BUD SECTION */}
-{selectedPlan && (!selectedPlan.plType || selectedPlan.plType === "NBBUD") && (
-  <button
-    onClick={() => {
-      setIsActionLoading(true);
-      handleActionSelect(
-        plans.findIndex((p) => p.plId === selectedPlan?.plId),
-        "Create NB BUD"
-      );
-    }}
-    disabled={
-      !getButtonAvailability(selectedPlan, "Create NB BUD") || isActionLoading
-    }
-    className={`btn1 ${
-      !getButtonAvailability(selectedPlan, "Create NB BUD") || isActionLoading
-        ? "btn-disabled"
-        : "btn-blue cursor-pointer"
-    }`}
-    title="Create NB BUD"
-  >
-    {isActionLoading ? "Processing..." : "CREATE NB BUD"}
-  </button>
-)}
+               
 
                 <button
-                  onClick={() => {
-                    setIsActionLoading(true);
-                    handleActionSelect(
-                      plans.findIndex((p) => p.plId === selectedPlan?.plId),
-                      "Delete"
-                    );
-                  }}
-                  disabled={
-                    !currentPlan ||
-                    selectedPlan.isApproved ||
-                    !getButtonAvailability(currentPlan, "Delete") ||
-                    !getMasterAndRelatedProjects(plans, currentPlan?.projId)
-                      .sameLevelBud
-                  }
-                  className={`btn1 ${
-                    !currentPlan ||
-                    currentPlan.isApproved ||
-                    !getButtonAvailability(currentPlan, "Delete") ||
-                    !getMasterAndRelatedProjects(plans, currentPlan?.projId)
-                      .sameLevelBud
-                      ? "btn-disabled"
-                      : "btn-red cursor-pointer"
-                  }`}
-                  title="Delete Selected Plan"
-                >
-                  Delete
-                </button>
+  onClick={() => {
+   
+    if (!selectedPlan) return; 
+    onOpenDetails?.();
+  }}
+  
+  disabled={!selectedPlan || isActionLoading} 
+  className={`btn1 ${
+    !selectedPlan || isActionLoading 
+      ? "btn-disabled" 
+      : "btn-blue cursor-pointer"
+  }`}
+  title="View plan details"
+>
+  Detail
+</button>
 
                 <button
                   onClick={() => handleTopButtonToggle("isCompleted")}
@@ -4376,8 +4220,8 @@ if (newPlans && newPlans.length > 0) {
                     getTopButtonDisabled("isCompleted") || isActionLoading
                       ? "btn-disabled"
                       : getCurrentPlan()?.status === "Submitted"
-                      ? "btn-orange"
-                      : "btn-blue cursor-pointer"
+                        ? "btn-orange cursor-pointer"
+                        : "btn-blue cursor-pointer"
                   }`}
                   title={
                     getCurrentPlan()?.status === "Submitted"
@@ -4388,8 +4232,8 @@ if (newPlans && newPlans.length > 0) {
                   {isActionLoading
                     ? "Processing..."
                     : getCurrentPlan()?.status === "Submitted"
-                    ? "Unsubmit"
-                    : "Submit"}
+                      ? "Unsubmit"
+                      : "Submit"}
                 </button>
 
                 <button
@@ -4401,9 +4245,9 @@ if (newPlans && newPlans.length > 0) {
                     getTopButtonDisabled("isApproved") || isActionLoading
                       ? "btn-disabled"
                       : getCurrentPlan()?.status === "Approved" ||
-                        getCurrentPlan()?.finalVersion
-                      ? "btn-orange"
-                      : "btn-blue cursor-pointer"
+                          getCurrentPlan()?.finalVersion
+                        ? "btn-orange cursor-pointer"
+                        : "btn-blue cursor-pointer"
                   }`}
                   title={
                     getCurrentPlan()?.status === "Approved"
@@ -4414,9 +4258,9 @@ if (newPlans && newPlans.length > 0) {
                   {isActionLoading
                     ? "Processing..."
                     : getCurrentPlan()?.status === "Approved" ||
-                      getCurrentPlan()?.finalVersion
-                    ? "Unapprove"
-                    : "Approve"}
+                        getCurrentPlan()?.finalVersion
+                      ? "Unapprove"
+                      : "Approve"}
                 </button>
 
                 <button
@@ -4428,8 +4272,8 @@ if (newPlans && newPlans.length > 0) {
                     getTopButtonDisabled("finalVersion") || isActionLoading
                       ? "btn-disabled"
                       : getCurrentPlan()?.finalVersion
-                      ? "btn-orange"
-                      : "btn-blue cursor-pointer"
+                        ? "btn-orange cursor-pointer"
+                        : "btn-blue cursor-pointer"
                   }`}
                   title={
                     getCurrentPlan()?.finalVersion ? "Unconclude" : "Conclude"
@@ -4438,8 +4282,8 @@ if (newPlans && newPlans.length > 0) {
                   {isActionLoading
                     ? "Processing..."
                     : getCurrentPlan()?.finalVersion
-                    ? "Unconclude"
-                    : "Conclude"}
+                      ? "Unconclude"
+                      : "Conclude"}
                 </button>
 
                 <button
@@ -4451,7 +4295,7 @@ if (newPlans && newPlans.length > 0) {
                   className={`btn1 ${
                     getCalcButtonDisabled() ? "btn-disabled" : "btn-blue cursor-pointer"
                   }`}
-                  title="Calculate cursor-pointer"
+                  title="Calculate"
                 >
                   Calc
                 </button>
@@ -4484,58 +4328,49 @@ if (newPlans && newPlans.length > 0) {
 >
   Save Dates
 </button> */}
-<button
-  onClick={handleSaveDatesClick}
-  disabled={isActionLoading || isSaveDatesDisabled()}
-  className={`btn1 ${
-    isActionLoading || isSaveDatesDisabled() ? "btn-disabled" : "btn-blue cursor-pointer"
-  }`}
-  title="Save Project Dates"
->
-  Save Date
-</button>
+                <button
+                  onClick={handleSaveDatesClick}
+                  disabled={isActionLoading || isSaveDatesDisabled()}
+                  className={`btn1 ${
+                    isActionLoading || isSaveDatesDisabled()
+                      ? "btn-disabled"
+                      : "btn-blue cursor-pointer"
+                  }`}
+                  title="Save Project Dates"
+                >
+                  Save Date
+                </button>
 
-{/* <button
-  onClick={() => {
-    if (!selectedPlan) {
-      toast.info("Please select a plan first.", {
-        toastId: "no-plan-selected",
-        autoClose: 3000,
-      });
-      return;
-    }
-    onOpenDetails?.();
-  }}
-  disabled={!selectedPlan}
-  className="btn1 btn-blue cursor-pointer"   // or same classes as your other toolbar buttons
-  title="View plan details"
->
-  Detail
-</button> */}
+                 <button
+                  onClick={() => {
+                    setIsActionLoading(true);
+                    handleActionSelect(
+                      plans.findIndex((p) => p.plId === selectedPlan?.plId),
+                      "Delete"
+                    );
+                  }}
+                  disabled={
+                    !currentPlan ||
+                    selectedPlan.isApproved ||
+                    !getButtonAvailability(currentPlan, "Delete") ||
+                    !getMasterAndRelatedProjects(plans, currentPlan?.projId)
+                      .sameLevelBud
+                  }
+                  className={`btn1 ${
+                    !currentPlan ||
+                    currentPlan.isApproved ||
+                    !getButtonAvailability(currentPlan, "Delete") ||
+                    !getMasterAndRelatedProjects(plans, currentPlan?.projId)
+                      .sameLevelBud
+                      ? "btn-disabled"
+                      : "btn-red cursor-pointer"
+                  }`}
+                  title="Delete Selected Plan"
+                >
+                  Delete
+                </button>
 
-<button
-  onClick={() => {
-    if (!selectedPlan) {
-      toast.info("Please select a plan first.");
-      return;
-    }
-    onOpenDetails?.();
-  }}
-  
-  disabled={!selectedPlan} 
- 
-  className={`btn1 ${
-    !selectedPlan 
-      ? "btn-disabled" 
-      : "btn-blue cursor-pointer"
-  }`}
-  title="View plan details"
->
-  Detail
-</button>
-
-
-
+              
               </>
             )}
           </div>
@@ -4625,23 +4460,23 @@ if (newPlans && newPlans.length > 0) {
               showNewBusinessPopup ? "blur-sm pointer-events-none" : ""
             }`}
           >
-            <table className="table">
-              <thead className="thead">
+            <table className="min-w-full table-auto divide-y divide-gray-200">
+              <thead className="bg-gray-200 sticky top-0">
                 <tr>
-                  <th className="th-thead">
+                  <th className="px-4 py-2 text-center text-xs font-bold text-gray-600 capitalize tracking-wider">
                     Export
                   </th>
                   {columns.map((col) => (
                     <th
                       key={col}
-                      className="th-thead"
+                      className="px-4 py-2 text-xs font-bold text-gray-600 capitalize tracking-widern whitespace-nowrap text-center"
                     >
                       {COLUMN_LABELS[col] || col}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="tbody">
+              <tbody className="bg-white divide-y divide-gray-100">
                 {loading ? (
                   <tr>
                     <td colSpan={columns.length}>
@@ -4808,25 +4643,28 @@ if (newPlans && newPlans.length > 0) {
                                 )}
                               </span>
                             )
-                          ): col === "templateId" ? (
-    <select
-      value={plan.templateId || 0}
-      onChange={(e) => handleTemplateChange(plan, e.target.value)}
-      // className="border border-gray-300 rounded px-1 py-0.5 text-xs"
-       disabled={plan.status !== "In Progress"}
-    className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${
-      plan.status !== "In Progress" ? "cursor-not-allowed" : ""
-    }`}
-    >
-      <option value={0}>Select</option>
-      {templates.map((t) => (
-        <option key={t.id} value={t.id}>
-          {t.templateCode}
-        </option>
-      ))}
-    </select>
-  )
-                          : col === "versionCode" ? (
+                          ) : col === "templateId" ? (
+                            <select
+                              value={plan.templateId || 0}
+                              onChange={(e) =>
+                                handleTemplateChange(plan, e.target.value)
+                              }
+                              // className="border border-gray-300 rounded px-1 py-0.5 text-xs"
+                              disabled={plan.status !== "In Progress"}
+                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${
+                                plan.status !== "In Progress"
+                                  ? "cursor-not-allowed"
+                                  : ""
+                              }`}
+                            >
+                              <option value={0}>Select</option>
+                              {templates.map((t) => (
+                                <option key={t.id} value={t.id}>
+                                  {t.templateCode}
+                                </option>
+                              ))}
+                            </select>
+                          ) : col === "versionCode" ? (
                             <input
                               type="text"
                               value={
@@ -4908,12 +4746,12 @@ if (newPlans && newPlans.length > 0) {
             plan.status === "Submitted"
               ? "bg-yellow-100 text-black"
               : plan.status === "In Progress"
-              ? "bg-red-100 text-black"
-              : plan.status === "Approved"
-              ? "bg-green-100 text-black"
-              : plan.status === "Concluded"
-              ? "bg-blue-200 text-black"
-              : ""
+                ? "bg-red-100 text-black"
+                : plan.status === "Approved"
+                  ? "bg-green-100 text-black"
+                  : plan.status === "Concluded"
+                    ? "bg-blue-200 text-black"
+                    : ""
           }
         `}
                               style={{ minWidth: 90, textAlign: "center" }}
@@ -4952,4 +4790,3 @@ if (newPlans && newPlans.length > 0) {
 };
 
 export default ProjectPlanTable;
-

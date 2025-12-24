@@ -26,25 +26,11 @@ const UserOrgProjectMapping = () => {
   const [selectedGroupIdForOrgs, setSelectedGroupIdForOrgs] = useState("");
   const [selectedOrgsForGroup, setSelectedOrgsForGroup] = useState([]);
 
-  const [selectedUserIdForOrgs, setSelectedUserIdForOrgs] = useState("");
-  const [selectedOrgsForUser, setSelectedOrgsForUser] = useState([]);
-
   // UI state
-  const [activeMainTab, setActiveMainTab] = useState("projectUsers");
-  // "projectUsers" | "userGroups" | "groupOrgs" | "userOrgs"
-
+  const [activeMainTab, setActiveMainTab] = useState("projectUsers"); // "projectUsers" | "userGroups" | "groupOrgs"
   const [searchTermUsers, setSearchTermUsers] = useState("");
   const [searchTermGroups, setSearchTermGroups] = useState("");
   const [searchTermOrgs, setSearchTermOrgs] = useState("");
-  const [searchTermUserOrgs, setSearchTermUserOrgs] = useState("");
-
-  // Manage Groups form state
-const [editingGroupId, setEditingGroupId] = useState(null);
-const [groupCodeInput, setGroupCodeInput] = useState("");
-const [groupNameInput, setGroupNameInput] = useState("");
-const [groupDescription,setGroupDescription] = useState("")
-const [groupFormLoading, setGroupFormLoading] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(false);
   const [groupLoading, setGroupLoading] = useState(false);
@@ -52,175 +38,26 @@ const [groupFormLoading, setGroupFormLoading] = useState(false);
   const [projectLoading, setProjectLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // -----------------Manage Groups-----------
 
-  const [selectedGroupIdsForDelete, setSelectedGroupIdsForDelete] = useState([]);
-
-const toggleSelectedGroupForDelete = (id) => {
-  setSelectedGroupIdsForDelete((prev) =>
-    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-  );
-};
-
-const areAllGroupsSelected = (list) =>
-  list.length > 0 &&
-  list.every((g) => selectedGroupIdsForDelete.includes(g.orgGroupId));
-
-const toggleSelectAllGroups = (list) => {
-  if (areAllGroupsSelected(list)) {
-    setSelectedGroupIdsForDelete([]);
-  } else {
-    setSelectedGroupIdsForDelete(list.map((g) => g.orgGroupId));
-  }
-};
-
-
-  const resetGroupForm = () => {
-  setEditingGroupId(null);
-  setGroupCodeInput("");
-  setGroupNameInput("");
-  setGroupDescription("");
-};
-
-const startEditGroup = (g) => {
-  setEditingGroupId(g.orgGroupId);
-  setGroupCodeInput(g.orgGroupCode || "");
-  setGroupNameInput(g.orgGroupName || "");
-  setGroupDescription(g.description || "");
-};
-
-const handleCreateOrUpdateGroup = async () => {
-  if (!groupCodeInput.trim() || !groupNameInput.trim()) {
-    toast.warn("Group code and name are required.");
-    return;
-  }
-
+   const getCurrentUserContext = () => {
   try {
-    setGroupFormLoading(true);
-
-    if (editingGroupId == null) {
-      // CREATE
-      await axios.post(`${backendUrl}/api/user-projects/OrgGroups`, {
-        orgGroupCode: groupCodeInput.trim(),
-        orgGroupName: groupNameInput.trim(),
-        description: groupDescription.trim(),
-        isActive: true,
-      });
-      toast.success("Group created.");
-    } else {
-      // UPDATE
-      await axios.put(
-        `${backendUrl}/api/user-projects/OrgGroups/${editingGroupId}`,
-        {
-          orgGroupId: editingGroupId,
-          orgGroupCode: groupCodeInput.trim(),
-          orgGroupName: groupNameInput.trim(),
-          description: groupDescription.trim(),
-          isActive: true,
-        }
-      );
-      toast.success("Group updated.");
-    }
-
-    // Refresh list
-    const groupsRes = await axios.get(
-  `${backendUrl}/api/user-projects/GetGroups`
-);
-const groupData = applyGroupSorting(groupsRes.data);
-setGroups(groupData);
-setGroupOptions(
-  groupData.map((g) => ({
-    value: g.orgGroupId,
-    label: `${g.orgGroupId} - ${g.orgGroupName || ""}`,
-  }))
-);
-
-
-    resetGroupForm();
-  } catch (e) {
-    console.error("Save group failed", e);
-    // toast.error("Failed to save group.");
-     const apiMessage =
-    e?.response?.data?.message ||
-    e?.response?.data?.title ||          // common for ASP.NET
-    (typeof e?.response?.data === "string"
-      ? e.response.data
-      : null);
-
-  if (apiMessage) {
-    toast.error(apiMessage);            // e.g. "OrgGroupCode already exists."
-  } else {
-    toast.error("Failed to save group.");
-  }
-  } finally {
-    setGroupFormLoading(false);
-  }
-};
- 
-
-const handleBulkDeleteGroups = async () => {
-  if (selectedGroupIdsForDelete.length === 0) {
-    toast.warn("Select at least one group to delete.");
-    return;
-  }
-  if (!window.confirm(`Delete ${selectedGroupIdsForDelete.length} groups?`)) {
-    return;
-  }
-
-  try {
-    setGroupFormLoading(true);
-
-    // ✅ single bulk call with array [1,2,...]
-    await axios.post(
-      `${backendUrl}/api/user-projects/OrgGroups/BulkDelete`,
-      selectedGroupIdsForDelete
-    );
-    // if your API expects { ids: [...] } then:
-    // await axios.post(`${backendUrl}/api/user-projects/OrgGroups/BulkDelete`, {
-    //   ids: selectedGroupIdsForDelete,
-    // });
-
-    toast.success("Selected groups deleted.");
-
-    const groupsRes = await axios.get(
-      `${backendUrl}/api/user-projects/GetGroups`
-    );
-    const groupData = applyGroupSorting(groupsRes.data);
-setGroups(groupData);
-setGroupOptions(
-  groupData.map((x) => ({
-    value: x.orgGroupId,
-    label: `${x.orgGroupId} - ${x.orgGroupName || ""}`,
-  }))
-);
-    setSelectedGroupIdsForDelete([]);
-
-    if (
-      editingGroupId &&
-      !groupData.some((g) => g.orgGroupId === editingGroupId)
-    ) {
-      resetGroupForm();
-    }
-  } catch (e) {
-    console.error("Bulk delete groups failed", e);
-    toast.error("Failed to delete selected groups.");
-  } finally {
-    setGroupFormLoading(false);
+    const userString = localStorage.getItem("currentUser");
+    if (!userString) return { userId: "", role: "" };
+    const userObj = JSON.parse(userString);
+    return {
+      userId: userObj.userId  ?? "",
+      role: userObj.role ?? "",
+    };
+  } catch {
+    return { userId: "", role: "" };
   }
 };
 
-//Sort new created at the top
-const applyGroupSorting = (groupData) => {
-  // assuming orgGroupId is incremental; use createdAt if you prefer
-  return [...(groupData || [])].sort(
-    (a, b) => (b.orgGroupId ?? 0) - (a.orgGroupId ?? 0)
-    // or: (new Date(b.createdAt)) - (new Date(a.createdAt))
-  );
-};
 
-
+  const { userId, role } = getCurrentUserContext();
 
   // ---------- Fetch base lists on mount ----------
+
   useEffect(() => {
     const fetchBaseData = async () => {
       try {
@@ -230,7 +67,8 @@ const applyGroupSorting = (groupData) => {
         setOrgLoading(true);
 
         // Projects
-        const projRes = await fetch(`${backendUrl}/Project/GetAllProjects`);
+        const projRes = await fetch(`${backendUrl}/Project/GetAllProjectsByUser/${userId}
+ `);
         if (!projRes.ok) throw new Error("Project fetch failed");
         const projData = await projRes.json();
         setProjects(projData);
@@ -254,18 +92,18 @@ const applyGroupSorting = (groupData) => {
           }))
         );
 
-        // Groups
-        const groupsRes = await axios.get(
-          `${backendUrl}/api/user-projects/GetGroups`
-        );
-        const groupData = groupsRes.data || [];
-        setGroups(groupData);
-        setGroupOptions(
-          groupData.map((g) => ({
-            value: g.orgGroupId,
-            label: `${g.orgGroupId} - ${g.orgGroupName || ""}`,
-          }))
-        );
+        // ✅ Groups – use api/user-projects/GetGroups
+       const groupsRes = await axios.get(
+  `${backendUrl}/api/user-projects/GetGroups`
+);
+const groupData = groupsRes.data || [];
+setGroups(groupData);
+setGroupOptions(
+  groupData.map((g) => ({
+    value: g.orgGroupId,                       // ✅ correct ID
+    label: `${g.orgGroupId} - ${g.orgGroupName || ""}`, // ✅ show id + name
+  }))
+);
 
         // Orgs
         const orgRes = await axios.get(
@@ -288,6 +126,7 @@ const applyGroupSorting = (groupData) => {
   }, []);
 
   // ---------- Mode 1: Project ↔ Users ----------
+
   useEffect(() => {
     if (!selectedProjectId) {
       setSelectedUsersForProject([]);
@@ -321,12 +160,6 @@ const applyGroupSorting = (groupData) => {
       .toLowerCase()
       .includes(searchTermUsers.toLowerCase())
   );
-  const sortedUsersForProject = [...filteredUsersForProject].sort((a, b) => {
-    const aSel = selectedUsersForProject.includes(a.userId);
-    const bSel = selectedUsersForProject.includes(b.userId);
-    if (aSel === bSel) return 0;
-    return aSel ? -1 : 1;
-  });
 
   const toggleUserForProject = (userId) => {
     setSelectedUsersForProject((prev) =>
@@ -338,16 +171,21 @@ const applyGroupSorting = (groupData) => {
 
   const saveProjectUsers = async () => {
     if (!selectedProjectId) {
-      toast.warn("Select a project first.");
+      // alert("Select a project first.");
+      toast.warn("Select a project first.")
       return;
     }
     try {
       setLoading(true);
-      await axios.post(`${backendUrl}/api/user-projects/bulk-sync`, {
-        projId: selectedProjectId,
-        userIds: selectedUsersForProject,
-      });
-      toast.success("Project ↔ Users mapping updated.");
+      await axios.post(
+        `${backendUrl}/api/user-projects/bulk-sync`,
+        {
+          projId: selectedProjectId,
+          userIds: selectedUsersForProject,
+        }
+      );
+      // alert("Project ↔ Users mapping updated.");
+      toast.success("Project ↔ Users mapping updated.")
 
       const mappedRes = await axios.get(
         `${backendUrl}/api/user-projects/users/${selectedProjectId}`
@@ -359,13 +197,15 @@ const applyGroupSorting = (groupData) => {
       setSelectedUsersForProject(mappedIds);
     } catch (e) {
       console.error("Save project-users failed", e);
-      toast.error("Failed to update project-users mapping.");
+      // alert("Failed to update project-users mapping.");
+      toast.error("Failed to update project-users mapping.")
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------- Mode 2: User ↔ Groups ----------
+  // ---------- Mode 2: User ↔ Groups (fixed to use GetGroups) ----------
+
   useEffect(() => {
     if (!selectedUserIdForGroups) {
       setSelectedGroupsForUser([]);
@@ -373,52 +213,54 @@ const applyGroupSorting = (groupData) => {
     }
 
     const fetchGroupsForUser = async () => {
-      setGroupLoading(true);
-      try {
-        const res = await axios.get(
-          `${backendUrl}/api/user-projects/Groups/${selectedUserIdForGroups}`
-        );
-        const mappedGroups = res.data || [];
-        const mappedIds = Array.isArray(mappedGroups)
-          ? mappedGroups.map((g) =>
-              typeof g === "object" ? g.orgGroupId : g
-            )
-          : [];
-        setSelectedGroupsForUser(mappedIds);
-      } catch (e) {
-        console.error("Fetch groups for user failed", e);
-        setSelectedGroupsForUser([]);
-      } finally {
-        setGroupLoading(false);
-      }
-    };
+  setGroupLoading(true);
+  try {
+    // Get mapped groups for that user
+    const res = await axios.get(
+      `${backendUrl}/api/user-projects/Groups/${selectedUserIdForGroups}`
+    );
+
+    const mappedGroups = res.data || [];
+    // mappedGroups = [{ orgGroupId: 2, userId: 1, ... }, ...]
+    const mappedIds = Array.isArray(mappedGroups)
+      ? mappedGroups.map((g) =>
+          typeof g === "object" ? g.orgGroupId : g
+        )
+      : [];
+
+    // All groups list already in state; just mark mappedIds as checked
+    setSelectedGroupsForUser(mappedIds);
+  } catch (e) {
+    console.error("Fetch groups for user failed", e);
+    setSelectedGroupsForUser([]);
+  } finally {
+    setGroupLoading(false);
+  }
+};
+
 
     fetchGroupsForUser();
   }, [selectedUserIdForGroups]);
 
   const filteredGroupsForUser = groups.filter((g) =>
-    `${g.orgGroupId} ${g.orgGroupName || ""}`
-      .toLowerCase()
-      .includes(searchTermGroups.toLowerCase())
-  );
-  const sortedGroupsForUser = [...filteredGroupsForUser].sort((a, b) => {
-    const aSel = selectedGroupsForUser.includes(a.orgGroupId);
-    const bSel = selectedGroupsForUser.includes(b.orgGroupId);
-    if (aSel === bSel) return 0;
-    return aSel ? -1 : 1;
-  });
+  `${g.orgGroupId} ${g.orgGroupName || ""}`
+    .toLowerCase()
+    .includes(searchTermGroups.toLowerCase())
+);
+
 
   const toggleGroupForUser = (orgGroupId) => {
-    setSelectedGroupsForUser((prev) =>
-      prev.includes(orgGroupId)
-        ? prev.filter((id) => id !== orgGroupId)
-        : [...prev, orgGroupId]
-    );
-  };
+  setSelectedGroupsForUser((prev) =>
+    prev.includes(orgGroupId)
+      ? prev.filter((id) => id !== orgGroupId)
+      : [...prev, orgGroupId]
+  );
+};
 
   const saveUserGroups = async () => {
     if (!selectedUserIdForGroups) {
-      toast.warn("Select a user first.");
+      // alert("Select a user first.");
+      toast.warn("Select a user first.")
       return;
     }
     try {
@@ -426,31 +268,34 @@ const applyGroupSorting = (groupData) => {
       await axios.post(
         `${backendUrl}/api/user-projects/BulkSyncUsersGroups`,
         {
-          userId: selectedUserIdForGroups,
-          groupIds: selectedGroupsForUser,
+           userId: selectedUserIdForGroups,
+    groupIds: selectedGroupsForUser,
         }
       );
-      toast.success("User ↔ Groups mapping updated.");
+      // alert("User ↔ Groups mapping updated.");
+      toast.success("User ↔ Groups mapping updated.")
 
       const res = await axios.get(
         `${backendUrl}/api/user-projects/Groups/${selectedUserIdForGroups}`
       );
-      const mappedGroups = res.data || [];
-      const mappedIds = Array.isArray(mappedGroups)
-        ? mappedGroups.map((g) =>
-            typeof g === "object" ? g.orgGroupId : g
-          )
-        : [];
-      setSelectedGroupsForUser(mappedIds);
+     const mappedGroups = res.data || [];
+const mappedIds = Array.isArray(mappedGroups)
+  ? mappedGroups.map((g) =>
+      typeof g === "object" ? g.orgGroupId : g
+    )
+  : [];
+setSelectedGroupsForUser(mappedIds);
     } catch (e) {
       console.error("Save user-groups failed", e);
-      toast.error("Failed to update user-groups mapping.");
+      // alert("Failed to update user-groups mapping.");
+      toast.error("Failed to update user-groups mapping.")
     } finally {
       setLoading(false);
     }
   };
 
   // ---------- Mode 3: Group ↔ Orgs ----------
+
   useEffect(() => {
     if (!selectedGroupIdForOrgs) {
       setSelectedOrgsForGroup([]);
@@ -465,9 +310,7 @@ const applyGroupSorting = (groupData) => {
         );
         const mappedOrgs = res.data || [];
         const mappedIds = Array.isArray(mappedOrgs)
-          ? mappedOrgs.map((o) =>
-              typeof o === "object" ? o.orgId : o
-            )
+          ? mappedOrgs.map((o) => (typeof o === "object" ? o.orgId : o))
           : [];
         setSelectedOrgsForGroup(mappedIds);
       } catch (e) {
@@ -486,12 +329,6 @@ const applyGroupSorting = (groupData) => {
       .toLowerCase()
       .includes(searchTermOrgs.toLowerCase())
   );
-  const sortedOrgsForGroup = [...filteredOrgsForGroup].sort((a, b) => {
-    const aSel = selectedOrgsForGroup.includes(a.orgId);
-    const bSel = selectedOrgsForGroup.includes(b.orgId);
-    if (aSel === bSel) return 0;
-    return aSel ? -1 : 1;
-  });
 
   const toggleOrgForGroup = (orgId) => {
     setSelectedOrgsForGroup((prev) =>
@@ -503,7 +340,8 @@ const applyGroupSorting = (groupData) => {
 
   const saveGroupOrgs = async () => {
     if (!selectedGroupIdForOrgs) {
-      toast.warn("Select a group first.");
+      // alert("Select a group first.");
+      toast.warn("Select a group first.")
       return;
     }
     try {
@@ -515,308 +353,56 @@ const applyGroupSorting = (groupData) => {
           orgIds: selectedOrgsForGroup,
         }
       );
-      toast.success("Group ↔ Orgs mapping updated.");
+      // alert("Group ↔ Orgs mapping updated.");
+      toast.success("Group ↔ Orgs mapping updated."
+
+      )
 
       const res = await axios.get(
         `${backendUrl}/api/user-projects/Orgs/${selectedGroupIdForOrgs}`
       );
       const mappedOrgs = res.data || [];
       const mappedIds = Array.isArray(mappedOrgs)
-        ? mappedOrgs.map((o) =>
-            typeof o === "object" ? o.orgId : o
-          )
+        ? mappedOrgs.map((o) => (typeof o === "object" ? o.orgId : o))
         : [];
       setSelectedOrgsForGroup(mappedIds);
     } catch (e) {
       console.error("Save group-orgs failed", e);
-      toast.error("Failed to update group-orgs mapping.");
+      // alert("Failed to update group-orgs mapping.");
+      toast.error("Failed to update group-orgs mapping.")
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------- Mode 4: User ↔ Orgs ----------
-  useEffect(() => {
-    if (!selectedUserIdForOrgs) {
-      setSelectedOrgsForUser([]);
-      return;
-    }
+// sort
+// AFTER filteredUsersForProject
+const sortedUsersForProject = [...filteredUsersForProject].sort((a, b) => {
+  const aSel = selectedUsersForProject.includes(a.userId);
+  const bSel = selectedUsersForProject.includes(b.userId);
+  if (aSel === bSel) return 0;
+  return aSel ? -1 : 1; // selected first
+});
 
-    const fetchOrgsForUser = async () => {
-      setOrgLoading(true);
-      try {
-        const res = await axios.get(
-          `${backendUrl}/api/user-projects/Orgs/${selectedUserIdForOrgs}`
-        );
-        const mappedOrgs = res.data || [];
-        const mappedIds = Array.isArray(mappedOrgs)
-          ? mappedOrgs.map((o) =>
-              typeof o === "object" ? o.orgId : o
-            )
-          : [];
-        setSelectedOrgsForUser(mappedIds);
-      } catch (e) {
-        console.error("Fetch orgs for user failed", e);
-        setSelectedOrgsForUser([]);
-      } finally {
-        setOrgLoading(false);
-      }
-    };
+// AFTER filteredGroupsForUser
+const sortedGroupsForUser = [...filteredGroupsForUser].sort((a, b) => {
+  const aSel = selectedGroupsForUser.includes(a.orgGroupId);
+  const bSel = selectedGroupsForUser.includes(b.orgGroupId);
+  if (aSel === bSel) return 0;
+  return aSel ? -1 : 1;
+});
 
-    fetchOrgsForUser();
-  }, [selectedUserIdForOrgs]);
-
-  const filteredOrgsForUser = orgs.filter((o) =>
-    `${o.orgId} ${o.orgName || ""}`
-      .toLowerCase()
-      .includes(searchTermUserOrgs.toLowerCase())
-  );
-  const sortedOrgsForUser = [...filteredOrgsForUser].sort((a, b) => {
-    const aSel = selectedOrgsForUser.includes(a.orgId);
-    const bSel = selectedOrgsForUser.includes(b.orgId);
-    if (aSel === bSel) return 0;
-    return aSel ? -1 : 1;
-  });
-
-  const toggleOrgForUser = (orgId) => {
-    setSelectedOrgsForUser((prev) =>
-      prev.includes(orgId)
-        ? prev.filter((id) => id !== orgId)
-        : [...prev, orgId]
-    );
-  };
-
-  const saveUserOrgs = async () => {
-    if (!selectedUserIdForOrgs) {
-      toast.warn("Select a user first.");
-      return;
-    }
-    try {
-      setLoading(true);
-      await axios.post(
-        `${backendUrl}/api/user-projects/BulkSyncUsersOrgs`,
-        {
-          userId: selectedUserIdForOrgs,
-          orgIds: selectedOrgsForUser,
-        }
-      );
-      toast.success("User ↔ Orgs mapping updated.");
-
-      const res = await axios.get(
-        `${backendUrl}/api/user-projects/Orgs/${selectedUserIdForOrgs}`
-      );
-      const mappedOrgs = res.data || [];
-      const mappedIds = Array.isArray(mappedOrgs)
-        ? mappedOrgs.map((o) =>
-            typeof o === "object" ? o.orgId : o
-          )
-        : [];
-      setSelectedOrgsForUser(mappedIds);
-    } catch (e) {
-      console.error("Save user-orgs failed", e);
-      toast.error("Failed to update user-orgs mapping.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ---------Manage Groups------------
-const renderManageGroupsTab = () => {
-  const filteredGroups = groups.filter((g) =>
-    `${g.orgGroupId} ${g.orgGroupCode || ""} ${g.orgGroupName || ""}`
-      .toLowerCase()
-      .includes(searchTermGroups.toLowerCase())
-  );
-
-  const allSelected = areAllGroupsSelected(filteredGroups);
-
-  return (
-    <>
-      <div className="mb-6 bg-gray-50 p-4 rounded-xl border">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">
-          {editingGroupId ? "Edit Group" : "Create Group"}
-        </h3>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Group Code
-            </label>
-            <input
-              type="text"
-              value={groupCodeInput}
-              onChange={(e) => setGroupCodeInput(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-              placeholder="Group code"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Group Name
-            </label>
-            <input
-              type="text"
-              value={groupNameInput}
-              onChange={(e) => setGroupNameInput(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-              placeholder="Group name"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Description
-            </label>
-            <input
-              type="text"
-              value={groupDescription}
-              onChange={(e) => setGroupDescription(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-              placeholder="Description"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-3 justify-end mt-4">
-          {editingGroupId && (
-            <button
-              type="button"
-              onClick={resetGroupForm}
-              className="px-4 py-2 text-sm rounded border border-gray-300 text-gray-700 bg-white"
-              disabled={groupFormLoading}
-            >
-              Cancel
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={handleCreateOrUpdateGroup}
-            className="px-5 py-2 text-sm rounded bg-blue-600 text-white font-semibold disabled:opacity-60"
-            disabled={groupFormLoading}
-          >
-            {groupFormLoading
-              ? "Saving..."
-              : editingGroupId
-              ? "Update Group"
-              : "Create Group"}
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-gray-50 rounded-xl p-4 border">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Existing Groups
-          </h3>
-          <div className="flex items-center gap-3">
-            <input
-              type="text"
-              placeholder="Search by id, code, name..."
-              value={searchTermGroups}
-              onChange={(e) => setSearchTermGroups(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-1 text-sm w-64"
-            />
-            <button
-              type="button"
-              onClick={handleBulkDeleteGroups}
-              className="px-4 py-2 text-xs rounded border border-red-500 text-red-600 disabled:opacity-50"
-              disabled={groupFormLoading || selectedGroupIdsForDelete.length === 0}
-            >
-              Delete Selected ({selectedGroupIdsForDelete.length})
-            </button>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto max-h-80">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-white border-b">
-                <th className="px-3 py-2 text-left text-gray-500 text-xs w-10">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4"
-                    checked={allSelected}
-                    onChange={() => toggleSelectAllGroups(filteredGroups)}
-                  />
-                </th>
-                {/* <th className="px-3 py-2 text-left text-gray-500 text-xs">
-                  ID
-                </th> */}
-                <th className="px-3 py-2 text-left text-gray-500 text-xs">
-                  Code
-                </th>
-                <th className="px-3 py-2 text-left text-gray-500 text-xs">
-                  Name
-                </th>
-                <th className="px-3 py-2 text-left text-gray-500 text-xs">
-                  Description
-                </th>
-                <th className="px-3 py-2 text-right text-gray-500 text-xs">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredGroups.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-3 py-6 text-center text-gray-500"
-                  >
-                    No groups found.
-                  </td>
-                </tr>
-              ) : (
-                filteredGroups.map((g) => {
-                  const selected = selectedGroupIdsForDelete.includes(
-                    g.orgGroupId
-                  );
-                  return (
-                    <tr key={g.orgGroupId} className="hover:bg-gray-50">
-                      <td className="px-3 py-2">
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4"
-                          checked={selected}
-                          onChange={() =>
-                            toggleSelectedGroupForDelete(g.orgGroupId)
-                          }
-                        />
-                      </td>
-                      {/* <td className="px-3 py-2">{g.orgGroupId}</td> */}
-                      <td className="px-3 py-2">{g.orgGroupCode}</td>
-                      <td className="px-3 py-2">{g.orgGroupName}</td>
-                      <td className="px-3 py-2">{g.description}</td>
-                      <td className="px-3 py-2 text-right space-x-2">
-                        <button
-                          type="button"
-                          onClick={() => startEditGroup(g)}
-                          className="text-xs px-3 py-1 rounded border border-blue-500 text-blue-600"
-                        >
-                          Edit
-                        </button>
-                        {/* <button
-                          type="button"
-                          onClick={() => handleDeleteGroup(g)}
-                          className="text-xs px-3 py-1 rounded border border-red-500 text-red-600"
-                        >
-                          Delete
-                        </button> */}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </>
-  );
-};
+// AFTER filteredOrgsForGroup
+const sortedOrgsForGroup = [...filteredOrgsForGroup].sort((a, b) => {
+  const aSel = selectedOrgsForGroup.includes(a.orgId);
+  const bSel = selectedOrgsForGroup.includes(b.orgId);
+  if (aSel === bSel) return 0;
+  return aSel ? -1 : 1;
+});
 
 
+  // ---------- Render helpers (same as before, using new state) ----------
 
-  // ---------- Render helpers ----------
   const renderProjectUsersTab = () => (
     <>
       <div className="mb-6 bg-gray-50 p-4 rounded-xl border">
@@ -901,7 +487,7 @@ const renderManageGroupsTab = () => {
                     Loading users...
                   </td>
                 </tr>
-              ) : sortedUsersForProject.length === 0 ? (
+              ) : filteredUsersForProject.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
@@ -1032,7 +618,7 @@ const renderManageGroupsTab = () => {
                     Loading groups...
                   </td>
                 </tr>
-              ) : sortedGroupsForUser.length === 0 ? (
+              ) : filteredGroupsForUser.length === 0 ? (
                 <tr>
                   <td
                     colSpan={3}
@@ -1043,25 +629,21 @@ const renderManageGroupsTab = () => {
                 </tr>
               ) : (
                 sortedGroupsForUser.map((g) => {
-                  const selected = selectedGroupsForUser.includes(
-                    g.orgGroupId
-                  );
-                  return (
-                    <tr key={g.orgGroupId} className="hover:bg-gray-50">
-                      <td className="px-3 py-2">
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4"
-                          checked={selected}
-                          onChange={() => toggleGroupForUser(g.orgGroupId)}
-                        />
-                      </td>
-                      <td className="px-3 py-2">{g.orgGroupId}</td>
-                      <td className="px-3 py-2">
-                        {g.orgGroupName || "-"}
-                      </td>
-                    </tr>
-                  );
+                   const selected = selectedGroupsForUser.includes(g.orgGroupId);
+  return (
+    <tr key={g.orgGroupId} className="hover:bg-gray-50">
+      <td className="px-3 py-2">
+        <input
+          type="checkbox"
+          className="w-4 h-4"
+          checked={selected}
+          onChange={() => toggleGroupForUser(g.orgGroupId)}
+        />
+      </td>
+      <td className="px-3 py-2">{g.orgGroupId}</td>
+      <td className="px-3 py-2">{g.orgGroupName || "-"}</td>
+    </tr>
+  );  
                 })
               )}
             </tbody>
@@ -1164,7 +746,7 @@ const renderManageGroupsTab = () => {
                     Loading organizations...
                   </td>
                 </tr>
-              ) : sortedOrgsForGroup.length === 0 ? (
+              ) : filteredOrgsForGroup.length === 0 ? (
                 <tr>
                   <td
                     colSpan={3}
@@ -1211,151 +793,18 @@ const renderManageGroupsTab = () => {
     </>
   );
 
-  const renderUserOrgsTab = () => (
-    <>
-      <div className="mb-6 bg-gray-50 p-4 rounded-xl border">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          User <span className="text-red-500">*</span>
-        </label>
-        <Select
-          options={userOptions}
-          isLoading={userLoading}
-          value={
-            selectedUserIdForOrgs
-              ? userOptions.find((o) => o.value === selectedUserIdForOrgs)
-              : null
-          }
-          onChange={(opt) =>
-            setSelectedUserIdForOrgs(opt ? opt.value : "")
-          }
-          isSearchable
-          placeholder="Search & select a user"
-        />
-        {selectedUserIdForOrgs && (
-          <p className="mt-2 text-xs text-green-600">
-            Selected user: <strong>{selectedUserIdForOrgs}</strong>
-          </p>
-        )}
-      </div>
-
-      <div className="bg-gray-50 rounded-xl p-4 border mb-4">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Organizations for user
-          </h3>
-          <span className="text-sm text-blue-600">
-            {selectedOrgsForUser.length} selected
-          </span>
-        </div>
-
-        {selectedUserIdForOrgs && (
-          <div className="mb-3">
-            <input
-              type="text"
-              placeholder="Search organizations..."
-              value={searchTermUserOrgs}
-              onChange={(e) => setSearchTermUserOrgs(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-1 text-sm"
-            />
-          </div>
-        )}
-
-        <div className="overflow-x-auto max-h-80">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-white border-b">
-                <th className="px-3 py-2 w-10 text-left text-gray-500 text-xs">
-                  Select
-                </th>
-                <th className="px-3 py-2 text-left text-gray-500 text-xs">
-                  Org ID
-                </th>
-                <th className="px-3 py-2 text-left text-gray-500 text-xs">
-                  Org Name
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {!selectedUserIdForOrgs ? (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className="px-3 py-6 text-center text-gray-500"
-                  >
-                    Select a user to view organizations.
-                  </td>
-                </tr>
-              ) : orgLoading ? (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className="px-3 py-6 text-center text-gray-500"
-                  >
-                    Loading organizations...
-                  </td>
-                </tr>
-              ) : sortedOrgsForUser.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className="px-3 py-6 text-center text-gray-500"
-                  >
-                    No organizations found.
-                  </td>
-                </tr>
-              ) : (
-                sortedOrgsForUser.map((o) => {
-                  const selected = selectedOrgsForUser.includes(o.orgId);
-                  return (
-                    <tr key={o.orgId} className="hover:bg-gray-50">
-                      <td className="px-3 py-2">
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4"
-                          checked={selected}
-                          onChange={() => toggleOrgForUser(o.orgId)}
-                        />
-                      </td>
-                      <td className="px-3 py-2">{o.orgId}</td>
-                      <td className="px-3 py-2">
-                        {o.orgName || "-"}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          onClick={saveUserOrgs}
-          disabled={!selectedUserIdForOrgs || loading}
-          className="bg-blue-600 text-white px-6 py-2 rounded text-sm font-semibold disabled:opacity-60"
-        >
-          {loading ? "Saving..." : "Update User ↔ Orgs"}
-        </button>
-      </div>
-    </>
-  );
-
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-white rounded-2xl shadow ml-5">
+    <div className="p-6 max-w-6xl mx-auto bg-white rounded-2xl shadow">
       <h2 className="text-2xl font-bold mb-2">
         User, Group & Org Mapping
       </h2>
-      {error && (
-        <p className="text-sm text-red-600 mb-2">{error}</p>
-      )}
-
+     
       <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
             activeMainTab === "projectUsers"
-              ? "bg-white shadow text-blue-700 border border-blue-300 cursor-pointer"
-              : "text-gray-700 hover:bg-gray-200 cursor-pointer"
+              ? "bg-white shadow text-blue-700 border border-blue-300"
+              : "text-gray-700 hover:bg-gray-200"
           }`}
           onClick={() => setActiveMainTab("projectUsers")}
         >
@@ -1364,8 +813,8 @@ const renderManageGroupsTab = () => {
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
             activeMainTab === "userGroups"
-              ? "bg-white shadow text-blue-700 border border-blue-300 cursor-pointer"
-              : "text-gray-700 hover:bg-gray-200 cursor-pointer"
+              ? "bg-white shadow text-blue-700 border border-blue-300"
+              : "text-gray-700 hover:bg-gray-200"
           }`}
           onClick={() => setActiveMainTab("userGroups")}
         >
@@ -1374,41 +823,18 @@ const renderManageGroupsTab = () => {
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
             activeMainTab === "groupOrgs"
-              ? "bg-white shadow text-blue-700 border border-blue-300 cursor-pointer"
-              : "text-gray-700 hover:bg-gray-200 cursor-pointer"
+              ? "bg-white shadow text-blue-700 border border-blue-300"
+              : "text-gray-700 hover:bg-gray-200"
           }`}
           onClick={() => setActiveMainTab("groupOrgs")}
         >
           Group ↔ Orgs
         </button>
-        {/* <button
-          className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
-            activeMainTab === "userOrgs"
-              ? "bg-white shadow text-blue-700 border border-blue-300"
-              : "text-gray-700 hover:bg-gray-200"
-          }`}
-          onClick={() => setActiveMainTab("userOrgs")}
-        >
-          User ↔ Orgs
-        </button> */}
-        <button
-  className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
-    activeMainTab === "manageGroups"
-      ? "bg-white shadow text-blue-700 border border-blue-300 cursor-pointer"
-      : "text-gray-700 hover:bg-gray-200 cursor-pointer"
-  }`}
-  onClick={() => setActiveMainTab("manageGroups")}
->
-  Manage Groups
-</button>
-
       </div>
 
       {activeMainTab === "projectUsers" && renderProjectUsersTab()}
       {activeMainTab === "userGroups" && renderUserGroupsTab()}
       {activeMainTab === "groupOrgs" && renderGroupOrgsTab()}
-      {activeMainTab === "userOrgs" && renderUserOrgsTab()}
-      {activeMainTab === "manageGroups" && renderManageGroupsTab()}
     </div>
   );
 };

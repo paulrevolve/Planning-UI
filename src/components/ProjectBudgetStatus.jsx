@@ -432,61 +432,105 @@ const safeFormatDate = (value) => {
   //   }
   // };
   
-  const handlePlanSelect = (plan) => {
-    if (!plan) {
-      setSelectedPlan(null);
-      localStorage.removeItem("selectedPlan");
-      setActiveTab(null);
-      setForecastData([]);
-      setIsForecastLoading(false);
-      setAnalysisApiData([]);
-      setIsAnalysisLoading(false);
-      setAnalysisError(null);
-      return;
-    }
+//   const handlePlanSelect = (plan) => {
+//     if (!plan) {
+//       setSelectedPlan(null);
+//       localStorage.removeItem("selectedPlan");
+//       setActiveTab(null);
+//       setForecastData([]);
+//       setIsForecastLoading(false);
+//       setAnalysisApiData([]);
+//       setIsAnalysisLoading(false);
+//       setAnalysisError(null);
+//       return;
+//     }
 
-    // --- CRITICAL FIX START ---
-    // Use an explicit check for necessary updates (ID change or Date change)
-    // The previous JSON.stringify check was overly strict and caused the issue.
+//     // --- CRITICAL FIX START ---
+//     // Use an explicit check for necessary updates (ID change or Date change)
+//     // The previous JSON.stringify check was overly strict and caused the issue.
 
-    const isPlanIdentityChanged = 
-        !selectedPlan ||
-        selectedPlan.plId !== plan.plId ||
-        selectedPlan.projId !== plan.projId;
+//     const isPlanIdentityChanged = 
+//         !selectedPlan ||
+//         selectedPlan.plId !== plan.plId ||
+//         selectedPlan.projId !== plan.projId;
     
-    const hasDatesChanged = 
-        selectedPlan && 
-        (selectedPlan.projStartDt !== plan.projStartDt || selectedPlan.projEndDt !== plan.projEndDt);
+//     const hasDatesChanged = 
+//         selectedPlan && 
+//         (selectedPlan.projStartDt !== plan.projStartDt || selectedPlan.projEndDt !== plan.projEndDt);
 
-    // Retain the core logic structure: Update only if essential state changes.
-    if (isPlanIdentityChanged || hasDatesChanged) {
-    // --- CRITICAL FIX END ---
+//     // Retain the core logic structure: Update only if essential state changes.
+//     if (isPlanIdentityChanged || hasDatesChanged) {
+//     // --- CRITICAL FIX END ---
         
-      const project = {
-        projId: plan.projId || "",
-        projName: plan.projName || "",
-        // Crucial: Use the latest effective dates passed from the table
-        projStartDt: plan.projStartDt || "", 
-        projEndDt: plan.projEndDt || "",
-        // Retain existing properties for project object
-        orgId: plan.orgId || "",
-        fundedCost: plan.fundedCost || "",
-        fundedFee: plan.fundedFee || "",
-        fundedRev: plan.fundedRev || "",
-        revenue: plan.revenue || "",
-      };
+//       const project = {
+//         projId: plan.projId || "",
+//         projName: plan.projName || "",
+//         // Crucial: Use the latest effective dates passed from the table
+//         projStartDt: plan.projStartDt || "", 
+//         projEndDt: plan.projEndDt || "",
+//         // Retain existing properties for project object
+//         orgId: plan.orgId || "",
+//         fundedCost: plan.fundedCost || "",
+//         fundedFee: plan.fundedFee || "",
+//         fundedRev: plan.fundedRev || "",
+//         revenue: plan.revenue || "",
+//       };
 
-      setFilteredProjects([project]);
-      setRevenueAccount(plan.revenueAccount || "");
-      setSelectedPlan(plan); // The full plan object now has the correct dates
-      localStorage.setItem("selectedPlan", JSON.stringify(plan));
-      setForecastData([]);
-      setIsForecastLoading(false);
-      setAnalysisApiData([]);
-      setIsAnalysisLoading(false);
-      setAnalysisError(null);
-    }
-  };
+//       setFilteredProjects([project]);
+//       setRevenueAccount(plan.revenueAccount || "");
+//       setSelectedPlan(plan); // The full plan object now has the correct dates
+//       localStorage.setItem("selectedPlan", JSON.stringify(plan));
+//       setForecastData([]);
+//       setIsForecastLoading(false);
+//       setAnalysisApiData([]);
+//       setIsAnalysisLoading(false);
+//       setAnalysisError(null);
+//     }
+//   };
+
+const handlePlanSelect = (plan) => {
+    if (!plan) {
+      setSelectedPlan(null);
+      localStorage.removeItem("selectedPlan");
+      setActiveTab(null);
+      return;
+    }
+
+    // --- RUNTIME SYNC FIX ---
+    // We check if the plan identity OR any of the status fields have changed
+    const isDifferentPlan = !selectedPlan || selectedPlan.plId !== plan.plId;
+    
+    const hasStatusChanged = selectedPlan && (
+      selectedPlan.status !== plan.status ||
+      selectedPlan.isCompleted !== plan.isCompleted ||
+      selectedPlan.isApproved !== plan.isApproved ||
+      selectedPlan.finalVersion !== plan.finalVersion ||
+      selectedPlan.projStartDt !== plan.projStartDt ||
+      selectedPlan.projEndDt !== plan.projEndDt
+    );
+
+    if (isDifferentPlan || hasStatusChanged) {
+      const project = {
+        projId: plan.projId || "",
+        projName: plan.projName || "",
+        projStartDt: plan.projStartDt || "",
+        projEndDt: plan.projEndDt || "",
+        orgId: plan.orgId || "",
+        fundedCost: plan.fundedCost || "",
+        fundedFee: plan.fundedFee || "",
+        fundedRev: plan.fundedRev || "",
+        revenue: plan.revenue || "",
+      };
+
+      setFilteredProjects([project]);
+      setRevenueAccount(plan.revenueAccount || "");
+      setSelectedPlan(plan); // This now carries the fresh status
+      localStorage.setItem("selectedPlan", JSON.stringify(plan));
+      
+      // Optional: Clear analysis data to force reload with new status context
+      setAnalysisApiData([]); 
+    }
+  };
 
 // inside ProjectBudgetStatus
 // inside ProjectBudgetStatus
