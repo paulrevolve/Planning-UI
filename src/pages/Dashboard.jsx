@@ -558,9 +558,9 @@ const Dashboard = () => {
         >
           <NavigationSidebar onHoverChange={isSideBarOpen} />
         </div>
-{/* bg-gradient-to-b from-blue-100 to-white */}
+
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto bg-[#E6F2F5] p-2">
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-blue-100 to-white p-2">
           <Routes>
             <Route
               path="/"

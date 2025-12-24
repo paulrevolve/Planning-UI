@@ -11,6 +11,7 @@ import PLCComponent from "./PLCComponent";
 import FundingComponent from "./FundingComponent";
 import RevenueSetupComponent from "./RevenueSetupComponent";
 import RevenueCeilingComponent from "./RevenueCeilingComponent";
+import ProjectPoolCosts from "./ProjectPoolCosts";
 import { formatDate } from "./utils";
 import FinancialDashboard from "./FinancialDashboard";
 import Warning from "./Warning";
@@ -1013,14 +1014,14 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
      {/* HOURS TAB: hours + other cost together */}
 {viewMode === "details" && activeTab === "hours" && selectedPlan && (
   <div
-    className="relative p-2 sm:p-4 border-line min-h-[150px] scroll-mt-16"
+    className="relative p-2 sm:p-4  min-h-[150px] scroll-mt-16"
     ref={(el) => {
       hoursRefs.current[searchTerm] = el;
       amountsRefs.current[searchTerm] = el;
     }}
   >
     {/* shared project header + close */}
-    <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
+    {/* <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
       <button
         className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
         onClick={handleCloseTab}
@@ -1042,34 +1043,97 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
         </svg>
       </button>
 
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm">
-        <span>
-          <span className="font-semibold blue-text">Project ID: </span>
-          {selectedPlan.projId}
-        </span>
-        <span>
-          <span className="font-semibold blue-text">Type: </span>
-          {selectedPlan.plType || "N/A"}
-        </span>
-        <span>
-          <span className="font-semibold blue-text">Version: </span>
-          {selectedPlan.version || "N/A"}
-        </span>
-        <span>
-          <span className="font-semibold blue-text">Status: </span>
-          {selectedPlan.status || "N/A"}
-        </span>
-        <span>
-          <span className="font-semibold blue-text">Period of Performance: </span>
-          Start Date:{" "}
-          {selectedPlan.projStartDt
-            ? formatDate(selectedPlan.projStartDt)
-            : "N/A"}{" "}
-          | End Date:{" "}
-          {selectedPlan.projEndDt ? formatDate(selectedPlan.projEndDt) : "N/A"}
-        </span>
-      </div>
-    </div>
+     
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-r-md border-l-4" 
+     style={{ 
+        backgroundColor: "#e9f6fb", 
+        color: "#17414d", 
+        borderLeftColor: "#17414d" 
+     }}>
+  <span>
+    <span className="font-semibold">Project ID: </span>
+    {selectedPlan.projId}
+  </span>
+  <span>
+    <span className="font-semibold">Type: </span>
+    {selectedPlan.plType || "N/A"}
+  </span>
+  <span>
+    <span className="font-semibold">Version: </span>
+    {selectedPlan.version || "N/A"}
+  </span>
+  <span>
+    <span className="font-semibold">Status: </span>
+    {selectedPlan.status || "N/A"}
+  </span>
+  <span>
+    <span className="font-semibold">Period of Performance: </span>
+    Start Date:{" "}
+    {selectedPlan.projStartDt
+      ? formatDate(selectedPlan.projStartDt)
+      : "N/A"}{" "}
+    | End Date:{" "}
+    {selectedPlan.projEndDt ? formatDate(selectedPlan.projEndDt) : "N/A"}
+  </span>
+</div>
+    </div> */}
+
+    <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M6 18L18 6M6 6l12 12"
+      />
+    </svg>
+  </button>
+
+  {/* Project Info Details */}
+  <div className="flex flex-wrap items-center gap-x-6 pr-8">
+    <span>
+      <span className="font-semibold">Project ID: </span>
+      {selectedPlan.projId}
+    </span>
+    <span>
+      <span className="font-semibold">Type: </span>
+      {selectedPlan.plType || "N/A"}
+    </span>
+    <span>
+      <span className="font-semibold">Version: </span>
+      {selectedPlan.version || "N/A"}
+    </span>
+    <span>
+      <span className="font-semibold">Status: </span>
+      {selectedPlan.status || "N/A"}
+    </span>
+    <span>
+      <span className="font-semibold">Period of Performance: </span>
+      Start Date: {selectedPlan.projStartDt ? formatDate(selectedPlan.projStartDt) : "N/A"} | End Date: {selectedPlan.projEndDt ? formatDate(selectedPlan.projEndDt) : "N/A"}
+    </span>
+  </div>
+</div>
 
     {/* centered cards, outer div has NO overflow */}
     <div className="w-full mx-auto grid gap-4 md:grid-cols-1">
@@ -1115,6 +1179,18 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
           />
         </div>
       </div>
+
+      <div className="border border-gray-200 rounded-md shadow-sm bg-white">
+        <div className="px-2 pb-2">
+          <ProjectPoolCosts 
+            planId={selectedPlan.plId} 
+            startDate={selectedPlan.projStartDt} 
+            endDate={selectedPlan.projEndDt} 
+            fiscalYear={fiscalYear} 
+          />
+        </div>
+      </div>
+      
     </div>
   </div>
 )}

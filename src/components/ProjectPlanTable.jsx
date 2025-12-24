@@ -3866,60 +3866,115 @@ if (newPlans && newPlans.length > 0) {
     return dotCount;
   };
 
+  // const getActionOptions = (plan) => {
+  //   let options = ["None"];
+
+  //   if (!plan?.projId) {
+  //     return options;
+  //   }
+
+  //   let lockDotLevel = null;
+  //   const masterId = plan.projId.split(".")[0];
+
+  //   for (const p of plans) {
+  //     if (p.plType && p.projId?.startsWith(masterId)) {
+  //       lockDotLevel = getProjectDotLevel(p.projId);
+  //       break;
+  //     }
+  //   }
+
+  //   if (!plan.plType && !plan.version) {
+  //     const currentDotLevel = getProjectDotLevel(plan.projId);
+  //     const creationOptions = [
+  //       "None",
+  //       "Create Budget",
+  //       "Create Blank Budget",
+  //       "Create EAC",
+  //       "Create NB BUD"
+  //     ];
+
+  //     if (lockDotLevel === null) {
+  //       return creationOptions;
+  //     }
+
+  //     if (currentDotLevel === lockDotLevel) {
+  //       return creationOptions;
+  //     }
+
+  //     return options;
+  //   }
+
+  //   if (plan.status === "In Progress") options = ["None", "Delete"];
+  //   else if (plan.status === "Submitted")
+  //     // options = ["None", "Create Budget", "Create Blank Budget"];
+  //   options = ["None" ]
+  //   else if (plan.status === "Approved")
+  //     options = [
+  //       "None",
+  //       "Create Budget",
+  //       "Create Blank Budget",
+  //       "Create EAC",
+  //       "Delete",
+  //     ];
+  //   else if (plan.status === "Concluded")
+  //     options = ["None", "Create Budget", "Create Blank Budget", "Create EAC"];
+
+  //   return options;
+  // };
   const getActionOptions = (plan) => {
-    let options = ["None"];
+  let options = ["None"];
 
-    if (!plan?.projId) {
-      return options;
+  if (!plan?.projId) {
+    return options;
+  }
+
+  let lockDotLevel = null;
+  const masterId = plan.projId.split(".")[0];
+
+  for (const p of plans) {
+    if (p.plType && p.projId?.startsWith(masterId)) {
+      lockDotLevel = getProjectDotLevel(p.projId);
+      break;
+    }
+  }
+
+  if (!plan.plType && !plan.version) {
+    const currentDotLevel = getProjectDotLevel(plan.projId);
+    const creationOptions = [
+      "None",
+      "Create Budget",
+      "Create Blank Budget",
+      "Create EAC",
+      "Create NB BUD" // Added here to enable it for new projects
+    ];
+
+    if (lockDotLevel === null) {
+      return creationOptions;
     }
 
-    let lockDotLevel = null;
-    const masterId = plan.projId.split(".")[0];
-
-    for (const p of plans) {
-      if (p.plType && p.projId?.startsWith(masterId)) {
-        lockDotLevel = getProjectDotLevel(p.projId);
-        break;
-      }
+    if (currentDotLevel === lockDotLevel) {
+      return creationOptions;
     }
-
-    if (!plan.plType && !plan.version) {
-      const currentDotLevel = getProjectDotLevel(plan.projId);
-      const creationOptions = [
-        "None",
-        "Create Budget",
-        "Create Blank Budget",
-        "Create EAC",
-      ];
-
-      if (lockDotLevel === null) {
-        return creationOptions;
-      }
-
-      if (currentDotLevel === lockDotLevel) {
-        return creationOptions;
-      }
-
-      return options;
-    }
-
-    if (plan.status === "In Progress") options = ["None", "Delete"];
-    else if (plan.status === "Submitted")
-      // options = ["None", "Create Budget", "Create Blank Budget"];
-    options = ["None" ]
-    else if (plan.status === "Approved")
-      options = [
-        "None",
-        "Create Budget",
-        "Create Blank Budget",
-        "Create EAC",
-        "Delete",
-      ];
-    else if (plan.status === "Concluded")
-      options = ["None", "Create Budget", "Create Blank Budget", "Create EAC"];
 
     return options;
-  };
+  }
+
+  if (plan.status === "In Progress") options = ["None", "Delete"];
+  else if (plan.status === "Submitted")
+    options = ["None"];
+  else if (plan.status === "Approved")
+    options = [
+      "None",
+      "Create Budget",
+      "Create Blank Budget",
+      "Create EAC",
+      "Delete",
+    ];
+  else if (plan.status === "Concluded")
+    options = ["None", "Create Budget", "Create Blank Budget", "Create EAC"];
+
+  return options;
+};
 
   const getButtonAvailability = (plan, action) => {
     const options = getActionOptions(plan);
@@ -4201,7 +4256,41 @@ if (newPlans && newPlans.length > 0) {
                   New EAC
                 </button>
 
-                {selectedPlan && selectedPlan.plType === "NBBUD" && (
+                {/* {selectedPlan && selectedPlan.plType === "NBBUD" && (
+                  // <button
+                  //   onClick={() => {
+                  //     setIsActionLoading(true);
+                  //     handleActionSelect(
+                  //       plans.findIndex((p) => p.plId === selectedPlan?.plId),
+                  //       "Create NB BUD"
+                  //     );
+                  //   }}
+                  //   className="btn1 btn-blue cursor-pointer"
+                  //   title="Create BUD"
+                  // >
+                  //   CREATE NB BUD
+                  // </button>
+//                   <button
+//   onClick={() => {
+//     setIsActionLoading(true);
+//     handleActionSelect(
+//       plans.findIndex((p) => p.plId === selectedPlan?.plId),
+//       "Create NB BUD"
+//     );
+//   }}
+  
+//   disabled={plans.length > 0 && plans.some(p => p.plType && p.version)} 
+//   className={`btn1 ${
+//     plans.length > 0 && plans.some(p => p.plType && p.version)
+//       ? "btn-disabled"
+//       : "btn-blue cursor-pointer"
+//   }`}
+  
+//   title="Create NB BUD"
+// >
+//   CREATE NB BUD
+// </button>
+{selectedPlan && (!selectedPlan.plType || selectedPlan.plType === "NBBUD") && (
                   <button
                     onClick={() => {
                       setIsActionLoading(true);
@@ -4210,12 +4299,44 @@ if (newPlans && newPlans.length > 0) {
                         "Create NB BUD"
                       );
                     }}
-                    className="btn1 btn-blue cursor-pointer"
-                    title="Create BUD"
+                    disabled={
+                      !getButtonAvailability(selectedPlan, "Create NB BUD") || isActionLoading
+                    }
+                    className={`btn1 ${
+                      !getButtonAvailability(selectedPlan, "Create NB BUD") || isActionLoading
+                        ? "btn-disabled"
+                        : "btn-blue cursor-pointer"
+                    }`}
+                    title="Create NB BUD"
                   >
-                    CREATE NB BUD
+                    {isActionLoading ? "Processing..." : "CREATE NB BUD"}
                   </button>
                 )}
+                )} */}
+
+                {/* CREATE NB BUD SECTION */}
+{selectedPlan && (!selectedPlan.plType || selectedPlan.plType === "NBBUD") && (
+  <button
+    onClick={() => {
+      setIsActionLoading(true);
+      handleActionSelect(
+        plans.findIndex((p) => p.plId === selectedPlan?.plId),
+        "Create NB BUD"
+      );
+    }}
+    disabled={
+      !getButtonAvailability(selectedPlan, "Create NB BUD") || isActionLoading
+    }
+    className={`btn1 ${
+      !getButtonAvailability(selectedPlan, "Create NB BUD") || isActionLoading
+        ? "btn-disabled"
+        : "btn-blue cursor-pointer"
+    }`}
+    title="Create NB BUD"
+  >
+    {isActionLoading ? "Processing..." : "CREATE NB BUD"}
+  </button>
+)}
 
                 <button
                   onClick={() => {

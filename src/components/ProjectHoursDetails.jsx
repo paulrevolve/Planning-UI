@@ -4138,87 +4138,138 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
   // };
 
   // REPLACE THE ENTIRE FUNCTION WITH THIS:
-  const columnTotals = useMemo(() => {
-    const totals = {};
-    const currentFiscalYear =
-      normalizedFiscalYear !== "All" ? parseInt(normalizedFiscalYear) : null;
+  // const columnTotals = useMemo(() => {
+  //   const totals = {};
+  //   const currentFiscalYear =
+  //     normalizedFiscalYear !== "All" ? parseInt(normalizedFiscalYear) : null;
 
-    if (currentFiscalYear === null) {
-      // Only calculate monthly totals
-      sortedDurations.forEach((duration) => {
-        const uniqueKey = `${duration.monthNo}_${duration.year}`;
-        let total = 0;
+  //   if (currentFiscalYear === null) {
+  //     // Only calculate monthly totals
+  //     sortedDurations.forEach((duration) => {
+  //       const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //       let total = 0;
 
-        localEmployees.forEach((emp, idx) => {
-          if (hiddenRows[idx]) return;
-          const monthHours = getMonthHours(emp);
-          const inputValue = inputValues[`${idx}_${uniqueKey}`];
-          const forecastValue = monthHours[uniqueKey]?.value;
-          const value =
-            inputValue !== undefined && inputValue !== ""
-              ? inputValue
-              : forecastValue;
-          total += value && !isNaN(value) ? Number(value) : 0;
-        });
+  //       localEmployees.forEach((emp, idx) => {
+  //         if (hiddenRows[idx]) return;
+  //         const monthHours = getMonthHours(emp);
+  //         const inputValue = inputValues[`${idx}_${uniqueKey}`];
+  //         const forecastValue = monthHours[uniqueKey]?.value;
+  //         const value =
+  //           inputValue !== undefined && inputValue !== ""
+  //             ? inputValue
+  //             : forecastValue;
+  //         total += value && !isNaN(value) ? Number(value) : 0;
+  //       });
 
-        totals[uniqueKey] = total;
-      });
-      return totals;
-    }
+  //       totals[uniqueKey] = total;
+  //     });
+  //     return totals;
+  //   }
 
-    // Calculate CTD, Prior Year, and Monthly totals
-    let ctdTotal = 0;
-    let priorYearTotal = 0;
-    const startYear = parseInt(startDate.split("-")[0]);
+  //   // Calculate CTD, Prior Year, and Monthly totals
+  //   let ctdTotal = 0;
+  //   let priorYearTotal = 0;
+  //   const startYear = parseInt(startDate.split("-")[0]);
 
-    durations.forEach((duration) => {
-      const uniqueKey = `${duration.monthNo}_${duration.year}`;
-      let monthlyTotal = 0;
+  //   durations.forEach((duration) => {
+  //     const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //     let monthlyTotal = 0;
 
-      localEmployees.forEach((emp, idx) => {
-        if (hiddenRows[idx]) return;
-        const monthHours = getMonthHours(emp);
-        const inputValue = inputValues[`${idx}_${uniqueKey}`];
-        const forecastValue = monthHours[uniqueKey]?.value;
-        const value =
-          inputValue !== undefined && inputValue !== ""
-            ? inputValue
-            : forecastValue;
-        const numValue = value && !isNaN(value) ? Number(value) : 0;
-        monthlyTotal += numValue;
-      });
+  //     localEmployees.forEach((emp, idx) => {
+  //       if (hiddenRows[idx]) return;
+  //       const monthHours = getMonthHours(emp);
+  //       const inputValue = inputValues[`${idx}_${uniqueKey}`];
+  //       const forecastValue = monthHours[uniqueKey]?.value;
+  //       const value =
+  //         inputValue !== undefined && inputValue !== ""
+  //           ? inputValue
+  //           : forecastValue;
+  //       const numValue = value && !isNaN(value) ? Number(value) : 0;
+  //       monthlyTotal += numValue;
+  //     });
 
-      // Only add CTD if it's a display column
-      if (sortedDurations.some((d) => `${d.monthNo}_${d.year}` === uniqueKey)) {
-        totals[uniqueKey] = monthlyTotal;
-      }
+  //     // Only add CTD if it's a display column
+  //     if (sortedDurations.some((d) => `${d.monthNo}_${d.year}` === uniqueKey)) {
+  //       totals[uniqueKey] = monthlyTotal;
+  //     }
 
-      // Calculate CTD and Prior Year
-      if (duration.year === currentFiscalYear - 1) {
-        priorYearTotal += monthlyTotal;
-      }
+  //     // Calculate CTD and Prior Year
+  //     if (duration.year === currentFiscalYear - 1) {
+  //       priorYearTotal += monthlyTotal;
+  //     }
 
-      if (
-        duration.year >= startYear &&
-        duration.year <= currentFiscalYear - 2
-      ) {
-        ctdTotal += monthlyTotal;
-      }
+  //     if (
+  //       duration.year >= startYear &&
+  //       duration.year <= currentFiscalYear - 2
+  //     ) {
+  //       ctdTotal += monthlyTotal;
+  //     }
+  //   });
+
+  //   totals["ctd"] = ctdTotal;
+  //   totals["priorYear"] = priorYearTotal;
+
+  //   return totals;
+  // }, [
+  //   durations,
+  //   localEmployees,
+  //   hiddenRows,
+  //   inputValues,
+  //   sortedDurations,
+  //   normalizedFiscalYear,
+  //   startDate,
+  // ]);
+
+  // REPLACE your current columnTotals useMemo with this updated version:
+const columnTotals = useMemo(() => {
+  const totals = {};
+  const currentFiscalYear = normalizedFiscalYear !== "All" ? parseInt(normalizedFiscalYear) : null;
+  const startYear = parseInt(startDate.split("-")[0]);
+
+  // Use durations if year is All, otherwise use all available durations to calculate CTD/Prior correctly
+  const calcDurations = currentFiscalYear === null ? sortedDurations : durations;
+
+  calcDurations.forEach((duration) => {
+    const uniqueKey = `${duration.monthNo}_${duration.year}`;
+    let monthlyHoursTotal = 0;
+    let monthlyCostTotal = 0; // New accumulator for cost
+
+    localEmployees.forEach((emp, idx) => {
+      if (hiddenRows[idx]) return;
+      
+      const monthHoursMap = getMonthHours(emp);
+      const forecast = monthHoursMap[uniqueKey];
+      
+      // Hours logic (existing)
+      const inputValue = inputValues[`${idx}_${uniqueKey}`];
+      const hoursValue = inputValue !== undefined && inputValue !== "" ? inputValue : (forecast?.value || 0);
+      monthlyHoursTotal += (hoursValue && !isNaN(hoursValue) ? Number(hoursValue) : 0);
+
+      // Cost logic (NEW)
+      // Note: We use forecast.forecastedCost from the API response
+      monthlyCostTotal += (forecast?.forecastedCost || 0);
     });
 
-    totals["ctd"] = ctdTotal;
-    totals["priorYear"] = priorYearTotal;
+    // Store hours
+    totals[uniqueKey] = monthlyHoursTotal;
+    // Store cost with a specific suffix to distinguish it
+    totals[`${uniqueKey}_cost`] = monthlyCostTotal;
 
-    return totals;
-  }, [
-    durations,
-    localEmployees,
-    hiddenRows,
-    inputValues,
-    sortedDurations,
-    normalizedFiscalYear,
-    startDate,
-  ]);
+    // CTD / Prior Year logic for Cost
+    if (currentFiscalYear !== null) {
+      if (duration.year === currentFiscalYear - 1) {
+        totals["priorYear"] = (totals["priorYear"] || 0) + monthlyHoursTotal;
+        totals["priorYear_cost"] = (totals["priorYear_cost"] || 0) + monthlyCostTotal;
+      }
+      if (duration.year >= startYear && duration.year <= currentFiscalYear - 2) {
+        totals["ctd"] = (totals["ctd"] || 0) + monthlyHoursTotal;
+        totals["ctd_cost"] = (totals["ctd_cost"] || 0) + monthlyCostTotal;
+      }
+    }
+  });
+
+  return totals;
+}, [durations, localEmployees, hiddenRows, inputValues, sortedDurations, normalizedFiscalYear, startDate]);
 
   // ADD THIS NEW MEMOIZED VALUE:
   const employeeYearTotals = useMemo(() => {
@@ -9765,6 +9816,9 @@ const handleSelectAllCheckboxes = (isChecked) => {
                   >
                     <td colSpan={EMPLOYEE_COLUMNS.length}>" "</td>
                   </tr>
+                  <tr className="bg-white font-normal text-center text-white " style={{ height: `${ROW_HEIGHT_DEFAULT}px` }}>
+    {/* <td colSpan={EMPLOYEE_COLUMNS.length + 1} className="text-right pr-2 text-xs font-bold text-blue-800">Total Cost:</td> */}
+  </tr>
                 </tfoot>
               </table>
             </div>
@@ -10414,6 +10468,26 @@ const handleSelectAllCheckboxes = (isChecked) => {
                       );
                     })}
                   </tr>
+                  <tr className="bg-gray-200 font-bold text-center" style={{ height: `${ROW_HEIGHT_DEFAULT}px` }}>
+    {shouldShowCTD() && (
+      <td className="tbody-td text-center text-[10px] text-blue-800 bg-blue-50">
+        Cost: {columnTotals.ctd_cost?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || "0.00"}
+      </td>
+    )}
+    {shouldShowPriorYear() && (
+      <td className="tbody-td text-center text-[10px] text-blue-800 bg-blue-50">
+        Cost: {columnTotals.priorYear_cost?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || "0.00"}
+      </td>
+    )}
+    {sortedDurations.map((duration) => {
+      const key = `${duration.monthNo}_${duration.year}_cost`;
+      return (
+        <td key={`total-cost-${duration.monthNo}_${duration.year}`} className="tbody-td text-center text-[10px] text-blue-800 bg-blue-50">
+          Cost: {columnTotals[key]?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || "0.00"}
+        </td>
+      );
+    })}
+  </tr>
                 </tfoot>
               </table>
             </div>
