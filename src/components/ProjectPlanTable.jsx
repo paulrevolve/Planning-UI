@@ -3511,15 +3511,15 @@ const [statusFilter, setStatusFilter] = useState('All')
           p.plType === updated.plType &&
           p.projId === updated.projId
       ).length;
-      if (inProgressCount > 0 && updated.status === "In Progress") {
-        toast.error(
-          `Only one ${
-            isEAC ? "EAC" : "BUD"
-          } plan can have In Progress status at a time.`,
-          { toastId: "checkbox-error" }
-        );
-        return;
-      }
+      // if (inProgressCount > 0 && updated.status === "In Progress") {
+      //   toast.error(
+      //     `Only one ${
+      //       isEAC ? "EAC" : "BUD"
+      //     } plan can have In Progress status at a time.`,
+      //     { toastId: "checkbox-error" }
+      //   );
+      //   return;
+      // }
     }
     if (field === "finalVersion" && updated.finalVersion) {
       newPlans = plans.map((p, i) =>
@@ -4424,7 +4424,7 @@ const [statusFilter, setStatusFilter] = useState('All')
           </div>
 
   {/* RIGHT: Import + filters (pushed right) */}
- <div className="flex flex-col gap-2 ml-auto">
+ <div className="flex flex-col gap-2 ml-auto ">
     {/* FIRST LINE: Import + Fiscal Year */}
     <div className="flex items-center gap-2">
       {/* Import */}
@@ -4485,8 +4485,8 @@ const [statusFilter, setStatusFilter] = useState('All')
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1">
-          <span className="text-xs font-bold text-gray-500 uppercase">
-            PLAN TYPE
+          <span className="text-xs font-bold text-gray-500 whitespace-nowrap">
+            Plan Type
           </span>
           <select
             className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -4502,7 +4502,7 @@ const [statusFilter, setStatusFilter] = useState('All')
 
         <div className="flex items-center gap-1">
           <span className="text-xs font-bold text-gray-500 uppercase">
-            STATUS
+            Status
           </span>
           <select
             className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"

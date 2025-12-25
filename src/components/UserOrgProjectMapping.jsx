@@ -1907,9 +1907,9 @@ const renderManageGroupsTab = () => {
                 <th className="px-3 py-2 w-10 text-left text-gray-500 text-xs">
                   Select
                 </th>
-                <th className="px-3 py-2 text-left text-gray-500 text-xs">
+                {/* <th className="px-3 py-2 text-left text-gray-500 text-xs">
                   User ID
-                </th>
+                </th> */}
                 <th className="px-3 py-2 text-left text-gray-500 text-xs">
                   Name
                 </th>
@@ -1959,7 +1959,7 @@ const renderManageGroupsTab = () => {
                           onChange={() => toggleUserForProject(u.userId)}
                         />
                       </td>
-                      <td className="px-3 py-2">{u.userId}</td>
+                      {/* <td className="px-3 py-2">{u.userId}</td> */}
                       <td className="px-3 py-2">
                         {u.username || u.fullName || "-"}
                       </td>
