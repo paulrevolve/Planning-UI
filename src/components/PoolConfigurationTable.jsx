@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { backendUrl } from "./config";
+import { MonitorCog } from "lucide-react";
 
 const PoolConfigurationTable = () => {
   const [tableData, setTableData] = useState([]);
@@ -229,7 +230,7 @@ const PoolConfigurationTable = () => {
 };
 
   return (
-    <div className="p-4 sm:p-5 w-full mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
+    <div className="p-4 sm:p-5 w-[98%] mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -239,12 +240,12 @@ const PoolConfigurationTable = () => {
       {/* <h2 className="w-full bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
         Pool Configuration
       </h2> */}
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             Pool Configuration
-          </h2>
-          
-        </div>
+      <div className="py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <h2 className="text-lg  font-bold text-gray-800 flex items-center gap-2">
+          <MonitorCog size={20} className="text-blue-600" /> Update Multiple
+          Projects
+        </h2>
+      </div>
       <div className="flex items-center gap-4 mb-3">
         <label
           htmlFor="fiscalYear"
@@ -265,25 +266,25 @@ const PoolConfigurationTable = () => {
           ))}
         </select>
         <div className="flex-grow"></div>
-       <div className="flex items-center gap-2 mb-2">
-  {/* Org ID filter */}
-  <input
-    type="text"
-    placeholder="Filter by Org ID"
-    value={orgSearchTerm}
-    onChange={(e) => setOrgSearchTerm(e.target.value)}
-    className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-  />
+        <div className="flex items-center gap-2 mb-2">
+          {/* Org ID filter */}
+          <input
+            type="text"
+            placeholder="Filter by Org ID"
+            value={orgSearchTerm}
+            onChange={(e) => setOrgSearchTerm(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
 
-  {/* Account ID filter (existing) */}
-  <input
-    type="text"
-    placeholder="Filter by Account ID"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-  />
-</div>
+          {/* Account ID filter (existing) */}
+          <input
+            type="text"
+            placeholder="Filter by Account ID"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
 
         <button
           onClick={handleSave}
@@ -311,25 +312,26 @@ const PoolConfigurationTable = () => {
         className="border-line"
       >
         <table className="min-w-full table">
-          <thead
-            className="thead"
-            // style={{
-            //   position: "sticky",
-            //   top: 0,
-            //   zIndex: 10,
-            //   boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-            // }}
-          >
+          <thead className="bg-gray-200 sticky top-0">
             <tr>
-              <th className="th-thead">Org ID</th>
-              <th className="th-thead">Account ID</th>
+              <th className="px-4 py-2 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap text-center">
+                Org ID
+              </th>
+              <th className="px-4 py-2 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap text-center">
+                Account ID
+              </th>
+
               {groupCodes.map((code, index) => (
-                <th key={index} className="th-thead">
+                <th
+                  key={index}
+                  className="px-4 py-2 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap text-center"
+                >
                   {displayNames[code] || groupNames[code] || code}
                 </th>
               ))}
             </tr>
           </thead>
+
           <tbody className="tbody">
             {filteredData.map((row) => (
               <tr
