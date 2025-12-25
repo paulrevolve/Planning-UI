@@ -148,7 +148,7 @@ const NewBusinessComponent = () => {
           </div>
           <button
             onClick={handleSearch}
-            className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer text-xs sm:text-sm font-normal hover:bg-blue-700 transition w-full sm:w-auto"
+            className="bg-[#17414d] text-white group-hover:text-gray  px-3 py-1 rounded cursor-pointer text-xs sm:text-sm font-normal transition w-full sm:w-auto"
           >
             Search
           </button>

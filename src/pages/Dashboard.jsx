@@ -755,6 +755,8 @@ import AccountMapping from "../components/AccountMapping";
 import UserOrgProjectMapping from "../components/UserOrgProjectMapping";
 import NewBusinessComponent from "../components/NewBusinessComponent";
 import AnalysisByPeriodContent from "../components/AnalysisByPeriodContent";
+import CreateProjectBudget from "../components/CreateProjectBudget";
+
 
 const SIDEBAR_WIDTH = 190; // px
 const TOPBAR_HEIGHT = 45; // px
@@ -865,6 +867,7 @@ const Dashboard = () => {
             <Route path="/projectmapping" element={<UserOrgProjectMapping />} />
 
             <Route path="/new-business" element={<NewBusinessComponent />} />
+             <Route path="/create-project-budget" element={<CreateProjectBudget />} />
             <Route path="/monthly-forecast" element={<AnalysisByPeriodContent />} />
             <Route
               path="/pool-rate-tabs"

@@ -4134,11 +4134,12 @@ const [statusFilter, setStatusFilter] = useState('All')
       )}
 
       <div>
-       <div className="flex items-center mb-2 gap-1 w-full">
+       <div className="flex items-center mb-2 gap-1 w-full  ">
   {/* LEFT: all action buttons */}
   <div className="flex gap-1 flex-wrap items-center">
             {plans.length >= 0 && (
               <>
+              {currentPlan && getButtonAvailability(currentPlan, "Create Budget") && (
                 <button
                   onClick={() => {
                     setIsActionLoading(true);
@@ -4161,7 +4162,9 @@ const [statusFilter, setStatusFilter] = useState('All')
                 >
                   New Budget
                 </button>
+              )}
 
+{currentPlan && getButtonAvailability(currentPlan, "Create Blank Budget") && (
                 <button
                   onClick={() => {
                     setIsActionLoading(true);
@@ -4184,7 +4187,9 @@ const [statusFilter, setStatusFilter] = useState('All')
                 >
                   New Blank Budget
                 </button>
+)}
 
+{currentPlan && getButtonAvailability(currentPlan, "Create Blank Budget") && (
                 <button
                   onClick={() => {
                     setIsActionLoading(true);
@@ -4207,6 +4212,7 @@ const [statusFilter, setStatusFilter] = useState('All')
                 >
                   New EAC
                 </button>
+)}
 
                 {selectedPlan && selectedPlan.plType === "NBBUD" && (
                   <button
@@ -4226,145 +4232,175 @@ const [statusFilter, setStatusFilter] = useState('All')
 
                
 
-                <button
-  onClick={() => {
-   
-    if (!selectedPlan) return; 
-    onOpenDetails?.();
-  }}
-  
-  disabled={!selectedPlan || isActionLoading} 
-  className={`btn1 ${
-    !selectedPlan || isActionLoading 
-      ? "btn-disabled" 
-      : "btn-blue cursor-pointer"
-  }`}
-  title="View plan details"
->
-  Detail
-</button>
+  {/* Detail */}
+  {selectedPlan && !isActionLoading && (
+    <button
+      onClick={() => {
+        if (!selectedPlan) return;
+        onOpenDetails?.();
+      }}
+      className="btn1 btn-blue cursor-pointer"
+      title="View plan details"
+    >
+      Detail
+    </button>
+  )}
 
-                <button 
-  onClick={() => {
-    if (!selectedPlan) return;
-    onOpenMonthly?.();
-  }}
-  disabled={!selectedPlan || isActionLoading}
-  className={`btn1 ${
-    !selectedPlan || isActionLoading ? "btn-disabled" : "btn-blue cursor-pointer"
-  }`}
-  title="Monthly Forecast"
->
-  Monthly Forecast
-</button>
+  {/* Monthly Forecast */}
+  {selectedPlan && !isActionLoading && (
+    <button
+      onClick={() => {
+        if (!selectedPlan) return;
+        onOpenMonthly?.();
+      }}
+      className="btn1 btn-blue cursor-pointer"
+      title="Monthly Forecast"
+    >
+      Monthly Forecast
+    </button>
+  )}
 
+  {/* Submit / Unsubmit */}
+  {!getTopButtonDisabled("isCompleted") && !isActionLoading && (
+    <button
+      onClick={() => handleTopButtonToggle("isCompleted")}
+      className={`btn1 ${
+        getCurrentPlan()?.status === "Submitted"
+          ? "btn-orange cursor-pointer"
+          : "btn-blue cursor-pointer"
+      }`}
+      title={
+        getCurrentPlan()?.status === "Submitted" ? "Unsubmit" : "Submit"
+      }
+    >
+      {isActionLoading
+        ? "Processing..."
+        : getCurrentPlan()?.status === "Submitted"
+        ? "Unsubmit"
+        : "Submit"}
+    </button>
+  )}
 
-                <button
-                  onClick={() => handleTopButtonToggle("isCompleted")}
-                  disabled={
-                    getTopButtonDisabled("isCompleted") || isActionLoading
-                  }
-                  className={`btn1 ${
-                    getTopButtonDisabled("isCompleted") || isActionLoading
-                      ? "btn-disabled"
-                      : getCurrentPlan()?.status === "Submitted"
-                        ? "btn-orange cursor-pointer"
-                        : "btn-blue cursor-pointer"
-                  }`}
-                  title={
-                    getCurrentPlan()?.status === "Submitted"
-                      ? "Unsubmit"
-                      : "Submit"
-                  }
-                >
-                  {isActionLoading
-                    ? "Processing..."
-                    : getCurrentPlan()?.status === "Submitted"
-                      ? "Unsubmit"
-                      : "Submit"}
-                </button>
+  {/* Approve / Unapprove */}
+  {!getTopButtonDisabled("isApproved") &&
+    !isActionLoading &&
+    !getCurrentPlan()?.finalVersion && (
+      <button
+        onClick={() => handleTopButtonToggle("isApproved")}
+        className={`btn1 ${
+          getCurrentPlan()?.status === "Approved" ||
+          getCurrentPlan()?.finalVersion
+            ? "btn-orange cursor-pointer"
+            : "btn-blue cursor-pointer"
+        }`}
+        title={
+          getCurrentPlan()?.status === "Approved"
+            ? "Unapprove"
+            : "Approve"
+        }
+      >
+        {isActionLoading
+          ? "Processing..."
+          : getCurrentPlan()?.status === "Approved" ||
+            getCurrentPlan()?.finalVersion
+          ? "Unapprove"
+          : "Approve"}
+      </button>
+    )}
 
-                <button
-                  onClick={() => handleTopButtonToggle("isApproved")}
-                  disabled={
-                    getTopButtonDisabled("isApproved") || isActionLoading || getCurrentPlan()?.finalVersion
-                  }
-                  className={`btn1 ${
-                    getTopButtonDisabled("isApproved") || isActionLoading
-                      ? "btn-disabled"
-                      : getCurrentPlan()?.status === "Approved" ||
-                          getCurrentPlan()?.finalVersion
-                        ? "btn-orange cursor-pointer"
-                        : "btn-blue cursor-pointer"
-                  }`}
-                  title={
-                    getCurrentPlan()?.status === "Approved"
-                      ? "Unapprove"
-                      : "Approve"
-                  }
-                >
-                  {isActionLoading
-                    ? "Processing..."
-                    : getCurrentPlan()?.status === "Approved" ||
-                        getCurrentPlan()?.finalVersion
-                      ? "Unapprove"
-                      : "Approve"}
-                </button>
+  {/* Conclude / Unconclude */}
+  {!getTopButtonDisabled("finalVersion") && !isActionLoading && (
+    <button
+      onClick={() => handleTopButtonToggle("finalVersion")}
+      className={`btn1 ${
+        getCurrentPlan()?.finalVersion
+          ? "btn-orange cursor-pointer"
+          : "btn-blue cursor-pointer"
+      }`}
+      title={
+        getCurrentPlan()?.finalVersion ? "Unconclude" : "Conclude"
+      }
+    >
+      {isActionLoading
+        ? "Processing..."
+        : getCurrentPlan()?.finalVersion
+        ? "Unconclude"
+        : "Conclude"}
+    </button>
+  )}
 
-                <button
-                  onClick={() => handleTopButtonToggle("finalVersion")}
-                  disabled={
-                    getTopButtonDisabled("finalVersion") || isActionLoading
-                  }
-                  className={`btn1 ${
-                    getTopButtonDisabled("finalVersion") || isActionLoading
-                      ? "btn-disabled"
-                      : getCurrentPlan()?.finalVersion
-                        ? "btn-orange cursor-pointer"
-                        : "btn-blue cursor-pointer"
-                  }`}
-                  title={
-                    getCurrentPlan()?.finalVersion ? "Unconclude" : "Conclude"
-                  }
-                >
-                  {isActionLoading
-                    ? "Processing..."
-                    : getCurrentPlan()?.finalVersion
-                      ? "Unconclude"
-                      : "Conclude"}
-                </button>
+  {/* Calc */}
+  {!getCalcButtonDisabled() && (
+    <button
+      onClick={() => {
+        setIsActionLoading(true);
+        handleCalc();
+      }}
+      className="btn1 btn-blue cursor-pointer"
+      title="Calculate"
+    >
+      Calc
+    </button>
+  )}
 
-                <button
-                  onClick={() => {
-                    setIsActionLoading(true);
-                    handleCalc();
-                  }}
-                  disabled={getCalcButtonDisabled()}
-                  className={`btn1 ${
-                    getCalcButtonDisabled() ? "btn-disabled" : "btn-blue cursor-pointer"
-                  }`}
-                  title="Calculate"
-                >
-                  Calc
-                </button>
+  {/* BUD/EAC filter always visible */}
+  <button
+    onClick={() => setBudEacFilter(!budEacFilter)}
+    className={`btn1 ${
+      budEacFilter ? "btn-orange cursor-pointer" : "btn-blue cursor-pointer"
+    }`}
+    title={budEacFilter ? "Show All Plans" : "Filter BUD/EAC Plans"}
+  >
+    {budEacFilter ? "Show All" : "BUD/EAC"}
+  </button>
 
-                <button
-                  onClick={() => setBudEacFilter(!budEacFilter)}
-                  className={`btn1 ${budEacFilter ? "btn-orange cursor-pointer" : "btn-blue cursor-pointer"}`}
-                  title={
-                    budEacFilter ? "Show All Plans" : "Filter BUD/EAC Plans"
-                  }
-                >
-                  {budEacFilter ? "Show All" : "BUD/EAC"}
-                </button>
+  {/* New Business always visible */}
+  <button
+    onClick={() => setShowNewBusinessPopup(true)}
+    className="btn1 btn-green cursor-pointer"
+    title="New Business"
+  >
+    New Business
+  </button>
 
-                <button
+  {/* Save Date */}
+  {!isActionLoading && !isSaveDatesDisabled() && (
+    <button
+      onClick={handleSaveDatesClick}
+      className="btn1 btn-blue cursor-pointer"
+      title="Save Project Dates"
+    >
+      Save Date
+    </button>
+  )}
+
+  {/* Delete */}
+  {currentPlan &&
+    !currentPlan.isApproved &&
+    getButtonAvailability(currentPlan, "Delete") &&
+    getMasterAndRelatedProjects(plans, currentPlan?.projId).sameLevelBud && (
+      <button
+        onClick={() => {
+          setIsActionLoading(true);
+          handleActionSelect(
+            plans.findIndex((p) => p.plId === selectedPlan?.plId),
+            "Delete"
+          );
+        }}
+        className="btn1 btn-red cursor-pointer"
+        title="Delete Selected Plan"
+      >
+        Delete
+      </button>
+    )}
+
+                {/* <button
                   onClick={() => setShowNewBusinessPopup(true)}
                   className="btn1 btn-green cursor-pointer"
                   title="New Business"
                 >
                   New Business
-                </button>
+                </button> */}
 
                 {/* <button
   onClick={handleSaveDatesClick}
@@ -4376,7 +4412,7 @@ const [statusFilter, setStatusFilter] = useState('All')
 >
   Save Dates
 </button> */}
-                <button
+                {/* <button
                   onClick={handleSaveDatesClick}
                   disabled={isActionLoading || isSaveDatesDisabled()}
                   className={`btn1 ${
@@ -4416,7 +4452,7 @@ const [statusFilter, setStatusFilter] = useState('All')
                   title="Delete Selected Plan"
                 >
                   Delete
-                </button>
+                </button> */}
 
               
               </>
@@ -4501,7 +4537,7 @@ const [statusFilter, setStatusFilter] = useState('All')
         </div>
 
         <div className="flex items-center gap-1">
-          <span className="text-xs font-bold text-gray-500 uppercase">
+          <span className="text-xs font-bold text-gray-500">
             Status
           </span>
           <select

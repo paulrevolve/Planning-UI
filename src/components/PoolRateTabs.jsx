@@ -79,7 +79,7 @@ const PoolRateTabs = () => {
       </div>
 
       {/* Content card */}
-      <div className="border-line bg-white p-4">
+      <div>
         {renderTabContent()}
       </div>
     </div>

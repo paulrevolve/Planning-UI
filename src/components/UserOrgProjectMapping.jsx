@@ -1066,8 +1066,9 @@ const UserOrgProjectMapping = () => {
   const [selectedOrgsForUser, setSelectedOrgsForUser] = useState([]);
 
   // UI state
-  const [activeMainTab, setActiveMainTab] = useState("projectUsers");
-  // "projectUsers" | "userGroups" | "groupOrgs" | "userOrgs"
+ const [activeMainTab, setActiveMainTab] = useState("projectUsers");
+// "projectUsers" | "userGroups" | "groupOrgs" | "userOrgs" | "manageGroups" | "manageUsers"
+
 
   const [searchTermUsers, setSearchTermUsers] = useState("");
   const [searchTermGroups, setSearchTermGroups] = useState("");
@@ -1081,12 +1082,181 @@ const [groupNameInput, setGroupNameInput] = useState("");
 const [groupDescription,setGroupDescription] = useState("")
 const [groupFormLoading, setGroupFormLoading] = useState(false);
 
+// Manage Users form state
+const [editingUserId, setEditingUserId] = useState(null);
+const [userNameInput, setUserNameInput] = useState("");
+const [userFullNameInput, setUserFullNameInput] = useState("");
+const [userEmailInput, setUserEmailInput] = useState("");
+const [userFormLoading, setUserFormLoading] = useState(false);
+const [searchTermManageUsers, setSearchTermManageUsers] = useState("");
+const [selectedUserIdsForDelete, setSelectedUserIdsForDelete] = useState([]);
+const [userPasswordInput, setUserPasswordInput] = useState("");
+const [userRoleInput, setUserRoleInput] = useState("");
+
+
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(false);
   const [groupLoading, setGroupLoading] = useState(false);
   const [orgLoading, setOrgLoading] = useState(false);
   const [projectLoading, setProjectLoading] = useState(false);
   const [error, setError] = useState(null);
+
+
+  // ------------Manage Users------------
+  const applyUserSorting = (userData) => {
+  // newest (highest userId) first; adjust if you have createdAt
+  return [...(userData || [])].sort(
+    (a, b) => (b.userId ?? 0) - (a.userId ?? 0)
+  );
+};
+
+const resetUserForm = () => {
+  setEditingUserId(null);
+  setUserNameInput("");
+  setUserFullNameInput("");
+  setUserEmailInput("");
+  setUserPasswordInput("");
+  setUserRoleInput("");
+};
+
+
+const startEditUser = (u) => {
+  setEditingUserId(u.userId);
+  setUserNameInput(u.username || "");
+  setUserFullNameInput(u.fullName || "");
+  setUserEmailInput(u.email || "");
+  setUserPasswordInput("");          // typically not loaded back
+  setUserRoleInput(u.role || "");
+};
+
+
+const toggleSelectedUserForDelete = (id) => {
+  setSelectedUserIdsForDelete((prev) =>
+    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+  );
+};
+
+const areAllUsersSelected = (list) =>
+  list.length > 0 &&
+  list.every((u) => selectedUserIdsForDelete.includes(u.userId));
+
+const toggleSelectAllUsers = (list) => {
+  if (areAllUsersSelected(list)) {
+    setSelectedUserIdsForDelete([]);
+  } else {
+    setSelectedUserIdsForDelete(list.map((u) => u.userId));
+  }
+};
+
+const handleCreateOrUpdateUser = async () => {
+  if (!userNameInput.trim() || !userFullNameInput.trim()) {
+    toast.warn("Username and full name are required.");
+    return;
+  }
+
+  try {
+    setUserFormLoading(true);
+
+    if (editingUserId == null) {
+      // CREATE
+      await axios.post(`${backendUrl}/api/User`, {
+        username: userNameInput.trim(),
+        fullName: userFullNameInput.trim(),
+        email: userEmailInput.trim(),
+        password: userPasswordInput.trim(),
+        role: userRoleInput.trim(),
+      });
+      toast.success("User created.");
+    } else {
+      // UPDATE
+      await axios.put(`${backendUrl}/api/User/${editingUserId}`, {
+        userId: editingUserId,
+        username: userNameInput.trim(),
+        fullName: userFullNameInput.trim(),
+        email: userEmailInput.trim(),
+        // optional: only send password if user entered something
+        password: userPasswordInput.trim() || undefined,
+        role: userRoleInput.trim(),
+      });
+      toast.success("User updated.");
+    }
+
+    const userRes = await axios.get(`${backendUrl}/api/User`);
+    const userData = applyUserSorting(userRes.data);
+    setUsers(userData);
+    setUserOptions(
+      userData.map((u) => ({
+        value: u.userId,
+        label: `${u.userId} - ${u.username || u.fullName || ""}`,
+      }))
+    );
+
+    resetUserForm();
+  } catch (e) {
+    console.error("Save user failed", e);
+    const apiMessage =
+      e?.response?.data?.message ||
+      e?.response?.data?.title ||
+      (typeof e?.response?.data === "string" ? e.response.data : null);
+    toast.error(apiMessage || "Failed to save user.");
+  } finally {
+    setUserFormLoading(false);
+  }
+};
+
+
+const handleBulkDeleteUsers = async () => {
+  if (selectedUserIdsForDelete.length === 0) {
+    toast.warn("Select at least one user to delete.");
+    return;
+  }
+  if (!window.confirm(`Delete ${selectedUserIdsForDelete.length} users?`)) {
+    return;
+  }
+
+  try {
+    setUserFormLoading(true);
+
+    // bulk delete: body [1,2,...]
+    await axios.post(
+      `${backendUrl}/api/User/BulkDelete`,
+      selectedUserIdsForDelete
+    );
+    toast.success("Selected users deleted.");
+
+    const userRes = await axios.get(`${backendUrl}/api/User`);
+    const userData = applyUserSorting(userRes.data);
+    setUsers(userData);
+    setUserOptions(
+      userData.map((u) => ({
+        value: u.userId,
+        label: `${u.userId} - ${u.username || u.fullName || ""}`,
+      }))
+    );
+    setSelectedUserIdsForDelete([]);
+
+    if (
+      editingUserId &&
+      !userData.some((u) => u.userId === editingUserId)
+    ) {
+      resetUserForm();
+    }
+  } catch (e) {
+    console.error("Bulk delete users failed", e);
+    const apiMessage =
+      e?.response?.data?.message ||
+      e?.response?.data?.title ||
+      (typeof e?.response?.data === "string" ? e.response.data : null);
+    if (apiMessage) {
+      toast.error(apiMessage);
+    } else {
+      toast.error("Failed to delete selected users.");
+    }
+  } finally {
+    setUserFormLoading(false);
+  }
+};
+
 
   // -----------------Manage Groups-----------
 
@@ -1850,6 +2020,228 @@ const renderManageGroupsTab = () => {
   );
 };
 
+// ----- user tabs--------
+const renderManageUsersTab = () => {
+  const filteredUsers = users.filter((u) =>
+    `${u.userId} ${u.username || ""} ${u.fullName || ""} ${u.email || ""}`
+      .toLowerCase()
+      .includes(searchTermManageUsers.toLowerCase())
+  );
+
+  const allSelected = areAllUsersSelected(filteredUsers);
+
+  return (
+    <>
+      <div className="mb-6 bg-gray-50 p-4 rounded-xl border">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 ">
+          {editingUserId ? "Edit User" : "Create User"}
+        </h3> 
+
+        <div className="grid md:grid-cols-3 gap-4">
+  <div>
+    <label className="block text-xs font-medium text-gray-600 mb-1">
+      Username
+    </label>
+    <input
+      type="text"
+      value={userNameInput}
+      onChange={(e) => setUserNameInput(e.target.value)}
+      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+      placeholder="Username"
+    />
+  </div>
+  <div>
+    <label className="block text-xs font-medium text-gray-600 mb-1">
+      Full Name
+    </label>
+    <input
+      type="text"
+      value={userFullNameInput}
+      onChange={(e) => setUserFullNameInput(e.target.value)}
+      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+      placeholder="Full name"
+    />
+  </div>
+  <div>
+    <label className="block text-xs font-medium text-gray-600 mb-1">
+      Email
+    </label>
+    <input
+      type="email"
+      value={userEmailInput}
+      onChange={(e) => setUserEmailInput(e.target.value)}
+      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+      placeholder="Email"
+    />
+  </div>
+  <div>
+    <label className="block text-xs font-medium text-gray-600 mb-1">
+      Password
+    </label>
+    <input
+      type="password"
+      value={userPasswordInput}
+      onChange={(e) => setUserPasswordInput(e.target.value)}
+      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+      placeholder="Password"
+    />
+  </div>
+  <div>
+  <label className="block text-xs font-medium text-gray-600 mb-1">
+    Role
+  </label>
+  <select
+    value={userRoleInput}
+    onChange={(e) => setUserRoleInput(e.target.value)}
+    className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white"
+  >
+    <option value="">Select role</option>
+    <option value="admin">Admin</option>
+    {/* <option value="manager">Manager</option> */}
+    <option value="user">User</option>
+  </select>
+</div>
+
+</div>
+
+
+        <div className="flex gap-3 justify-end mt-4">
+          {editingUserId && (
+            <button
+              type="button"
+              onClick={resetUserForm}
+              className="px-4 py-2 text-sm rounded border border-gray-300 text-gray-700 bg-white"
+              disabled={userFormLoading}
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleCreateOrUpdateUser}
+            className="px-5 py-2 text-sm rounded bg-[#17414d] text-white group-hover:text-gray  font-semibold disabled:opacity-60"
+            disabled={userFormLoading}
+          >
+            {userFormLoading
+              ? "Saving..."
+              : editingUserId
+              ? "Update User"
+              : "Create User"}
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-gray-50 rounded-xl p-4 border">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Existing Users
+          </h3>
+          <div className="flex items-center gap-3">
+            <input
+              type="text"
+              placeholder="Search by id, username, name, email..."
+              value={searchTermManageUsers}
+              onChange={(e) => setSearchTermManageUsers(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-1 text-sm w-64"
+            />
+            <button
+              type="button"
+              onClick={handleBulkDeleteUsers}
+              className="px-4 py-2 text-xs rounded border border-red-500 text-red-600 disabled:opacity-50"
+              disabled={
+                userFormLoading || selectedUserIdsForDelete.length === 0
+              }
+            >
+              Delete Selected ({selectedUserIdsForDelete.length})
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto max-h-80">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-white border-b">
+                <th className="px-3 py-2 text-left text-gray-500 text-xs w-10">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4"
+                    checked={allSelected}
+                    onChange={() => toggleSelectAllUsers(filteredUsers)}
+                  />
+                </th>
+                <th className="px-3 py-2 text-left text-gray-500 text-xs">
+                  ID
+                </th>
+                <th className="px-3 py-2 text-left text-gray-500 text-xs">
+                  Username
+                </th>
+                <th className="px-3 py-2 text-left text-gray-500 text-xs">
+                  Full Name
+                </th>
+                <th className="px-3 py-2 text-left text-gray-500 text-xs">
+                  Email
+                </th>
+                <th className="px-3 py-2 text-right text-gray-500 text-xs">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-3 py-6 text-center text-gray-500"
+                  >
+                    No users found.
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((u) => {
+                  const selected = selectedUserIdsForDelete.includes(u.userId);
+                  return (
+                    <tr key={u.userId} className="hover:bg-gray-50">
+                      <td className="px-3 py-2">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4"
+                          checked={selected}
+                          onChange={() =>
+                            toggleSelectedUserForDelete(u.userId)
+                          }
+                        />
+                      </td>
+                      <td className="px-3 py-2">{u.userId}</td>
+                      <td className="px-3 py-2">{u.username}</td>
+                      <td className="px-3 py-2">{u.fullName}</td>
+                      <td className="px-3 py-2">{u.email}</td>
+                      <td className="px-3 py-2 text-right space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => startEditUser(u)}
+                          className="text-xs px-3 py-1 rounded border border-blue-500 text-blue-600"
+                        >
+                          Edit
+                        </button>
+                        {/* <button
+                          type="button"
+                          onClick={() => handleBulkDeleteUsers([u.userId])}
+                          className="text-xs px-3 py-1 rounded border border-red-500 text-red-600"
+                        >
+                          Delete
+                        </button> */}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+};
 
 
   // ---------- Render helpers ----------
@@ -2443,6 +2835,17 @@ const renderManageGroupsTab = () => {
 >
   Manage Groups
 </button>
+<button
+  className={`flex-1 py-2 px-4 text-sm font-medium rounded ${
+    activeMainTab === "manageUsers"
+      ? "shadow bg-[#17414d] text-white group-hover:text-grayr border-blue-300"
+      : "text-gray-700 hover:bg-gray-200"
+  }`}
+  onClick={() => setActiveMainTab("manageUsers")}
+>
+  Manage Users
+</button>
+
 
       </div>
 
@@ -2451,6 +2854,7 @@ const renderManageGroupsTab = () => {
       {activeMainTab === "groupOrgs" && renderGroupOrgsTab()}
       {activeMainTab === "userOrgs" && renderUserOrgsTab()}
       {activeMainTab === "manageGroups" && renderManageGroupsTab()}
+      {activeMainTab === "manageUsers" && renderManageUsersTab()}
     </div>
   );
 };

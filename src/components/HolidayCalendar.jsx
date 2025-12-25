@@ -256,12 +256,19 @@ const parseDate = (dateStr) => {
         </h2> */}
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             Setup Annual Holidays
+             Manage holidays
           </h2>
           
         </div>	
-        <div className="bg-gray-50 p-4  grid grid-cols-1 md:grid-cols-4 gap-4 items-center border-line">
-          <div className="flex items-center space-x-2">
+        {/* <div className="bg-gray-50 p-4  grid grid-cols-1 md:grid-cols-4 gap-4 items-center border-line">
+       
+        </div> */}
+
+        <div className="bg-gray-50 p-4 border-line">
+          {/* <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            Target Year Holidays
+          </h3> */}
+             {/* <div className="flex items-center space-x-2">
             <label
               htmlFor="year"
               className="text-sm font-medium whitespace-nowrap text-gray-900"
@@ -296,13 +303,49 @@ const parseDate = (dateStr) => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
             />
-          </div>
-        </div>
+          </div> */}
+          <div className="flex items-center gap-3 w-full">
+  {/* LEFT: New + Search */}
+  <div className="flex items-center gap-2 mb-2">
+    <button
+      onClick={handleAddNewRow}
+      disabled={isLoading}
+      className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm whitespace-nowrap"
+    >
+      New
+    </button>
+    <input
+      type="text"
+      placeholder="Search holiday..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+    />
+  </div>
 
-        <div className="bg-gray-50 p-4 border-line">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
-            Target Year Holidays
-          </h3>
+  {/* RIGHT: Fiscal Year (Year select) */}
+  <div className="flex items-center space-x-2 ml-auto">
+    <label
+      htmlFor="year"
+      className="text-sm font-medium whitespace-nowrap text-gray-900"
+    >
+      Year <span className="text-red-500">*</span>
+    </label>
+    <select
+      id="year"
+      value={year}
+      onChange={handleYearChange}
+      className="w-40 border border-gray-300 bg-white rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+    >
+      {years.map((y) => (
+        <option key={y} value={y}>
+          {y}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
           {isLoading && <p className="text-center text-gray-500">Loading...</p>}
 
           <div className="border-line overflow-hidden">
