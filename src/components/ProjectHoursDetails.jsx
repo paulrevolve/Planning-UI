@@ -115,6 +115,7 @@ const hoursFormatDateDisplay = (value) => {
 //     }
 // };
 
+
 const ProjectHoursDetails = ({
   planId,
   projectId,
@@ -238,37 +239,39 @@ useEffect(() => {
     setFillEndDate(endDate);
 }, [startDate, endDate]);
 
-const sortedEmployees = useMemo(() => {
-  if (!sortConfig.key) return localEmployees;
 
-  const sorted = [...localEmployees];
+  const sortedEmployees = useMemo(() => {
+    if (!sortConfig.key) return localEmployees;
 
-  if (sortConfig.key === "acctId") {
-    sorted.sort((a, b) => {
-      const aVal = (a.emple?.accId ?? "").toString().toLowerCase();
-      const bVal = (b.emple?.accId ?? "").toString().toLowerCase();
-      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
-  }
+    const sorted = [...localEmployees];
 
-  return sorted;
-}, [localEmployees, sortConfig]);
-
-const handleSort = (key) => {
-  setSortConfig((prev) => {
-    if (prev.key === key) {
-      return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+    if (sortConfig.key === "acctId") {
+      sorted.sort((a, b) => {
+        const aVal = (a.emple?.accId ?? "").toString().toLowerCase();
+        const bVal = (b.emple?.accId ?? "").toString().toLowerCase();
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
     }
-    return { key, direction: "asc" };
-  });
-};
 
-const getSortIcon = (key) => {
-  if (sortConfig.key !== key) return "↕";
-  return sortConfig.direction === "asc" ? "↑" : "↓";
-};
+    return sorted;
+  }, [localEmployees, sortConfig]);
+
+  const handleSort = (key) => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return "↕";
+    return sortConfig.direction === "asc" ? "↑" : "↓";
+  };
 
 
 // useEffect(() => {
@@ -289,6 +292,7 @@ const getSortIcon = (key) => {
         return a.monthNo - b.monthNo;
       });
   }, [durations, normalizedFiscalYear]);
+  
 
   const firstTableRef = useRef(null);
   const secondTableRef = useRef(null);
@@ -8847,11 +8851,11 @@ const handleSelectAllCheckboxes = (isChecked) => {
                     {EMPLOYEE_COLUMNS.map((col) => (
                       <th key={col.key} className="th-thead min-w-[70px]" onClick={col.key === "acctId" ? () => handleSort("acctId") : undefined} style={{ cursor: col.key === "acctId" ? "pointer" : "default" }}>
                         {col.label}
-                         {col.key === "acctId" && (
+                         {/* {col.key === "acctId" && (
         <span className="text-[15px] text-gray-500">
           {getSortIcon("acctId")}
         </span>
-      )}
+      )} */}
                       </th>
                     ))}
                   </tr>
@@ -9809,24 +9813,65 @@ const handleSelectAllCheckboxes = (isChecked) => {
                     })}
                 </tbody>
                 <tfoot>
-                  <tr
-                    className="bg-white font-normal text-center text-white "
-                    style={{
-                      position: "sticky",
-                      bottom: 0,
-                      zIndex: 20,
-                      height: `${ROW_HEIGHT_DEFAULT}px`,
-                      // height: "25px",
-                      lineHeight: "normal",
-                      borderTop: "2px solid #d1d5db", // tailwind gray-300
-                    }}
-                  >
-                    <td colSpan={EMPLOYEE_COLUMNS.length}>" "</td>
-                  </tr>
-                  <tr className="bg-white font-normal text-center text-white " style={{ height: `${ROW_HEIGHT_DEFAULT}px` }}>
-    {/* <td colSpan={EMPLOYEE_COLUMNS.length + 1} className="text-right pr-2 text-xs font-bold text-blue-800">Total Cost:</td> */}
+  {/* Spacer row to keep sticky totals from covering data */}
+  {/* <tr
+    className="bg-white"
+    style={{
+      position: "sticky",
+      bottom: 0,
+      zIndex: 20,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      borderTop: "2px solid #d1d5db",
+    }}
+  >
+    <td colSpan={EMPLOYEE_COLUMNS.length}></td>
+  </tr> */}
+
+  {/* Total Hours row */}
+  <tr
+    className="font-bold text-center"
+    style={{
+      position: "sticky",
+      bottom: `${ROW_HEIGHT_DEFAULT}px`,
+      zIndex: 21,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      backgroundColor: "#d7ebf3", // light blue like screenshot
+      color: "#000000",
+    }}
+  >
+    <td
+      colSpan={EMPLOYEE_COLUMNS.length+1}
+      // className="text-left pl-10 text-sm"
+      // style={{ fontWeight: 700 }}
+    >
+      Total Hours:
+    </td>
   </tr>
-                </tfoot>
+
+  {/* Total Cost row – lighter blue with blue text */}
+  <tr
+    className="font-normal text-center"
+    style={{
+      position: "sticky",
+      bottom: 0,
+      zIndex: 22,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      backgroundColor: "#e5f3fb", // lighter blue
+    }}
+  >
+    <td
+      colSpan={EMPLOYEE_COLUMNS.length+1}
+      // className="text-left pl-10 text-sm"
+      // style={{ color: "#1d4ed8", fontWeight: 700 }} // blue text
+    >
+      Total Cost: {/* inject total cost here if needed */}
+    </td>
+  </tr>
+</tfoot>
+
               </table>
             </div>
             <div
@@ -10380,122 +10425,105 @@ const handleSelectAllCheckboxes = (isChecked) => {
                     })()}
                   </tr>
                 </tfoot> */}
-                <tfoot>
-                  <tr
-                    className="bg-gray-200 font-bold text-center"
-                    style={{
-                      position: "sticky",
-                      bottom: 0,
-                      zIndex: 20,
-                      height: `${ROW_HEIGHT_DEFAULT}px`,
-                      lineHeight: "normal",
-                      borderTop: "2px solid #d1d5db",
-                    }}
-                  >
-                    {/* CTD Column */}
-                    {/* {normalizedFiscalYear !== "All"  && (
-  // <td
-  //   key="total-ctd"
-  //   className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
-  // >
-  //   {(() => {
-  //     const columnTotals = calculateColumnTotals();
-  //     return columnTotals['ctd']?.toFixed(2) || '0.00';
-  //   })()}
-  // </td>
-  <td key="total-ctd" className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200">
-  {columnTotals['ctd']?.toFixed(2) || '0.00'}
-</td>
-)} */}
-                    {shouldShowCTD() && (
-                      <td
-                        key="total-ctd"
-                        className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
-                      >
-                        {columnTotals.ctd?.toFixed(2) || "0.00"}
-                      </td>
-                    )}
+             <tfoot>
+  {/* Total hours row */}
+  <tr
+    className="font-bold text-center"
+    style={{
+      position: "sticky",
+      bottom: `${ROW_HEIGHT_DEFAULT}px`,
+      zIndex: 20,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      borderTop: "2px solid #d1d5db",
+      backgroundColor: "#d7ebf3", // same hours band color
+      color: "#000000",
+    }}
+  >
+    {shouldShowCTD() && (
+      <td
+        key="total-ctd"
+        className="tbody-td text-center text-xs font-bold"
+      >
+        {columnTotals.ctd?.toFixed(2) || "0.00"}
+      </td>
+    )}
 
-                    {/* Prior Year Column */}
-                    {/* <td
-      key="total-prior-year"
-      className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
-    >
-      {(() => {
-        const columnTotals = calculateColumnTotals();
-        return columnTotals['priorYear']?.toFixed(2) || '0.00';
-      })()}
-    </td> */}
-                    {/* {normalizedFiscalYear !== "All"  && (
-  // <td
-  //   key="total-prior-year"
-  //   className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
-  // >
-  //   {(() => {
-  //     const columnTotals = calculateColumnTotals();
-  //     return columnTotals['priorYear']?.toFixed(2) || '0.00';
-  //   })()}
-  // </td>
-  <td key="total-prior-year" className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200">
-  {columnTotals['priorYear']?.toFixed(2) || '0.00'}
-</td>
-)} */}
-                    {shouldShowPriorYear() && (
-                      <td
-                        key="total-prior-year"
-                        className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
-                      >
-                        {columnTotals.priorYear?.toFixed(2) || "0.00"}
-                      </td>
-                    )}
+    {shouldShowPriorYear() && (
+      <td
+        key="total-prior-year"
+        className="tbody-td text-center text-xs font-bold"
+      >
+        {columnTotals.priorYear?.toFixed(2) || "0.00"}
+      </td>
+    )}
 
-                    {/* Existing month columns */}
-                    {/* {sortedDurations.map((duration) => {
+    {sortedDurations.map((duration) => {
       const uniqueKey = `${duration.monthNo}_${duration.year}`;
-      const columnTotals = calculateColumnTotals();
-      const total = columnTotals[uniqueKey] || 0;
       return (
         <td
           key={`total-${uniqueKey}`}
-          className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
+          className="tbody-td text-center text-xs font-bold"
         >
-          {total.toFixed(2)}
-        </td>
-      );
-    })} */}
-                    {sortedDurations.map((duration) => {
-                      const uniqueKey = `${duration.monthNo}_${duration.year}`;
-                      return (
-                        <td
-                          key={`total-${uniqueKey}`}
-                          className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
-                        >
-                          {columnTotals[uniqueKey]?.toFixed(2) || "0.00"}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr className="bg-gray-200 font-bold text-center" style={{ height: `${ROW_HEIGHT_DEFAULT}px` }}>
-    {shouldShowCTD() && (
-      <td className="tbody-td text-center text-[10px] text-blue-800 bg-blue-50">
-        Cost: {columnTotals.ctd_cost?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || "0.00"}
-      </td>
-    )}
-    {shouldShowPriorYear() && (
-      <td className="tbody-td text-center text-[10px] text-blue-800 bg-blue-50">
-        Cost: {columnTotals.priorYear_cost?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || "0.00"}
-      </td>
-    )}
-    {sortedDurations.map((duration) => {
-      const key = `${duration.monthNo}_${duration.year}_cost`;
-      return (
-        <td key={`total-cost-${duration.monthNo}_${duration.year}`} className="tbody-td text-center text-[10px] text-blue-800 bg-blue-50">
-          Cost: {columnTotals[key]?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || "0.00"}
+          {columnTotals[uniqueKey]?.toFixed(2) || "0.00"}
         </td>
       );
     })}
   </tr>
-                </tfoot>
+
+  {/* Cost row */}
+  <tr
+    className="text-center"
+    style={{
+      position: "sticky",
+      bottom: 0,
+      zIndex: 21,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      backgroundColor: "#e5f3fb", // lighter blue cost band
+    }}
+  >
+    {shouldShowCTD() && (
+      <td className="tbody-td text-center text-[10px] font-bold pr-1"
+          style={{ color: "#1d4ed8" }}>
+        {/* Cost{" "} */}
+        {columnTotals.ctd_cost?.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) || "0.00"}
+      </td>
+    )}
+
+    {shouldShowPriorYear() && (
+      <td className="tbody-td text-center text-[10px] font-bold pr-1"
+          style={{ color: "#1d4ed8" }}>
+        {/* Cost:{" "} */}
+        {columnTotals.priorYear_cost?.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) || "0.00"}
+      </td>
+    )}
+
+    {sortedDurations.map((duration) => {
+      const key = `${duration.monthNo}_${duration.year}_cost`;
+      return (
+        <td
+          key={`total-cost-${duration.monthNo}_${duration.year}`}
+          className="tbody-td text-center text-[10px] font-bold pr-1"
+          style={{ color: "#1d4ed8" }}
+        >
+          {/* Cost:{" "} */}
+          {columnTotals[key]?.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) || "0.00"}
+        </td>
+      );
+    })}
+  </tr>
+</tfoot>
+
               </table>
             </div>
           </div>

@@ -324,7 +324,7 @@ const HoursCeilings = ({ projectId, isSearched, updatedBy = "Kartikay" }) => {
             </span>
           </div>
           <button
-            className="mb-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+            className="mb-2 px-3 py-1 bg-[#17414d] text-white group-hover:text-gray rounded text-xs"
             onClick={handleNewClick}
           >
             New

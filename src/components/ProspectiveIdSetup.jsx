@@ -838,7 +838,8 @@ const ProspectiveIDSetup = () => {
       !employeeHomeOrg ||
       !employeeType
     ) {
-      alert("Please fill all fields for Employee data.");
+      // alert("Please fill all fields for Employee data.");
+      toast.info("Please fill all fields for Employee data.")
       return;
     }
     const newEmployee = {
@@ -901,7 +902,8 @@ const ProspectiveIDSetup = () => {
 
   const handleAddVendor = useCallback(() => {
     if (!vendorID || !vendorName) {
-      alert("Please fill all fields for Vendor data.");
+      // alert("Please fill all fields for Vendor data.");
+      toast.info("Please fill all fields for Vendor data.")
       return;
     }
     const newVendor = {
@@ -952,7 +954,8 @@ const ProspectiveIDSetup = () => {
 
   const handleAddPLC = useCallback(() => {
     if (!plcCategory || !plcHrlyRate) {
-      alert("Please fill all fields for PLC data.");
+      // alert("Please fill all fields for PLC data.");
+      toast.info("Please fill all fields for PLC data.")
       return;
     }
     const newPLC = {
@@ -1026,11 +1029,17 @@ const ProspectiveIDSetup = () => {
       <div className="min-h-screen bg-gray-100 text-gray-900 flex flex-col items-center justify-center p-4">
         <div className="w-full px-8 bg-white rounded-xl shadow-lg p-8 space-y-6 border border-gray-300">
           {/* Header */}
-          <div className="flex justify-between items-center gap-2 mb-6">
+          {/* <div className="flex justify-between items-center gap-2 mb-6">
             <h2 className="w-full bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
               Prospective ID Setup
             </h2>
-          </div>
+          </div> */}
+          	<div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             Prospective ID Setup
+          </h2>
+          
+        </div>	
 
           {/* Tabs */}
           <div className="flex border-b border-gray-200 mb-6">
@@ -1040,8 +1049,8 @@ const ProspectiveIDSetup = () => {
                 className={cn(
                   "py-2 px-4 text-lg font-medium focus:outline-none",
                   activeTab === tab
-                    ? "border-b-2 border-blue-600 text-blue-600"
-                    : "text-gray-600 hover:text-blue-600"
+                    ? "bg-[#17414d] text-white group-hover:text-gray"
+                    : "text-gray-600 hover:text-gray-800"
                 )}
                 onClick={() => setActiveTab(tab)}
               >
@@ -1147,7 +1156,7 @@ const ProspectiveIDSetup = () => {
                 <div className="flex justify-end">
                   <button
                     onClick={handleAddEmployee}
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                    className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
                   >
                     Add Employee
                   </button>
@@ -1352,7 +1361,7 @@ const ProspectiveIDSetup = () => {
                 <div className="flex justify-end">
                   <button
                     onClick={handleAddVendor}
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                    className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
                   >
                     Add Vendor
                   </button>
@@ -1508,7 +1517,7 @@ const ProspectiveIDSetup = () => {
                 <div className="flex justify-end">
                   <button
                     onClick={handleAddPLC}
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                    className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
                   >
                     Add PLC
                   </button>

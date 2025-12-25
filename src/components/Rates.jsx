@@ -466,12 +466,12 @@ const calculateRate = async (yearArg) => {
           <div className="w-2 h-5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" />
           Pool Rates by Month
         </h3> */}
-       <button
+       {/* <button
   onClick={handleCalculateClick}
-  className="inline-flex items-center px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  className="inline-flex items-center px-3 py-1.5 rounded-md bg-[#17414d] text-white group-hover:text-gray text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
 >
   Calculate Rate
-</button>
+</button> */}
 
 
         <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm max-h-[400px] bg-white">

@@ -82,10 +82,13 @@ useEffect(() => {
 
  
   return (
-    <div className="max-w-7xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg ml-5">
-      <h1 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
-        NBIs Analogous Rate
-      </h1>
+    <div className="w-full mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg ml-5">
+     <div className="p-4 border-b mb-1 border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             NBIs Analogous Rate
+          </h2>
+          
+        </div>
       {/* project selector (API-sourced) — free-text entry removed on purpose */}
  <table className="min-w-full border border-gray-300 text-sm">
   <thead className="bg-gray-100">

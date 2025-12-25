@@ -45,9 +45,15 @@ const PoolRateTabs = () => {
 
   return (
     <div className="border-overall bg-white p-4 ml-5">
-      <h2 className="text-lg font-semibold mb-4 blue-text">
+      {/* <h2 className="text-lg font-semibold mb-4 blue-text">
         Forward Rate
-      </h2>
+      </h2> */}
+      <div className="p-4 mb-1 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             Forward Rate
+          </h2>
+          
+        </div>
 
       {/* Tab header */}
       <div className="flex gap-2 mb-4">

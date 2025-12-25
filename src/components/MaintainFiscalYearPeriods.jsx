@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { backendUrl } from "./config";
+import { toast } from "react-toastify";
 
 // Utility function for combining Tailwind CSS classes
 const cn = (...args) => {
@@ -112,7 +113,8 @@ const MaintainFiscalYearPeriods = () => {
     // console.log("Saving Fiscal Year Periods:");
     // console.log("Accounting Periods Data:", accountingPeriodsData);
     // console.log("Budgeting Periods Data:", budgetingPeriodsData);
-    alert("Fiscal Year Period settings saved (console logged)!");
+    // alert("Fiscal Year Period settings saved (console logged)!");
+    toast.success("Fiscal Year Period settings saved  ")
     // In a real application, you would send this data to your backend API.
   }, [accountingPeriodsData, budgetingPeriodsData]);
 
@@ -131,10 +133,16 @@ const MaintainFiscalYearPeriods = () => {
       {/* Adjusted max-w-7xl to w-full px-8 for wider display within its parent */}
       <div className="w-full px-8 bg-white rounded-xl shadow-lg p-8 space-y-6 border border-gray-300">
         {/* Header with Save Button */}
-        <div className="flex justify-between items-center gap-3 mb-6">
+        {/* <div className="flex justify-between items-center gap-3 mb-6">
           <h2 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text  ">
-            Maintain Fiscal Year Periods
+            
           </h2>
+        </div> */}
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             Maintain Fiscal Year Periods
+          </h2>
+          
         </div>
 
         {/* Tab Navigation */}
@@ -143,8 +151,8 @@ const MaintainFiscalYearPeriods = () => {
             className={cn(
               "py-2 px-4 text-lg font-medium focus:outline-none",
               activeTab === "accountingPeriods"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600"
+                ? "border-b-2 text-gray-600 group-hover:text-[#17414d]"
+                : "text-gray-600 group-hover:text-[#17414d]"
             )}
             onClick={() => setActiveTab("accountingPeriods")}
           >
@@ -154,8 +162,8 @@ const MaintainFiscalYearPeriods = () => {
             className={cn(
               "py-2 px-4 text-lg font-medium focus:outline-none",
               activeTab === "budgetingPeriods"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600"
+                ? "border-b-2 text-gray-600 group-hover:text-[#17414d]"
+                : "text-gray-600 group-hover:text-[#17414d]"
             )}
             onClick={() => setActiveTab("budgetingPeriods")}
           >
@@ -199,7 +207,7 @@ const MaintainFiscalYearPeriods = () => {
           <div className="flex justify-end">
             <button
               onClick={handleSaveSettings}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4  rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 -mt-3 mb-2 transition-colors duration-200"
+              className="bg-[#17414d] text-white group-hover:text-gray  font-semibold py-2 px-4  rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 -mt-3 mb-2 transition-colors duration-200"
             >
               Save
             </button>

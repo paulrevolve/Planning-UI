@@ -186,15 +186,15 @@ const Login = () => {
   // );
 
 return (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
+  <div className="min-h-screen flex items-center justify-center bg-[#0f2930]">
     <div className="w-full max-w-md">
-      <div className="bg-gradient rounded-2xl shadow-[0_24px_80px_rgba(15,63,168,0.45)] border border-white/20 px-10 py-8">
+      <div className="rounded-2xl shadow-[0_22px_60px_rgba(0,0,0,0.45)] border border-white/10 bg-[#17414d] px-10 py-8">
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <img
-            src={logo}   // put your logo path here
+            src={logo}
             alt="Sumaria Systems"
-            className="h-20 w-60"
+            className="h-16 w-auto"
           />
         </div>
 
@@ -202,7 +202,7 @@ return (
         <h1 className="text-center text-2xl font-semibold text-white mb-1">
           Sign in
         </h1>
-        <p className="text-center text-sm text-blue-200 mb-6">
+        <p className="text-center text-sm text-gray-200 mb-6">
           Enter your credentials to continue
         </p>
 
@@ -214,10 +214,13 @@ return (
 
         {/* Username */}
         <div className="mb-4">
+          <label className="block text-xs font-medium text-gray-100 mb-1">
+            Username
+          </label>
           <input
             type="text"
-            placeholder="Username"
-            className="w-full px-3 py-2.5 rounded-md bg-[#1243b2] border border-blue-300/40 text-white placeholder-blue-100/80 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-100"
+            placeholder="Enter your username"
+            className="w-full px-3 py-2.5 rounded-md bg-[#102a32] border border-[#1f4b59] text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-[#25a0b5] focus:border-[#25a0b5]"
             ref={usernameRef}
             onKeyDown={handleKeyDown}
             disabled={loading}
@@ -226,10 +229,13 @@ return (
 
         {/* Password */}
         <div className="mb-6">
+          <label className="block text-xs font-medium text-gray-100 mb-1">
+            Password
+          </label>
           <input
             type="password"
-            placeholder="Password"
-            className="w-full px-3 py-2.5 rounded-md bg-[#1243b2] border border-blue-300/40 text-white placeholder-blue-100/80 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-100"
+            placeholder="Enter your password"
+            className="w-full px-3 py-2.5 rounded-md bg-[#102a32] border border-[#1f4b59] text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-[#25a0b5] focus:border-[#25a0b5]"
             ref={passwordRef}
             onKeyDown={handleKeyDown}
             disabled={loading}
@@ -240,18 +246,32 @@ return (
         <button
           onClick={handleLogin}
           disabled={loading}
-          className={`w-full py-2.5 rounded-md text-sm font-semibold tracking-wide transition-colors ${
+          className={`w-full py-2.5 rounded-md text-sm font-semibold tracking-wide transition-all duration-150 ${
             loading
-              ? "bg-blue-300 cursor-not-allowed text-blue-100"
-              : "bg-[#0a7cff] hover:bg-[#0663cc] text-white cursor-pointer"
+              ? "bg-[#365c68] cursor-not-allowed text-gray-300"
+              : "bg-[#25a0b5] hover:bg-[#1c7f90] text-white group-hover:text-gray-100"
           }`}
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        {/* Subtext / link row */}
+        <div className="mt-4 flex items-center justify-between text-[11px] text-gray-200">
+          {/* <span className="opacity-80">
+            © {new Date().getFullYear()} Sumaria Systems
+          </span> */}
+          {/* <button
+            type="button"
+            className="text-gray-200 hover:text-gray-300 underline-offset-2 hover:underline"
+          >
+            Need help?
+          </button> */}
+        </div>
       </div>
     </div>
   </div>
 );
+
 
 
 

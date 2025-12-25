@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { backendUrl } from "./config";
+import { toast } from "react-toastify";
 
 const DisplaySettingsContent = () => {
   // Existing states for the fields in the Display Settings form
@@ -101,23 +102,28 @@ const DisplaySettingsContent = () => {
 
     // Basic validation for required fields
     if (!budgetHeaderDateFormat) {
-      alert("Please select a Budget Header Date Format.");
+      // alert("Please select a Budget Header Date Format.");
+      toast.info("Please select a Budget Header Date Format.")
       return;
     }
     if (!reportVarianceCalculation) {
-      alert("Please select a Report Variance Calculation option.");
+      // alert("Please select a Report Variance Calculation option.");
+      toast.info("Please select a Report Variance Calculation option.")
       return;
     }
     if (!reportPrecisionPercent) {
-      alert("Report Precision Percent is required.");
+      // alert("Report Precision Percent is required.");
+      toast.info("Report Precision Percent is required.")
       return;
     }
     if (!poLagDays) {
-      alert("PO Lag Days is required.");
+      // alert("PO Lag Days is required.");
+      toast.info("PO Lag Days is required.")
       return;
     }
     if (!financialStatementCode) {
-      alert("Financial Statement Code is required.");
+      // alert("Financial Statement Code is required.");
+      toast.info("Financial Statement Code is required.")
       return;
     }
 
@@ -170,10 +176,12 @@ const DisplaySettingsContent = () => {
 
       const result = await response.json();
       // console.log('Display settings saved successfully:', result);
-      alert("Display settings saved successfully!"); // Provide user feedback
+      // alert("Display settings saved successfully!"); // Provide user feedback
+      toast.success("Display settings saved successfully!")
     } catch (e) {
       // console.error("Error saving Display settings:", e);
-      alert(`Error saving Display settings: ${e.message}`); // Provide user feedback
+      alert(`Error saving Display settings: ${e.message}`);
+      toast.error(`Error saving Display settings: ${e.message}`) // Provide user feedback
     }
   }, [
     budgetHeaderDateFormat,
@@ -202,9 +210,12 @@ const DisplaySettingsContent = () => {
       {/* Changed max-w-5xl to w-full px-8 for wider display */}
       <div className="w-full px-8 bg-white border-line p-8 space-y-6  ">
         {/* Changed text-center to text-left */}
-        <h2 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
-          Display Settings
-        </h2>
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             Display Settings
+          </h2>
+          
+        </div>	
         {/* Added bg-gray-50, p-4, rounded-lg, border, and border-gray-300 to the grid container */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-gray-50 p-4 border-line">
           {/* Left Column Fields */}
@@ -564,7 +575,7 @@ const DisplaySettingsContent = () => {
           <button
             type="button"
             onClick={handleSaveSettings}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+            className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
           >
             Save Settings
           </button>

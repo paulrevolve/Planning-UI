@@ -175,16 +175,22 @@ const TemplatePoolMapping = () => {
   }
 
   return (
-    <div className="p-4 sm:p-5 max-w-6xl mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
+    <div className="p-4 sm:p-5 w-full mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
       <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
         closeOnClick
       />
-      <h1 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
+      {/* <h1 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
         Template Pool Mapping
-      </h1>
+      </h1> */}
+      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             Template Pool Mapping
+          </h2>
+          
+        </div>
       {loading && <p className="text-gray-600 text-sm">Loading...</p>}
       {isSaving && <p className="text-gray-600 text-sm">Saving...</p>}
       {error && <p className="text-red-600 text-sm mb-4">Error: {error}</p>}
@@ -252,7 +258,7 @@ const TemplatePoolMapping = () => {
             <div className="flex justify-end mt-4">
               <button
                 type="button"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 text-sm font-semibold"
+                className="px-4 py-2 rounded-lg bg-[#17414d] text-white group-hover:text-gray focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 text-sm font-semibold"
                 onClick={handleSave}
                 disabled={loading || isSaving}
               >

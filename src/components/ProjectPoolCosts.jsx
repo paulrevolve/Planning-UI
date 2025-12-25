@@ -265,12 +265,14 @@ const columnTotals = useMemo(() => {
               </tbody>
               <tfoot>
                 <tr
-                  className="bg-gray-100 font-bold"
+                  className="font-bold"
                   style={{
                     height: `${ROW_HEIGHT_DEFAULT}px`,
                     position: "sticky",
                     bottom: 48,
                     zIndex: 20,
+                     backgroundColor: "#d7ebf3", // light blue like screenshot
+      color: "#000000",
                   }}
                 >
                   <td className="tbody-td px-4 text-center text-gray-800 border-t">
@@ -284,6 +286,8 @@ const columnTotals = useMemo(() => {
                     position: "sticky",
                     bottom: 0,
                     zIndex: 20,
+                     backgroundColor: "#d7ebf3", // light blue like screenshot
+      color: "#000000", 
                   }}
                 >
                   <td className="tbody-td px-4 text-center text-blue-900 border-t">
@@ -351,6 +355,8 @@ const columnTotals = useMemo(() => {
                     position: "sticky",
                     bottom: 48,
                     zIndex: 20,
+                     backgroundColor: "#d7ebf3", // light blue like screenshot
+      color: "#000000",
                   }}
                 >
                   {visibleDurations.map((d) => {
@@ -378,6 +384,8 @@ const columnTotals = useMemo(() => {
                     position: "sticky",
                     bottom: 0,
                     zIndex: 20,
+                     backgroundColor: "#d7ebf3", // light blue like screenshot
+      color: "#000000",
                   }}
                 >
                   {visibleDurations.map((d) => {

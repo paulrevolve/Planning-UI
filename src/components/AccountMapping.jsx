@@ -838,11 +838,18 @@ const AccountMapping = () => {
   return (
     <div className="flex justify-center  h-screen w-full overflow-hidden p-4 text-[13px] font-sans ml-3 ">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="w-full max-w-6xl flex flex-col h-full bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden ">
+      <div className="w-full  flex flex-col h-full bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden ">
         
-        <div className="w-full bg-[#f0f7ff] border-b border-gray-200 p-3 relative shadow-sm shrink-0 text-center">
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg"></div>
-          <h2 className="text-lg font-semibold text-gray-800 tracking-wide uppercase">Account Mapping</h2>
+          {/* <div className="w-full bg-[#f0f7ff] border-b border-gray-200 p-3 relative shadow-sm shrink-0 text-center">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg"></div>
+            <h2 className="text-lg font-semibold text-gray-800 tracking-wide uppercase">Account Mapping</h2>
+          </div> */}
+
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            Account Mapping
+          </h2>
+          
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar relative">

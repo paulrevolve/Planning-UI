@@ -6459,22 +6459,24 @@ const isIndeterminate =
                       );
                     })}
                 </tbody>
-                <tfoot>
-                  <tr
-                    className="bg-white font-normal text-center text-white "
-                    style={{
-                      position: "sticky",
-                      bottom: 0,
-                      zIndex: 20,
-                      height: `${ROW_HEIGHT_DEFAULT}px`,
-                      // height: "25px",
-                      lineHeight: "normal",
-                      borderTop: "2px solid #d1d5db", // tailwind gray-300
-                    }}
-                  >
-                    <td colSpan={EMPLOYEE_COLUMNS.length}>Total Amount </td>
-                  </tr>
-                </tfoot>
+               <tfoot>
+  <tr
+    className="font-normal text-center"
+    style={{
+      position: "sticky",
+      bottom: 0,
+      zIndex: 20,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      borderTop: "2px solid #d1d5db",
+      backgroundColor: "#d7ebf3", // light blue
+      color: "#000000",
+    }}
+  >
+    <td colSpan={EMPLOYEE_COLUMNS.length + 1}>Total Amount</td>
+  </tr>
+</tfoot>
+
               </table>
             </div>
             <div
@@ -6818,78 +6820,53 @@ const isIndeterminate =
                       );
                     })}
                 </tbody>
+             
+
                 <tfoot>
-                  <tr
-                    className="bg-gray-200 font-bold text-center"
-                    style={{
-                      position: "sticky",
-                      bottom: 0,
-                      zIndex: 20,
-                      height: `${ROW_HEIGHT_DEFAULT}px`,
-                      // height: "10px",
-                      lineHeight: "normal",
-                      borderTop: "2px solid #d1d5db", // tailwind gray-300
-                    }}
-                  >
-                    {/* CTD and Prior Year footer totals */}
-                    {normalizedFiscalYear !== "All" && (
-                      <>
-                        {/* <td className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200">
-      {(() => {
-        const columnTotals = calculateColumnTotals();
-        return (columnTotals['ctd'] || 0).toFixed(2);
-      })()}
-    </td> */}
-                        {shouldShowCTD() && (
-                          <td className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200">
-                            {(columnTotals["ctd"] || 0).toFixed(2)}
-                          </td>
-                        )}
+  <tr
+    className="font-bold text-center"
+    style={{
+      position: "sticky",
+      bottom: 0,
+      zIndex: 20,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      borderTop: "2px solid #d1d5db",
+      backgroundColor: "#d7ebf3", // same light blue
+      color: "#000000",
+    }}
+  >
+    {normalizedFiscalYear !== "All" && (
+      <>
+        {shouldShowCTD() && (
+          <td className="tbody-td text-center sticky bottom-0 text-xs font-bold">
+            {(columnTotals["ctd"] || 0).toFixed(2)}
+          </td>
+        )}
 
-                        {/* <td className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200">
-      {(() => {
-        const columnTotals = calculateColumnTotals();
-        return (columnTotals['priorYear'] || 0).toFixed(2);
-      })()}
-    </td> */}
-                        {shouldShowPriorYear() && (
-                          <td className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200">
-                            {(columnTotals["priorYear"] || 0).toFixed(2)}
-                          </td>
-                        )}
-                      </>
-                    )}
-                    {/* {sortedDurations.map((duration) => {
-                      const uniqueKey = `${duration.monthNo}_${duration.year}`;
-                      const columnTotals = calculateColumnTotals();
-                      const total = columnTotals[uniqueKey] || 0;
+        {shouldShowPriorYear() && (
+          <td className="tbody-td text-center sticky bottom-0 text-xs font-bold">
+            {(columnTotals["priorYear"] || 0).toFixed(2)}
+          </td>
+        )}
+      </>
+    )}
 
-                      return (
-                        <td
-                          key={`total-${uniqueKey}`}
-                          className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
-                        >
-                          {total.toFixed(2)}
-                        </td>
-                      );
-                    })} */}
-                    {sortedDurations.map((duration) => {
-                      const uniqueKey = `${duration.monthNo}_${duration.year}`;
-                      const total = columnTotals[uniqueKey] || 0;
-                      {
-                        /* ✅ Use memoized columnTotals directly */
-                      }
-                      return (
-                        <td
-                          key={`total-${uniqueKey}`}
-                          className="tbody-td text-center sticky bottom-0 text-xs font-bold bg-gray-200"
-                        >
-                          {total.toFixed(2)}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                </tfoot>
+    {sortedDurations.map((duration) => {
+      const uniqueKey = `${duration.monthNo}_${duration.year}`;
+      const total = columnTotals[uniqueKey] || 0;
+      return (
+        <td
+          key={`total-${uniqueKey}`}
+          className="tbody-td text-center sticky bottom-0 text-xs font-bold"
+        >
+          {total.toFixed(2)}
+        </td>
+      );
+    })}
+  </tr>
+</tfoot>
+
               </table>
             </div>
           </div>

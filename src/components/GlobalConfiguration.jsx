@@ -535,9 +535,12 @@ const LaborForm = () => {
     <div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center p-4">
       {/* Retained w-full px-8 for wider display within its parent */}
       <div className="w-full px-8 bg-white border-line p-6 space-y-6">
-        <h2 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
-          Settings
-        </h2>
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             Settings
+          </h2>
+          
+        </div>	
 
         {/* Tab Navigation */}
         <div className="flex border-line mb-6">
@@ -545,8 +548,8 @@ const LaborForm = () => {
             className={cn(
               "py-2 px-4 text-lg font-medium focus:outline-none",
               activeTab === "projectSettings"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600"
+                ? "border-b-2 bg-[#17414d] text-white group-hover:text-gray"
+                : "text-gray-600 hover:text-gray-800"
             )}
             onClick={() => setActiveTab("projectSettings")}
           >
@@ -556,8 +559,8 @@ const LaborForm = () => {
             className={cn(
               "py-2 px-4 text-lg font-medium focus:outline-none",
               activeTab === "OrganizationSettings"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600"
+                ? "border-b-2 bg-[#17414d] text-white group-hover:text-gray"
+                : "text-gray-600 hover:text-gray-800"
             )}
             onClick={() => setActiveTab("OrganizationSettings")}
           >
@@ -1538,7 +1541,7 @@ const LaborForm = () => {
           <button
             type="button"
             onClick={handleSaveAllSettings}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+            className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
           >
             Save Setting
           </button>

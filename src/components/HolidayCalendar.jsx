@@ -250,10 +250,16 @@ const parseDate = (dateStr) => {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl px-8 bg-white p-8 space-y-6 border-line">
-        <h2 className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
+      <div className="w-full px-8 bg-white p-8 space-y-6 border-line">
+        {/* <h2 className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
           Setup Annual Holidays
-        </h2>
+        </h2> */}
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             Setup Annual Holidays
+          </h2>
+          
+        </div>	
         <div className="bg-gray-50 p-4  grid grid-cols-1 md:grid-cols-4 gap-4 items-center border-line">
           <div className="flex items-center space-x-2">
             <label
@@ -279,7 +285,7 @@ const parseDate = (dateStr) => {
             <button
               onClick={handleAddNewRow}
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm whitespace-nowrap"
+              className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm whitespace-nowrap"
             >
               New
             </button>

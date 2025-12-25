@@ -2397,6 +2397,7 @@ const ProjectPlanTable = ({
   filteredProjects,
   onPlanCreated,
   onOpenDetails,
+  onOpenMonthly,
 }) => {
   const [plans, setPlans] = useState([]);
   const [filteredPlans, setFilteredPlans] = useState([]);
@@ -3912,7 +3913,7 @@ const ProjectPlanTable = ({
       return { checked: plan.isCompleted, disabled: !!plan.isApproved };
 
     if (col === "isApproved")
-      return { checked: plan.isApproved, disabled: !plan.isCompleted };
+      return { checked: plan.isApproved, disabled: !plan.isCompleted || plan.finalVersion };
 
     if (col === "finalVersion") {
       const anotherFinalVersionIdx = plans.findIndex(
@@ -3991,7 +3992,11 @@ const ProjectPlanTable = ({
     if (!currentPlan || !currentPlan.plType || !currentPlan.version)
       return true;
     if (field === "isCompleted") return !!currentPlan.isApproved;
-    if (field === "isApproved") return !currentPlan.isCompleted;
+    // if (field === "isApproved") return !currentPlan.isCompleted;
+    if (field === "isApproved") {
+    // Allow approve/unapprove even when concluded - unconclude first if needed
+    return !currentPlan.isCompleted && !currentPlan.finalVersion;
+  }
     if (field === "finalVersion") {
       const anotherFinalVersionIdx = plans.findIndex(
         (p) =>
@@ -4211,6 +4216,21 @@ const ProjectPlanTable = ({
   Detail
 </button>
 
+                <button 
+  onClick={() => {
+    if (!selectedPlan) return;
+    onOpenMonthly?.();
+  }}
+  disabled={!selectedPlan || isActionLoading}
+  className={`btn1 ${
+    !selectedPlan || isActionLoading ? "btn-disabled" : "btn-blue cursor-pointer"
+  }`}
+  title="Monthly Forecast"
+>
+  Monthly Forecast
+</button>
+
+
                 <button
                   onClick={() => handleTopButtonToggle("isCompleted")}
                   disabled={
@@ -4239,7 +4259,7 @@ const ProjectPlanTable = ({
                 <button
                   onClick={() => handleTopButtonToggle("isApproved")}
                   disabled={
-                    getTopButtonDisabled("isApproved") || isActionLoading
+                    getTopButtonDisabled("isApproved") || isActionLoading || getCurrentPlan()?.finalVersion
                   }
                   className={`btn1 ${
                     getTopButtonDisabled("isApproved") || isActionLoading

@@ -646,7 +646,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
             </div>
             <button
               onClick={handleSearch}
-              className="bg-blue-600 text-white px-6 py-1.5 rounded cursor-pointer text-xs sm:text-sm font-semibold hover:bg-blue-700 transition-all shadow-md active:scale-95 w-full sm:w-auto"
+              className="bg-[#17414d] text-white group-hover:text-gray px-6 py-1.5 rounded cursor-pointer text-xs sm:text-sm font-semibold   transition-all shadow-md active:scale-95 w-full sm:w-auto"
             >
               Search
             </button>
@@ -793,7 +793,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
 
       onClick={() => setActiveTab("hours")}
     >
-      Hours
+      BUD/EAC
     </span>
     {/* <span
       // className={`btn ${activeTab === "amounts" ? "btn-active" : "btn-inactive"}`}
@@ -949,6 +949,19 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
   setViewMode("details");
   setShowTabs(true);
   setActiveTab("hours");   // open Hours as default
+}}
+
+ onOpenMonthly={() => {
+  if (!selectedPlan) {
+    toast.info("Please select a plan first.", {
+      toastId: "no-plan-selected",
+      autoClose: 3000,
+    });
+    return;
+  }
+  setViewMode("details");
+  setShowTabs(true);
+  setActiveTab("analysisByPeriod");   // open Hours as default
 }}
 
 />
@@ -1188,12 +1201,22 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
     ref={(el) => (amountsRefs.current[searchTerm] = el)}
   >
     {/* shared project header + close */}
-    <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-      <button
-        className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
-        onClick={handleCloseTab}
-        title="Close project details"
-      >
+     <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-5 w-5"
@@ -1239,7 +1262,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
       </div>
     </div>
 
-    <div className="max-w-6xl mx-auto">
+    <div className="w-full mx-auto">
       <div className="border border-gray-200 rounded-md shadow-sm bg-white">
         <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
           <span className="font-semibold text-xs sm:text-sm blue-text">
@@ -1265,19 +1288,29 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
 
 
         {/* Revenue Analysis Tab */}
-        {activeTab === "revenueAnalysis" &&
+        {viewMode === "details" && activeTab === "revenueAnalysis" &&
           selectedPlan &&
           currentUserRole === "admin" && (
             <div
               className="relative  p-2 sm:p-4 border-line min-h-[150px] scroll-mt-16"
               ref={(el) => (revenueRefs.current[searchTerm] = el)}
             >
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-                <button
-                  className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
-                  onClick={handleCloseTab}
-                  title="Close project details"
-                >
+                <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -1337,12 +1370,22 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
               className="relative   p-2 sm:p-4 border-line min-h-[150px] scroll-mt-16"
               ref={(el) => (analysisRefs.current[searchTerm] = el)}
             >
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-                <button
-                  className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
-                  onClick={handleCloseTab}
-                  title="Close project details"
-                >
+                <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -1456,12 +1499,22 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
                     />
                   </svg>
                 </button> */}
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-              <button
-                className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
-                onClick={handleCloseTab}
-                title="Close project details"
-              >
+              <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -1517,12 +1570,22 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
               className="relative  p-2 sm:p-4 border-line  min-h-[150px] scroll-mt-16"
               ref={(el) => (revenueSetupRefs.current[searchTerm] = el)}
             >
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-                <button
-                  className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
-                  onClick={handleCloseTab}
-                  title="Close project details"
-                >
+                <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -1584,12 +1647,22 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
               className="relative  p-2 sm:p-4 border-line min-h-[150px] scroll-mt-16"
               ref={(el) => (revenueCeilingRefs.current[searchTerm] = el)}
             >
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-                <button
-                  className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
-                  onClick={handleCloseTab}
-                  title="Close project details"
-                >
+                <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -1651,12 +1724,22 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
               className="relative  p-2 sm:p-4 border-line min-h-[150px] scroll-mt-16"
               ref={(el) => (fundingRefs.current[searchTerm] = el)}
             >
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-                <button
-                  className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
-                  onClick={handleCloseTab}
-                  title="Close project details"
-                >
+                <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -1711,12 +1794,22 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
             className="relative  p-2 sm:p-4 border-line min-h-[150px] scroll-mt-16"
             ref={(el) => (warningRefs.current[searchTerm] = el)}
           >
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-              <button
-                className="absolute top-2 right-2 blue-text hover:text-red-500 text-xl z-20 cursor-pointer bg-white bg-opacity-80 rounded-full p-0.5 transition-shadow shadow"
-                onClick={handleCloseTab}
-                title="Close project details"
-              >
+              <div 
+  className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative" 
+  style={{ 
+    backgroundColor: "#e9f6fb", 
+    color: "#17414d", 
+    borderLeftColor: "#17414d",
+    borderRadius: "8px" // Ensures consistent rounding on all corners
+  }}
+>
+  {/* Close Button Integrated into the New Styled Header */}
+  <button
+    className="absolute top-1/2 -translate-y-1/2 right-3 hover:text-red-500 transition-colors z-20 cursor-pointer"
+    onClick={handleCloseTab}
+    title="Close project details"
+    style={{ color: "#17414d" }}
+  >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"

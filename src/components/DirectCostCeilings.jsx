@@ -370,7 +370,7 @@ const DirectCostCeilings = ({ projectId, isSearched, updatedBy = "TEST" }) => {
             <span className="ml-4 text-sm text-gray-900">Org ID: 1.02</span>
           </div>
           <button
-            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+            className="px-3 py-1 bg-[#17414d] text-white group-hover:text-gray rounded  text-xs"
             onClick={handleNewClick}
           >
             New

@@ -1024,14 +1024,16 @@ const NavigationSidebar = ({ onHoverChange }) => {
       pathname.includes("/dashboard/role-rights") ||
       pathname.includes("/dashboard/mass-utility") ||
       pathname.includes("/dashboard/account-mapping") ||
-      pathname.includes("/dashboard/projectmapping")
+      pathname.includes("/dashboard/projectmapping") ||
+      pathname.includes("/dashboard/monthly-forecast")
   );
 
   const [planningOpen, setPlanningOpen] = useState(
     pathname.includes("/dashboard/project-budget-status") ||
       pathname.includes("/dashboard/new-business") ||
       pathname.includes("/dashboard/project-report") ||
-      pathname.includes("/dashboard/mass-utility")
+      pathname.includes("/dashboard/mass-utility") ||
+      pathname.includes("/dashboard/monthly-forecast")
   );
 
   const [configurationOpen, setConfigurationOpen] = useState(
@@ -1102,13 +1104,15 @@ const NavigationSidebar = ({ onHoverChange }) => {
           pathname.includes("/dashboard/role-rights") ||
           pathname.includes("/dashboard/mass-utility") ||
           pathname.includes("/dashboard/account-mapping") ||
-          pathname.includes("/dashboard/projectmapping")
+          pathname.includes("/dashboard/projectmapping") ||
+      pathname.includes("/dashboard/monthly-forecast")
       );
       setPlanningOpen(
         pathname.includes("/dashboard/project-budget-status") ||
           pathname.includes("/dashboard/new-business") ||
           pathname.includes("/dashboard/project-report") ||
-          pathname.includes("/dashboard/mass-utility")
+          pathname.includes("/dashboard/mass-utility") ||
+      pathname.includes("/dashboard/monthly-forecast")
       );
       setConfigurationOpen(
         pathname.includes("/dashboard/pool-rate-tabs") ||
@@ -1145,13 +1149,13 @@ const NavigationSidebar = ({ onHoverChange }) => {
     }
   }, [pathname, currentUserRole, navigate]);
 
-  const handleLinkClick = (pagePath) => {
-    setSelectedPage(pagePath);
-    navigate(pagePath);
-    if (isSidebarOpen) {
-      setIsSidebarOpen(false);
-    }
-  };
+    const handleLinkClick = (pagePath) => {
+      setSelectedPage(pagePath);
+      navigate(pagePath);
+      if (isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
 
   const handleCloseSidebar = () => {
     if (isSidebarOpen) {
@@ -1251,6 +1255,12 @@ const NavigationSidebar = ({ onHoverChange }) => {
                       selected={selectedPage}
                       onClick={handleLinkClick}
                     />
+                    {/* <NavItem
+                      label="Monthly Forecast"
+                      path="/dashboard/monthly-forecast"
+                      selected={selectedPage}
+                      onClick={handleLinkClick}
+                    /> */}
                   </div>
                 )}
               </div>

@@ -234,7 +234,8 @@ const BurdenCostCeilingDetails = ({
   // --- New Entry row controls ---
   const handleNewClick = () => {
     if (!isSearched || !isValidProjectId(projectId)) {
-      alert("Please enter a valid project ID (e.g., PROJ123) and search.");
+      // alert("Please enter a valid project ID (e.g., PROJ123) and search.");
+      toast.info("Please enter a valid project ID (e.g., PROJ123) and search.")
       return;
     }
     setShowNewRow(true);
@@ -316,15 +317,18 @@ const BurdenCostCeilingDetails = ({
       !newRow.applyToRbaCode ||
       !newRow.fiscalYear
     ) {
-      alert("Please fill all fields.");
+      // alert("Please fill all fields.");
+      toast.info("Please fill all fields.");
       return;
     }
     if (!updatedBy) {
-      alert("updatedBy is required. Please provide a user name.");
+      // alert("updatedBy is required. Please provide a user name.");
+       toast.info("updatedBy is required. Please provide a user name.");
       return;
     }
     if (!isSearched || !isValidProjectId(projectId)) {
-      alert("Please enter a valid project ID (e.g., PROJ123) and search.");
+      // alert("Please enter a valid project ID (e.g., PROJ123) and search.");
+       toast.info("Please enter a valid project ID (e.g., PROJ123) and search.");
       return;
     }
     const requestBody = {
@@ -362,7 +366,8 @@ const BurdenCostCeilingDetails = ({
       });
     } catch (err) {
       // console.error("Save error:", err.response?.data); // Add this to see detailed error
-      alert("Failed to save. Please check your input and try again.");
+      // alert("Failed to save. Please check your input and try again.");
+      toast.error("Failed to save. Please check your input and try again.")
     }
   };
 
@@ -392,10 +397,12 @@ const BurdenCostCeilingDetails = ({
     const { name, value } = e.target;
     setEditRow((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleUpdate = async (index) => {
     const row = burdenCeilings[index];
     if (!isSearched || !isValidProjectId(projectId)) {
-      alert("Please enter a valid project ID (e.g., PROJ123) and search.");
+      // alert("Please enter a valid project ID (e.g., PROJ123) and search.");
+      toast.info("Please enter a valid project ID and search.")
       return;
     }
     const requestBody = {
@@ -424,7 +431,8 @@ const BurdenCostCeilingDetails = ({
       setEditIndex(null);
       setEditRow({});
     } catch {
-      alert("Failed to update. Please check your input and try again.");
+      // alert("Failed to update. Please check your input and try again.");
+      toast.error("Failed to update. Please check your input and try again.")
     }
   };
   const handleCancelEdit = () => {
@@ -459,7 +467,8 @@ const BurdenCostCeilingDetails = ({
       toast.success("Record deleted successfully!");
     } catch (error) {
       // console.error("Delete error:", error);
-      alert("Could not delete burden ceiling. Please try again.");
+      // alert("Could not delete burden ceiling. Please try again.");
+      toast.error("Could not delete burden ceiling. Please try again.");
     }
   };
 
@@ -619,7 +628,7 @@ const BurdenCostCeilingDetails = ({
             </select>
           </div>
           <button
-            className="mb-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+            className="mb-2 px-3 py-1 bg-[#17414d] text-white group-hover:text-gray rounded text-xs"
             onClick={handleNewClick}
           >
             New

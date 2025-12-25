@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react"; 
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,12 +16,32 @@ const PoolConfigurationTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [orgSearchTerm, setOrgSearchTerm] = useState(""); 
   const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear());
+ const [hasLoadedForYear, setHasLoadedForYear] = useState({}); 
 
-  const currentYear = new Date().getFullYear();
+ const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 16 }, (_, i) => currentYear - 5 + i);
+ 
+  const [selectedYear, setSelectedYear] = useState(currentYear);
 
-  useEffect(() => {
+  // remember which year we already loaded
+  const lastLoadedYearRef = useRef(null);
+
+  
+ 
+  
+
+    useEffect(() => {
+    // if year didn't actually change, do nothing
+    if (lastLoadedYearRef.current === selectedYear) {
+      console.log("skip fetch, selectedYear unchanged:", selectedYear);
+      return;
+    }
+
+    console.log(">>> REAL fetchData call for selectedYear:", selectedYear);
+    lastLoadedYearRef.current = selectedYear;
+
     const fetchData = async () => {
+      console.log("fetchData running for selectedYear:", selectedYear);
       setLoading(true);
       try {
         const groupResponse = await axios.get(
@@ -41,7 +61,7 @@ const PoolConfigurationTable = () => {
         setGroupTypes(types);
 
         const tableResponse = await axios.get(
-          `${backendUrl}/Orgnization/GetAccountPools?Year=${fiscalYear}`
+          `${backendUrl}/Orgnization/GetAccountPools?Year=${selectedYear}`
         );
         const tableDataRaw = tableResponse.data;
 
@@ -60,7 +80,9 @@ const PoolConfigurationTable = () => {
         setOriginalTableData(mappedData);
         setError(null);
       } catch (err) {
-        setError(err.response?.data?.message || err.message || "Unknown error");
+        setError(
+          err.response?.data?.message || err.message || "Unknown error"
+        );
         setTableData([]);
         setOriginalTableData([]);
         setGroupCodes([]);
@@ -70,8 +92,16 @@ const PoolConfigurationTable = () => {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, [fiscalYear]);
+  }, [selectedYear]);
+
+  const handleYearChange = (e) => {
+    const y = Number(e.target.value);
+    if (!Number.isNaN(y) && y !== selectedYear) {
+      setSelectedYear(y); // this will trigger one fetch via useEffect
+    }
+  };
 
   // Only fire one warning toast per click
   const handleCheckboxChange = (orgId, acctId, groupCode) => {
@@ -125,7 +155,7 @@ const PoolConfigurationTable = () => {
       .map((row) => ({
         orgId: row.orgId,
         acctId: row.acctId,
-        Year: fiscalYear,
+        Year: selectedYear,
         ...groupCodes.reduce((acc, code) => {
           acc[code] = row[code] || false;
           return acc;
@@ -203,16 +233,22 @@ const PoolConfigurationTable = () => {
 };
 
   return (
-    <div className="p-4 sm:p-5 max-w-6xl mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
+    <div className="p-4 sm:p-5 w-full mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
       <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
         closeOnClick
       />
-      <h2 className="w-full bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
+      {/* <h2 className="w-full bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
         Pool Configuration
-      </h2>
+      </h2> */}
+      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             Pool Configuration
+          </h2>
+          
+        </div>
       <div className="flex items-center gap-4 mb-3">
         <label
           htmlFor="fiscalYear"
@@ -222,7 +258,7 @@ const PoolConfigurationTable = () => {
         </label>
         <select
           id="fiscalYear"
-          value={fiscalYear}
+          value={selectedYear}
           onChange={(e) => setFiscalYear(parseInt(e.target.value))}
           className="border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
         >
@@ -256,7 +292,7 @@ const PoolConfigurationTable = () => {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="ml-3 bg-blue-600 hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ml-3 bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? (
             <>
