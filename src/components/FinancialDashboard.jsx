@@ -627,12 +627,12 @@ const FinancialDashboard = ({ planId, templateId, type }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-0"> {/* FULL BLEED */}
+    <div className="min-h-screen p-0 ml-4"> {/* FULL BLEED */}
       {/* *** FULL WIDTH HEADER WITH EXPORT BUTTONS *** */}
       <div id="financial-dashboard-content" className="min-h-screen"> 
 
         {/* *** FULL WIDTH TABS *** */}
-        <div className="bg-white/90 backdrop-blur-md border-b-2 border-gray-200 shadow-lg sticky z-40 ml-5    ">
+        <div className="bg-white/90 border-b-2 border-gray-200 mb-2 rounded-sm  ">
           <div className="max-w-full mx-auto px-6 py-1">
             <div className="flex border-b border-transparent overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ml-5 ">
               <button className={getTabClasses('forecast')} onClick={() => setActiveTab('forecast')}>
@@ -708,7 +708,7 @@ const FinancialDashboard = ({ planId, templateId, type }) => {
 
           {activeTab === 'forecast' && (
   <div
-    className="w-full px-4 pb-6"
+    className="w-full  pb-6"
     style={{ maxHeight: '500px' }}    // or whatever height you want
   >
     {/* single scroll container, no extra background */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef} from "react";
 import { useParams } from "react-router-dom";
 import { Save, Plus, X, Edit2, Trash2, CheckCircle } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -35,9 +35,17 @@ const AccountMapping = () => {
 
   const geistSans = "'Geist', 'Geist Fallback', sans-serif";
 
+   const didFetchRef = useRef(false);
+
+  // useEffect(() => {
+  //   fetchData();
+  // }, [projectId, projectType]);
+
   useEffect(() => {
+    if (didFetchRef.current) return;
+    didFetchRef.current = true;
     fetchData();
-  }, [projectId, projectType]);
+  }, []);
 
   const fetchData = async () => {
     try {
