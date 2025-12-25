@@ -199,12 +199,12 @@ return (
         </div>
 
         {/* Title */}
-        <h1 className="text-center text-2xl font-semibold text-white mb-1">
+        {/* <h1 className="text-center text-2xl font-semibold text-white mb-1">
           Sign in
         </h1>
         <p className="text-center text-sm text-gray-200 mb-6">
           Enter your credentials to continue
-        </p>
+        </p> */}
 
         {error && (
           <div className="mb-4 text-red-100 text-center text-sm bg-red-500/20 border border-red-300/40 px-3 py-2 rounded-md">

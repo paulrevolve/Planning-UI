@@ -10,7 +10,7 @@ const PoolConfigurationTable = () => {
   const [groupCodes, setGroupCodes] = useState([]);
   const [groupNames, setGroupNames] = useState({});
   const [groupTypes, setGroupTypes] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,10 +25,6 @@ const PoolConfigurationTable = () => {
 
   // remember which year we already loaded
   const lastLoadedYearRef = useRef(null);
-
-  
- 
-  
 
     useEffect(() => {
     // if year didn't actually change, do nothing
@@ -96,12 +92,12 @@ const PoolConfigurationTable = () => {
     fetchData();
   }, [selectedYear]);
 
-  const handleYearChange = (e) => {
-    const y = Number(e.target.value);
-    if (!Number.isNaN(y) && y !== selectedYear) {
-      setSelectedYear(y); // this will trigger one fetch via useEffect
-    }
-  };
+  // const handleYearChange = (e) => {
+  //   const y = Number(e.target.value);
+  //   if (!Number.isNaN(y) && y !== selectedYear) {
+  //     setSelectedYear(y); // this will trigger one fetch via useEffect
+  //   }
+  // };
 
   // Only fire one warning toast per click
   const handleCheckboxChange = (orgId, acctId, groupCode) => {
