@@ -4462,8 +4462,8 @@ const [statusFilter, setStatusFilter] = useState('All')
   {/* RIGHT: Import + filters (pushed right) */}
  <div className="flex flex-col gap-2 ml-auto ">
     {/* FIRST LINE: Import + Fiscal Year */}
-    <div className="flex items-center gap-2">
-      {/* Import */}
+    {/* <div className="flex items-center gap-2">
+     
       <button
         onClick={() => fileInputRef.current.click()}
         className="bg-blue-600 text-white px-1 py-1 rounded hover:bg-blue-700 flex items-center text-xs cursor-pointer whitespace-nowrap"
@@ -4493,29 +4493,10 @@ const [statusFilter, setStatusFilter] = useState('All')
         className="hidden"
       />
 
-      {/* Fiscal Year */}
-       <div className="flex items-center gap-1">
-        <label
-          htmlFor="fiscalYear"
-          className="font-semibold text-xs whitespace-nowrap"
-        >
-          Fiscal Year:
-        </label>
-        <select
-          id="fiscalYear"
-          value={fiscalYear}
-          onChange={(e) => setFiscalYear(e.target.value)}
-          className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-          disabled={fiscalYearOptions?.length === 0}
-        >
-          {fiscalYearOptions?.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
+    
+    </div> */}
+
+    
 
     {/* SECOND LINE: Plan Type + Status */}
     <div className="flex items-center gap-4">
@@ -4552,6 +4533,37 @@ const [statusFilter, setStatusFilter] = useState('All')
             <option value="Concluded">Concluded</option>
           </select>
         </div>
+
+        <div className="flex items-center">
+    <button
+      onClick={() => fileInputRef.current.click()}
+      className="btn1 btn-blue cursor-pointer flex items-center"
+      title="Import Plan"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-3 w-3 mr-1"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+        />
+      </svg>
+      Import
+    </button>
+    <input
+      type="file"
+      ref={fileInputRef}
+      onChange={handleImportPlan}
+      accept=".xlsx,.xls"
+      className="hidden"
+    />
+  </div>
       </div>
     </div>
 </div>

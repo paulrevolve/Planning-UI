@@ -10425,8 +10425,8 @@ const handleSelectAllCheckboxes = (isChecked) => {
                     })()}
                   </tr>
                 </tfoot> */}
-             <tfoot>
-  {/* Total hours row */}
+             {/* <tfoot>
+ 
   <tr
     className="font-bold text-center"
     style={{
@@ -10471,13 +10471,13 @@ const handleSelectAllCheckboxes = (isChecked) => {
     })}
   </tr>
 
-  {/* Cost row */}
+ 
   <tr
     className="text-center"
     style={{
       position: "sticky",
       bottom: 0,
-      zIndex: 21,
+      zIndex: 20,
       height: `${ROW_HEIGHT_DEFAULT}px`,
       lineHeight: "normal",
       backgroundColor: "#e5f3fb", // lighter blue cost band
@@ -10485,8 +10485,8 @@ const handleSelectAllCheckboxes = (isChecked) => {
   >
     {shouldShowCTD() && (
       <td className="tbody-td text-center text-[10px] font-bold pr-1"
-          style={{ color: "#1d4ed8" }}>
-        {/* Cost{" "} */}
+          style={{ color: "#000000" }}>
+      
         {columnTotals.ctd_cost?.toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
@@ -10496,8 +10496,8 @@ const handleSelectAllCheckboxes = (isChecked) => {
 
     {shouldShowPriorYear() && (
       <td className="tbody-td text-center text-[10px] font-bold pr-1"
-          style={{ color: "#1d4ed8" }}>
-        {/* Cost:{" "} */}
+          style={{ color:  "#000000" }}>
+      
         {columnTotals.priorYear_cost?.toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
@@ -10511,9 +10511,93 @@ const handleSelectAllCheckboxes = (isChecked) => {
         <td
           key={`total-cost-${duration.monthNo}_${duration.year}`}
           className="tbody-td text-center text-[10px] font-bold pr-1"
-          style={{ color: "#1d4ed8" }}
+          style={{ color:  "#000000" }}
         >
-          {/* Cost:{" "} */}
+         
+          {columnTotals[key]?.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) || "0.00"}
+        </td>
+      );
+    })}
+  </tr>
+</tfoot> */}
+{/* --- UPDATED TFOOT FOR SECOND TABLE --- */}
+<tfoot className="font-inter">
+  {/* Total Hours Row */}
+  <tr
+    style={{
+      position: "sticky",
+      bottom: `${ROW_HEIGHT_DEFAULT}px`,
+      zIndex: 20,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      borderTop: "2px solid #d1d5db",
+      backgroundColor: "#d7ebf3", // Light blue hours band
+    }}
+  >
+    {shouldShowCTD() && (
+      <td className="tbody-td text-center text-xs font-bold text-gray-700">
+        {columnTotals.ctd?.toFixed(2) || "0.00"}
+      </td>
+    )}
+
+    {shouldShowPriorYear() && (
+      <td className="tbody-td text-center text-xs font-bold text-gray-700">
+        {columnTotals.priorYear?.toFixed(2) || "0.00"}
+      </td>
+    )}
+
+    {sortedDurations.map((duration) => {
+      const uniqueKey = `${duration.monthNo}_${duration.year}`;
+      return (
+        <td
+          key={`total-h-${uniqueKey}`}
+          className="tbody-td text-center text-xs font-bold text-gray-700"
+        >
+          {columnTotals[uniqueKey]?.toFixed(2) || "0.00"}
+        </td>
+      );
+    })}
+  </tr>
+
+  {/* Total Cost Row */}
+  <tr
+    style={{
+      position: "sticky",
+      bottom: 0,
+      zIndex: 20,
+      height: `${ROW_HEIGHT_DEFAULT}px`,
+      lineHeight: "normal",
+      backgroundColor: "#e5f3fb", // Lighter blue cost band
+    }}
+  >
+    {shouldShowCTD() && (
+      <td className="tbody-td text-center text-xs font-bold text-black pr-1">
+        {columnTotals.ctd_cost?.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) || "0.00"}
+      </td>
+    )}
+
+    {shouldShowPriorYear() && (
+      <td className="tbody-td text-center text-xs font-bold text-black pr-1">
+        {columnTotals.priorYear_cost?.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) || "0.00"}
+      </td>
+    )}
+
+    {sortedDurations.map((duration) => {
+      const key = `${duration.monthNo}_${duration.year}_cost`;
+      return (
+        <td
+          key={`total-c-${duration.monthNo}_${duration.year}`}
+          className="tbody-td text-center text-xs font-bold text-black pr-1"
+        >
           {columnTotals[key]?.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
