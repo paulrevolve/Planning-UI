@@ -2424,6 +2424,9 @@ const ProjectPlanTable = ({
   const [manualDatesSubmitted, setManualDatesSubmitted] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [templateMap, setTemplateMap] = useState({});
+  const [typeFilter, setTypeFilter] = useState('All')
+const [statusFilter, setStatusFilter] = useState('All')
+
 
   // Add this with your other useRef hooks
   const tableContainerRef = useRef(null);
@@ -4066,6 +4069,30 @@ const ProjectPlanTable = ({
 
   const currentPlan = getCurrentPlan();
 
+  useEffect(() => {
+  let filtered = plans
+  
+  // Apply Type Filter
+  if (typeFilter !== 'All') {
+    filtered = filtered.filter(plan => plan.plType === typeFilter)
+  }
+  
+  // Apply Status Filter  
+  if (statusFilter !== 'All') {
+    filtered = filtered.filter(plan => plan.status === statusFilter)
+  }
+  
+  // Apply existing BUD/EAC filter if active
+  if (budEacFilter) {
+    filtered = filtered.filter(plan => 
+      plan.plType === 'BUD' || plan.plType === 'EAC'
+    )
+  }
+  
+  setFilteredPlans(filtered)
+}, [plans, typeFilter, statusFilter, budEacFilter])
+
+
   const isDateMissing =
     filteredProjects.length > 0 &&
     !manualDatesSubmitted && // keep this if you still want banner until API call
@@ -4107,8 +4134,9 @@ const ProjectPlanTable = ({
       )}
 
       <div>
-        <div className="flex justify-between items-center mb-2 gap-1">
-          <div className="flex gap-1 flex-wrap items-center ">
+       <div className="flex items-center mb-2 gap-1 w-full">
+  {/* LEFT: all action buttons */}
+  <div className="flex gap-1 flex-wrap items-center">
             {plans.length >= 0 && (
               <>
                 <button
@@ -4395,62 +4423,105 @@ const ProjectPlanTable = ({
             )}
           </div>
 
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <button
-              onClick={() => {
-                fileInputRef.current.click();
-              }}
-              className="bg-blue-600 text-white px-1 py-1 rounded hover:bg-blue-700 flex items-center text-xs cursor-pointer whitespace-nowrap"
-              title="Import Plan"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-3 w-3 mr-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                />
-              </svg>
-              Import
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={(e) => {
-                handleImportPlan(e);
-              }}
-              accept=".xlsx,.xls"
-              className="hidden"
-            />
+  {/* RIGHT: Import + filters (pushed right) */}
+ <div className="flex flex-col gap-2 ml-auto">
+    {/* FIRST LINE: Import + Fiscal Year */}
+    <div className="flex items-center gap-2">
+      {/* Import */}
+      <button
+        onClick={() => fileInputRef.current.click()}
+        className="bg-blue-600 text-white px-1 py-1 rounded hover:bg-blue-700 flex items-center text-xs cursor-pointer whitespace-nowrap"
+        title="Import Plan"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-3 w-3 mr-0.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+          />
+        </svg>
+        Import
+      </button>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImportPlan}
+        accept=".xlsx,.xls"
+        className="hidden"
+      />
 
-            <div className="flex items-center gap-1">
-              <label
-                htmlFor="fiscalYear"
-                className="font-semibold text-xs whitespace-nowrap"
-              >
-                Fiscal Year:
-              </label>
-              <select
-                id="fiscalYear"
-                value={fiscalYear}
-                onChange={(e) => setFiscalYear(e.target.value)}
-                className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                disabled={fiscalYearOptions?.length === 0}
-              >
-                {fiscalYearOptions?.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+      {/* Fiscal Year */}
+       <div className="flex items-center gap-1">
+        <label
+          htmlFor="fiscalYear"
+          className="font-semibold text-xs whitespace-nowrap"
+        >
+          Fiscal Year:
+        </label>
+        <select
+          id="fiscalYear"
+          value={fiscalYear}
+          onChange={(e) => setFiscalYear(e.target.value)}
+          className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          disabled={fiscalYearOptions?.length === 0}
+        >
+          {fiscalYearOptions?.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+    {/* SECOND LINE: Plan Type + Status */}
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-bold text-gray-500 uppercase">
+            PLAN TYPE
+          </span>
+          <select
+            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
+            <option value="All">All Types</option>
+            <option value="BUD">BUD</option>
+            <option value="EAC">EAC</option>
+            <option value="NBBUD">NBBUD</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-bold text-gray-500 uppercase">
+            STATUS
+          </span>
+          <select
+            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="All">All Statuses</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Approved">Approved</option>
+            <option value="Concluded">Concluded</option>
+          </select>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+
         </div>
 
         <div

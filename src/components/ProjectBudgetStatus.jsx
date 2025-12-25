@@ -659,13 +659,6 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
         // className="space-y-4 sm:p-2 border-overall  bg-white   "
         className="space-y-4 bg-white rounded-lg"
       >
-      
-
-
-      
-
-        
-
         {viewMode === "plans" && selectedPlan && (
           <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-1">
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
