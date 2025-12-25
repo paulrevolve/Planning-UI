@@ -5604,11 +5604,11 @@ const isIndeterminate =
     style={{ cursor: col.key === "acctId" ? "pointer" : "default" }}
                       >
                         {col.label}
-                        {col.key === "acctId" && (
-        <span className="text-[12px] text-gray-500">
-          {getSortIcon("acctId")}
-        </span>
-      )}
+                        {/* {col.key === "acctId" && (
+        // <span className="text-[12px] text-gray-500">
+        //   {getSortIcon("acctId")}
+        // </span>
+      )} */}
                       </th>
                     ))}
                   </tr>

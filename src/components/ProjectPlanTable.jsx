@@ -4608,7 +4608,11 @@ const [statusFilter, setStatusFilter] = useState('All')
                   {columns.map((col) => (
                     <th
                       key={col}
-                      className="px-4 py-2 text-xs font-bold text-gray-600 capitalize tracking-widern whitespace-nowrap text-center"
+                     className={`px-4 py-2 text-xs font-bold text-gray-600 capitalize tracking-wider whitespace-nowrap ${
+      col === "projId" || col === "projName" 
+        ? "text-left" 
+        : "text-center"
+    }`}
                     >
                       {COLUMN_LABELS[col] || col}
                     </th>
