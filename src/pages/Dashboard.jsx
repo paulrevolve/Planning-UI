@@ -1,3 +1,259 @@
+
+
+// import React, { useEffect, useState } from "react";
+// import NavigationSidebar from "../components/NavigationSidebar";
+// import { Navigate } from "react-router-dom";
+// import { Routes, Route, useNavigate } from "react-router-dom";
+// import ProjectBudgetStatus from "../components/ProjectBudgetStatus";
+// import NewBusiness from "../components/NewBusiness";
+// import PoolRate from "../components/PoolRate";
+// import PoolConfigurationTable from "../components/PoolConfigurationTable";
+// import TemplatePoolMapping from "../components/TemplatePoolMapping";
+// import Template from "../components/Template";
+// import CeilingConfiguration from "../components/CeilingConfiguration";
+// import GlobalConfiguration from "../components/GlobalConfiguration";
+// import ProspectiveIdSetup from "../components/ProspectiveIdSetup";
+// import DisplaySettings from "../components/DisplaySettings";
+// import AnnualHolidays from "../components/HolidayCalendar";
+// import MaintainFiscalYearPeriods from "../components/MaintainFiscalYearPeriods";
+// import ChatBot from "../components/ChatBot";
+// import TopBar from "../components/TopBar";
+// import PoolRateTabs from "../components/PoolRateTabs";
+// import AnalogRate from "../components/AnalogRate";
+// import FinancialDashboard from "../components/FinancialDashboard";
+// import ConfigureField from "../components/ConfigureField";
+// import MassUtilityProject from "../components/MassUtilityProject";
+// import AccountMapping from "../components/AccountMapping";
+// import UserOrgProjectMapping from "../components/UserOrgProjectMapping";
+// import NewBusinessComponent from "../components/NewBusinessComponent";
+// import AnalysisByPeriodContent from "../components/AnalysisByPeriodContent";
+// import CreateProjectBudget from "../components/CreateProjectBudget";
+
+
+// const SIDEBAR_WIDTH = 190; // px
+// const TOPBAR_HEIGHT = 45; // px
+
+// const Dashboard = () => {
+//   const [currentUserRole, setCurrentUserRole] = useState(null);
+//   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
+//   const [userName, setUserName] = useState("User");
+//   const navigate = useNavigate();
+
+//   const handleSidebarOpen = () => {
+//     setIsSideBarOpen(true);
+//   };
+
+//   const handleSidebarClose = () => {
+//     setIsSideBarOpen(false);
+//   };
+
+//   useEffect(() => {
+//     const userString = localStorage.getItem("currentUser");
+//     if (userString) {
+//       try {
+//         const userObj = JSON.parse(userString);
+//         setUserName(
+//           userObj.name
+//             ? userObj.name.replace(/\b\w/g, (c) => c.toUpperCase())
+//             : "User"
+//         );
+//         setCurrentUserRole(userObj.role ? userObj.role.toLowerCase() : null);
+//       } catch {
+//         setCurrentUserRole(null);
+//         setUserName("User");
+//       }
+//     }
+//   }, []);
+
+//   const ProtectedRoute = ({ children, allowedRoles }) => {
+//     const storedUser = localStorage.getItem("currentUser");
+//     if (!storedUser) {
+//       return <Navigate to="/" replace />;
+//     }
+//     const userObj = JSON.parse(storedUser);
+//     if (!userObj.role || !allowedRoles.includes(userObj.role.toLowerCase())) {
+//       return <Navigate to="/" replace />;
+//     }
+//     return children;
+//   };
+
+//   const handleLogout = () => {
+//     try {
+//       localStorage.removeItem("currentUser");
+//       localStorage.removeItem("authToken");
+//     } catch {}
+//     navigate("/login", { replace: true });
+//   };
+
+//   return (
+//     <>
+//       {/* Top Bar - Kept Fixed */}
+//       <div className="fixed top-0 left-0 right-0 z-40 h-14 bg-white border-b border-gray-200 flex items-center">
+//         <TopBar name={userName} onLogout={handleLogout} />
+//       </div>
+
+//       {/* Main Container - Changed from fixed to flex with screen height */}
+//       <div className="flex pt-14 h-screen overflow-hidden bg-[#E6F2F5]">
+//         {/* Sidebar Container */}
+//         <div
+//           onMouseEnter={handleSidebarOpen}
+//           onMouseLeave={handleSidebarClose}
+//           className={`bg-white border-r z-20 border-gray-200 transition-all duration-200 h-full
+//           ${isSideBarOpen ? "w-60" : "w-14"}
+//         `}
+//         >
+//           <NavigationSidebar onHoverChange={isSideBarOpen} />
+//         </div>
+
+//         {/* Main Content Area - Enabled scrolling here */}
+//         <div
+//           className="flex-1 overflow-y-auto h-full p-4"
+//           style={{ scrollbarGutter: "stable" }}
+//         >
+//           <Routes>
+//             <Route
+//               path="/"
+//               element={
+//                 <div className="flex items-center justify-center min-h-[80vh]">
+//                   <div className="max-w-md w-full text-center">
+//                     <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-900 text-transparent bg-clip-text">
+//                       FinAxis
+//                     </span>
+//                     <h1 className="text-2xl font-semibold text-gray-900 mt-4">
+//                       Welcome to FinAxis Planning
+//                     </h1>
+//                     <p className="text-gray-600 mt-2">
+//                       Select an option from the sidebar to get started.
+//                     </p>
+//                   </div>
+//                 </div>
+//               }
+//             />
+
+//             <Route
+//               path="/project-budget-status"
+//               element={<ProjectBudgetStatus />}
+//             />
+//             <Route path="/project-report" element={<FinancialDashboard />} />
+//             <Route path="/mass-utility" element={<MassUtilityProject />} />
+//             <Route path="/projectmapping" element={<UserOrgProjectMapping />} />
+
+//             <Route path="/new-business" element={<NewBusinessComponent />} />
+//              <Route path="/create-project-budget" element={<CreateProjectBudget />} />
+//             <Route path="/monthly-forecast" element={<AnalysisByPeriodContent />} />
+//             <Route
+//               path="/pool-rate-tabs"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <PoolRateTabs />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/role-rights"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <ConfigureField />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/pool-configuration"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <PoolConfigurationTable />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/template-pool-mapping"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <TemplatePoolMapping />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/template"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <Template />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/ceiling-configuration"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <CeilingConfiguration />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/analog-rate"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <AnalogRate />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/global-configuration"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <GlobalConfiguration />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/prospective-id-setup"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <ProspectiveIdSetup />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/display-settings"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <DisplaySettings />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/annual-holidays"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <AnnualHolidays />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/maintain-fiscal-year-periods"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <MaintainFiscalYearPeriods />
+//                 </ProtectedRoute>
+//               }
+//             />
+//             <Route
+//               path="/account-mapping"
+//               element={
+//                 <ProtectedRoute allowedRoles={["admin"]}>
+//                   <AccountMapping />
+//                 </ProtectedRoute>
+//               }
+//             />
+//           </Routes>
+//         </div>
+//       </div>
+//     </>
+//   );
+// };
+
+// export default Dashboard;
+
 // // // // // import React, { useEffect, useState } from "react";
 // // // // // import NavigationSidebar from "../components/NavigationSidebar";
 // // // // // import { Routes, Route, useNavigate } from "react-router-dom";
@@ -484,9 +740,6 @@
 // import UserOrgProjectMapping from "../components/UserOrgProjectMapping";
 // import NewBusinessComponent from "../components/NewBusinessComponent";
 
-
-
-
 // const SIDEBAR_WIDTH = 190; // px
 // const TOPBAR_HEIGHT = 45; // px
 
@@ -757,7 +1010,6 @@ import NewBusinessComponent from "../components/NewBusinessComponent";
 import AnalysisByPeriodContent from "../components/AnalysisByPeriodContent";
 import CreateProjectBudget from "../components/CreateProjectBudget";
 
-
 const SIDEBAR_WIDTH = 190; // px
 const TOPBAR_HEIGHT = 45; // px
 
@@ -835,7 +1087,7 @@ const Dashboard = () => {
 
         {/* Main Content Area - Enabled scrolling here */}
         <div
-          className="flex-1 overflow-y-auto h-full p-4"
+          className="flex-1 h-full p-4 overflow-y-scroll"
           style={{ scrollbarGutter: "stable" }}
         >
           <Routes>
@@ -867,8 +1119,14 @@ const Dashboard = () => {
             <Route path="/projectmapping" element={<UserOrgProjectMapping />} />
 
             <Route path="/new-business" element={<NewBusinessComponent />} />
-             <Route path="/create-project-budget" element={<CreateProjectBudget />} />
-            <Route path="/monthly-forecast" element={<AnalysisByPeriodContent />} />
+            <Route
+              path="/create-project-budget"
+              element={<CreateProjectBudget />}
+            />
+            <Route
+              path="/monthly-forecast"
+              element={<AnalysisByPeriodContent />}
+            />
             <Route
               path="/pool-rate-tabs"
               element={
