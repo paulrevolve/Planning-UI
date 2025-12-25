@@ -3272,7 +3272,8 @@ const handleFindReplace = async () => {
     return;
   }
 
-  if (replaceScope === 'checked-rows' && selectedRows.size === 0) {
+  // UPDATED: Check for checked rows within the scope logic
+  if (replaceScope === 'row' && selectedRows.size === 0) {
     toast.warn('Please check at least one row.');
     return;
   }
@@ -3284,18 +3285,26 @@ const handleFindReplace = async () => {
     const bulkPayload = [];
     const updatedInputValues = { ...inputValues };
     
-    const targetRows = replaceScope === 'checked-rows' 
+    /**
+     * FIX LOGIC: 
+     * If scope is 'row', we only iterate over indices present in the 'selectedRows' Set.
+     * If scope is 'all' or 'column', we iterate over all employee indices that aren't hidden.
+     */
+    const targetRowIndices = replaceScope === 'row' 
       ? Array.from(selectedRows) 
       : employees.map((_, i) => i).filter(i => !hiddenRows[i]);
 
-    for (const empIdx of targetRows) {
+    for (const empIdx of targetRowIndices) {
       const emp = employees[empIdx];
+      // Safety check: ensure the employee exists and isn't hidden
       if (!emp || hiddenRows[empIdx]) continue;
 
       for (const duration of sortedDurations) {
         const uniqueKey = `${duration.monthNo}_${duration.year}`;
         
+        // If scope is 'column', skip if not the specific selected column
         if (replaceScope === 'column' && uniqueKey !== selectedColumnKey) continue;
+        
         if (!isMonthEditable(duration, closedPeriod, planType)) continue;
 
         const currentInputKey = `${empIdx}_${uniqueKey}`;
@@ -3343,28 +3352,20 @@ const handleFindReplace = async () => {
           updatedInputValues[currentInputKey] = newValue;
           replacementsCount++;
 
-          // Build Minimal Payload
           bulkPayload.push({
-            // Primary Identifiers
             forecastid: Number(forecast?.forecastid || 0),
-            // plId: Number(emp.emple?.plId || planId || 0),
             emplId: String(emp.emple?.emplId || ""),
             dctId: Number(emp.emple?.dctId || 0),
             month: Number(duration.monthNo),
             year: Number(duration.year),
-            
-            // Required Metadata
             ProjId: String(projectId || ""),
             OrgId: String(emp.emple?.orgId || ""),
             AcctId: String(emp.emple?.accId || ""),
             empleId: Number(emp.emple?.id || emp.emple?.empleId || 0),
             plid: Number(emp.emple?.plId || planId || 0),
-
-            // Value logic
             ...(planType === 'EAC' 
               ? { actualamt: newNumericValue } 
               : { forecastedamt: newNumericValue }),
-            
             updatedat: new Date().toISOString()
           });
         }
@@ -3373,7 +3374,6 @@ const handleFindReplace = async () => {
 
     if (bulkPayload.length > 0) {
       const apiType = planType === 'NBBUD' ? 'BUD' : planType;
-      
       await axios.put(`${backendUrl}/Forecast/BulkUpdateForecastAmount/${apiType}`, bulkPayload);
       
       setInputValues(updatedInputValues);
@@ -3383,12 +3383,20 @@ const handleFindReplace = async () => {
       toast.info("No matching values found.");
     }
   } catch (err) {
+    console.error(err);
     toast.error("Error: " + (err.response?.data?.message || err.message));
   } finally {
     setIsLoading(false);
     setShowFindReplace(false);
+    // Reset specific states to prevent leftover highlights
+    setFindValue("");
+    setReplaceValue("");
+    setSelectedRowIndex(null);
+    setSelectedColumnKey(null);
   }
 };
+
+
 
   const handleFind = () => {
     if (!findValue) {
@@ -6464,7 +6472,7 @@ const isIndeterminate =
                       borderTop: "2px solid #d1d5db", // tailwind gray-300
                     }}
                   >
-                    <td colSpan={EMPLOYEE_COLUMNS.length}>"" </td>
+                    <td colSpan={EMPLOYEE_COLUMNS.length}>Total Amount </td>
                   </tr>
                 </tfoot>
               </table>
