@@ -12,6 +12,7 @@ import Opportunities from "./Opportunities";
 import PSRTrendReport from "./PSRTrendReport";
 import IS_Report from "./IS_Report"; // Import the new Income Statement component
 
+
 const FinancialDashboard = () => {
   // Added 'is_report' to the state logic
   const [activeTab, setActiveTab] = useState('forecast'); 
