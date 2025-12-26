@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { backendUrl } from "./config";
 import { toast } from "react-toastify";
+import { Cog } from "lucide-react";
 
 const DisplaySettingsContent = () => {
   // Existing states for the fields in the Display Settings form
@@ -206,18 +207,18 @@ const DisplaySettingsContent = () => {
   ]);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center p-4">
+    <div>
       {/* Changed max-w-5xl to w-full px-8 for wider display */}
-      <div className="w-full px-8 bg-white border-line p-8 space-y-6  ">
+      <div className="w-full px-8  p-8 space-y-2 ">
         {/* Changed text-center to text-left */}
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             Display Settings
-          </h2>
-          
-        </div>	
+        <div className="p-4  flex items-center justify-between rounded-sm bg-white">
+            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <Cog size={20} className="text-blue-500" />
+              Display Settings
+            </h2>
+        </div>
         {/* Added bg-gray-50, p-4, rounded-lg, border, and border-gray-300 to the grid container */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-gray-50 p-4 border-line">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-white p-4 rounded-sm">
           {/* Left Column Fields */}
           <div className="space-y-4">
             {" "}
@@ -366,6 +367,10 @@ const DisplaySettingsContent = () => {
                 className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+          </div>
+
+          {/* Right Column Checkboxes and other fields */}
+          <div className="space-y-4 md:mt-0">
             {/* Financial Statement Code (NEW) */}
             <div>
               <label
@@ -404,12 +409,7 @@ const DisplaySettingsContent = () => {
                   </option>
                 ))}
               </select>
-            </div>
-          </div>
-
-          {/* Right Column Checkboxes and other fields */}
-          <div className="space-y-4 md:mt-0">
-            {" "}
+            </div>{" "}
             {/* No changes to this inner div */}
             {/* Checkboxes */}
             <div className="flex items-center space-x-2">
@@ -567,19 +567,19 @@ const DisplaySettingsContent = () => {
                 ))}
               </select>
             </div>
+            <div className="flex justify-end mt-6">
+              <button
+                type="button"
+                onClick={handleSaveSettings}
+                className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+              >
+                Save Settings
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Submit button for this standalone form */}
-        <div className="flex justify-end mt-6">
-          <button
-            type="button"
-            onClick={handleSaveSettings}
-            className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-          >
-            Save Settings
-          </button>
-        </div>
       </div>
     </div>
   );

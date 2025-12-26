@@ -215,7 +215,7 @@ const AccountMapping = () => {
         
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            Chart of Account
+            Chart of Accounts
           </h2>
           <div className="flex gap-2">
             {editingIds.length > 1 && (

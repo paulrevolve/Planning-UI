@@ -5076,7 +5076,7 @@ const isIndeterminate =
             </button>
           )} */}
 
-          {!showNewForm && !shouldHideButtons && (
+          {/* {!showNewForm && !shouldHideButtons && (
             <button
               // className="px-4 py-2 blue-btn-common text-white rounded  transition text-xs font-medium"
                className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
@@ -5093,7 +5093,25 @@ const isIndeterminate =
             >
               Find / Replace
             </button>
-          )}
+          )} */}
+
+          {isEditable && !showNewForm && !shouldHideButtons && (
+  <button
+    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+    style={{
+      ...geistSansStyle,
+      backgroundColor: "#113d46",
+    }}
+    onClick={() => {
+      // Logic is already safe, but double check is good
+      if (isEditable) {
+        setShowFindReplace(true);
+      }
+    }}
+  >
+    Find / Replace
+  </button>
+)}
 
           {/* <button
     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-xs font-medium"
@@ -5109,7 +5127,7 @@ const isIndeterminate =
   </button> */}
 
           {/* Delete Button */}
-          {!shouldHideButtons && (
+          {/* {!shouldHideButtons && (
             <button
               className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer ${
                 shouldDisableDelete
@@ -5135,7 +5153,29 @@ const isIndeterminate =
             >
               Delete
             </button>
-          )}
+          )} */}
+
+
+          {isEditable && !shouldHideButtons && (
+  <button
+    className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer ${
+      shouldDisableDelete
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-red-500 hover:bg-red-600"
+    }`}
+    onClick={() => {
+      if (!selectedEmployeeId) {
+        toast.error("Please select a record to delete");
+        return;
+      }
+      handleDeleteEmployee(selectedEmployeeId);
+      setSelectedEmployeeId(null);
+    }}
+    disabled={shouldDisableDelete}
+  >
+    Delete
+  </button>
+)}
 
           {/* {showNewForm && (
     <button
@@ -6750,7 +6790,7 @@ const isIndeterminate =
                               {duration.month}
                             </span>
                             <span className="text-xs text-gray-600 font-normal normal-case">
-                              amt
+                              Amt
                             </span>
                           </div>
                         </th>

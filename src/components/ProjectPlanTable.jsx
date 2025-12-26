@@ -4506,7 +4506,7 @@ const [statusFilter, setStatusFilter] = useState('All')
             Plan Type
           </span>
           <select
-            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed "
+            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed"
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             disabled={filteredProjects.length === 0}
@@ -4575,7 +4575,7 @@ const [statusFilter, setStatusFilter] = useState('All')
         </div>
 
         <div
-          className={`rounded-2xl border border-gray-200 overflow-hidden relative ${
+          className={`rounded border border-gray-200 overflow-hidden relative ${
             showNewBusinessPopup ? "" : ""
           }`}
         >
@@ -4583,7 +4583,7 @@ const [statusFilter, setStatusFilter] = useState('All')
             <div className="absolute inset-0 z-40">
               <div className="absolute inset-0 bg-white bg-opacity-80 backdrop-blur-sm"></div>
               <div className="absolute inset-0 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg  border border-gray-300 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="bg-white rounded-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
                   <div className="flex-1 overflow-y-auto p-4">
                     <NewBusiness
                       onClose={() => setShowNewBusinessPopup(false)}
@@ -4597,20 +4597,20 @@ const [statusFilter, setStatusFilter] = useState('All')
 
           <div
             ref={tableContainerRef}
-            className={`overflow-x-auto max-h-[70vh] ${
+            className={`overflow-x-auto max-h-[70vh] min-h-[70vh] ${
               showNewBusinessPopup ? "blur-sm pointer-events-none" : ""
             }`}
           >
             <table className="min-w-full table-auto divide-y divide-gray-200">
               <thead className="bg-gray-200 sticky top-0">
                 <tr>
-                  <th className="px-4 py-2 text-center text-xs font-bold text-gray-600 capitalize tracking-wider">
+                  <th className="px-3 py-2 text-left font-semibold text-gray-500 border-b border-gray-200 w-6 text-sm">
                     Export
                   </th>
                   {columns.map((col) => (
                     <th
                       key={col}
-                     className={`px-4 py-2 text-xs font-bold text-gray-600 capitalize tracking-wider whitespace-nowrap ${
+                     className={`px-3 py-2 text-left font-semibold text-gray-500 border-b border-gray-200 w-6 whitespace-nowrap text-sm ${
       col === "projId" || col === "projName" 
         ? "text-left" 
         : "text-center"

@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { backendUrl } from "./config";
+import { LayoutTemplate } from "lucide-react";
 
 const TemplatePoolMapping = () => {
   const [templates, setTemplates] = useState([]);
@@ -175,98 +176,103 @@ const TemplatePoolMapping = () => {
   }
 
   return (
-    <div className="p-4 sm:p-5 w-full mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-      />
-      {/* <h1 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
+    <div className="flex flex-col gap-2 w-[98%]">
+      <div className="p-4 rounded-sm ml-5 w-full  flex items-center justify-between bg-white">
+        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <LayoutTemplate sixe={20} className="text-blue-500"/>
+          Template Pool Mapping
+        </h2>
+      </div>
+      <div className="p-4 sm:p-5 w-full mx-auto font-roboto bg-white rounded-sm  ml-5">
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          closeOnClick
+        />
+        {/* <h1 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
         Template Pool Mapping
       </h1> */}
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             Template Pool Mapping
-          </h2>
-          
-        </div>
-      {loading && <p className="text-gray-600 text-sm">Loading...</p>}
-      {isSaving && <p className="text-gray-600 text-sm">Saving...</p>}
-      {error && <p className="text-red-600 text-sm mb-4">Error: {error}</p>}
-      <div className="space-y-6 sm:space-y-8">
-        <div>
-          <label
-            htmlFor="template"
-            className="block text-sm font-medium text-gray-900 mb-1"
-          >
-            Template
-          </label>
-          <select
-            id="template"
-            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            value={selectedTemplate}
-            onChange={(e) => setSelectedTemplate(e.target.value)}
-            disabled={loading || isSaving}
-          >
-            <option value="">Select Template</option>
-            {templates.map((template) => (
-              <option key={template.id} value={template.id}>
-                {template.templateCode}
-              </option>
-            ))}
-          </select>
-        </div>
-        {selectedTemplate && (
-          <>
-            <div>
-              <h2 className="text-base font-medium text-gray-900 mb-3">
-                Pools
-              </h2>
-              {pools.length === 0 && !loading && (
-                <p className="text-gray-600 text-sm">
-                  No pools available for this template.
-                </p>
-              )}
-              <div className="flex flex-wrap gap-4">
-                {pools.map((pool) => (
-                  <div
-                    key={pool.poolId}
-                    className="flex items-center space-x-1"
-                  >
-                    <input
-                      type="checkbox"
-                      id={pool.poolId}
-                      checked={poolMappings[pool.poolId] || false}
-                      onChange={() => handleCheckboxChange(pool.poolId)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-50"
-                      disabled={loading || isSaving}
-                      isSaving
-                    />
-                    <label
-                      htmlFor={pool.poolId}
-                      className="text-xs font-semibold text-gray-900"
+        {loading && <p className="text-gray-600 text-sm">Loading...</p>}
+        {isSaving && <p className="text-gray-600 text-sm">Saving...</p>}
+        {error && <p className="text-red-600 text-sm mb-4">Error: {error}</p>}
+        <div className="space-y-6 sm:space-y-8">
+          <div>
+            <label
+              htmlFor="template"
+              className="block text-sm font-medium text-gray-900 mb-1"
+            >
+              Template
+            </label>
+            <select
+              id="template"
+              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              value={selectedTemplate}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+              disabled={loading || isSaving}
+            >
+              <option value="">Select Template</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.templateCode}
+                </option>
+              ))}
+            </select>
+          </div>
+          {selectedTemplate && (
+            <>
+              <div>
+                <h2 className="text-base font-medium text-gray-900 mb-3">
+                  Pools
+                </h2>
+                {pools.length === 0 && !loading && (
+                  <p className="text-gray-600 text-sm">
+                    No pools available for this template.
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-4">
+                  {pools.map((pool) => (
+                    <div
+                      key={pool.poolId}
+                      className="flex items-center space-x-1"
                     >
-                      {displayNames[groupNames[pool.poolId]] ||
-   displayNames[pool.groupName] ||
-   displayNames[pool.poolId] ||groupNames[pool.poolId] || pool.groupName || pool.poolId}
-                    </label>
-                  </div>
-                ))}
+                      <input
+                        type="checkbox"
+                        id={pool.poolId}
+                        checked={poolMappings[pool.poolId] || false}
+                        onChange={() => handleCheckboxChange(pool.poolId)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-50"
+                        disabled={loading || isSaving}
+                        isSaving
+                      />
+                      <label
+                        htmlFor={pool.poolId}
+                        className="text-xs font-semibold text-gray-900"
+                      >
+                        {displayNames[groupNames[pool.poolId]] ||
+                          displayNames[pool.groupName] ||
+                          displayNames[pool.poolId] ||
+                          groupNames[pool.poolId] ||
+                          pool.groupName ||
+                          pool.poolId}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="flex justify-end mt-4">
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg bg-[#17414d] text-white group-hover:text-gray focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 text-sm font-semibold"
-                onClick={handleSave}
-                disabled={loading || isSaving}
-              >
-                Save
-              </button>
-            </div>
-          </>
-        )}
+              <div className="flex justify-end mt-4">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-[#17414d] text-white group-hover:text-gray focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 text-sm font-semibold"
+                  onClick={handleSave}
+                  disabled={loading || isSaving}
+                >
+                  Save
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Select from "react-select";
 import { backendUrl } from "./config";
+import { Cog } from "lucide-react";
 
 const cn = (...args) => {
   return args.filter(Boolean).join(" ");
@@ -8,7 +9,7 @@ const cn = (...args) => {
 
 // --- Main LaborForm Component with Tabs ---
 const LaborForm = () => {
-  const [activeTab, setActiveTab] = useState("projectSettings");
+  const [activeTab, setActiveTab] = useState("OrganizationSettings");
 
   // States from LaborFormContent
   const [projectBudgetPeriodMethod, setProjectBudgetPeriodMethod] = useState(
@@ -532,57 +533,423 @@ const LaborForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen text-gray-900 flex justify-center">
       {/* Retained w-full px-8 for wider display within its parent */}
-      <div className="w-full px-8 bg-white border-line p-6 space-y-6">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+      <div className="w-full px-8 p-6 space-y-2">
+        <div className="p-4 flex items-center justify-between bg-white rounded-sm">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <Cog size={20} className="text-blue-500" />
             Settings
           </h2>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-line mb-6">
-          <button
-            className={cn(
-              "py-2 px-4 text-lg font-medium focus:outline-none",
-              activeTab === "projectSettings"
-                ? "border-b-2 bg-[#17414d] text-white group-hover:text-gray"
-                : "text-gray-600 hover:text-gray-800"
-            )}
-            onClick={() => setActiveTab("projectSettings")}
-          >
-            Project Settings
-          </button>
-          <button
-            className={cn(
-              "py-2 px-4 text-lg font-medium focus:outline-none",
-              activeTab === "OrganizationSettings"
-                ? "border-b-2 bg-[#17414d] text-white group-hover:text-gray"
-                : "text-gray-600 hover:text-gray-800"
-            )}
-            onClick={() => setActiveTab("OrganizationSettings")}
-          >
-            Organization Settings
-          </button>
-        </div>
-
         {/* Tab Content */}
-        <div>
-          {activeTab === "projectSettings" && (
-            <div className="p-4 bg-white border-line">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl mb-4">Project Settings</h3>
-                <div className="flex justify-end ">
-                  <button
-                    type="button"
-                    onClick={handleSaveAllSettings}
-                    className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-                  >
-                    Save Setting
-                  </button>
+        <div className="bg-white rounded-sm p-4">
+          {/* Tab Navigation */}
+          <div className="flex  justify-between items-center">
+            <div className="flex gap-x-2">
+              <button
+                className={cn(
+                  "py-2 px-4 text-[16px] rounded-lg font-medium  focus:outline-none",
+                  activeTab === "OrganizationSettings"
+                    ? "border-b-2 bg-[#17414d] text-white group-hover:text-gray"
+                    : "text-gray-600 hover:text-gray-800 bg-gray-100"
+                )}
+                onClick={() => setActiveTab("OrganizationSettings")}
+              >
+                Organization Settings
+              </button>
+              <button
+                className={cn(
+                  "py-2 px-4 text-[16px] rounded-lg font-medium focus:outline-none",
+                  activeTab === "projectSettings"
+                    ? "border-b-2 bg-[#17414d] text-white group-hover:text-gray"
+                    : "text-gray-600 hover:text-gray-800 bg-gray-100"
+                )}
+                onClick={() => setActiveTab("projectSettings")}
+              >
+                Project Settings
+              </button>
+            </div>
+            <div className="flex justify-end ">
+              <button
+                type="button"
+                onClick={handleSaveAllSettings}
+                className="bg-[#17414d] text-white text-[16px] group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+          {activeTab === "OrganizationSettings" && (
+            <div className="p-4 bg-white">
+              <div className="flex items-center justify-between"></div>
+              {/* Changed gap-y-8 back to gap-y-5 for more compact layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  {/* closing period */}
+                  <div>
+                    <label
+                      htmlFor="closingPeriod"
+                      className="block text-sm font-medium"
+                    >
+                      Closing Period <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="closingPeriod"
+                      type="date"
+                      value={closingPeriod}
+                      onChange={(e) => setClosingPeriod(e.target.value)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 
+                       text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      // disabled={loading || !selectedProjectId}
+                    />
+                  </div>
+
+                  {/* Labor Escalation Month */}
+                  <div>
+                    <label
+                      htmlFor="laborEscalationMonth"
+                      className="block text-sm font-medium"
+                    >
+                      Labor Escalation Month{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="laborEscalationMonth"
+                      value={escalationMonth}
+                      onChange={(e) => setEscalationMonth(e.target.value)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={loading}
+                    >
+                      <option value="">Select Option</option>
+                      {monthOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Labor Escalation Value */}
+                  <div>
+                    <label
+                      htmlFor="laborEscalationValue"
+                      className="block text-sm font-medium"
+                    >
+                      Labor Escalation Value{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative mt-1">
+                      <input
+                        id="laborEscalationValue"
+                        type="text"
+                        value={escalationPercent ? `${escalationPercent}%` : ""}
+                        onChange={(e) =>
+                          setEscalationPercent(e.target.value.replace("%", ""))
+                        }
+                        placeholder="0.00000"
+                        className="w-full pl-7 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="paidTimeOffExpenseAccount"
+                      className="block text-sm font-medium"
+                    >
+                      Paid Time Off Expense Account{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="paidTimeOffExpenseAccount"
+                      type="text"
+                      value={paidTimeOffExpenseAccount}
+                      onChange={(e) =>
+                        setPaidTimeOffExpenseAccount(e.target.value)
+                      }
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Holiday Expense Account */}
+                  <div>
+                    <label
+                      htmlFor="holidayExpenseAccount"
+                      className="block text-sm font-medium"
+                    >
+                      Holiday Expense Account{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="holidayExpenseAccount"
+                      type="text"
+                      value={holidayExpenseAccount}
+                      onChange={(e) => setHolidayExpenseAccount(e.target.value)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* PTO Calculation Method */}
+                  <div>
+                    <label
+                      htmlFor="ptoCalculationMethod"
+                      className="block text-sm font-medium"
+                    >
+                      PTO Calculation Method{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="ptoCalculationMethod"
+                      value={ptoCalculationMethod}
+                      onChange={(e) => setPtoCalculationMethod(e.target.value)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option key="pto-hours" value="Hours">
+                        Hours
+                      </option>
+                    </select>
+                  </div>
+
+                  {/* Default PTO Accrual Rate */}
+                  <div>
+                    <label
+                      htmlFor="defaultPtoAccrualRate"
+                      className="block text-sm font-medium"
+                    >
+                      Default PTO Accrual Rate{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="defaultPtoAccrualRate"
+                      type="text"
+                      value={defaultPtoAccrualRate}
+                      onChange={handleNumericInput(setDefaultPtoAccrualRate)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Part-Time Holiday Calculation % */}
+                  <div>
+                    <label
+                      htmlFor="partTimeHolidayCalculation"
+                      className="block text-sm font-medium"
+                    >
+                      Part-Time Holiday Calculation %{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="partTimeHolidayCalculation"
+                      type="text"
+                      value={partTimeHolidayCalculation}
+                      onChange={handleNumericInput(
+                        setPartTimeHolidayCalculation
+                      )}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Column (Checkboxes) */}
+                <div className="space-y-4">
+                  {/* Default Fee Rate */}
+                  <div>
+                    <label
+                      htmlFor="defaultFeeRate"
+                      className="block text-sm font-medium"
+                    >
+                      Default Fee Rate <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="defaultFeeRate"
+                      type="text"
+                      value={defaultFeeRate}
+                      onChange={handleNumericInput(setDefaultFeeRate)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  {/* Default Utilization % */}
+                  <div>
+                    <label
+                      htmlFor="defaultUtilization"
+                      className="block text-sm font-medium"
+                    >
+                      Default Utilization %{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="defaultUtilization"
+                      type="text"
+                      value={defaultUtilization}
+                      onChange={handleNumericInput(setDefaultUtilization)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  {/* Labor Expense Org Level(s) */}
+                  <div>
+                    <label
+                      htmlFor="laborExpenseOrgLevels"
+                      className="block text-sm font-medium"
+                    >
+                      Labor Expense Org Level(s){" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="laborExpenseOrgLevels"
+                      type="text"
+                      value={laborExpenseOrgLevels}
+                      onChange={(e) => setLaborExpenseOrgLevels(e.target.value)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  {/* Non-Labor Expense Org Level(s) */}
+                  <div>
+                    <label
+                      htmlFor="nonLaborExpenseOrgLevels"
+                      className="block text-sm font-medium"
+                    >
+                      Non-Labor Expense Org Level(s){" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="nonLaborExpenseOrgLevels"
+                      type="text"
+                      value={nonLaborExpenseOrgLevels}
+                      onChange={(e) =>
+                        setNonLaborExpenseOrgLevels(e.target.value)
+                      }
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  {/* Org Budget Revenue Calculation */}
+                  <div>
+                    <label
+                      htmlFor="orgBudgetRevenueCalculation"
+                      className="block text-sm font-medium"
+                    >
+                      Org Budget Revenue Calculation{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="orgBudgetRevenueCalculation"
+                      value={orgBudgetRevenueCalculation}
+                      onChange={(e) =>
+                        setOrgBudgetRevenueCalculation(e.target.value)
+                      }
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option
+                        key="org-budget-revenue-project-plus-org-revenue"
+                        value="Project Plus Org Revenue Adjustment"
+                      >
+                        Project Plus Org Revenue Adjustment
+                      </option>
+                    </select>
+                  </div>
+                  {/* NLAB $ History Method */}
+                  <div>
+                    <label
+                      htmlFor="nlabHistoryMethod"
+                      className="block text-sm font-medium"
+                    >
+                      NLAB $ History Method{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="nlabHistoryMethod"
+                      value={nlabHistoryMethod}
+                      onChange={(e) => setNlabHistoryMethod(e.target.value)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option
+                        key="nlab-populate-gl-account-history"
+                        value="Populate GL Account History"
+                      >
+                        Populate GL Account History
+                      </option>
+                    </select>
+                  </div>{" "}
+                  {/* Adjusted space-y to 4 for checkboxes for slightly less spacing */}
+                  {/* Update Employee Home Org */}
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="updateEmployeeHomeOrg"
+                      type="checkbox"
+                      checked={updateEmployeeHomeOrg}
+                      onChange={(e) =>
+                        setUpdateEmployeeHomeOrg(e.target.checked)
+                      }
+                      className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <label htmlFor="updateEmployeeHomeOrg" className="text-sm">
+                      Update Employee Home Org
+                    </label>
+                  </div>
+                  {/* Update Employee Accrual Rate */}
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="updateEmployeeAccrualRate"
+                      type="checkbox"
+                      checked={updateEmployeeAccrualRate}
+                      onChange={(e) =>
+                        setUpdateEmployeeAccrualRate(e.target.checked)
+                      }
+                      className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <label
+                      htmlFor="updateEmployeeAccrualRate"
+                      className="text-sm"
+                    >
+                      Update Employee Accrual Rate
+                    </label>
+                  </div>
+                  {/* Apply % Probability to New Business Budgets */}
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="applyProbabilityToNewBusinessBudgets"
+                      type="checkbox"
+                      checked={applyProbabilityToNewBusinessBudgets}
+                      onChange={(e) =>
+                        setApplyProbabilityToNewBusinessBudgets(
+                          e.target.checked
+                        )
+                      }
+                      className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <label
+                      htmlFor="applyProbabilityToNewBusinessBudgets"
+                      className="text-sm"
+                    >
+                      Apply % Probability to New Business Budgets
+                    </label>
+                  </div>
+                  {/* Org Budget Sequential Locking */}
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="orgBudgetSequentialLocking"
+                      type="checkbox"
+                      checked={orgBudgetSequentialLocking}
+                      onChange={(e) =>
+                        setOrgBudgetSequentialLocking(e.target.checked)
+                      }
+                      className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <label
+                      htmlFor="orgBudgetSequentialLocking"
+                      className="text-sm"
+                    >
+                      Org Budget Sequential Locking
+                    </label>
+                  </div>
                 </div>
               </div>
+            </div>
+          )}
+          {activeTab === "projectSettings" && (
+            <div className="p-4">
+              <div className="flex items-center justify-between"></div>
               {/* Changed gap-y-8 back to gap-y-5 for more compact layout */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                 {/* Left Column */}
@@ -1171,395 +1538,18 @@ const LaborForm = () => {
               </div>
             </div>
           )}
-          {activeTab === "OrganizationSettings" && (
-            <div className="p-4 bg-white border-line">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl mb-4">Organization Settings</h3>
-                <div className="flex justify-end ">
-                  <button
-                    type="button"
-                    onClick={handleSaveAllSettings}
-                    className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-                  >
-                    Save Setting
-                  </button>
-                </div>
-              </div>
-              {/* Changed gap-y-8 back to gap-y-5 for more compact layout */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-                {/* Left Column */}
-                <div className="space-y-4">
-                  {/* closing period */}
-                  <div>
-                    <label
-                      htmlFor="closingPeriod"
-                      className="block text-sm font-medium"
-                    >
-                      Closing Period <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="closingPeriod"
-                      type="date"
-                      value={closingPeriod}
-                      onChange={(e) => setClosingPeriod(e.target.value)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 
-                       text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      // disabled={loading || !selectedProjectId}
-                    />
-                  </div>
-
-                  {/* Labor Escalation Month */}
-                  <div>
-                    <label
-                      htmlFor="laborEscalationMonth"
-                      className="block text-sm font-medium"
-                    >
-                      Labor Escalation Month{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="laborEscalationMonth"
-                      value={escalationMonth}
-                      onChange={(e) => setEscalationMonth(e.target.value)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={loading}
-                    >
-                      <option value="">Select Option</option>
-                      {monthOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Labor Escalation Value */}
-                  <div>
-                    <label
-                      htmlFor="laborEscalationValue"
-                      className="block text-sm font-medium"
-                    >
-                      Labor Escalation Value{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative mt-1">
-                      <input
-                        id="laborEscalationValue"
-                        type="text"
-                        value={escalationPercent ? `${escalationPercent}%` : ""}
-                        onChange={(e) =>
-                          setEscalationPercent(e.target.value.replace("%", ""))
-                        }
-                        placeholder="0.00000"
-                        className="w-full pl-7 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="paidTimeOffExpenseAccount"
-                      className="block text-sm font-medium"
-                    >
-                      Paid Time Off Expense Account{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="paidTimeOffExpenseAccount"
-                      type="text"
-                      value={paidTimeOffExpenseAccount}
-                      onChange={(e) =>
-                        setPaidTimeOffExpenseAccount(e.target.value)
-                      }
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* Holiday Expense Account */}
-                  <div>
-                    <label
-                      htmlFor="holidayExpenseAccount"
-                      className="block text-sm font-medium"
-                    >
-                      Holiday Expense Account{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="holidayExpenseAccount"
-                      type="text"
-                      value={holidayExpenseAccount}
-                      onChange={(e) => setHolidayExpenseAccount(e.target.value)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* PTO Calculation Method */}
-                  <div>
-                    <label
-                      htmlFor="ptoCalculationMethod"
-                      className="block text-sm font-medium"
-                    >
-                      PTO Calculation Method{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="ptoCalculationMethod"
-                      value={ptoCalculationMethod}
-                      onChange={(e) => setPtoCalculationMethod(e.target.value)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option key="pto-hours" value="Hours">
-                        Hours
-                      </option>
-                    </select>
-                  </div>
-
-                  {/* Default PTO Accrual Rate */}
-                  <div>
-                    <label
-                      htmlFor="defaultPtoAccrualRate"
-                      className="block text-sm font-medium"
-                    >
-                      Default PTO Accrual Rate{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="defaultPtoAccrualRate"
-                      type="text"
-                      value={defaultPtoAccrualRate}
-                      onChange={handleNumericInput(setDefaultPtoAccrualRate)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* Part-Time Holiday Calculation % */}
-                  <div>
-                    <label
-                      htmlFor="partTimeHolidayCalculation"
-                      className="block text-sm font-medium"
-                    >
-                      Part-Time Holiday Calculation %{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="partTimeHolidayCalculation"
-                      type="text"
-                      value={partTimeHolidayCalculation}
-                      onChange={handleNumericInput(
-                        setPartTimeHolidayCalculation
-                      )}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Column (Checkboxes) */}
-                <div className="space-y-4">
-                  {/* Default Fee Rate */}
-                  <div>
-                    <label
-                      htmlFor="defaultFeeRate"
-                      className="block text-sm font-medium"
-                    >
-                      Default Fee Rate <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="defaultFeeRate"
-                      type="text"
-                      value={defaultFeeRate}
-                      onChange={handleNumericInput(setDefaultFeeRate)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  {/* Default Utilization % */}
-                  <div>
-                    <label
-                      htmlFor="defaultUtilization"
-                      className="block text-sm font-medium"
-                    >
-                      Default Utilization %{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="defaultUtilization"
-                      type="text"
-                      value={defaultUtilization}
-                      onChange={handleNumericInput(setDefaultUtilization)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  {/* Labor Expense Org Level(s) */}
-                  <div>
-                    <label
-                      htmlFor="laborExpenseOrgLevels"
-                      className="block text-sm font-medium"
-                    >
-                      Labor Expense Org Level(s){" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="laborExpenseOrgLevels"
-                      type="text"
-                      value={laborExpenseOrgLevels}
-                      onChange={(e) => setLaborExpenseOrgLevels(e.target.value)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  {/* Non-Labor Expense Org Level(s) */}
-                  <div>
-                    <label
-                      htmlFor="nonLaborExpenseOrgLevels"
-                      className="block text-sm font-medium"
-                    >
-                      Non-Labor Expense Org Level(s){" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="nonLaborExpenseOrgLevels"
-                      type="text"
-                      value={nonLaborExpenseOrgLevels}
-                      onChange={(e) =>
-                        setNonLaborExpenseOrgLevels(e.target.value)
-                      }
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  {/* Org Budget Revenue Calculation */}
-                  <div>
-                    <label
-                      htmlFor="orgBudgetRevenueCalculation"
-                      className="block text-sm font-medium"
-                    >
-                      Org Budget Revenue Calculation{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="orgBudgetRevenueCalculation"
-                      value={orgBudgetRevenueCalculation}
-                      onChange={(e) =>
-                        setOrgBudgetRevenueCalculation(e.target.value)
-                      }
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option
-                        key="org-budget-revenue-project-plus-org-revenue"
-                        value="Project Plus Org Revenue Adjustment"
-                      >
-                        Project Plus Org Revenue Adjustment
-                      </option>
-                    </select>
-                  </div>
-                  {/* NLAB $ History Method */}
-                  <div>
-                    <label
-                      htmlFor="nlabHistoryMethod"
-                      className="block text-sm font-medium"
-                    >
-                      NLAB $ History Method{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="nlabHistoryMethod"
-                      value={nlabHistoryMethod}
-                      onChange={(e) => setNlabHistoryMethod(e.target.value)}
-                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option
-                        key="nlab-populate-gl-account-history"
-                        value="Populate GL Account History"
-                      >
-                        Populate GL Account History
-                      </option>
-                    </select>
-                  </div>{" "}
-                  {/* Adjusted space-y to 4 for checkboxes for slightly less spacing */}
-                  {/* Update Employee Home Org */}
-                  <div className="flex items-center space-x-2">
-                    <input
-                      id="updateEmployeeHomeOrg"
-                      type="checkbox"
-                      checked={updateEmployeeHomeOrg}
-                      onChange={(e) =>
-                        setUpdateEmployeeHomeOrg(e.target.checked)
-                      }
-                      className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <label htmlFor="updateEmployeeHomeOrg" className="text-sm">
-                      Update Employee Home Org
-                    </label>
-                  </div>
-                  {/* Update Employee Accrual Rate */}
-                  <div className="flex items-center space-x-2">
-                    <input
-                      id="updateEmployeeAccrualRate"
-                      type="checkbox"
-                      checked={updateEmployeeAccrualRate}
-                      onChange={(e) =>
-                        setUpdateEmployeeAccrualRate(e.target.checked)
-                      }
-                      className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <label
-                      htmlFor="updateEmployeeAccrualRate"
-                      className="text-sm"
-                    >
-                      Update Employee Accrual Rate
-                    </label>
-                  </div>
-                  {/* Apply % Probability to New Business Budgets */}
-                  <div className="flex items-center space-x-2">
-                    <input
-                      id="applyProbabilityToNewBusinessBudgets"
-                      type="checkbox"
-                      checked={applyProbabilityToNewBusinessBudgets}
-                      onChange={(e) =>
-                        setApplyProbabilityToNewBusinessBudgets(
-                          e.target.checked
-                        )
-                      }
-                      className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <label
-                      htmlFor="applyProbabilityToNewBusinessBudgets"
-                      className="text-sm"
-                    >
-                      Apply % Probability to New Business Budgets
-                    </label>
-                  </div>
-                  {/* Org Budget Sequential Locking */}
-                  <div className="flex items-center space-x-2">
-                    <input
-                      id="orgBudgetSequentialLocking"
-                      type="checkbox"
-                      checked={orgBudgetSequentialLocking}
-                      onChange={(e) =>
-                        setOrgBudgetSequentialLocking(e.target.checked)
-                      }
-                      className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <label
-                      htmlFor="orgBudgetSequentialLocking"
-                      className="text-sm"
-                    >
-                      Org Budget Sequential Locking
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Submit button for the whole form - can be moved inside each tab if needed */}
-        <div className="flex justify-end mt-6 h-10">
-          {/* <button
+        {/* <div className="flex justify-end mt-6 h-10">
+          <button
             type="button"
             onClick={handleSaveAllSettings}
             className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
           >
             Save Setting
-          </button> */}
-        </div>
+          </button>
+        </div> */}
       </div>
     </div>
   );
