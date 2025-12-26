@@ -226,8 +226,9 @@ const Warning = ({
         // Try to use API message, fallback to generic
         const apiMessage =
           err?.response?.data?.message || "Failed to fetch warnings";
-        setError(apiMessage);
-        console.error(err);
+        // setError(apiMessage);
+        setError("No warnings found for this project");
+        // console.error(err);
       } finally {
         setLoading(false);
       }
@@ -278,7 +279,7 @@ const Warning = ({
   if (error) {
     return (
       <div className="flex justify-center items-center py-4">
-        <div className="text-red-600 text-sm">{error}</div>
+        <div className="text-gray-600 text-sm">{error}</div>
       </div>
     );
   }

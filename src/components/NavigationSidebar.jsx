@@ -1503,9 +1503,11 @@ import {
   BriefcaseBusiness, // new icon for New Business Budget section
 } from "lucide-react";
 
-const NavigationSidebar = ({ onHoverChange }) => {
+const NavigationSidebar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  const [onHoverChange, setOnhoverChange] = useState(false)
 
   // --- ALL ORIGINAL LOGIC PRESERVED ---
   const [generalMenuOpen, setGeneralMenuOpen] = useState(
@@ -1673,13 +1675,15 @@ const NavigationSidebar = ({ onHoverChange }) => {
   };
 
   const handleCloseSidebar = () => {
-    if (isSidebarOpen) {
+
       setIsSidebarOpen(false);
-    }
+  };
+  const handleOpenSidebar = () => {
+      setIsSidebarOpen(true);
   };
 
   return (
-    <div className="flex min-h-screen font-inter bg-white">
+    <div onMouseOver={handleOpenSidebar} onMouseLeave={handleCloseSidebar} className="flex min-h-screen font-inter bg-white">
       {/* Mobile Toggle */}
       <button
         className="md:hidden fixed top-4 left-4 z-50 text-white bg-gray-800 p-1 rounded-md"
@@ -1699,7 +1703,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
         className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out shadow-sm
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
           md:translate-x-0 
-          ${onHoverChange ? "w-64" : "w-16"}
+          w-14 hover:w-55
         `}
       >
         <div className="flex-1 overflow-y-auto overflow-x-hidden pt-4">
@@ -1713,7 +1717,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
             </div>
             <span
               className={`ml-4 text-sm font-semibold transition-opacity duration-200 ${
-                onHoverChange ? "opacity-100" : "opacity-0"
+                isSidebarOpen ? "opacity-100" : "opacity-0"
               }`}
             >
               Menu
@@ -1734,13 +1738,13 @@ const NavigationSidebar = ({ onHoverChange }) => {
                     </div>
                     <span
                       className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
-                        onHoverChange ? "opacity-100" : "opacity-0"
+                        isSidebarOpen ? "opacity-100" : "opacity-0"
                       }`}
                     >
                       Planning
                     </span>
                   </div>
-                  {onHoverChange &&
+                  {isSidebarOpen &&
                     (planningOpen ? (
                       <ChevronDown size={14} />
                     ) : (
@@ -1748,7 +1752,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
                     ))}
                 </div>
 
-                {planningOpen && onHoverChange && (
+                {planningOpen && isSidebarOpen && (
                   <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
                     <NavItem
                       label="Project Planning"
@@ -1799,13 +1803,13 @@ const NavigationSidebar = ({ onHoverChange }) => {
                     </div>
                     <span
                       className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
-                        onHoverChange ? "opacity-100" : "opacity-0"
+                        isSidebarOpen ? "opacity-100" : "opacity-0"
                       }`}
                     >
                       New Business Budget
                     </span>
                   </div>
-                  {onHoverChange &&
+                  {isSidebarOpen &&
                     (newBusinessSectionOpen ? (
                       <ChevronDown size={14} />
                     ) : (
@@ -1813,7 +1817,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
                     ))}
                 </div>
 
-                {newBusinessSectionOpen && onHoverChange && (
+                {newBusinessSectionOpen && isSidebarOpen && (
                   <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
                     <NavItem
                       label="Manage New Business"
@@ -1850,7 +1854,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
                         Configuration
                       </span>
                     </div>
-                    {onHoverChange &&
+                    {isSidebarOpen &&
                       (configurationOpen ? (
                         <ChevronDown size={14} />
                       ) : (
@@ -1858,7 +1862,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
                       ))}
                   </div>
 
-                  {configurationOpen && onHoverChange && (
+                  {configurationOpen && isSidebarOpen && (
                     <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
                       <NavItem
                         label="Forward Rate"
@@ -1963,7 +1967,7 @@ const NavigationSidebar = ({ onHoverChange }) => {
         {/* Footer Version */}
         <div
           className={`mt-auto p-4 border-t border-gray-100 transition-opacity duration-200 ${
-            onHoverChange ? "opacity-100" : "opacity-0"
+            isSidebarOpen ? "opacity-100" : "opacity-0"
           }`}
         >
           <div className="text-[10px] text-gray-400 font-mono select-none">
