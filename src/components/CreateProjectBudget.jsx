@@ -107,153 +107,166 @@ const CreateProjectBudget = () => {
   };
 
   return (
-    <div className="bg-white p-6">
-      <div className="grid grid-cols-2 gap-8">
-        <div>
-          <h2 className="mb-4 text-lg font-bold flex items-center gap-2">
-            <BriefcaseBusiness size={20} className="text-blue-600" />
-            New Business
-          </h2>
-
-          <div className="border rounded-md p-4 space-y-4">
-            <Select
-              options={businessOptions}
-              value={
-                selectedBusiness
-                  ? {
-                      value: selectedBusiness.businessBudgetId,
-                      label: selectedBusiness.businessBudgetId,
-                    }
-                  : null
-              }
-              onChange={(o) => {
-                const business = newBusiness.find(
-                  (b) => b.businessBudgetId === o?.value
-                );
-                setSelectedBusiness(business || null);
-                setNewBusinessForm({
-                  description: business?.description || "",
-                  startDate: formatDate(business?.startDate),
-                  endDate: formatDate(business?.endDate),
-                });
-              }}
-              placeholder="Select Business ID"
-            />
-
-            <InputField
-              label="Description"
-              value={newBusinessForm.description}
-              onChange={(e) =>
-                setNewBusinessForm({
-                  ...newBusinessForm,
-                  description: e.target.value,
-                })
-              }
-            />
-
-            <InputField
-              label="Start Date"
-              type="date"
-              value={newBusinessForm.startDate}
-              onChange={(e) =>
-                setNewBusinessForm({
-                  ...newBusinessForm,
-                  startDate: e.target.value,
-                })
-              }
-            />
-
-            <InputField
-              label="End Date"
-              type="date"
-              value={newBusinessForm.endDate}
-              onChange={(e) =>
-                setNewBusinessForm({
-                  ...newBusinessForm,
-                  endDate: e.target.value,
-                })
-              }
-            />
-          </div>
-        </div>
-
-        <div>
-          <h2 className="mb-4 text-lg font-bold flex items-center gap-2">
-            <FolderKanban size={20} className="text-blue-600" />
-            Available Projects
-          </h2>
-
-          <div className="border rounded-md p-4 space-y-4">
-            <Select
-              options={projectOptions}
-              value={
-                selectedProject
-                  ? {
-                      value: selectedProject.projectId,
-                      label: `${selectedProject.projectId} - ${selectedProject.name}`,
-                    }
-                  : null
-              }
-              onChange={(o) => {
-                const project = availableProjects.find(
-                  (p) => p.projectId === o?.value
-                );
-                setSelectedProject(project || null);
-                setAvailableProjectForm({
-                  name: project?.name || "",
-                  startDate: formatDate(project?.startDate),
-                  endDate: formatDate(project?.endDate),
-                });
-              }}
-              placeholder="Select Project"
-            />
-
-            <InputField
-              label="Project Name"
-              value={availableProjectForm.name}
-              onChange={(e) =>
-                setAvailableProjectForm({
-                  ...availableProjectForm,
-                  name: e.target.value,
-                })
-              }
-            />
-
-            <InputField
-              label="Start Date"
-              type="date"
-              value={availableProjectForm.startDate}
-              onChange={(e) =>
-                setAvailableProjectForm({
-                  ...availableProjectForm,
-                  startDate: e.target.value,
-                })
-              }
-            />
-
-            <InputField
-              label="End Date"
-              type="date"
-              value={availableProjectForm.endDate}
-              onChange={(e) =>
-                setAvailableProjectForm({
-                  ...availableProjectForm,
-                  endDate: e.target.value,
-                })
-              }
-            />
-          </div>
-        </div>
+    <div className="flex flex-col gap-2">
+      <div className="p-4 rounded-sm flex items-center justify-between bg-white">
+        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <BriefcaseBusiness size={20} className="text-blue-600" />
+          New Business Transfer Utility
+        </h2>
       </div>
 
-      <div className="w-full flex justify-end mt-4">
-        <button
-          onClick={handleTransfer}
-          className="btn1 btn-blue text-[16px]"
-          disabled={!selectedBusiness || !selectedProject}
-        >
-          Transfer
-        </button>
+      <div className="bg-white rounded-sm p-6">
+        <div className="grid grid-cols-2 gap-8 mt-2">
+          <div>
+            <h2 className="mb-4 text-lg font-bold flex items-center gap-2 text-gray-700">
+              New Business
+            </h2>
+
+            <div className="shadow-sm rounded-md p-4 space-y-4">
+              <h2 className="flex items-center font-medium text-gray-700">
+                Project Id
+              </h2>
+              <Select
+                options={businessOptions}
+                value={
+                  selectedBusiness
+                    ? {
+                        value: selectedBusiness.businessBudgetId,
+                        label: selectedBusiness.businessBudgetId,
+                      }
+                    : null
+                }
+                onChange={(o) => {
+                  const business = newBusiness.find(
+                    (b) => b.businessBudgetId === o?.value
+                  );
+                  setSelectedBusiness(business || null);
+                  setNewBusinessForm({
+                    description: business?.description || "",
+                    startDate: formatDate(business?.startDate),
+                    endDate: formatDate(business?.endDate),
+                  });
+                }}
+                placeholder="Select Business ID"
+              />
+
+              <InputField
+                label="Description"
+                value={newBusinessForm.description}
+                onChange={(e) =>
+                  setNewBusinessForm({
+                    ...newBusinessForm,
+                    description: e.target.value,
+                  })
+                }
+              />
+
+              <InputField
+                label="Start Date"
+                type="date"
+                value={newBusinessForm.startDate}
+                onChange={(e) =>
+                  setNewBusinessForm({
+                    ...newBusinessForm,
+                    startDate: e.target.value,
+                  })
+                }
+              />
+
+              <InputField
+                label="End Date"
+                type="date"
+                value={newBusinessForm.endDate}
+                onChange={(e) =>
+                  setNewBusinessForm({
+                    ...newBusinessForm,
+                    endDate: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="mb-4 text-lg font-bold flex items-center gap-2 text-gray-700">
+              Available Projects
+            </h2>
+
+            <div className="shadow-sm rounded-md p-4 space-y-4">
+              <h2 className="flex items-center font-medium text-gray-700">
+                Project Id
+              </h2>
+              <Select
+                options={projectOptions}
+                value={
+                  selectedProject
+                    ? {
+                        value: selectedProject.projectId,
+                        label: `${selectedProject.projectId} - ${selectedProject.name}`,
+                      }
+                    : null
+                }
+                onChange={(o) => {
+                  const project = availableProjects.find(
+                    (p) => p.projectId === o?.value
+                  );
+                  setSelectedProject(project || null);
+                  setAvailableProjectForm({
+                    name: project?.name || "",
+                    startDate: formatDate(project?.startDate),
+                    endDate: formatDate(project?.endDate),
+                  });
+                }}
+                placeholder="Select Project"
+              />
+
+              <InputField
+                label="Project Name"
+                value={availableProjectForm.name}
+                onChange={(e) =>
+                  setAvailableProjectForm({
+                    ...availableProjectForm,
+                    name: e.target.value,
+                  })
+                }
+              />
+
+              <InputField
+                label="Start Date"
+                type="date"
+                value={availableProjectForm.startDate}
+                onChange={(e) =>
+                  setAvailableProjectForm({
+                    ...availableProjectForm,
+                    startDate: e.target.value,
+                  })
+                }
+              />
+
+              <InputField
+                label="End Date"
+                type="date"
+                value={availableProjectForm.endDate}
+                onChange={(e) =>
+                  setAvailableProjectForm({
+                    ...availableProjectForm,
+                    endDate: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full flex justify-end mt-4">
+          <button
+            onClick={handleTransfer}
+            className="btn1 btn-blue text-[16px]"
+            disabled={!selectedBusiness || !selectedProject}
+          >
+            Transfer
+          </button>
+        </div>
       </div>
     </div>
   );
