@@ -874,6 +874,7 @@ const Dashboard = () => {
                 </ProtectedRoute>
               }
             />
+            
             <Route
               path="/manage-users"
               element={
