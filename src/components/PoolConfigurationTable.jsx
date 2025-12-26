@@ -230,7 +230,7 @@ const PoolConfigurationTable = () => {
 };
 
   return (
-    <div className="p-4 sm:p-5 w-[98%] mx-auto font-roboto bg-gray-50 rounded-xl shadow-md ml-5">
+    <div className="p-4 sm:p-5 w-[98%] mx-auto font-roboto rounded-xl ml-5">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -240,67 +240,69 @@ const PoolConfigurationTable = () => {
       {/* <h2 className="w-full bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
         Pool Configuration
       </h2> */}
-      <div className="py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-        <h2 className="text-lg  font-bold text-gray-800 flex items-center gap-2">
-          <MonitorCog size={20} className="text-blue-600" /> Update Multiple
-          Projects
-        </h2>
-      </div>
-      <div className="flex items-center gap-4 mb-3">
-        <label
-          htmlFor="fiscalYear"
-          className="font-medium text-gray-700 text-sm"
-        >
-          Fiscal Year:
-        </label>
-        <select
-          id="fiscalYear"
-          value={selectedYear}
-          onChange={(e) => setFiscalYear(parseInt(e.target.value))}
-          className="border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-        >
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-        <div className="flex-grow"></div>
-        <div className="flex items-center gap-2 mb-2">
-          {/* Org ID filter */}
-          <input
-            type="text"
-            placeholder="Filter by Org ID"
-            value={orgSearchTerm}
-            onChange={(e) => setOrgSearchTerm(e.target.value)}
-            className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-
-          {/* Account ID filter (existing) */}
-          <input
-            type="text"
-            placeholder="Filter by Account ID"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
+      <div className="font-roboto bg-gray-50 rounded-xl shadow-md p-2 mb-3 px-4">
+        <div className="py-4 border-b border-gray-200 w-full flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg  font-bold text-gray-800 flex items-center gap-2">
+            <MonitorCog size={20} className="text-blue-600" /> Org Account Pool Mapping
+          </h2>
         </div>
+        <div className="flex items-center gap-4 my-3">
+          <label
+            htmlFor="fiscalYear"
+            className="font-medium text-gray-700 text-sm"
+          >
+            Fiscal Year:
+          </label>
+          <select
+            id="fiscalYear"
+            value={selectedYear}
+            onChange={(e) => setFiscalYear(parseInt(e.target.value))}
+            className="border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+          >
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+          <div className="flex-grow"></div>
+          <div className="flex items-center gap-2 mb-2">
+            {/* Org ID filter */}
+            <input
+              type="text"
+              placeholder="Filter by Org ID"
+              value={orgSearchTerm}
+              onChange={(e) => setOrgSearchTerm(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
 
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="ml-3 bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSaving ? (
-            <>
-              <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-              Saving...
-            </>
-          ) : (
-            "Save"
-          )}
-        </button>
+            {/* Account ID filter (existing) */}
+            <input
+              type="text"
+              placeholder="Filter by Account ID"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="ml-3 bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSaving ? (
+              <>
+                <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                Saving...
+              </>
+            ) : (
+              "Save"
+            )}
+          </button>
+        </div>
       </div>
+
       <div
         style={{
           maxHeight: "500px",

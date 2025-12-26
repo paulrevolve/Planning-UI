@@ -1000,19 +1000,21 @@ const AnalysisByPeriodContent = ({
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-blue-200 via-blue-100 to-indigo-50 p-8 text-gray-800 font-inter">
-      <button
-        onClick={expandAll}
-        className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 mb-1"
-      >
-        Expand All
-      </button>
-      <button
-        onClick={collapseAll}
-        className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 ml-2 mb-1"
-      >
-        Collapse All
-      </button>
+    <div className="min-h-full bg-[#e9f6fb] rounded-sm p-8 text-gray-800 font-inter">
+      <div className="mb-2">
+        <button
+          onClick={expandAll}
+          className="px-3 py-1.5 text-sm bg-[#17414d] text-white rounded-md  transition-colors duration-200 mb-1"
+        >
+          Expand All
+        </button>
+        <button
+          onClick={collapseAll}
+          className="px-3 py-1.5 text-sm bg-[#17414d] text-white rounded-md  transition-colors duration-200 ml-2 mb-1"
+        >
+          Collapse All
+        </button>
+      </div>
 
       <div className={`p-6 ${getGlassmorphismClasses()}`}>
         <div className="mb-8 flex-wrap justify-center items-center gap-4 hidden"></div>
@@ -1125,9 +1127,9 @@ const AnalysisByPeriodContent = ({
                         row.id.startsWith("total-staff-cost")
                           ? toggleStaffRow(row.id)
                           : row.type === "expandable" &&
-                            row.id.startsWith("non-labor-staff-cost")
-                          ? toggleNonLaborAcctRow(row.id)
-                          : null
+                              row.id.startsWith("non-labor-staff-cost")
+                            ? toggleNonLaborAcctRow(row.id)
+                            : null
                       }
                     >
                       <td className="py-3 px-4 whitespace-nowrap sticky left-0 z-10 bg-inherit flex items-center text-gray-800">
@@ -1162,10 +1164,10 @@ const AnalysisByPeriodContent = ({
                           typeof row.total === "number" && row.total < 0
                             ? "text-red-600"
                             : typeof row.total === "number" &&
-                              row.total > 0 &&
-                              row.description === "Profit"
-                            ? "text-green-600"
-                            : ""
+                                row.total > 0 &&
+                                row.description === "Profit"
+                              ? "text-green-600"
+                              : ""
                         }`}
                       >
                         {row.description.includes("Profit %")
