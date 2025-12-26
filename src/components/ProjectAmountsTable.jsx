@@ -2958,7 +2958,7 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
 
   const handleDeleteEmployee = async (dctId) => {
     if (!dctId) {
-      toast.error("No employee selected for deletion");
+      toast.error("No record selected for deletion");
       return;
     }
 
@@ -5118,14 +5118,15 @@ const isIndeterminate =
               }`}
               onClick={() => {
                 if (!selectedEmployeeId) {
-                  toast.error("Please select an employee to delete");
+                  toast.error("Please select an record to delete");
                   return;
                 }
-                if (
-                  window.confirm(
-                    "Are you sure you want to delete this employee?"
-                  )
-                ) {
+                // if (
+                //   window.confirm(
+                //     "Are you sure you want to delete this employee?"
+                //   )
+                // ) 
+                {
                   handleDeleteEmployee(selectedEmployeeId);
                   setSelectedEmployeeId(null);
                 }

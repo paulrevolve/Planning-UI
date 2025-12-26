@@ -4506,9 +4506,10 @@ const [statusFilter, setStatusFilter] = useState('All')
             Plan Type
           </span>
           <select
-            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed "
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
+            disabled={filteredProjects.length === 0}
           >
             <option value="All">All Types</option>
             <option value="BUD">BUD</option>
@@ -4522,9 +4523,10 @@ const [statusFilter, setStatusFilter] = useState('All')
             Status
           </span>
           <select
-            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed "
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
+             disabled={filteredProjects.length === 0}
           >
             <option value="All">All Statuses</option>
             <option value="In Progress">In Progress</option>
@@ -4595,7 +4597,7 @@ const [statusFilter, setStatusFilter] = useState('All')
 
           <div
             ref={tableContainerRef}
-            className={`overflow-x-auto h-85 ${
+            className={`overflow-x-auto max-h-[70vh] ${
               showNewBusinessPopup ? "blur-sm pointer-events-none" : ""
             }`}
           >
