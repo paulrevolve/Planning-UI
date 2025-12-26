@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaFileExcel, FaFileImport, FaTable, FaFileExport } from 'react-icons/fa';
 import * as XLSX from 'xlsx'; 
 import moment from 'moment'; 
-import Holidays from 'date-holidays'; 
+// import Holidays from 'date-holidays';
 
 // --- CONFIGURATION CONSTANTS ---
 const WORK_HOURS_PER_DAY = 8;
