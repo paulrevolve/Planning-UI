@@ -9,12 +9,12 @@ const NewBusinessComponent = () => {
   const [showNewBusinessPopup, setShowNewBusinessPopup] = useState(false);
   const [editNewBusinessPopup, setEditNewBusinessPopup] = useState(false);
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSelected, setIsSelected] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const [selectedRows, setSelectedRows] = useState(new Set());
 
-  const [columns, setColumns] = useState([
+  const [columns] = useState([
     "businessBudgetId",
     "description",
     "level",
@@ -29,10 +29,15 @@ const NewBusinessComponent = () => {
     "burdenTemplateId",
   ]);
 
+  const isAllSelected = data.length > 0 && selectedRows.size === data.length;
+
+  // ⭐ ADDED
+  const selectedCount = selectedRows.size;
+  const showEdit = selectedCount === 1;
+  const showDelete = selectedCount >= 1;
+
   useEffect(() => {
-    if (searchTerm) {
-      handleSearch();
-    }
+    if (searchTerm) handleSearch();
   }, [searchTerm]);
 
   const COLUMN_LABELS = {
@@ -47,7 +52,7 @@ const NewBusinessComponent = () => {
     escalationRate: "Escalation Rate",
     orgId: "Org Id",
     accountGroup: "Account Group",
-    burdentemplateId: "Burden TemplateId",
+    burdenTemplateId: "Template",
   };
 
   const handleKeyPress = (e) => {
@@ -57,80 +62,83 @@ const NewBusinessComponent = () => {
   const handleSearch = async () => {
     const term = searchTerm.trim();
     try {
-      setIsLoading(true)
-      if (!term) {
-        const res = await axios.get(`${backendUrl}/GetAllNewBusiness`);
-        setData(res.data || []);
-        setSelectedBusiness(null);
-      } else {
-        const res = await axios.get(
-          `${backendUrl}/GetAllNewBusinessById/${term}`
-        );
-        setData(res.data || []);
-        setSelectedBusiness(null);
-      }
+      setIsLoading(true);
+      const res = term
+        ? await axios.get(`${backendUrl}/GetAllNewBusinessById/${term}`)
+        : await axios.get(`${backendUrl}/GetAllNewBusiness`);
+
+      setData(res.data || []);
+      setSelectedRows(new Set());
+      setSelectedBusiness(null);
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    setSearchTerm(e.target.value);
+
+  const toggleRow = (item) => {
+    setSelectedRows((prev) => {
+      const newSet = new Set(prev);
+
+      if (newSet.has(item.businessBudgetId)) {
+        newSet.delete(item.businessBudgetId);
+      } else {
+        newSet.add(item.businessBudgetId);
+      }
+
+      if (newSet.size === 1) {
+        const id = [...newSet][0];
+        setSelectedBusiness(
+          data.find((d) => d.businessBudgetId === id) || null
+        );
+      } else {
+        setSelectedBusiness(null);
+      }
+
+      return newSet;
+    });
   };
 
-  const handleSelect = (item) => {
-    
-    setSelectedBusiness((prev) =>
-      prev && prev.businessBudgetId === item.businessBudgetId ? null : item
-    );
-    if(selectedBusiness){
-      setIsSelected(true)
-    }else{
-      setIsSelected(false)
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedRows(new Set());
+      setSelectedBusiness(null);
+    } else {
+      const allIds = new Set(data.map((d) => d.businessBudgetId));
+      setSelectedRows(allIds);
+      setSelectedBusiness(null);
     }
   };
+
 
   const handleDelete = async () => {
     try {
-      const res = await axios.delete(
+      await axios.delete(
         `${backendUrl}/DeleteNewBusiness/${selectedBusiness.businessBudgetId}`
       );
-      if (res.status === 200 || res.status === 204) {
-      toast.success("Business Deleted Successfully!")
-      try {
-        const refreshed = await axios.get(`${backendUrl}/GetAllNewBusiness`);
-        setData(refreshed.data || []);
-        setSelectedBusiness(null);
-      } catch (error) {
-        console.log(error)
-      }
-    }
+      toast.success("Business Deleted Successfully!");
+      handleSearch();
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleEdit = async () => {
+  const handleEdit = (item) => {
+    setSelectedBusiness(item);
     setEditNewBusinessPopup(true);
   };
 
+
   const handleNewBusinessSave = async (savedData) => {
-    const newBusinessId = savedData.businessBudgetId;
-    console.log(savedData)
-    if (!newBusinessId) {
-      toast.error("New Business saved, but project id is missing.");
-      return;
-    }
-    handleSearch()
-    handleSelect(savedData);
-    setSearchTerm(savedData.businessBudgetId);
+    handleSearch();
     setShowNewBusinessPopup(false);
+    setEditNewBusinessPopup(false);
   };
 
   return (
-    <div className="p-2 sm:p-4 space-y-6 text-sm sm:text-base text-gray-800 font-inter ">
+    <div className="p-2 sm:p-4 space-y-6 text-sm sm:text-base text-gray-800 font-inter">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 relative w-full sm:w-auto">
           <label className="font-semibold text-xs sm:text-sm">
@@ -141,56 +149,46 @@ const NewBusinessComponent = () => {
               type="text"
               className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white"
               value={searchTerm}
-              onChange={handleInputChange}
+              onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyPress}
               autoComplete="off"
             />
           </div>
           <button
             onClick={handleSearch}
-            className="bg-[#17414d] text-white group-hover:text-gray  px-3 py-1 rounded cursor-pointer text-xs sm:text-sm font-normal transition w-full sm:w-auto"
+            className="bg-[#17414d] text-white px-3 py-1 rounded cursor-pointer text-xs sm:text-sm"
           >
             Search
           </button>
         </div>
       </div>
 
-      <div
-        key={searchTerm}
-        className="space-y-4 sm:p-4 border-overall  p-2  bg-white mb-8"
-      >
-        <div className="flex items-center mb-2 gap-1">
+      <div className="space-y-4 sm:p-4 border-overall p-2 bg-white mb-8">
+        <div className="flex items-center mb-2 gap-1 w-full">
           <button
             onClick={() => setShowNewBusinessPopup(true)}
-            className="btn1 btn-blue disabled:bg-gray-300
-  disabled:text-gray-500
-  disabled:cursor-not-allowed disabled:border-0"
-            title="New Business"
+            className="btn1 btn-blue"
             disabled={editNewBusinessPopup}
           >
             New Business
           </button>
 
           <div
-            className={`flex gap-1 items-center ${
-              selectedBusiness ? "block" : "hidden"
+            className={`flex gap-1 w-full items-center ${
+              showDelete ? "block" : "hidden"
             }`}
           >
-            <button
-              className="btn1 px-2 py-1.5 btn-blue disabled:bg-gray-300
-  disabled:text-gray-500
-  disabled:cursor-not-allowed disabled:border-0"
+            {/* <button
+              className="btn1 px-2 py-1.5 btn-blue"
               title="Edit"
               onClick={handleEdit}
-              disabled={showNewBusinessPopup}
+              disabled={!showEdit || showNewBusinessPopup}
             >
               Edit
-            </button>
+            </button> */}
             <button
               onClick={handleDelete}
-              className="btn1 px-2 py-1.5 btn-red disabled:bg-gray-300
-  disabled:text-gray-500
-  disabled:cursor-not-allowed disabled:border-0"
+              className="btn1 px-2 py-1.5 btn-red"
               title="Delete"
               disabled={editNewBusinessPopup || showNewBusinessPopup}
             >
@@ -199,11 +197,7 @@ const NewBusinessComponent = () => {
           </div>
         </div>
 
-        <div
-          className={`rounded-2xl border border-gray-200 overflow-hidden relative ${
-            showNewBusinessPopup ? "" : ""
-          }`}
-        >
+        <div className="rounded-2xl border border-gray-200 overflow-hidden relative">
           {showNewBusinessPopup && (
             <div className="absolute inset-0 z-40">
               <div className="absolute inset-0 bg-white bg-opacity-80 backdrop-blur-sm"></div>
@@ -238,23 +232,32 @@ const NewBusinessComponent = () => {
               </div>
             </div>
           )}
-
           <div
             className={`overflow-x-auto max-h-[70vh] min-h-[70vh] ${
               showNewBusinessPopup ? "blur-sm pointer-events-none" : ""
             }`}
           >
-            <table className="min-w-full table-auto divide-y divide-gray-200">
+            <table className="min-w-full table-auto  divide-gray-200">
               <thead className="bg-gray-200 sticky top-0">
                 <tr>
+                  <th className="py-2 w-10">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   {columns.map((col) => (
                     <th
                       key={col}
-                      className="px-4 py-2 text-xs font-bold text-gray-600 capitalize tracking-widern whitespace-nowrap text-center"
+                      className="px-4 py-2 text-xs font-bold text-gray-600 text-center"
                     >
                       {COLUMN_LABELS[col] || col}
                     </th>
                   ))}
+                  <th className="px-4 py-2 pr-2 text-xs font-bold text-gray-600 text-center">
+                    Edit
+                  </th>
                 </tr>
               </thead>
 
@@ -262,7 +265,7 @@ const NewBusinessComponent = () => {
                 {isLoading ? (
                   <tr>
                     <td colSpan={columns.length}>
-                      <div className="flex items-center justify-center py-4">
+                      <div className="flex items-center justify-center py-2">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         <span className="ml-2 mt-4">
                           Loading project plans...
@@ -282,16 +285,30 @@ const NewBusinessComponent = () => {
                   data.map((item) => (
                     <tr
                       key={item.businessBudgetId}
-                      className={`cursor-pointer hover:bg-blue-50 ${selectedBusiness && selectedBusiness.businessBudgetId === item.businessBudgetId ? "bg-blue-200" : "bg-white"}`}
-                      onClick={() => handleSelect(item)}
+                      className={`cursor-pointer hover:bg-blue-50 ${
+                        selectedRows.has(item.businessBudgetId)
+                          ? "bg-blue-200"
+                          : "bg-white"
+                      }`}
                     >
+                      <td className="px-6 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.has(item.businessBudgetId)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleRow(item);
+                          }}
+                        />
+                      </td>
+
                       {columns.map((col, idx) => (
                         <td
                           key={idx}
-                          className={`px-4 py-2 text-xs text-gray-600 capitalize tracking-widern whitespace-nowrap text-center ${col === "description" ? "text-left" : ""}`}
+                          className="px-4 py-2 text-xs text-gray-600 text-center"
                         >
                           {col === "startDate" || col === "endDate"
-                            ? item[col].split("T")[0]
+                            ? item[col]?.split("T")[0]
                             : col === "isActive"
                               ? item[col]
                                 ? "true"
@@ -299,6 +316,19 @@ const NewBusinessComponent = () => {
                               : item[col]}
                         </td>
                       ))}
+                      <td>
+                        <button
+                          className="btn1 px-2 py-1.5 btn-blue"
+                          title="Edit"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(item);
+                          }}
+                          disabled={showNewBusinessPopup}
+                        >
+                          Edit
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -312,4 +342,3 @@ const NewBusinessComponent = () => {
 };
 
 export default NewBusinessComponent;
-  
