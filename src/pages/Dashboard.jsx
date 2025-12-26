@@ -753,6 +753,9 @@ import UserOrgProjectMapping from "../components/UserOrgProjectMapping";
 import NewBusinessComponent from "../components/NewBusinessComponent";
 import AnalysisByPeriodContent from "../components/AnalysisByPeriodContent";
 import CreateProjectBudget from "../components/CreateProjectBudget";
+import ManageGroups from "../components/ManageGroups";
+import ManageUser from "../components/ManageUser";
+
 
 const SIDEBAR_WIDTH = 190; // px
 const TOPBAR_HEIGHT = 45; // px
@@ -862,6 +865,22 @@ const Dashboard = () => {
             <Route
               path="/create-project-budget"
               element={<CreateProjectBudget />}
+            />
+            <Route
+              path="/manage-groups"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ManageGroups />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/manage-users"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ManageUser />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/monthly-forecast"
