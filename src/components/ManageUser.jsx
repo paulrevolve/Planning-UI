@@ -891,7 +891,7 @@ const renderManageGroupsTab = () => {
               className="px-4 py-2 text-xs rounded  disabled:opacity-50 bg-red-600 text-white"
               disabled={groupFormLoading || selectedGroupIdsForDelete.length === 0}
             >
-              Delete ({selectedGroupIdsForDelete.length})
+              Delete({selectedGroupIdsForDelete.length})
             </button>
           </div>
         </div>
@@ -1111,12 +1111,12 @@ const renderManageUsersTab = () => {
             <button
               type="button"
               onClick={handleBulkDeleteUsers}
-              className="px-4 py-2 text-xs rounded border border-red-500 text-red-600 disabled:opacity-50"
+              className="px-4 py-2 text-xs rounded  disabled:opacity-50 bg-red-600 text-white"
               disabled={
                 userFormLoading || selectedUserIdsForDelete.length === 0
               }
             >
-              Delete Selected ({selectedUserIdsForDelete.length})
+              Delete ({selectedUserIdsForDelete.length})
             </button>
           </div>
         </div>
