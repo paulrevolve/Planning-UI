@@ -130,7 +130,7 @@ const NewBusinessComponent = () => {
   };
 
   return (
-    <div className="p-2 sm:p-4  space-y-6 text-sm sm:text-base text-gray-800 font-inter ">
+    <div className="p-2 sm:p-4 space-y-6 text-sm sm:text-base text-gray-800 font-inter ">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 relative w-full sm:w-auto">
           <label className="font-semibold text-xs sm:text-sm">
@@ -208,10 +208,10 @@ const NewBusinessComponent = () => {
             <div className="absolute inset-0 z-40">
               <div className="absolute inset-0 bg-white bg-opacity-80 backdrop-blur-sm"></div>
               <div className="absolute inset-0 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg  border border-gray-300 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="bg-white w-full overflow-hidden flex flex-col">
                   <div className="flex-1 overflow-y-auto p-4">
                     <NewBusiness
-                      mode = {'business'}
+                      mode={"business"}
                       onClose={() => setShowNewBusinessPopup(false)}
                       selectedBusiness={null}
                       onSaveSuccess={handleNewBusinessSave}
@@ -225,10 +225,10 @@ const NewBusinessComponent = () => {
             <div className="absolute inset-0 z-40">
               <div className="absolute inset-0 bg-white bg-opacity-80 backdrop-blur-sm"></div>
               <div className="absolute inset-0 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg  border border-gray-300 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="bg-white w-full overflow-hidden flex flex-col">
                   <div className="flex-1 overflow-y-auto p-4">
                     <NewBusiness
-                      mode = {'business'}
+                      mode={"business"}
                       onClose={() => setEditNewBusinessPopup(false)}
                       selectedBusiness={selectedBusiness}
                       onSaveSuccess={handleNewBusinessSave}
@@ -240,7 +240,7 @@ const NewBusinessComponent = () => {
           )}
 
           <div
-            className={`overflow-x-auto h-85 ${
+            className={`overflow-x-auto max-h-[70vh] min-h-[70vh] ${
               showNewBusinessPopup ? "blur-sm pointer-events-none" : ""
             }`}
           >
@@ -270,8 +270,7 @@ const NewBusinessComponent = () => {
                       </div>
                     </td>
                   </tr>
-                ) : data.length === 0 &&
-                  (searchTerm.trim() === "") ? (
+                ) : data.length === 0 && searchTerm.trim() === "" ? (
                   <tr>
                     <td colSpan={columns.length + 1}>
                       <div className="p-8 text-center text-gray-500 text-lg">
@@ -289,7 +288,7 @@ const NewBusinessComponent = () => {
                       {columns.map((col, idx) => (
                         <td
                           key={idx}
-                          className={`px-4 py-2 text-xs text-gray-600 capitalize tracking-widern whitespace-nowrap text-center ${col === 'description' ? 'text-left' : ''}`}
+                          className={`px-4 py-2 text-xs text-gray-600 capitalize tracking-widern whitespace-nowrap text-center ${col === "description" ? "text-left" : ""}`}
                         >
                           {col === "startDate" || col === "endDate"
                             ? item[col].split("T")[0]
@@ -297,13 +296,12 @@ const NewBusinessComponent = () => {
                               ? item[col]
                                 ? "true"
                                 : "false"
-                               : item[col]}
+                              : item[col]}
                         </td>
                       ))}
                     </tr>
                   ))
-              )
-              }
+                )}
               </tbody>
             </table>
           </div>

@@ -10,7 +10,7 @@ const FormField = ({ label, children }) => (
     <label className="w-28 text-[11px] sm:text-xs font-normal whitespace-nowrap">
       {label}:
     </label>
-    <div className="flex-1">{children}</div>
+    <div className="flex-1 ml-1">{children}</div>
   </div>
 );
 
@@ -1068,267 +1068,158 @@ const NewBusiness = ({
   };
 
   return (
-    <div className="p-2 sm:p-4 space-y-6 text-[11px] sm:text-xs text-gray-800 font-sans max-w-4xl mx-auto">
-      {/* <ToastContainer
-        position="top-right mt-15"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        closeButton
-      /> */}
-
+    <div className="p-3 sm:p-6 space-y-6 text-[14px] sm:text-xs text-gray-800 font-sans mx-auto">
       {viewMode === "form" && (
-        // New Business Budget Form
-        <form className="bg-white rounded shadow p-2 sm:p-4 mb-4">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xs sm:text-sm font-normal">
+        <form className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-4">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-[16px] font-medium text-gray-700">
               {isUpdateMode ? "Update Business Budget" : "New Business Budget"}
             </h2>
-            <div className="flex gap-2">
+
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleSave}
-                className="bg-blue-600 text-white px-3 py-1 rounded text-[11px] sm:text-xs hover:bg-blue-700 transition cursor-pointer  disabled:bg-gray-300
-  disabled:text-gray-500
-  disabled:cursor-not-allowed
-  disabled:hover:bg-gray-300"
-                // disabled={isUpdateMode}
+                className="bg-[#17414d] text-white px-4 py-1.5 cursor-pointer rounded text-xs transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
               >
-                {isUpdateMode ? "update" : "Save"}
+                {isUpdateMode ? "Update" : "Save"}
               </button>
+
               <button
                 type="button"
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 text-lg font-bold leading-none hover:bg-gray-200 rounded px-2 py-1 ml-2 cursor-pointer"
+                className="cursor-pointer bg-red-500 rounded text-white w-7 h-7 flex items-center justify-center text-lg font-bold transition"
                 title="Close"
               >
                 ×
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-1 mb-2">
-            <label className=" text-[11px] sm:text-xs font-normal whitespace-nowrap">
-              Business Budget ID:
-            </label>
-            <input
-              name="businessBudgetId"
-              value={form.businessBudgetId}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-1 py-0.5 w-40 text-[11px] sm:text-xs"
-              type="text"
-              readOnly={isUpdateMode} // Make ID read-only in update mode
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-            <div className="space-y-2">
-              <FormField label="Description">
+
+          {/* Budget ID */}
+
+          {/* Form Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-3 ">
+            {/* Left column */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-4">
+                <label className="whitespace-nowrap text-gray-600">
+                  Business Budget ID:
+                </label>
                 <input
-                  name="description"
-                  value={form.description}
+                  name="businessBudgetId"
+                  value={form.businessBudgetId}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
+                  readOnly={isUpdateMode}
+                  className="border border-gray-300 rounded px-2 ml-3.5 py-1 w-44 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-400"
                   type="text"
                 />
-              </FormField>
-              <FormField label="Level">
-                <input
-                  name="level"
-                  value={form.level}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  type="number"
-                />
-              </FormField>
+              </div>
+              {[
+                ["Description", "description", "text"],
+                ["Level", "level", "number"],
+                ["Version", "version", "number"],
+                ["Version Code", "versionCode", "text"],
+                ["Winning Probability %", "winningProbability", "number"],
+              ].map(([label, name, type]) => (
+                <FormField key={name} label={label}>
+                  <input
+                    name={name}
+                    value={form[name]}
+                    onChange={handleChange}
+                    type={type}
+                    className="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  />
+                </FormField>
+              ))}
+
               <FormField label="Active">
                 <input
                   name="active"
                   checked={form.active}
                   onChange={handleChange}
-                  className="accent-blue-600"
                   type="checkbox"
-                  style={{ width: 14, height: 14 }}
-                />
-              </FormField>
-              <FormField label="Version">
-                <input
-                  name="version"
-                  value={form.version}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  type="number"
-                />
-              </FormField>
-              <FormField label="Version Code">
-                <input
-                  name="versionCode"
-                  value={form.versionCode}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
-                  type="text"
-                />
-              </FormField>
-              <FormField label="Winning Probability %">
-                <input
-                  name="winningProbability"
-                  value={form.winningProbability}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  type="number"
-                  min="0"
-                  max="100"
+                  className="accent-blue-600"
                 />
               </FormField>
             </div>
-            <div className="space-y-2">
+
+            {/* Right column */}
+            <div className="space-y-3">
               <FormField label="Start Date">
                 <input
                   name="startDate"
                   value={form.startDate}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
                   type="date"
+                  className="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-400"
                 />
               </FormField>
-              {/* <FormField label="Start Date">
-  <input
-    name="startDate"
-    value={form.startDate}
-    onChange={handleChange}
-    className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
-    type="date"
-    placeholder=""
-  />
-</FormField> */}
-              {/* <FormField label="Start Date">
-  <input
-    name="startDate"
-    value={form.startDate}
-    onChange={handleChange}
-    className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs date-input-clean"
-    type="date"
-    placeholder=""
-  />
-</FormField> */}
-              {/* <FormField label="Start Date">
-  <input
-    name="startDate"
-    value={form.startDate}
-    onChange={handleChange}
-    className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs text-transparent focus:text-black cursor-pointer"
-    type="date"
-    onFocus={(e) => {
-      if (e.target.showPicker && typeof e.target.showPicker === 'function') {
-        e.target.showPicker();
-      }
-    }}
-    onClick={(e) => {
-      if (e.target.showPicker && typeof e.target.showPicker === 'function') {
-        e.target.showPicker();
-      }
-    }}
-    onMouseDown={(e) => {
-      if (e.target.showPicker && typeof e.target.showPicker === 'function') {
-        setTimeout(() => e.target.showPicker(), 0);
-      }
-    }}
-  />
-</FormField> */}
 
               <FormField label="End Date">
                 <input
                   name="endDate"
                   value={form.endDate}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
+                  min={form.startDate}
                   type="date"
-                  min={form.startDate} // NEW: This prevents selecting dates before start date
+                  className="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-400"
                 />
               </FormField>
 
-              {/* <FormField label="End Date">
-                <input
-                  name="endDate"
-                  value={form.endDate}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
-                  type="date"
-                />
-              </FormField> */}
-              {/* <FormField label="End Date">
-  <input
-    name="endDate"
-    value={form.endDate}
-    onChange={handleChange}
-    className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
-    type="date"
-    placeholder=""
-  />
-</FormField> */}
-              {/* <FormField label="End Date">
-  <input
-    name="endDate"
-    value={form.endDate}
-    onChange={handleChange}
-    className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs date-input-clean"
-    type="date"
-    placeholder=""
-  />
-</FormField> */}
+              {[
+                ["Period", "period"],
+                ["Weeks", "weeks"],
+              ].map(([label, name]) => (
+                <FormField key={name} label={label}>
+                  <input
+                    name={name}
+                    value={form[name]}
+                    readOnly
+                    className="border border-gray-300 rounded px-2 py-1 w-full bg-gray-100"
+                    type="text"
+                  />
+                </FormField>
+              ))}
 
-              <FormField label="Period">
-                <input
-                  name="period"
-                  value={form.period}
-                  readOnly
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs bg-gray-100"
-                  type="text"
-                />
-              </FormField>
-              <FormField label="Weeks">
-                <input
-                  name="weeks"
-                  value={form.weeks}
-                  readOnly
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs bg-gray-100"
-                  type="text"
-                />
-              </FormField>
               <FormField label="Escalation Rate">
                 <input
                   name="escalationRate"
                   value={form.escalationRate}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   type="number"
                   step="0.01"
+                  className="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-400"
                 />
               </FormField>
+
               <FormField label="Org ID">
                 <input
                   name="orgId"
                   value={form.orgId}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   type="text"
+                  className="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-400"
                 />
               </FormField>
+
               <FormField label="Account Group">
                 <input
                   name="accountGrp"
                   value={form.accountGrp}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
                   type="text"
+                  className="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-400"
                 />
               </FormField>
+
               <FormField label="Burden Template ID">
                 <select
                   name="burdenTemplateId"
                   value={form.burdenTemplateId}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded px-1 py-0.5 w-full text-[11px] sm:text-xs"
+                  className="border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-400"
                 >
                   <option value="">Select a Template ID</option>
                   {burdenTemplates.map((template) => (

@@ -18,12 +18,14 @@ const [costData, setCostData] = useState([]);
   const [closePeriodLabel, setClosePeriodLabel] = useState("");
   const [escPercent, setEscPercent] = useState("");   // escalation %
   const [rate, setRate] = useState(0);
+  const [ytdBaseAllocationActual, setYtdBaseAllocationActual] = useState(0);
   const [closePeriodMonth, setClosePeriodMonth] = useState(null); // 1–12
 const [closePeriodYear, setClosePeriodYear] = useState(null);
   const [costTotals, setCostTotals] = useState({
   totalYTDCostActualAmt: 0,
   totalYTDCostBudgetAmt: 0,
   monthTotals: Array(12).fill(0),
+  ytdMonthTotals: Array(12).fill(0)
 });
 
 const [baseTotals, setBaseTotals] = useState({
@@ -32,6 +34,8 @@ const [baseTotals, setBaseTotals] = useState({
   ytdBudgetTotal: 0,
   monthBaseTotals: Array(12).fill(0),
   monthAllocTotals: Array(12).fill(0),
+   monthYtdCostTotals: Array(12).fill(0),    // ✅ NEW
+  monthYtdAllocTotals: Array(12).fill(0),
 });
 
 const [costSortDir, setCostSortDir] = useState("asc");   // for costData
@@ -99,13 +103,15 @@ if (closing?.value) {
       accountName : row.accountName,
       ytdActual: Number(row.ytdActualAmt) || 0,
       ytdBudget: Number(row.ytdBudgetedAmt) || 0,
+      ytdamt: Number(row.ytdamt) || 0,
       months: monthsHeader.map((_, idx) => {
         const period = idx + 1;
         const p =
           row.periodDetails?.find((d) => d.period === period) || {};
         return {
           actual: Number(p.actualamt) || 0,
-          budget: Number(p.budgetedAmt) || 0,
+          budget: Number(p.actualamt) || 0,
+          ytdamt: Number(p.ytdamt) || 0,
         };
       }),
     }));
@@ -128,6 +134,9 @@ const mapBaseData = (rows) =>
       return {
         base: Number(p.baseAmt) || 0,
         allocation: Number(p.allocationAmt) || 0,
+        ytdcostAmt: Number(p.ytdcostAmt) || 0,
+         ytdAllocationAmt: Number(p.ytdAllocationAmt) || 0,  
+         
       };
     }),
   }));
@@ -149,12 +158,19 @@ const mapBaseData = (rows) =>
     return rows.reduce((sum, r) => {
       const val = closed
         ? Number(r.months[idx]?.actual) || 0
-        : Number(r.months[idx]?.budget) || 0;
+        : Number(r.months[idx]?.actual) || 0;
       return sum + val;
     }, 0);
   });
 
-  return { totalYTDCostActualAmt, monthTotals ,totalYTDCostBudgetAmt};
+   // NEW: Calculate YTD totals for each period
+const ytdMonthTotals = monthsHeader.map((_, idx) => {
+    return rows.reduce((sum, r) => {
+      return sum + Number(r.months[idx]?.ytdamt || 0);
+    }, 0);
+  });
+
+  return { totalYTDCostActualAmt, monthTotals ,totalYTDCostBudgetAmt,ytdMonthTotals};
 };
 
 const calcBaseTotals = (rows) => {
@@ -184,12 +200,21 @@ const calcBaseTotals = (rows) => {
     )
   );
 
+   const monthYtdCostTotals = monthsHeader.map((_, idx) =>      // ✅ NEW
+    rows.reduce((sum, r) => sum + (Number(r.months[idx]?.ytdcostAmt) || 0), 0)
+  );
+  const monthYtdAllocTotals = monthsHeader.map((_, idx) =>     // ✅ NEW
+    rows.reduce((sum, r) => sum + (Number(r.months[idx]?.ytdAllocationAmt) || 0), 0)
+  );
+
   return {
     ytdBaseTotal,
     ytdAllocTotal,
     ytdBudgetTotal,
     monthBaseTotals,
     monthAllocTotals,
+     monthYtdCostTotals,      // ✅ NEW
+    monthYtdAllocTotals, 
   };
 };
 
@@ -213,6 +238,7 @@ const calcBaseTotals = (rows) => {
         setCostData(mappedCost);
         setCostTotals(calcCostTotals(mappedCost));
 setRate(json.rate ?? 0);
+setYtdBaseAllocationActual(json.totalYTDBaseAllocationActualAmt ?? 0);
         setBaseData(mappedBase);
         setBaseTotals(calcBaseTotals(mappedBase));
         } catch (e) {
@@ -331,7 +357,7 @@ value={
                   <th
                     key={m}
                     className="th-thead border border-gray-200 font-semibold text-gray-900"
-                    colSpan={1}
+                    colSpan={2}
                   >
                     {m}
                   </th>
@@ -343,6 +369,7 @@ value={
     const period = i + 1;
     const closed = isPeriodClosed(period, selectedYear);
     return (
+      <>
       <th
         key={period}
         // className="th-thead border border-gray-200 font-semibold text-gray-900"
@@ -354,7 +381,20 @@ value={
                       }
       >
         {closed ? "Actual Amt" : "Budget Amt"}
+
       </th>
+       <th
+                key={`ytd-${period}`}
+                 className={
+                        "th-thead border border-gray-200 font-semibold text-gray-900 py-2 px-2 text-center " +
+                        (closed
+                          ? "bg-gradient-to-r from-green-100 to-green-200"
+                          : "bg-gradient-to-r from-orange-100 to-orange-200")
+                      }
+              >
+                YTD Amt
+              </th>
+              </>
     );
   })}
 </tr>
@@ -388,6 +428,9 @@ value={
       <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
         {formatNumber(closed ? m.actual : m.budget)}
       </td>
+                 <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
+                  {formatNumber(m.ytdamt)}
+                </td>
     </React.Fragment>
   );
 })}
@@ -401,15 +444,20 @@ value={
       Totals :
     </td>
     <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
-      {formatNumber(costTotals.totalYTDCostActualAmt)}
+      {formatNumber(ytdBaseAllocationActual)}
     </td>
      <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
       {formatNumber(costTotals.totalYTDCostBudgetAmt)}
     </td>
     {monthsHeader.map((_, i) => (
+      <>
       <td key={i} className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
         {formatNumber(costTotals.monthTotals[i] ?? 0)}
       </td>
+       <td key={`ytd-total-${i}`} className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
+                {formatNumber(costTotals.ytdMonthTotals[i] ?? 0)}
+              </td>
+              </>
     ))}
   </tr>
 </tfoot>
@@ -454,7 +502,7 @@ value={
             key={m}
             className="th-thead border border-gray-200 font-semibold text-gray-900"
             
-            colSpan={2}
+            colSpan={4}
           >
             {m}
           </th>
@@ -483,6 +531,13 @@ value={
       >
         Base Amt
       </th>
+      {/* YTD Cost = blue */}
+        <th  className={
+          "th-thead border border-gray-200 font-semibold text-gray-900 py-2 px-2 text-center " +
+          "bg-gradient-to-r from-green-100 to-green-200"
+        }>
+          YTD Cost
+        </th>
 
       {/* Allocation = orange */}
       <th
@@ -493,6 +548,16 @@ value={
       >
         Allocation Amt
       </th>
+      {/* YTD Allocation = purple */}
+        <th className={
+          "th-thead border border-gray-200 font-semibold text-gray-900 py-2 px-2 text-center " +
+          "bg-gradient-to-r from-orange-100 to-orange-200"
+        }>
+          YTD Alloc
+        </th>
+
+        
+      
     </React.Fragment>
   ))}
 </tr>
@@ -533,8 +598,14 @@ value={
                 {formatNumber(m.base)}
               </td>
               <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
+            {formatNumber(m.ytdcostAmt)}      {/* ✅ NEW */}
+          </td>
+              <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
                 {formatNumber(m.allocation)}
               </td>
+                  <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
+            {formatNumber(m.ytdAllocationAmt)}  {/* ✅ NEW */}
+          </td>
             </React.Fragment>
           ))}
         </tr>
@@ -562,8 +633,14 @@ value={
         <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
           {formatNumber(baseTotals.monthBaseTotals[i] ?? 0)}
         </td>
+          <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
+          {formatNumber(baseTotals.monthYtdCostTotals[i] ?? 0)}  {/* ✅ NEW */}
+        </td>
         <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
           {formatNumber(baseTotals.monthAllocTotals[i] ?? 0)}
+        </td>
+           <td className="tbody-td border border-gray-200 py-3 px-4 whitespace-nowrap font-mono text-sm">
+          {formatNumber(baseTotals.monthYtdAllocTotals[i] ?? 0)}  {/* ✅ NEW */}
         </td>
       </React.Fragment>
     ))}
@@ -578,3 +655,5 @@ value={
 };
 
 export default GNA;
+
+
