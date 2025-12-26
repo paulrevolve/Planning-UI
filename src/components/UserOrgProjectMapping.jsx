@@ -2770,13 +2770,13 @@ const renderManageUsersTab = () => {
   );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-white rounded-2xl shadow">
+    <div className="p-6 w-full mx-auto bg-white rounded-2xl shadow">
       {/* <h2 className="text-2xl font-bold mb-2">
         User, Group & Org Mapping
       </h2> */}
       <div className="p-4 border-b mb-1 border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             User, Group & Org Mapping
+             Project Org Mapping
           </h2>
           
         </div>	

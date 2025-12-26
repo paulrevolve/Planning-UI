@@ -164,7 +164,7 @@ const NewBusinessComponent = () => {
       </div>
 
       <div className="space-y-4 sm:p-4 border-overall p-2 bg-white mb-8">
-        <div className="flex items-center mb-2 gap-1 w-full">
+        <div className="flex items-center mb-2 gap-1 w-full whitespace-nowrap">
           <button
             onClick={() => setShowNewBusinessPopup(true)}
             className="btn1 btn-blue"

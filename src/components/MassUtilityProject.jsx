@@ -2113,7 +2113,7 @@ const isAllSelected =
   };
 
   return (
-    <div className="w-full bg-gray-50 min-h-screen p-6">
+    <div className="w-full min-h-screen p-6">
       {/* FILTER & ACTION SECTION */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">

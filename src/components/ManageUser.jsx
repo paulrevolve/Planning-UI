@@ -1734,7 +1734,7 @@ const renderManageUsersTab = () => {
   );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-white rounded-2xl shadow">
+    <div className="p-6 w-full mx-auto bg-white rounded-2xl shadow">
       {/* <h2 className="text-2xl font-bold mb-2">
         User, Group & Org Mapping
       </h2> */}
