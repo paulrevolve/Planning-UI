@@ -8042,32 +8042,41 @@ const handleSelectAllCheckboxes = (isChecked) => {
                   >
                     Delete
                   </button> */}
-                  <button
-  className={`px-4 py-2 text-white rounded transition text-xs font-medium
+               <button
+  className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
     ${planType === "EAC" ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
-  onClick={() => {
-    // FIX: Check if any row is selected in the Set
-    if (selectedRows.size === 0) {
-      toast.error("Please select record to delete");
+  onClick={async () => {
+    // FIX 1: Change selectedRows.size to checkedRows.size
+    if (checkedRows.size === 0) {
+      toast.error("Please select record(s) to delete");
       return;
     }
 
-    // Get the first selected index (assuming single delete for now based on your UI)
-    const selectedIndex = Array.from(selectedRows)[0];
-    const empToDelete = localEmployees[selectedIndex];
+    if (window.confirm(`Are you sure you want to delete record?`)) {
+      setIsLoading(true);
+      try {
+        // FIX 2: Iterate through all checked rows and delete them
+        const indicesToDelete = Array.from(checkedRows);
+        
+        for (const index of indicesToDelete) {
+          const empToDelete = localEmployees[index];
+          if (empToDelete && empToDelete.emple_Id) {
+            await axios.delete(`${backendUrl}/Employee/DeleteEmployee/${empToDelete.emple_Id}`);
+          }
+        }
 
-    if (!empToDelete || !empToDelete.emple_Id) {
-      toast.error("Invalid record selection");
-      return;
-    }
-
-    if (
-      window.confirm(
-        "Are you sure you want to delete this record?"
-      )
-    ) {
-      handleDeleteEmployee(empToDelete.emple_Id);
-      setSelectedRows(new Set()); // Clear selection after delete
+        toast.success("Selected record(s) deleted successfully!");
+        
+        // Clear selection and refresh list
+        setCheckedRows(new Set());
+        setShowCopyButton(false);
+        fetchEmployees(); // Refresh the grid
+      } catch (err) {
+        toast.error("Failed to delete some records.");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     }
   }}
   disabled={planType === "EAC"}
