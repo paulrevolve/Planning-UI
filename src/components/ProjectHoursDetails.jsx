@@ -4716,16 +4716,16 @@ useEffect(() => {
       setEditedEmployeeData({});
       setHasUnsavedEmployeeChanges(false);
 
-      if (successCount > 0) {
-        const message =
-          hasHoursChanges && hasEmployeeChanges
-            ? `Successfully saved ${successCount} entries and employee updates!`
-            : hasHoursChanges
-            ? `Successfully saved hour entries!`
-            : `Successfully updated employees!`;
+      // if (successCount > 0) {
+      //   const message =
+      //     hasHoursChanges && hasEmployeeChanges
+      //       ? `Successfully saved ${successCount} entries and employee updates!`
+      //       : hasHoursChanges
+      //       ? `Successfully saved hour entries!`
+      //       : `Successfully updated employees!`;
 
-        toast.success(message, { autoClose: 3000 });
-      }
+      //   toast.success(message, { autoClose: 3000 });
+      // }
 
       if (errorCount > 0) {
         toast.warning(`${errorCount} entries could not be saved.`, {
@@ -4745,6 +4745,97 @@ useEffect(() => {
       setIsLoading(false);
     }
   };
+
+
+//  const handleMasterSave = async () => {
+//   setIsLoading(true);
+//   try {
+//     const savePromises = [];
+
+//     // 1. Save New/Pasted Entries
+//     if (newEntries.length > 0) {
+//       savePromises.push(handleSaveMultipleEntry());
+//     }
+
+//     // 2. Save Existing Grid Hours/Employee Edits
+//     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+//       savePromises.push(handleSaveAll());
+//     }
+
+//     await Promise.all(savePromises);
+
+//     // --- CRITICAL: CLEAR ALL STATES TO HIDE BUTTONS ---
+//     setNewEntries([]);
+//     setNewEntryPeriodHoursArray([]);
+//     setShowNewForm(false);
+//     setHasUnsavedHoursChanges(false);
+//     setHasUnsavedEmployeeChanges(false);
+//     setModifiedHours({});
+//     setEditedEmployeeData({});
+//     setInputValues({});
+//     setCheckedRows(new Set());
+//     setShowCopyButton(false);
+
+//     toast.success("All changes saved successfully!");
+//   } catch (err) {
+//     console.error("Master Save Error:", err);
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+const handleMasterSave = async () => {
+  setIsLoading(true);
+  try {
+    const savePromises = [];
+    const savedTypes = [];
+
+    // 1. Save New/Pasted Entries
+    if (newEntries.length > 0) {
+      savePromises.push(handleSaveMultipleEntry());
+      savedTypes.push(`${newEntries.length} new entry`);
+    }
+
+    // 2. Save Existing Grid Hours/Employee Edits
+    if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+      savePromises.push(handleSaveAll());
+      if (hasUnsavedHoursChanges && hasUnsavedEmployeeChanges) savedTypes.push("hour changes and employee updates");
+      else if (hasUnsavedHoursChanges) savedTypes.push("hour changes");
+      else savedTypes.push("employee updates");
+    }
+
+    if (savePromises.length === 0) {
+      toast.info("No changes to save.");
+      setIsLoading(false);
+      return;
+    }
+
+    await Promise.all(savePromises);
+
+    // --- RESET ALL STATES ---
+    setNewEntries([]);
+    setNewEntryPeriodHoursArray([]);
+    setShowNewForm(false);
+    setHasUnsavedHoursChanges(false);
+    setHasUnsavedEmployeeChanges(false);
+    setModifiedHours({});
+    setEditedEmployeeData({});
+    setInputValues({});
+    setCheckedRows(new Set());
+    setShowCopyButton(false);
+
+    // --- FIRE ONLY ONE COMBINED TOAST ---
+    toast.success(`Successfully saved ${savedTypes.join(" and ")}!`, {
+      autoClose: 3000,
+    });
+
+  } catch (err) {
+    console.error("ave Error:", err);
+    // Error toasts are handled within the individual functions or here as fallback
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleAccountInputChangeForUpdate = (value, actualEmpIdx) => {
     handleEmployeeDataChange(actualEmpIdx, "acctId", value);
@@ -6136,7 +6227,7 @@ const handleFillValues = () => {
         // All saved successfully
         setNewEntries([]);
         setNewEntryPeriodHoursArray([]);
-        toast.success(`Entries saved successfully!`, { autoClose: 3000 });
+        // toast.success(`Entries saved successfully!`, { autoClose: 3000 });
       }
 
       if (successCount > 0) {
@@ -7456,7 +7547,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
     try {
       await axios.delete(`${backendUrl}/Employee/DeleteEmployee/${emple_Id}`);
 
-      toast.success("Employee deleted successfully!");
+      toast.success("Record Deleted Successfully!");
 
       // Remove deleted employee from local state
       setLocalEmployees((prev) =>
@@ -7464,7 +7555,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
       );
     } catch (err) {
       toast.error(
-        "Failed to delete employee: " +
+        "Failed to delete record: " +
           (err.response?.data?.message || err.message)
       );
     }
@@ -7711,13 +7802,13 @@ const handleSelectAllCheckboxes = (isChecked) => {
             </button>
           )}
 
-          {status === "In Progress" &&
+          {/* {status === "In Progress" &&
             (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) && (
               <div className="flex gap-2">
                 <button
                   onClick={handleSaveAll}
                   disabled={isLoading}
-                  // className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                 
                    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
             style={{
     ...geistSansStyle,
@@ -7739,92 +7830,18 @@ const handleSelectAllCheckboxes = (isChecked) => {
                   )}
                 </button>
 
-                {/* Cancel Button - Show when new form OR pasted entries exist */}
-                {/* {(showNewForm ||
-                  newEntries.length > 0 ||
-                  hasUnsavedHoursChanges ||
-                  hasUnsavedEmployeeChanges) && (
-                  <button
-                    onClick={() => {
-                      if (newEntries.length > 0) {
-                        // Cancel pasted entries
-                        setNewEntries([]);
-                        setNewEntryPeriodHoursArray([]);
-                        setPastedEntrySuggestions({});
-                        setPastedEntryAccounts({});
-                        setPastedEntryOrgs({});
-                        setPastedEntryPlcs({});
-                        toast.info("Cancelled pasted entries", {
-                          autoClose: 2000,
-                        });
-                      }
-                      if (showNewForm) {
-                        // Cancel single new entry
-                        resetNewEntryForm();
-                        setShowNewForm(false);
-                        toast.info("Cancelled new entry", { autoClose: 2000 });
-                      }
-
-                      setHasUnsavedHoursChanges(false);
-                      setHasUnsavedEmployeeChanges(false);
-                      // Clear clipboard data
-                      setHasClipboardData(false);
-                      setCopiedRowsData([]);
-                      setCopiedMonthMetadata([]);
-                    }}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs font-medium"
-                  >
-                    Cancel
-                  </button>
-                )} */}
+               
               </div>
-            )}
+            )} */}
+
+            {/* Check for In Progress status first */}
+
+
+            
 
           {isEditable && (
             <>
-              {/* <button
-                onClick={() => setShowNewForm((prev) => !prev)}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium"
-              >
-                {showNewForm ? "Cancel" : "New"}
-              </button> */}
-
-              {/* <button
-                onClick={() => {
-                  if (showNewForm) {
-                    // Reset all form fields when canceling
-                    setNewEntry({
-                      id: "",
-                      firstName: "",
-                      lastName: "",
-                      isRev: false,
-                      isBrd: false,
-                      idType: "",
-                      acctId: "",
-                      orgId: "",
-                      plcGlcCode: "",
-                      perHourRate: "",
-                      status: "Act",
-                    });
-                    setNewEntryPeriodHours({});
-                    setEmployeeSuggestions([]);
-                    setLaborAccounts([]);
-                    setPlcOptions([]);
-                    setFilteredPlcOptions([]);
-                    setPlcSearch("");
-                    setOrgSearch("");
-                    setAutoPopulatedPLC(false);
-                    setShowNewForm(false);
-                    resetNewEntryForm(); // Reset form first
-                  } else {
-                    setShowNewForm(true);
-                  }
-                }}
-                className="px-4 py-2 blue-btn-common text-white rounded hover:bg-blue-700 text-xs font-medium"
-              >
-                
-                New
-              </button> */}
+              
 
               
 {isEditable && (
@@ -7864,32 +7881,83 @@ const handleSelectAllCheckboxes = (isChecked) => {
             New
         </button>
 
-        {/* Cancel Last Entry Button: Only visible if there is at least one new entry in the array */}
-        {/* {newEntries.length > 0 && (
-            <button
-                onClick={() => {
-                    // 1. Remove the last element from the entries array
-                    const updatedEntries = newEntries.slice(0, -1);
-                    setNewEntries(updatedEntries);
-                    
-                    // 2. Remove the last element from the corresponding hours array
-                    setNewEntryPeriodHoursArray(prev => prev.slice(0, -1));
+        {status === "In Progress" && (
+  <div className="flex gap-2">
+    {/* UNIFIED SAVE BUTTON: Visible if there are New Entries OR Grid Edits */}
+    {(newEntries.length > 0 || hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) && (
+      <button
+        onClick={handleMasterSave}
+        className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white"
+        style={{
+          ...geistSansStyle,
+          backgroundColor: "#113d46",
+        }}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          "Saving..."
+        ) : (
+          newEntries.length > 0 
+            ? `Save All (${newEntries.length})` 
+            : `Save Changes (${Object.keys(modifiedHours).length + Object.keys(editedEmployeeData).length})`
+        )}
+      </button>
+    )}
 
-                    // 3. If no entries are left, hide the new form section entirely
-                    if (updatedEntries.length === 0) {
-                        setShowNewForm(false);
-                    }
-                    
-                    toast.info("Last new entry form cancelled.", { autoClose: 1500 });
-                }}
-                className="px-4 py-2 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500"
-            >
-                Cancel
-            </button>
-        )} */}
+    {/* CONSOLIDATED CANCEL BUTTON WITH LIFO LOGIC */}
+    {(showNewForm || newEntries.length > 0 || hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) && (
+      <button
+        onClick={() => {
+          // 1. LIFO Logic: Remove the latest New Entry form first
+          if (newEntries.length > 0) {
+            const updatedEntries = newEntries.slice(0, -1);
+            const updatedHours = newEntryPeriodHoursArray.slice(0, -1);
+            setNewEntries(updatedEntries);
+            setNewEntryPeriodHoursArray(updatedHours);
+            if (updatedEntries.length === 0) setShowNewForm(false);
+            return; 
+          }
+
+          // 2. Hide single manual form if visible
+          if (showNewForm) {
+            setShowNewForm(false);
+            resetNewEntryForm();
+          }
+
+          // 3. Revert Grid Edits (Hours & Fields)
+          if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+            setInputValues({});         
+            setModifiedHours({});      
+            setHasUnsavedHoursChanges(false);
+            setEditedEmployeeData({}); 
+            setHasUnsavedEmployeeChanges(false);
+            setFindMatches([]);        
+            setHasClipboardData(false);
+            setCopiedRowsData([]);
+            toast.info("Changes reverted", { autoClose: 1500 });
+          }
+        }}
+        className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer transition-colors text-white"
+        style={{
+          ...geistSansStyle,
+          backgroundColor: "#113d46",
+        }}
+      >
+        Cancel
+      </button>
+    )}
+  </div>
+)}
+
+
+
+     
+      
     </div>
 )}
-{/* Note: The comprehensive Save and Cancel All button logic remains further down in the component's render function. */}
+
+
+
 
               {hasClipboardData && status === "In Progress" && (
                 <button
@@ -7909,200 +7977,10 @@ const handleSelectAllCheckboxes = (isChecked) => {
                 </button>
               )}
 
-              {/* Save Entry - Show for BOTH showNewForm AND newEntries */}
-              {(showNewForm || newEntries.length > 0) && (
-                <button
-                  onClick={() => {
-                    if (newEntries.length > 0) {
-                      // Save multiple pasted entries
-                      handleSaveMultipleEntry();
-                    } else {
-                      // Save single new entry
-                      handleSaveNewEntry();
-                    }
-                  }}
-                  // className="px-4 py-2 blue-btn-common text-white rounded  text-xs font-medium"
-                   className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
-                >
-                  {newEntries.length > 0
-                    ? `Save All (${newEntries.length})`
-                    : "Save Entry"}
-                </button>
-              )}
+           
 
-              {/* Cancel Button - Show when new form OR pasted entries exist */}
-              {/* {(showNewForm || newEntries.length > 0) && (
-                <button
-                  onClick={() => {
-                    if (newEntries.length > 0) {
-                      // Cancel pasted entries
-                      setNewEntries([]);
-                      setNewEntryPeriodHoursArray([]);
-                      setPastedEntrySuggestions({});
-                      setPastedEntryAccounts({});
-                      setPastedEntryOrgs({});
-                      setPastedEntryPlcs({});
-                      // toast.info("Cancelled pasted entries", {
-                      //   autoClose: 2000,
-                      // });
-                    }
-                    if (showNewForm) {
-                      // Cancel single new entry
-                      resetNewEntryForm();
-                      setShowNewForm(false);
-                      toast.info("Cancelled new entry", { autoClose: 2000 });
-                    }
-                    // Clear clipboard data
-                    setHasClipboardData(false);
-                    setCopiedRowsData([]);
-                    setCopiedMonthMetadata([]);
-                  }}
-                  className="px-4 py-2 blue-btn-common text-white rounded  text-xs font-medium"
-                >
-                  Cancel
-                </button>
-              )} */}
-              {/* {(showNewForm ||
-                  newEntries.length > 0 ||
-                  hasUnsavedHoursChanges ||
-                  hasUnsavedEmployeeChanges) && (
-                  <button
-                    onClick={() => {
-                      if (newEntries.length > 0) {
-                        // Cancel pasted entries
-                        setNewEntries([]);
-                        setNewEntryPeriodHoursArray([]);
-                        setPastedEntrySuggestions({});
-                        setPastedEntryAccounts({});
-                        setPastedEntryOrgs({});
-                        setPastedEntryPlcs({});
-                        toast.info("Cancelled pasted entries", {
-                          autoClose: 2000,
-                        });
-                      }
-                      if (showNewForm) {
-                        // Cancel single new entry
-                        resetNewEntryForm();
-                        setShowNewForm(false);
-                        toast.info("Cancelled new entry", { autoClose: 2000 });
-                      }
+           
 
-                      setHasUnsavedHoursChanges(false);
-                      setHasUnsavedEmployeeChanges(false);
-                      // Clear clipboard data
-                      setHasClipboardData(false);
-                      setCopiedRowsData([]);
-                      setCopiedMonthMetadata([]);
-                    }}
-                    className="px-4 py-2 blue-btn-common text-white rounded  text-xs font-medium"
-                  >
-                    Cancel
-                  </button>
-                )} */}
-             
-{/* {(showNewForm || 
-  newEntries.length > 0 || 
-  hasUnsavedHoursChanges || 
-  hasUnsavedEmployeeChanges) && (
-  <button
-    onClick={() => {
-     
-      if (hasUnsavedHoursChanges) {
-        setInputValues({});        
-        setModifiedHours({});    
-        setHasUnsavedHoursChanges(false);
-        setFindMatches([]);        
-      }
-
-      
-      if (hasUnsavedEmployeeChanges) {
-        setEditedEmployeeData({}); 
-        setHasUnsavedEmployeeChanges(false);
-      }
-
-      
-      if (showNewForm) {
-        resetNewEntryForm();
-        setShowNewForm(false);
-      }
-
-    
-      if (newEntries.length > 0) {
-        setNewEntries([]);
-        setNewEntryPeriodHoursArray([]);
-      }
-
-     
-      setHasClipboardData(false);
-      setCopiedRowsData([]);
-      
-      
-    }}
-    className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium"
-  >
-    Cancel
-  </button>
-)} */}
-
-{(showNewForm || 
-  newEntries.length > 0 || 
-  hasUnsavedHoursChanges || 
-  hasUnsavedEmployeeChanges) && (
-  <button
-    onClick={() => {
-      // 1. PRIORITIZE: Remove the latest New Entry form first
-      if (newEntries.length > 0) {
-        // Remove only the last entry from the arrays
-        const updatedEntries = newEntries.slice(0, -1);
-        const updatedHours = newEntryPeriodHoursArray.slice(0, -1);
-        
-        setNewEntries(updatedEntries);
-        setNewEntryPeriodHoursArray(updatedHours);
-
-        // If that was the last form, hide the New Form section
-        if (updatedEntries.length === 0) {
-          setShowNewForm(false);
-        }
-        return; // Exit early so we only cancel one thing at a time
-      }
-
-      // 2. If no new entry forms, but showNewForm is still true (rare edge case)
-      if (showNewForm) {
-        resetNewEntryForm();
-        setShowNewForm(false);
-        return;
-      }
-
-      // 3. If no New Entry forms exist, revert Grid Data (Hours & Fields) instantly
-      if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
-        setInputValues({});        // Revert hours
-        setModifiedHours({});      
-        setHasUnsavedHoursChanges(false);
-        
-        setEditedEmployeeData({}); // Revert Account/Org/PLC
-        setHasUnsavedEmployeeChanges(false);
-        
-        setFindMatches([]);        // Clear highlights
-        setHasClipboardData(false);
-        setCopiedRowsData([]);
-        
-        toast.info("Grid changes reverted", { autoClose: 2000 });
-      }
-    }}
-    // className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium"
-     className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
-  >
-    Cancel
-  </button>
-)}
 
 
               {!showNewForm && (
@@ -8170,7 +8048,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
   onClick={() => {
     // FIX: Check if any row is selected in the Set
     if (selectedRows.size === 0) {
-      toast.error("Please select an employee to delete");
+      toast.error("Please select record to delete");
       return;
     }
 
@@ -8179,13 +8057,13 @@ const handleSelectAllCheckboxes = (isChecked) => {
     const empToDelete = localEmployees[selectedIndex];
 
     if (!empToDelete || !empToDelete.emple_Id) {
-      toast.error("Invalid employee selection");
+      toast.error("Invalid record selection");
       return;
     }
 
     if (
       window.confirm(
-        "Are you sure you want to delete this employee?"
+        "Are you sure you want to delete this record?"
       )
     ) {
       handleDeleteEmployee(empToDelete.emple_Id);

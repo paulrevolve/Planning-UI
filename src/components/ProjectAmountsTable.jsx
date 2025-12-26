@@ -1771,19 +1771,92 @@ const getSortIcon = (key) => {
     }
   };
 
+//   const handleMasterSave = async () => {
+//   setIsLoading(true);
+//   try {
+//     const savePromises = [];
+
+//     // 1. Handle New/Pasted Entries (POST)
+//     if (newEntries.length > 0) {
+//       // Re-use your existing logic for multiple entries
+//       savePromises.push(handleSaveMultiplePastedEntries());
+//     } 
+
+//     // 2. Handle Grid Amount Changes (PUT Bulk)
+//     if (hasUnsavedAmountChanges) {
+//       savePromises.push(handleSaveAllAmounts());
+//     }
+
+//     // 3. Handle Field Changes (Account/Org) (PUT)
+//     if (hasUnsavedFieldChanges) {
+//       savePromises.push(handleSaveFieldChanges());
+//     }
+
+//     await Promise.all(savePromises);
+    
+//     // Clear selection states after comprehensive save
+//     setSelectedRows(new Set());
+//     setShowCopyButton(false);
+    
+//   } catch (err) {
+//     console.error("Master Save Error:", err);
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
   // Handler for canceling field changes
-  const handleCancelFieldChanges = () => {
-    if (editingRowIndex !== null) {
-      setEditedRowData((prev) => {
-        const newData = { ...prev };
-        delete newData[editingRowIndex];
-        return newData;
-      });
+  
+  const handleMasterSave = async () => {
+  setIsLoading(true);
+  try {
+    const savePromises = [];
+
+    if (newEntries.length > 0) {
+      savePromises.push(handleSaveMultiplePastedEntries());
+    } 
+
+    if (hasUnsavedAmountChanges) {
+      savePromises.push(handleSaveAllAmounts());
     }
-    setEditingRowIndex(null);
+
+    if (hasUnsavedFieldChanges) {
+      savePromises.push(handleSaveFieldChanges());
+    }
+
+    await Promise.all(savePromises);
+    
+    // --- ADD THESE LINES TO HIDE BUTTONS AFTER SAVE ---
+    setNewEntries([]); // Clears the list of new forms
+    setNewEntryPeriodAmountsArray([]); 
+    setShowNewForm(false); // Hides the new entry section
+    setHasUnsavedAmountChanges(false);
     setHasUnsavedFieldChanges(false);
-    toast.info("Field changes cancelled.", { autoClose: 1500 });
-  };
+    // ------------------------------------------------
+    
+    setSelectedRows(new Set());
+    setShowCopyButton(false);
+    
+  } catch (err) {
+    console.error("Master Save Error:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+  
+  
+  // handleCancelFieldChanges = () => {
+  //   if (editingRowIndex !== null) {
+  //     setEditedRowData((prev) => {
+  //       const newData = { ...prev };
+  //       delete newData[editingRowIndex];
+  //       return newData;
+  //     });
+  //   }
+  //   setEditingRowIndex(null);
+  //   setHasUnsavedFieldChanges(false);
+  //   toast.info("Field changes cancelled.", { autoClose: 1500 });
+  // };
 
   // Combined cancel handler for both amounts and field changes
   const handleCancelAllChanges = () => {
@@ -2892,7 +2965,7 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
     try {
       // Confirm deletion with user
       const confirmDelete = window.confirm(
-        "Are you sure you want to delete this employee?"
+        "Are you sure you want to delete this record?"
       );
       if (!confirmDelete) return;
 
@@ -2900,7 +2973,7 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
       await axios.delete(`${backendUrl}/DirectCost/DeleteDirectCost/${dctId}`);
 
       // Show success message
-      toast.success("Employee deleted successfully!");
+      toast.success("Records Deleted Successfully!");
 
       // Remove employee from local state
       setEmployees((prev) => prev.filter((emp) => emp.emple.dctId !== dctId));
@@ -2910,7 +2983,7 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
       setSelectedEmployeeId(null);
     } catch (err) {
       toast.error(
-        "Failed to delete employee: " +
+        "Failed to delete record: " +
           (err.response?.data?.message || err.message)
       );
     }
@@ -4976,7 +5049,7 @@ const isIndeterminate =
     </button>
   )} */}
           {/* Save Entry Button - Shows for BOTH single new form AND pasted entries */}
-          {(showNewForm || newEntries.length > 0) && (
+          {/* {(showNewForm || newEntries.length > 0) && (
             <button
               onClick={() => {
                 if (newEntries.length > 0) {
@@ -5001,7 +5074,7 @@ const isIndeterminate =
                 ? `Save All (${newEntries.length})`
                 : "Save Entry"}
             </button>
-          )}
+          )} */}
 
           {!showNewForm && !shouldHideButtons && (
             <button
@@ -5038,7 +5111,7 @@ const isIndeterminate =
           {/* Delete Button */}
           {!shouldHideButtons && (
             <button
-              className={`px-4 py-2 text-white rounded transition text-xs font-medium ${
+              className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer ${
                 shouldDisableDelete
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-red-500 hover:bg-red-600"
@@ -5173,7 +5246,7 @@ const isIndeterminate =
 )} */}
 
 {/* Change the Save button condition to include field changes */}
-{(hasUnsavedAmountChanges || hasUnsavedFieldChanges) && (
+{/* {(hasUnsavedAmountChanges || hasUnsavedFieldChanges) && (
   <button
     onClick={handleSaveAllChanges}
     // className="blue-btn-common text-white px-4 py-2 rounded-md text-sm font-medium disabled:bg-gray-400 transition-colors duration-200 flex items-center gap-2"
@@ -5192,10 +5265,34 @@ const isIndeterminate =
       })`
     )}
   </button>
+)} */}
+
+{/* ONE UNIFIED SAVE BUTTON */}
+{(newEntries.length > 0 || hasUnsavedAmountChanges || hasUnsavedFieldChanges) && (
+  <button
+    onClick={handleMasterSave}
+    className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white"
+    style={{
+      ...geistSansStyle,
+      backgroundColor: "#113d46",
+    }}
+    disabled={isLoading}
+  >
+    {isLoading ? (
+      "Saving..."
+    ) : (
+      `Save Changes (${
+        newEntries.length + 
+        Object.keys(modifiedAmounts).length + 
+        (hasUnsavedFieldChanges ? 1 : 0)
+      })`
+    )}
+  </button>
 )}
+
 {/* CONSOLIDATED CANCEL BUTTON */}
 {/* CONSOLIDATED CANCEL BUTTON */}
-{(showNewForm || 
+{/* {(showNewForm || 
   newEntries.length > 0 || 
   hasUnsavedAmountChanges || 
   hasUnsavedFieldChanges) && (
@@ -5248,7 +5345,97 @@ const isIndeterminate =
   >
     Cancel
   </button>
-)}    
+)}     */}
+{/* {(showNewForm || newEntries.length > 0 || hasUnsavedAmountChanges || hasUnsavedFieldChanges) && (
+  <button
+    onClick={() => {
+      // 1. Revert New Entry forms
+      if (newEntries.length > 0) {
+        setNewEntries([]);
+        setNewEntryPeriodAmountsArray([]);
+        setShowNewForm(false);
+      } 
+      
+      // 2. Hide single manual form
+      if (showNewForm) setShowNewForm(false);
+
+      // 3. Revert Grid Amount changes
+      if (hasUnsavedAmountChanges) {
+        setInputValues({});         
+        setModifiedAmounts({});      
+        setHasUnsavedAmountChanges(false);
+      }
+
+      // 4. Revert Field changes (Account/Org)
+      if (hasUnsavedFieldChanges) {
+        setEditedRowData({});  
+        setEditingRowIndex(null);
+        setHasUnsavedFieldChanges(false);
+      }
+
+      setFindMatches([]);
+      setHasClipboardData(false);
+      setCopiedRowsData([]);
+      toast.info("Changes reverted", { autoClose: 1500 });
+    }}
+    className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer transition-colors text-white"
+     style={{
+    ...geistSansStyle,
+    backgroundColor:  "#113d46",
+  }} 
+  >
+    Cancel
+  </button>
+)} */}
+
+{(newEntries.length > 0 || hasUnsavedAmountChanges || hasUnsavedFieldChanges || showNewForm) && (
+  <button
+    onClick={() => {
+      // 1. LIFO: Prioritize removing the latest New Entry form if multiple exist
+      if (newEntries.length > 0) {
+        const updatedEntries = newEntries.slice(0, -1);
+        const updatedAmounts = newEntryPeriodAmountsArray.slice(0, -1);
+        setNewEntries(updatedEntries);
+        setNewEntryPeriodAmountsArray(updatedAmounts);
+
+        if (updatedEntries.length === 0) {
+          setShowNewForm(false);
+          resetNewEntry();
+        }
+        return; 
+      }
+
+      // 2. Otherwise, revert grid changes and hide form
+      if (hasUnsavedAmountChanges) {
+        setInputValues({});         
+        setModifiedAmounts({});      
+        setHasUnsavedAmountChanges(false);
+      }
+
+      if (hasUnsavedFieldChanges) {
+        setEditedRowData({});  
+        setEditingRowIndex(null);
+        setHasUnsavedFieldChanges(false);
+      }
+
+      if (showNewForm) setShowNewForm(false);
+      
+      setFindMatches([]);
+      setHasClipboardData(false);
+      setCopiedRowsData([]);
+      toast.info("Changes reverted", { autoClose: 1500 });
+    }}
+    className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium cursor-pointer"
+    style={{
+        ...geistSansStyle,
+        backgroundColor: "#113d46", // Keeping your requested color
+    }}
+  >
+    Cancel
+  </button>
+)}
+
+
         </div>
       </div>
 
