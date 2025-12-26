@@ -1246,6 +1246,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
           <ProjectHoursDetails
             planId={selectedPlan.plId}
             projectId={selectedPlan.projId}
+            templateId={selectedPlan.templateId}
             status={selectedPlan.status}
             planType={selectedPlan.plType}
             closedPeriod={selectedPlan.closedPeriod}
@@ -1272,6 +1273,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
             startDate={selectedPlan.projStartDt}
             endDate={selectedPlan.projEndDt}
             planType={selectedPlan.plType}
+            templateId={selectedPlan.templateId}
             fiscalYear={fiscalYear}
             refreshKey={refreshKey}
             onSaveSuccess={() => setRefreshKey((prev) => prev + 1)}

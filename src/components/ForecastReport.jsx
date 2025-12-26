@@ -7,17 +7,22 @@ import { backendUrl } from "./config";
 
 // --- CONFIGURATION & UTILS ---
 const DETAIL_API_PATH = "/api/ForecastReport/GetViewData"; 
+const FORECAST_API_PATH = "/api/ForecastReport/GetForecastView"; 
 const ROWS_PER_PAGE = 20; 
 
+// UPDATED: Extended to include 2026 periods
 const PERIOD_MAP = {
     1: 'Jan-25', 2: 'Feb-25', 3: 'Mar-25', 4: 'Apr-25', 5: 'May-25', 6: 'Jun-25',
-    7: 'Jul-25', 8: 'Aug-25', 9: 'Sep-25', 10: 'Oct-25', 11: 'Nov-25', 12: 'Dec-25'
+    7: 'Jul-25', 8: 'Aug-25', 9: 'Sep-25', 10: 'Oct-25', 11: 'Nov-25', 12: 'Dec-25',
+    13: 'Jan-26', 14: 'Feb-26', 15: 'Mar-26', 16: 'Apr-26', 17: 'May-26', 18: 'Jun-26',
+    19: 'Jul-26', 20: 'Aug-26', 21: 'Sep-26', 22: 'Oct-26', 23: 'Nov-26', 24: 'Dec-26',
 };
 
-const MOCK_TIME_PERIODS = [
-    'Jan-25', 'Feb-25', 'Mar-25', 'Apr-25', 'May-25', 'Jun-25', 'Jul-25', 'Aug-25', 'Sep-25', 'Oct-25', 'Nov-25', 'Dec-25', 'FY-Total'
-];
+const MONTHLY_PERIODS = Object.values(PERIOD_MAP);
+const MOCK_TIME_PERIODS = [...MONTHLY_PERIODS, 'FY-Total'];
+
 const CLOSE_PERIODS = [
+    // This list would contain actual closed periods in a production environment
     'Jan-25', 'Feb-25', 'Mar-25', 'Apr-25', 'May-25', 
     'Jun-25', 'Jul-25', 'Aug-25', 'Sep-25', 'Oct-25'
 ];
@@ -26,7 +31,6 @@ const CLOSE_PERIODS = [
 const GENERAL_COSTS = 'GENERAL-COSTS';
 
 const SECTION_LABELS = {
-    // GRAND: 'GRAND TOTAL',
     REVENUE_SECTION: ' Revenue (REVENUE)',
     INDIRECT_SECTION: ' Indirect',
     FRINGE: '1. Fringe',
@@ -40,8 +44,8 @@ const SECTION_LABELS = {
     'UNALLOW-SUBCON': 'Subcontractors (NON-Billable)',
     [GENERAL_COSTS]: '7 - Other Unclassified Direct Costs (Hidden)', 
 };
-// CRITICAL FIX: Remove GENERAL_COSTS from the displayed SECTION_KEYS
 const DISPLAYED_SECTION_KEYS = ['LABOR', 'UNALLOW-LABOR', 'NON-LABOR-TRAVEL', 'NON-LABOR-SUBCON', 'UNALLOW-SUBCON'];
+const ALL_TOGGLEABLE_SECTIONS = [...DISPLAYED_SECTION_KEYS, 'REVENUE_SECTION', 'INDIRECT_SECTION'];
 const INDIRECT_KEYS = ['FRINGE', 'OVERHEAD', 'MANDH', 'GNA'];
 // --- END CONFIGURATION & UTILS ---
 
@@ -56,7 +60,7 @@ const TRAVEL_NONLABOR_ACCTS = new Set([
 const SUB_LABOR_ACCTS = new Set(['51-000-000', '51-MJI-097']);
 const SUB_UNALLOW_LABOR_ACCTS = new Set(['51-MJO-097', '51-MJC-097']);
 
-// --- FORMATTING HELPERS (Unchanged) ---
+// --- FORMATTING HELPERS ---
 const formatCurrency = (amount) => {
     if (typeof amount !== 'number' || isNaN(amount) || amount === 0) return '-'; 
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
@@ -74,14 +78,20 @@ const getRollupId = (projId) => {
     const match = projId.match(/^(\d+)/);
     return match ? match[1] : projId.split('.')[0];
 };
-// --- END FORMATTING HELPERS ---
+
+const getPeriodKeyFromForecast = (month, year) => {
+    const yearSuffix = String(year).slice(-2);
+    const monthPrefixes = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    if (month < 1 || month > 12) return null;
+    const monthPrefix = monthPrefixes[month - 1];
+    return `${monthPrefix}-${yearSuffix}`;
+};
 
 // --- DATA TRANSFORMATION LOGIC ---
 const determineSectionAndIndirectKey = (item) => {
     const subTotTypeNo = parseInt(item.subTotTypeNo) || null; 
     const poolName = (item.poolName || '').toUpperCase();
     
-    // Default section is GENERAL_COSTS (Hidden)
     let section = GENERAL_COSTS; 
     let indirectKey = null;
 
@@ -97,13 +107,11 @@ const determineSectionAndIndirectKey = (item) => {
         } else if (poolName.includes('MAT & HANDLING') || poolName.includes('M&H')) {
             indirectKey = 'MANDH';
         }
-        // Indirect items will be classified by ACCT ID next. Default is GENERAL_COSTS.
         section = GENERAL_COSTS; 
     } 
     return { section, indirectKey, subTotTypeNo }; 
 };
 
-// ENFORCES STRICT ACCOUNT IDs
 const classifyCostSection = (acctId, currentSection) => {
     if (LABOR_ACCTS.has(acctId)) return 'LABOR'; 
     if (UNALLOW_LABOR_ACCTS.has(acctId)) return 'UNALLOW-LABOR';
@@ -111,75 +119,171 @@ const classifyCostSection = (acctId, currentSection) => {
     if (SUB_LABOR_ACCTS.has(acctId)) return 'NON-LABOR-SUBCON';
     if (SUB_UNALLOW_LABOR_ACCTS.has(acctId)) return 'UNALLOW-SUBCON';
     
-    return currentSection; // If no match, it stays GENERAL_COSTS (or the indirect default)
+    return currentSection; 
 };
 
-const transformData = (detailData, headerData) => {
-    const aggregatedDetailRows = {};
-    
-    detailData.forEach(item => {
-        let { section, indirectKey, subTotTypeNo } = determineSectionAndIndirectKey(item);
+const transformData = (detailData, forecastData) => {
+    const aggregatedDataMap = {}; 
 
-        if (section !== 'REVENUE_SECTION') {
-          section = classifyCostSection(item.acctId, section);
+    const getForecastKey = (item) => {
+        return `${item.projId}-${item.acctId}-0-0`; 
+    }
+    
+    // 1. Process Forecast Data (Takes precedence for non-actual periods/rows)
+    forecastData.forEach(item => {
+        const periodKey = getPeriodKeyFromForecast(item.month, item.year);
+        const detailRowKey = getForecastKey(item);
+        
+        if (!periodKey) return; 
+
+        let forecastSection = classifyCostSection(item.acctId, GENERAL_COSTS);
+        let forecastSubTotTypeNo = 0; 
+        
+        if (item.revenue !== undefined && item.revenue !== 0) {
+             forecastSection = 'REVENUE_SECTION';
+             forecastSubTotTypeNo = 1;
         }
 
-        const detailRowKey = `${item.projId}-${item.acctId}-${item.poolNo}-${subTotTypeNo || 0}`;
+        if (!aggregatedDataMap[detailRowKey]) {
+            aggregatedDataMap[detailRowKey] = {
+                id: detailRowKey,
+                project: item.projId,
+                acctId: item.acctId,
+                org: item.orgId || '' , 
+                accountName: `Forecast: ${item.acctId}`, 
+                projectName: item.projName, 
+                popStartDate: '' ,
+                popEndDate: '' ,
+                parentProject: null,
+                section: forecastSection, 
+                subTotTypeNo: forecastSubTotTypeNo, 
+                'FY-Total': 0, 
+            };
+        }
+
+        const row = aggregatedDataMap[detailRowKey];
+        
+        // A. Revenue (Uses item.revenue)
+        if (row.section === 'REVENUE_SECTION') {
+             row[`${periodKey}_Revenue`] = (row[`${periodKey}_Revenue`] || 0) + (item.revenue || 0);
+        }
+
+        // B. Direct Cost / Labor (Uses item.cost, only if it maps to a displayable section)
+        if (DISPLAYED_SECTION_KEYS.includes(row.section)) {
+            const costAmount = (item.cost || 0); 
+            if (costAmount !== 0) {
+                row[periodKey] = (row[periodKey] || 0) + costAmount; 
+            }
+        }
+
+        // C. Indirect Costs (Uses specific indirect fields: fringe, overhead, gna, mnh)
+        INDIRECT_KEYS.forEach(ik => {
+            const indirectAmount = (item[ik.toLowerCase()] || 0);
+            if (indirectAmount !== 0) {
+                const indirectRowKey = `${item.projId}-${item.acctId}-0-4`; 
+
+                if (!aggregatedDataMap[indirectRowKey]) {
+                    aggregatedDataMap[indirectRowKey] = {
+                        id: indirectRowKey,
+                        project: item.projId,
+                        acctId: item.acctId,
+                        org: item.orgId || '', 
+                        accountName: `Forecast Indirect Costs for ${item.acctId}`, 
+                        projectName: item.projName, 
+                        popStartDate: '' ,
+                        popEndDate: '' ,
+                        parentProject: null,
+                        section: GENERAL_COSTS, 
+                        subTotTypeNo: 4, 
+                        'FY-Total': 0, 
+                    };
+                }
+                aggregatedDataMap[indirectRowKey][`${periodKey}_${ik}`] = 
+                    (aggregatedDataMap[indirectRowKey][`${periodKey}_${ik}`] || 0) + indirectAmount;
+            }
+        });
+    });
+
+    // 2. Process Actual/Detail Data (Overwrites forecast data if keys match)
+    detailData.forEach(item => {
+        let { section, indirectKey, subTotTypeNo } = determineSectionAndIndirectKey(item);
+        
+        if (section !== 'REVENUE_SECTION' && subTotTypeNo !== 4) {
+             section = classifyCostSection(item.acctId, section);
+        }
+
+        const detailRowKey = `${item.projId}-${item.acctId}-${item.poolNo}-${subTotTypeNo || 0}`; 
         const periodKey = PERIOD_MAP[item.pdNo];
         
         if (!periodKey) return; 
 
-        if (!aggregatedDetailRows[detailRowKey]) {
-            aggregatedDetailRows[detailRowKey] = {
+        if (!aggregatedDataMap[detailRowKey]) {
+            aggregatedDataMap[detailRowKey] = {
                 id: detailRowKey,
                 project: item.projId,
                 acctId: item.acctId,
                 org: item.orgId , 
-                accountName: item.l1_acct_name || item.poolName || 'Unknown Pool', 
-                projectName: item.proj_name ,
-                popStartDate: item.popStartDate || item.proj_start_dt  ,
-                popEndDate: item.popEndDate || item.proj_end_dt ,
+                accountName: item.l1AcctName || item.poolName || 'Unknown Pool', 
+                projectName: item.projName ,
+                popStartDate: item.projStartDt ,
+                popEndDate: item.projEndDt ,
                 parentProject: null,
                 section: section, 
                 subTotTypeNo: subTotTypeNo, 
                 'FY-Total': 0, 
             };
+        } else {
+            const row = aggregatedDataMap[detailRowKey];
+            row.accountName = item.l1AcctName || item.poolName || row.accountName;
+            row.popStartDate = item.projStartDt || row.popStartDate;
+            row.popEndDate = item.projEndDt || row.popEndDate;
+            row.section = section;
+            if (item.projName) { // <--- Added conditional check for existence
+        row.projectName = item.projName;
+    }
+            row.subTotTypeNo = subTotTypeNo;
         }
 
-        const row = aggregatedDetailRows[detailRowKey];
+        const row = aggregatedDataMap[detailRowKey];
         const monthlyAmount = (item.ptdIncurAmt || 0); 
         
-        if (monthlyAmount === 0) return;
-
         if (section === 'REVENUE_SECTION') {
             row[`${periodKey}_Revenue`] = (row[`${periodKey}_Revenue`] || 0) + monthlyAmount;
         } else if (indirectKey) {
             row[`${periodKey}_${indirectKey}`] = (row[`${periodKey}_${indirectKey}`] || 0) + monthlyAmount;
         } else {
             row[periodKey] = (row[periodKey] || 0) + monthlyAmount;
-            row['FY-Total'] += monthlyAmount;
         }
     });
     
-    return Object.values(aggregatedDetailRows); 
+    // 3. Final Calculation Pass: Recalculate FY-Total for all rows
+    Object.values(aggregatedDataMap).forEach(row => {
+        if (DISPLAYED_SECTION_KEYS.includes(row.section)) {
+            let total = 0;
+            MONTHLY_PERIODS.forEach(period => {
+                total += (row[period] || 0);
+            });
+            row['FY-Total'] = total;
+        } else {
+             row['FY-Total'] = 0; 
+        }
+    });
+
+    return Object.values(aggregatedDataMap); 
 };
 
 // --- FORECAST REPORT COMPONENT ---
 const ForecastReport = () => {
     const [projectSearchTerm, setProjectSearchTerm] = useState('');
     const [closePeriodFilter, setClosePeriodFilter] = useState(CLOSE_PERIODS[CLOSE_PERIODS.length - 1]);
-    const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
-    
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [apiData, setApiData] = useState([]); 
-
     const [currentPage, setCurrentPage] = useState(1);
 
-    // CRITICAL: Initialize expandedSections using DISPLAYED_SECTION_KEYS
-    const [expandedSections, setExpandedSections] = useState(
-        [...DISPLAYED_SECTION_KEYS, 'REVENUE_SECTION', 'INDIRECT_SECTION'].reduce((acc, key) => ({ ...acc, [key]: true }), {})
-    );
+    // Initial state: ALL COLLAPSED
+    const initialExpandedState = ALL_TOGGLEABLE_SECTIONS.reduce((acc, key) => ({ ...acc, [key]: false }), {});
+    const [expandedSections, setExpandedSections] = useState(initialExpandedState);
     const [expandedProjects, setExpandedProjects] = useState({}); 
 
     const toggleSection = useCallback((key) => {
@@ -190,25 +294,51 @@ const ForecastReport = () => {
         setExpandedProjects(prev => ({ ...prev, [projectId]: !prev[projectId] }));
     }, []);
 
-    // --- DATA FETCHING (Unchanged) ---
+    // Helper to check if all sections are currently expanded
+    const isAllExpanded = useMemo(() => {
+        return ALL_TOGGLEABLE_SECTIONS.every(key => expandedSections[key]);
+    }, [expandedSections]);
+
+    // HANDLER FOR THE SINGLE TOGGLE BUTTON
+    const handleToggleAll = () => {
+        if (isAllExpanded) {
+            // Collapse All
+            setExpandedSections(initialExpandedState);
+            setExpandedProjects({}); // Collapse all projects too
+        } else {
+            // Expand All
+            const allExpanded = ALL_TOGGLEABLE_SECTIONS.reduce((acc, key) => ({ ...acc, [key]: true }), {});
+            setExpandedSections(allExpanded);
+            // We intentionally do NOT expand all projects here, only the top-level sections
+        }
+    };
+
+
+    // --- DATA FETCHING ---
     const fetchReportData = useCallback(async () => {
         setLoading(true);
         setError(null);
         
         const DETAIL_URL = `${backendUrl}${DETAIL_API_PATH}`;
+        const FORECAST_URL = `${backendUrl}${FORECAST_API_PATH}`; 
 
         try {
-            const detailResponse = await fetch(DETAIL_URL);
+            const [detailResponse, forecastResponse] = await Promise.all([
+                fetch(DETAIL_URL),
+                fetch(FORECAST_URL)
+            ]);
             
             if (!detailResponse.ok) {
-                throw new Error(`API failed: ${detailResponse.statusText}`);
+                throw new Error(`Detail API failed: ${detailResponse.statusText}`);
             }
-            
+
             const detailData = await detailResponse.json();
-            const transformedRows = transformData(detailData, []);
+            const forecastData = forecastResponse.ok ? await forecastResponse.json() : [];
+            
+            const transformedRows = transformData(detailData, forecastData);
             
             if (transformedRows.length === 0) {
-                 setError("API returned data, but transformation yielded zero rows."); 
+                 setError("APIs returned data, but transformation yielded zero relevant rows."); 
             } else {
                  setError(null);
             }
@@ -241,9 +371,7 @@ const ForecastReport = () => {
 
         const rollupGroup = {};
         const allProjectRows = [];
-        const monthlyPeriods = MOCK_TIME_PERIODS.slice(0, 12);
-        
-        // Use all possible sections (including GENERAL_COSTS) for the grouping process
+        const monthlyPeriods = MONTHLY_PERIODS; 
         const ALL_SECTION_KEYS = [...DISPLAYED_SECTION_KEYS, GENERAL_COSTS];
 
         filtered.forEach(item => {
@@ -252,8 +380,7 @@ const ForecastReport = () => {
             let groupKey;
             let groupSection = item.section;
             
-            // --- Determine Exclusion Flag and Group Key ---
-            const isRevenueRow = item.section === 'REVENUE_SECTION' && item.subTotTypeNo === 1;
+            const isRevenueRow = item.section === 'REVENUE_SECTION';
 
             if (isRevenueRow) {
                 groupKey = `${rollupId}__REVENUE_SECTION`; 
@@ -262,20 +389,17 @@ const ForecastReport = () => {
                 groupKey = `${rollupId}__${item.section}`; 
                 groupSection = item.section;
             } else {
-                return; // Should only catch unclassified data, which should now be minimal/none
+                return; // Exclude unclassified data
             }
             
             allProjectRows.push(item);
 
-            // 2. Initialize Rollup Parent
             if (!rollupGroup[groupKey]) {
                 rollupGroup[groupKey] = {
                     id: groupKey,
                     project: rollupId, 
-                    // projectName: `Total - ${rollupId}`,
                     org: item.org || item.orgId || '',
                     acctId: null, 
-                    // accountName: SECTION_LABELS[groupSection] , 
                     popStartDate: item.popStartDate || item.proj_start_dt || '',
                     popEndDate: item.popEndDate || item.proj_end_dt || '',
                     isRollupParent: true,
@@ -288,17 +412,13 @@ const ForecastReport = () => {
             const parent = rollupGroup[groupKey];
             parent.children.push(item);
 
-            // 3. Aggregate Monthly Periods with Exclusion Logic
             monthlyPeriods.forEach(period => {
                 
-                // COST/LABOR/INDIRECT AGGREGATION: Only runs if the row is NOT revenue-dominant.
-                if (!isRevenueRow) {
-                    // Direct Cost/Labor
+                if (!isRevenueRow && item.section !== 'REVENUE_SECTION') {
                     if (item[period] !== undefined) {
                         parent[period] = (parent[period] || 0) + (item[period] || 0);
                     }
                     
-                    // Indirect (These fields typically exist on cost rows)
                     INDIRECT_KEYS.forEach(ik => {
                         if (item[`${period}_${ik}`] !== undefined) {
                             parent[`${period}_${ik}`] = (parent[`${period}_${ik}`] || 0) + (item[`${period}_${ik}`] || 0);
@@ -306,19 +426,16 @@ const ForecastReport = () => {
                     });
                 }
                 
-                // REVENUE AGGREGATION: Runs for all rollups, but only affects parent[`${period}_Revenue`].
                 if (item[`${period}_Revenue`] !== undefined) {
                     parent[`${period}_Revenue`] = (parent[`${period}_Revenue`] || 0) + (item[`${period}_Revenue`] || 0);
                 }
             });
 
-            // FY-Total (Only applicable to cost totals)
             if (!isRevenueRow) {
                 parent['FY-Total'] += (item['FY-Total'] || 0);
             }
         });
         
-        // --- Pagination Logic ---
         const sortedRollupParents = Object.values(rollupGroup).sort((a, b) => 
             a.project.localeCompare(b.project) || a.section.localeCompare(b.section)
         );
@@ -328,7 +445,6 @@ const ForecastReport = () => {
         const endIndex = startIndex + ROWS_PER_PAGE;
         const paginatedProjectKeys = uniqueProjectKeys.slice(startIndex, endIndex);
         
-        // CRITICAL: Filter out GENERAL_COSTS rollups before paginating for display
         const paginatedRollups = sortedRollupParents
             .filter(p => paginatedProjectKeys.includes(p.project))
             .filter(p => p.section !== GENERAL_COSTS);
@@ -336,7 +452,7 @@ const ForecastReport = () => {
         return { allRows: allProjectRows, rollupParents: sortedRollupParents, uniqueProjectKeys, paginatedRollups };
     }, [apiData, projectSearchTerm, currentPage]); 
 
-    // 2. Define Headers and Sticky Positions (Unchanged)
+    // 2. Define Headers and Sticky Positions
     const dimensionHeaders = [
         { key: 'project', label: 'PROJECT', width: '150px' },
         { key: 'projectName', label: 'PROJECT NAME', width: '260px' },
@@ -369,24 +485,24 @@ const ForecastReport = () => {
     const lastStickyKey = dimensionHeaders[dimensionHeaders.length - 1].key;
     const headerZIndex = 30; 
     
-    // 3. Grand Total Calculation (Enforces Revenue Exclusion and filters GENERAL_COSTS)
+    // 3. Grand Total Calculation
     const { sectionTotals, grandCostTotal, grandRevenueTotal, grandIndirectComponents, grandIndirectTotal, finalIndirectKeys } = useMemo(() => {
         const sectionTotals = {};
         const grandCostTotal = {};
         const grandRevenueTotal = {};
         const grandIndirectComponents = {};
         
-        const INDIRECT_KEYS_TEMP = INDIRECT_KEYS; 
+        const PERIODS = MOCK_TIME_PERIODS; 
 
-        // CRITICAL FIX: Loop over DISPLAYED_SECTION_KEYS only
+        // Calculate Cost Section Totals
         DISPLAYED_SECTION_KEYS.forEach(key => {
             const sectionRows = allRows.filter(row => 
                 row.section === key && 
-                !(row.section === 'REVENUE_SECTION' && row.subTotTypeNo === 1) 
+                row.section !== 'REVENUE_SECTION'
             );
             sectionTotals[key] = {};
             
-            MOCK_TIME_PERIODS.forEach(period => {
+            PERIODS.forEach(period => {
                 const costSum = sectionRows.reduce((acc, row) => (row[period] !== undefined ? acc + row[period] : acc), 0);
                 
                 if (costSum !== 0) {
@@ -396,19 +512,20 @@ const ForecastReport = () => {
             });
         });
 
-        // Calculate Grand Revenue Total (Only from rows where subTotTypeNo is 1)
-        const revenueRows = allRows.filter(row => row.section === 'REVENUE_SECTION' && row.subTotTypeNo === 1);
-        MOCK_TIME_PERIODS.forEach(period => {
+        // Calculate Grand Revenue Total
+        const revenueRows = allRows.filter(row => row.section === 'REVENUE_SECTION');
+        PERIODS.forEach(period => {
             const revenueSum = revenueRows.reduce((acc, row) => (row[`${period}_Revenue`] !== undefined ? acc + row[`${period}_Revenue`] : acc), 0);
             if (revenueSum !== 0) {
                 grandRevenueTotal[period] = (grandRevenueTotal[period] || 0) + revenueSum; 
             }
         });
 
-        // Calculate Grand Indirect Components (Only from rows where subTotTypeNo is 4)
-        const indirectRows = allRows.filter(row => row.subTotTypeNo === 4);
-        MOCK_TIME_PERIODS.forEach(period => {
-             INDIRECT_KEYS_TEMP.forEach(indirectKey => {
+        // Calculate Grand Indirect Components
+        const indirectRows = allRows.filter(row => INDIRECT_KEYS.some(k => PERIODS.some(p => row[`${p}_${k}`] !== undefined)));
+
+        PERIODS.forEach(period => {
+             INDIRECT_KEYS.forEach(indirectKey => {
                 const indirectSum = indirectRows.reduce((acc, row) => (row[`${period}_${indirectKey}`] !== undefined ? acc + row[`${period}_${indirectKey}`] : acc), 0);
                 
                 if (indirectSum !== 0) {
@@ -421,17 +538,16 @@ const ForecastReport = () => {
         });
         
         const grandIndirectTotal = {};
-        MOCK_TIME_PERIODS.forEach(period => {
-            const indirectTotal = INDIRECT_KEYS_TEMP.reduce((sum, key) => sum + (grandIndirectComponents[key]?.[period] || 0), 0);
+        PERIODS.forEach(period => {
+            const indirectTotal = INDIRECT_KEYS.reduce((sum, key) => sum + (grandIndirectComponents[key]?.[period] || 0), 0);
             if (indirectTotal !== 0) {
                 grandIndirectTotal[period] = indirectTotal;
-                // Add indirect totals to grand cost total for true GRAND total
                 grandCostTotal[period] = (grandCostTotal[period] || 0) + indirectTotal;
             }
         });
         
         const finalIndirectKeys = Object.keys(grandIndirectComponents).filter(key => 
-            MOCK_TIME_PERIODS.some(p => grandIndirectComponents[key][p] > 0)
+            PERIODS.some(p => grandIndirectComponents[key][p] > 0)
         );
 
         return { 
@@ -458,7 +574,7 @@ const ForecastReport = () => {
         const zIndex = isGrandTotal ? 40 : (isRevenueOrIndirect ? 35 : 25); 
         
         const dataKeySuffix = sectionKey === 'REVENUE_SECTION' ? '_Revenue' : 
-                              (INDIRECT_KEYS.includes(sectionKey) ? `_${sectionKey}` : '');
+                            (INDIRECT_KEYS.includes(sectionKey) ? `_${sectionKey}` : '');
 
         return (
             <tr 
@@ -483,7 +599,6 @@ const ForecastReport = () => {
                                 {!isGrandTotal && (
                                     <FaCaretRight className={`w-3 h-3 transition-transform ${expandedSections[sectionKey] ? 'rotate-90' : ''}`} />
                                 )}
-                                {/* <span>{isGrandTotal || isRevenueOrIndirect ? '' : 'TOTAL'}</span> */}
                             </div>
                         );
                     } else if (header.key === 'projectName') {
@@ -638,10 +753,18 @@ const ForecastReport = () => {
         });
     };
     
-    // ... (omitting loading/error JSX again for brevity here, but it's in the full code block) ...
+    // --- JSX RENDER ---
+
+    if (loading) {
+        return <div className="p-4 text-center text-lg font-semibold text-blue-600">Loading Report Data...</div>;
+    }
+
+    if (error) {
+        return <div className="p-4 text-center text-lg font-semibold text-red-600">Error: {error}</div>;
+    }
 
     return (
-        <div className="p-4 bg-gray-50 min-h-full ">
+        <div className="p-4 bg-gray-50 min-h-full">
             <style>
                 {`
                     .sticky-table {
@@ -706,15 +829,32 @@ const ForecastReport = () => {
                 `}
             </style>
             
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Forecast Report</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Forecast Report (2025-2026 Integrated)</h2>
 
             
-            {/* Pagination Controls */}
+            {/* Pagination Controls & Single Toggle Button */}
             <div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-md mb-4">
                 <span className="text-sm text-gray-600">
                     Showing {((currentPage - 1) * ROWS_PER_PAGE) + 1} to {Math.min(currentPage * ROWS_PER_PAGE, uniqueProjectKeys.length)} of {uniqueProjectKeys.length} Projects
                 </span>
                 <div className="flex space-x-2">
+                    {/* SINGLE TOGGLE BUTTON */}
+                    <button
+                        onClick={handleToggleAll}
+                        className={`px-3 py-1 text-sm rounded-lg text-white ${isAllExpanded ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
+                    >
+                        {isAllExpanded ? (
+                            <>
+                                <FaChevronUp className="inline-block w-3 h-3 mr-1" /> Collapse All
+                            </>
+                        ) : (
+                            <>
+                                <FaChevronDown className="inline-block w-3 h-3 mr-1" /> Expand All
+                            </>
+                        )}
+                    </button>
+                    
+                    {/* PAGINATION */}
                     <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
@@ -791,7 +931,7 @@ const ForecastReport = () => {
                                         ))}
                                     </tr>
                                     {expandedProjects[`REV_${rollupItem.project}`] && rollupItem.children
-                                        .filter(child => child.subTotTypeNo === 1) 
+                                        .filter(child => child.section === 'REVENUE_SECTION') 
                                         .map(projectItem => (
                                             <tr key={`rev-detail-${projectItem.id}`} className="revenue-breakdown-row">
                                                 {renderBreakdownStickyCells({...projectItem, isRollupParent: false}, true, null, false)}
@@ -818,8 +958,9 @@ const ForecastReport = () => {
                             const sectionRollupParents = paginatedRollups.filter(rollup => rollup.section === sectionKey);
                             const isSectionExpanded = expandedSections[sectionKey];
 
-                            // Skip rendering the section if it's empty
-                            if (sectionRollupParents.length === 0) return null;
+                            const hasCostData = sectionTotals[sectionKey] && MOCK_TIME_PERIODS.some(p => sectionTotals[sectionKey][p] > 0 || sectionTotals[sectionKey][p] < 0);
+                            
+                            if (!hasCostData) return null;
 
                             const totalRow = renderTotalRow(sectionKey, sectionTotals[sectionKey]);
                             
@@ -879,7 +1020,7 @@ const ForecastReport = () => {
                         {allRows.length === 0 && (
                             <tr>
                                 <td colSpan={MOCK_TIME_PERIODS.length + dimensionHeaders.length} className="px-6 py-12 text-center text-gray-500">
-                                    {/* No forecast data found matching the current filters. */}
+                                    No forecast or actual data found matching the current filters.
                                 </td>
                             </tr>
                         )}
@@ -902,7 +1043,6 @@ const ForecastReport = () => {
                                 ))}
                             </tr>
                         ))}
-                        {/* {renderTotalRow('GRAND', grandCostTotal, true)} */}
                     </tfoot>
                 </table>
             </div>

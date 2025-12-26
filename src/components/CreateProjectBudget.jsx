@@ -25,6 +25,7 @@ const InputField = ({ label, value, onChange, type = "text" }) => (
 const CreateProjectBudget = () => {
   const [availableProjects, setAvailableProjects] = useState([]);
   const [newBusiness, setNewBusiness] = useState([]);
+  const [loading,setLoading]= useState(false);
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
@@ -64,6 +65,7 @@ const CreateProjectBudget = () => {
   }));
 
   const handleTransfer = async () => {
+    setLoading(true)
     try {
       const payload = {
         businessBudgetId: selectedBusiness.businessBudgetId,
@@ -100,9 +102,12 @@ const CreateProjectBudget = () => {
 
 
       toast.success("Transfer successful");
+      setLoading(false)
       console.log(response.data);
     } catch (error) {
       toast.error(error.response?.data?.message || "Transfer failed");
+    }finally{
+      setLoading(false)
     }
   };
 
@@ -261,10 +266,16 @@ const CreateProjectBudget = () => {
         <div className="w-full flex justify-end mt-4">
           <button
             onClick={handleTransfer}
-            className="btn1 btn-blue text-[16px]"
-            disabled={!selectedBusiness || !selectedProject}
-          >
-            Transfer
+            disabled={!selectedBusiness || !selectedProject || loading}
+             className="
+    btn1 btn-blue
+    text-base
+    disabled:cursor-not-allowed
+    disabled:opacity-50
+    disabled:pointer-events-none
+  "
+>
+  {loading ? "Create..." : "Create"}
           </button>
         </div>
       </div>

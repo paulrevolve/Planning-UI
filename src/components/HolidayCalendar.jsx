@@ -249,14 +249,14 @@ const parseDate = (dateStr) => {
 
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen text-gray-900 flex items-center justify-center p-4">
       <div className="w-full px-8 bg-white p-8 space-y-6 border-line">
         {/* <h2 className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
           Setup Annual Holidays
         </h2> */}
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             Manage holidays
+             Manage Holidays
           </h2>
           
         </div>	

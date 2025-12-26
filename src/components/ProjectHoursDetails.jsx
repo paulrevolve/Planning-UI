@@ -124,6 +124,7 @@ const ProjectHoursDetails = ({
   closedPeriod,
   startDate,
   endDate,
+  templateId,
   fiscalYear,
   onSaveSuccess,
    onColumnTotalsChange,
@@ -4651,7 +4652,7 @@ useEffect(() => {
           const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
 
           await axios.put(
-            `${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`,
+            `${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiPlanType}?plid=${planId}&templateid=${templateId}`,
             bulkPayload,
             { headers: { "Content-Type": "application/json" } }
           );
@@ -4784,54 +4785,169 @@ useEffect(() => {
 //   }
 // };
 
+// const handleMasterSave = async () => {
+//   setIsLoading(true);
+//   try {
+//     const savePromises = [];
+//     const savedTypes = [];
+
+//     // 1. Save New/Pasted Entries
+//     if (newEntries.length > 0) {
+//       savePromises.push(handleSaveMultipleEntry());
+//       savedTypes.push(`${newEntries.length} new entry`);
+//     }
+
+//     // 2. Save Existing Grid Hours/Employee Edits
+//     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+//       savePromises.push(handleSaveAll());
+//       if (hasUnsavedHoursChanges && hasUnsavedEmployeeChanges) savedTypes.push("hour changes and employee updates");
+//       else if (hasUnsavedHoursChanges) savedTypes.push("hour changes");
+//       else savedTypes.push("employee updates");
+//     }
+
+//     if (savePromises.length === 0) {
+//       toast.info("No changes to save.");
+//       setIsLoading(false);
+//       return;
+//     }
+
+//     await Promise.all(savePromises);
+
+//     // --- RESET ALL STATES ---
+//     setNewEntries([]);
+//     setNewEntryPeriodHoursArray([]);
+//     setShowNewForm(false);
+//     setHasUnsavedHoursChanges(false);
+//     setHasUnsavedEmployeeChanges(false);
+//     setModifiedHours({});
+//     setEditedEmployeeData({});
+//     setInputValues({});
+//     setCheckedRows(new Set());
+//     setShowCopyButton(false);
+
+//     // --- FIRE ONLY ONE COMBINED TOAST ---
+//     toast.success(`Successfully saved ${savedTypes.join(" and ")}!`, {
+//       autoClose: 3000,
+//     });
+
+//   } catch (err) {
+//     console.error("ave Error:", err);
+//     // Error toasts are handled within the individual functions or here as fallback
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+// const handleMasterSave = async () => {
+//   setIsLoading(true);
+//   try {
+//     // 1. Attempt to save new entries
+//     const newEntriesSuccess = await handleSaveMultipleEntry();
+    
+//     // IF NEW ENTRIES FAILED VALIDATION, STOP HERE. 
+//     // This keeps the data in the table so the user can fix it.
+//     if (!newEntriesSuccess) {
+//       setIsLoading(false);
+//       return; 
+//     }
+
+//     // 2. If new entries saved, attempt to save grid edits
+//     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+//       await handleSaveAll();
+//     }
+
+//     // 3. ONLY CLEAR AND NOTIFY ON TOTAL SUCCESS
+//     setNewEntries([]);
+//     setNewEntryPeriodHoursArray([]);
+//     setShowNewForm(false);
+//     setHasUnsavedHoursChanges(false);
+//     setHasUnsavedEmployeeChanges(false);
+//     setModifiedHours({});
+//     setEditedEmployeeData({});
+//     setInputValues({});
+
+//     toast.success("All changes saved successfully!");
+
+//   } catch (err) {
+//     console.error("Save Error:", err);
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+// const handleMasterSave = async () => {
+//   setIsLoading(true);
+//   try {
+//     // 1. Run validation and bulk save for new entries
+//     const success = await handleSaveMultipleEntry();
+    
+//     // 2. Critical Gate: If validation failed, exit here so data stays in the table
+//     if (!success) {
+//       setIsLoading(false);
+//       return; 
+//     }
+
+//     // 3. Save existing grid edits if new entries were successful
+//     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+//       await handleSaveAll();
+//     }
+
+//     // 4. Reset all states only after total success
+//     setNewEntries([]);
+//     setNewEntryPeriodHoursArray([]);
+//     setShowNewForm(false);
+//     setHasUnsavedHoursChanges(false);
+//     setHasUnsavedEmployeeChanges(false);
+//     setModifiedHours({});
+//     setEditedEmployeeData({});
+//     setInputValues({});
+
+//     toast.success("All changes saved successfully!");
+
+//   } catch (err) {
+//     console.error("Save Error:", err);
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
 const handleMasterSave = async () => {
   setIsLoading(true);
   try {
-    const savePromises = [];
-    const savedTypes = [];
-
-    // 1. Save New/Pasted Entries
-    if (newEntries.length > 0) {
-      savePromises.push(handleSaveMultipleEntry());
-      savedTypes.push(`${newEntries.length} new entry`);
-    }
-
-    // 2. Save Existing Grid Hours/Employee Edits
-    if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
-      savePromises.push(handleSaveAll());
-      if (hasUnsavedHoursChanges && hasUnsavedEmployeeChanges) savedTypes.push("hour changes and employee updates");
-      else if (hasUnsavedHoursChanges) savedTypes.push("hour changes");
-      else savedTypes.push("employee updates");
-    }
-
-    if (savePromises.length === 0) {
-      toast.info("No changes to save.");
+    // 1. Save new entries first
+    const saveSuccess = await handleSaveMultipleEntry();
+    
+    // 2. If validation failed, exit immediately to keep data visible for fixing
+    if (!saveSuccess) {
       setIsLoading(false);
-      return;
+      return; 
     }
 
-    await Promise.all(savePromises);
+    // 3. Save existing grid edits if any
+    if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+      await handleSaveAll();
+    }
 
-    // --- RESET ALL STATES ---
+    // 4. CRITICAL: Clear states FIRST
     setNewEntries([]);
     setNewEntryPeriodHoursArray([]);
     setShowNewForm(false);
-    setHasUnsavedHoursChanges(false);
-    setHasUnsavedEmployeeChanges(false);
     setModifiedHours({});
     setEditedEmployeeData({});
     setInputValues({});
-    setCheckedRows(new Set());
-    setShowCopyButton(false);
+    setHasUnsavedHoursChanges(false);
+    setHasUnsavedEmployeeChanges(false);
 
-    // --- FIRE ONLY ONE COMBINED TOAST ---
-    toast.success(`Successfully saved ${savedTypes.join(" and ")}!`, {
-      autoClose: 3000,
-    });
+    // 5. CRITICAL: Trigger the data re-fetch IMMEDIATELY to update the page
+    await fetchEmployees(); 
+    
+    if (onSaveSuccess) onSaveSuccess();
+
+    toast.success("All changes saved and updated!");
 
   } catch (err) {
-    console.error("ave Error:", err);
-    // Error toasts are handled within the individual functions or here as fallback
+    // console.error("Save Error:", err);
+    toast.error("An error occurred during save. Please try again.");
   } finally {
     setIsLoading(false);
   }
@@ -5658,593 +5774,1255 @@ const handleFillValues = () => {
 
 
 
+  // const handleSaveNewEntry = async () => {
+  //   if (!planId) {
+  //     toast.error("Plan ID is required to save a new entry.", {
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+
+  //   // Skip all validations if planType is NBBUD
+  //   if (planType !== "NBBUD") {
+  //     // Check for duplicate employee ID before validating anything else
+  //     const isDuplicate = localEmployees.some((emp) => {
+  //       if (!emp.emple) return false;
+
+  //       // For "Other" type, only check emplId (like KBD001)
+  //       if (newEntry.idType === "Other") {
+  //         return emp.emple.emplId === newEntry.id.trim();
+  //       }
+
+  //       // For other types, check both emplId and plcGlcCode
+  //       return (
+  //         emp.emple.emplId === newEntry.id.trim() &&
+  //         emp.emple.plcGlcCode === newEntry.plcGlcCode.trim()
+  //       );
+  //     });
+
+  //     if (isDuplicate) {
+  //       toast.error(
+  //         "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
+  //         {
+  //           toastId: "duplicate-save-error",
+  //           autoClose: 3000,
+  //         }
+  //       );
+  //       return;
+  //     }
+
+  //     // UPDATED VALIDATION LOGIC - Apply to ALL ID types except "Other"
+  //     if (newEntry.idType === "PLC") {
+  //       if (!newEntry.id || newEntry.id !== "PLC") {
+  //         toast.error("ID must be automatically set to 'PLC' for PLC type.", {
+  //           autoClose: 3000,
+  //         });
+  //         return;
+  //       }
+  //     } else if (newEntry.idType === "Other") {
+  //       // For Other type, just check that it's not empty (no further validation)
+  //       if (!newEntry.id.trim()) {
+  //         toast.error("ID is required.", { autoClose: 3000 });
+  //         return;
+  //       }
+  //     } else {
+  //       // For ALL other ID types (Employee, Vendor), validate against suggestions
+  //       if (!newEntry.id.trim()) {
+  //         toast.error("ID is required.", { autoClose: 3000 });
+  //         return;
+  //       }
+
+  //       // MANDATORY validation against suggestions for Employee and Vendor types
+  //       if (employeeSuggestions.length > 0) {
+  //         const validEmployee = employeeSuggestions.find(
+  //           (emp) => emp.emplId === newEntry.id.trim()
+  //         );
+  //         if (!validEmployee) {
+  //           toast.error("Please enter a valid ID from the available list.", {
+  //             autoClose: 3000,
+  //           });
+  //           return;
+  //         }
+  //       } else {
+  //         // If no suggestions are loaded, don't allow saving for Employee/Vendor
+  //         toast.error("Employee suggestions not loaded. Please try again.", {
+  //           autoClose: 3000,
+  //         });
+  //         return;
+  //       }
+  //     }
+
+  //     if (!isValidAccount(newEntry.acctId)) {
+  //       toast.error("Please enter a valid Account from the available list.", {
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     }
+  //     if (!isValidOrg(newEntry.orgId)) {
+  //       toast.error("Organization is required.", { autoClose: 3000 });
+  //       return;
+  //     }
+
+  //     if (!newEntry.plcGlcCode || !newEntry.plcGlcCode.trim()) {
+  //       toast.error("PLC is required and cannot be empty.", {
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     }
+  //     // Enhanced PLC validation - must match exactly from suggestions
+  //     if (newEntry.plcGlcCode && newEntry.plcGlcCode.trim() !== "") {
+  //       const exactPlcMatch = plcOptions.find(
+  //         (option) =>
+  //           option.value.toLowerCase() ===
+  //           newEntry.plcGlcCode.toLowerCase().trim()
+  //       );
+
+  //       if (!exactPlcMatch) {
+  //         toast.error(
+  //           "PLC must be selected from the available suggestions. Custom values are not allowed.",
+  //           {
+  //             autoClose: 4000,
+  //           }
+  //         );
+  //         return;
+  //       }
+  //     }
+  //   }
+
+  //   setIsDurationLoading(true);
+  //   const payloadForecasts = durations.map((duration) => ({
+  //     ...(planType === "EAC"
+  //       ? {
+  //           actualhours:
+  //             Number(
+  //               newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
+  //             ) || 0,
+  //         }
+  //       : {
+  //           forecastedhours:
+  //             Number(
+  //               newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
+  //             ) || 0,
+  //         }),
+  //     projId: projectId,
+  //     plId: planId,
+  //     emplId: newEntry.id,
+  //     month: duration.monthNo,
+  //     year: duration.year,
+  //     acctId: newEntry.acctId,
+  //     orgId: newEntry.orgId,
+  //     plc: newEntry.plcGlcCode || "",
+  //     hrlyRate: Number(newEntry.perHourRate) || 0,
+  //     effectDt: null,
+  //     plEmployee: null,
+  //   }));
+
+  //   const payload = {
+  //     id: 0,
+  //     emplId: newEntry.id,
+  //     firstName: newEntry.firstName,
+  //     lastName: newEntry.lastName,
+  //     type: newEntry.idType,
+  //     isRev: newEntry.isRev,
+  //     isBrd: newEntry.isBrd,
+  //     plcGlcCode: (newEntry.plcGlcCode || "").substring(0, 20),
+  //     perHourRate: Number(newEntry.perHourRate) || 0,
+  //     status: newEntry.status || "-",
+  //     accId: newEntry.acctId,
+  //     orgId: newEntry.orgId || "",
+  //     plId: planId,
+  //     plForecasts: payloadForecasts,
+  //   };
+
+  //   try {
+  //     await axios.post(`${backendUrl}/Employee/AddNewEmployee`, payload);
+  //     setSuccessMessageText("Entry saved successfully!");
+  //     setShowSuccessMessage(true);
+  //     setShowNewForm(false);
+  //     setNewEntry({
+  //       id: "",
+  //       firstName: "",
+  //       lastName: "",
+  //       isRev: false,
+  //       isBrd: false,
+  //       idType: "",
+  //       acctId: "",
+  //       orgId: "",
+  //       plcGlcCode: "",
+  //       perHourRate: "",
+  //       status: "Act",
+  //     });
+  //     setNewEntryPeriodHours({});
+  //     setEmployeeSuggestions([]);
+  //     setLaborAccounts([]);
+  //     setPlcOptions([]);
+  //     setPlcSearch("");
+  //     setAutoPopulatedPLC(false);
+  //     if (onSaveSuccess) {
+  //       onSaveSuccess();
+  //     }
+  //     fetchEmployees();
+  //   } catch (err) {
+  //     setSuccessMessageText("Failed to save entry.");
+  //     setShowSuccessMessage(true);
+
+  //     // Enhanced error message extraction
+  //     let detailedErrorMessage = "Failed to save new entry. ";
+
+  //     if (err?.response?.data) {
+  //       const errorData = err.response.data;
+
+  //       // Handle validation errors specifically
+  //       if (errorData.errors) {
+  //         const fieldErrors = [];
+  //         Object.keys(errorData.errors).forEach((field) => {
+  //           const errors = errorData.errors[field];
+  //           if (Array.isArray(errors) && errors.length > 0) {
+  //             fieldErrors.push(`${field}: ${errors[0]}`);
+  //           }
+  //         });
+  //         if (fieldErrors.length > 0) {
+  //           detailedErrorMessage += `Validation errors - ${fieldErrors.join(
+  //             ", "
+  //           )}`;
+  //         }
+  //       } else if (errorData.error) {
+  //         detailedErrorMessage += `Reason: ${errorData.error}`;
+  //       } else if (errorData.message) {
+  //         detailedErrorMessage += `Reason: ${errorData.message}`;
+  //       } else if (typeof errorData === "string") {
+  //         detailedErrorMessage += `Reason: ${errorData}`;
+  //       } else {
+  //         // Check for specific field validation messages
+  //         const errorMessages = [];
+  //         if (errorData.ID) errorMessages.push(`ID: ${errorData.ID}`);
+  //         if (errorData.Account)
+  //           errorMessages.push(`Account: ${errorData.Account}`);
+  //         if (errorData.Organization)
+  //           errorMessages.push(`Organization: ${errorData.Organization}`);
+  //         if (errorData.PLC) errorMessages.push(`PLC: ${errorData.PLC}`);
+
+  //         if (errorMessages.length > 0) {
+  //           detailedErrorMessage += `Please check - ${errorMessages.join(
+  //             ", "
+  //           )}`;
+  //         } else {
+  //           detailedErrorMessage += `Server response: ${JSON.stringify(
+  //             errorData
+  //           )}`;
+  //         }
+  //       }
+  //     } else if (err?.message) {
+  //       detailedErrorMessage += `Reason: ${err.message}`;
+  //     } else {
+  //       detailedErrorMessage +=
+  //         "Unknown error occurred. Please check your input and try again.";
+  //     }
+
+  //     // Show detailed error in toast
+  //     toast.error(detailedErrorMessage, {
+  //       toastId: "save-entry-error",
+  //       autoClose: 7000, // Longer time for detailed messages
+  //     });
+
+  //     // Log for debugging
+  //     console.error("Save new entry error:", {
+  //       error: err,
+  //       response: err?.response?.data,
+  //       status: err?.response?.status,
+  //     });
+  //   } finally {
+  //     setIsDurationLoading(false);
+  //     setTimeout(() => setShowSuccessMessage(false), 2000);
+  //   }
+  // };
+
   const handleSaveNewEntry = async () => {
-    if (!planId) {
-      toast.error("Plan ID is required to save a new entry.", {
+  if (!planId) {
+    toast.error("Plan ID is required to save a new entry.", {
+      autoClose: 3000,
+    });
+    return;
+  }
+
+  // Skip all validations if planType is NBBUD
+  if (planType !== "NBBUD") {
+    // Check for duplicate employee ID before validating anything else
+    const isDuplicate = localEmployees.some((emp) => {
+      if (!emp.emple) return false;
+
+      // For "Other" type, only check emplId (like KBD001)
+      if (newEntry.idType === "Other") {
+        return emp.emple.emplId === newEntry.id.trim();
+      }
+
+      // For other types, check both emplId and plcGlcCode
+      return (
+        emp.emple.emplId === newEntry.id.trim() &&
+        emp.emple.plcGlcCode === newEntry.plcGlcCode.trim()
+      );
+    });
+
+    if (isDuplicate) {
+      toast.error(
+        "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
+        {
+          toastId: "duplicate-save-error",
+          autoClose: 3000,
+        }
+      );
+      return;
+    }
+
+    // UPDATED VALIDATION LOGIC - Apply to ALL ID types except "Other"
+    if (newEntry.idType === "PLC") {
+      if (!newEntry.id || newEntry.id !== "PLC") {
+        toast.error("ID must be automatically set to 'PLC' for PLC type.", {
+          autoClose: 3000,
+        });
+        return;
+      }
+    } else if (newEntry.idType === "Other") {
+      // For Other type, just check that it's not empty (no further validation)
+      if (!newEntry.id.trim()) {
+        toast.error("ID is required.", { autoClose: 3000 });
+        return;
+      }
+    } else {
+      // For ALL other ID types (Employee, Vendor), validate against suggestions
+      if (!newEntry.id.trim()) {
+        toast.error("ID is required.", { autoClose: 3000 });
+        return;
+      }
+
+      // MANDATORY validation against suggestions for Employee and Vendor types
+      if (employeeSuggestions.length > 0) {
+        const validEmployee = employeeSuggestions.find(
+          (emp) => emp.emplId === newEntry.id.trim()
+        );
+        if (!validEmployee) {
+          toast.error("Please enter a valid ID from the available list.", {
+            autoClose: 3000,
+          });
+          return;
+        }
+      } else {
+        // If no suggestions are loaded, don't allow saving for Employee/Vendor
+        toast.error("Employee suggestions not loaded. Please try again.", {
+          autoClose: 3000,
+        });
+        return;
+      }
+    }
+
+    if (!isValidAccount(newEntry.acctId)) {
+      toast.error("Please enter a valid Account from the available list.", {
         autoClose: 3000,
       });
       return;
     }
-
-    // Skip all validations if planType is NBBUD
-    if (planType !== "NBBUD") {
-      // Check for duplicate employee ID before validating anything else
-      const isDuplicate = localEmployees.some((emp) => {
-        if (!emp.emple) return false;
-
-        // For "Other" type, only check emplId (like KBD001)
-        if (newEntry.idType === "Other") {
-          return emp.emple.emplId === newEntry.id.trim();
-        }
-
-        // For other types, check both emplId and plcGlcCode
-        return (
-          emp.emple.emplId === newEntry.id.trim() &&
-          emp.emple.plcGlcCode === newEntry.plcGlcCode.trim()
-        );
-      });
-
-      if (isDuplicate) {
-        toast.error(
-          "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
-          {
-            toastId: "duplicate-save-error",
-            autoClose: 3000,
-          }
-        );
-        return;
-      }
-
-      // UPDATED VALIDATION LOGIC - Apply to ALL ID types except "Other"
-      if (newEntry.idType === "PLC") {
-        if (!newEntry.id || newEntry.id !== "PLC") {
-          toast.error("ID must be automatically set to 'PLC' for PLC type.", {
-            autoClose: 3000,
-          });
-          return;
-        }
-      } else if (newEntry.idType === "Other") {
-        // For Other type, just check that it's not empty (no further validation)
-        if (!newEntry.id.trim()) {
-          toast.error("ID is required.", { autoClose: 3000 });
-          return;
-        }
-      } else {
-        // For ALL other ID types (Employee, Vendor), validate against suggestions
-        if (!newEntry.id.trim()) {
-          toast.error("ID is required.", { autoClose: 3000 });
-          return;
-        }
-
-        // MANDATORY validation against suggestions for Employee and Vendor types
-        if (employeeSuggestions.length > 0) {
-          const validEmployee = employeeSuggestions.find(
-            (emp) => emp.emplId === newEntry.id.trim()
-          );
-          if (!validEmployee) {
-            toast.error("Please enter a valid ID from the available list.", {
-              autoClose: 3000,
-            });
-            return;
-          }
-        } else {
-          // If no suggestions are loaded, don't allow saving for Employee/Vendor
-          toast.error("Employee suggestions not loaded. Please try again.", {
-            autoClose: 3000,
-          });
-          return;
-        }
-      }
-
-      if (!isValidAccount(newEntry.acctId)) {
-        toast.error("Please enter a valid Account from the available list.", {
-          autoClose: 3000,
-        });
-        return;
-      }
-      if (!isValidOrg(newEntry.orgId)) {
-        toast.error("Organization is required.", { autoClose: 3000 });
-        return;
-      }
-
-      if (!newEntry.plcGlcCode || !newEntry.plcGlcCode.trim()) {
-        toast.error("PLC is required and cannot be empty.", {
-          autoClose: 3000,
-        });
-        return;
-      }
-      // Enhanced PLC validation - must match exactly from suggestions
-      if (newEntry.plcGlcCode && newEntry.plcGlcCode.trim() !== "") {
-        const exactPlcMatch = plcOptions.find(
-          (option) =>
-            option.value.toLowerCase() ===
-            newEntry.plcGlcCode.toLowerCase().trim()
-        );
-
-        if (!exactPlcMatch) {
-          toast.error(
-            "PLC must be selected from the available suggestions. Custom values are not allowed.",
-            {
-              autoClose: 4000,
-            }
-          );
-          return;
-        }
-      }
-    }
-
-    setIsDurationLoading(true);
-    const payloadForecasts = durations.map((duration) => ({
-      ...(planType === "EAC"
-        ? {
-            actualhours:
-              Number(
-                newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
-              ) || 0,
-          }
-        : {
-            forecastedhours:
-              Number(
-                newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
-              ) || 0,
-          }),
-      projId: projectId,
-      plId: planId,
-      emplId: newEntry.id,
-      month: duration.monthNo,
-      year: duration.year,
-      acctId: newEntry.acctId,
-      orgId: newEntry.orgId,
-      plc: newEntry.plcGlcCode || "",
-      hrlyRate: Number(newEntry.perHourRate) || 0,
-      effectDt: null,
-      plEmployee: null,
-    }));
-
-    const payload = {
-      id: 0,
-      emplId: newEntry.id,
-      firstName: newEntry.firstName,
-      lastName: newEntry.lastName,
-      type: newEntry.idType,
-      isRev: newEntry.isRev,
-      isBrd: newEntry.isBrd,
-      plcGlcCode: (newEntry.plcGlcCode || "").substring(0, 20),
-      perHourRate: Number(newEntry.perHourRate) || 0,
-      status: newEntry.status || "-",
-      accId: newEntry.acctId,
-      orgId: newEntry.orgId || "",
-      plId: planId,
-      plForecasts: payloadForecasts,
-    };
-
-    try {
-      await axios.post(`${backendUrl}/Employee/AddNewEmployee`, payload);
-      setSuccessMessageText("Entry saved successfully!");
-      setShowSuccessMessage(true);
-      setShowNewForm(false);
-      setNewEntry({
-        id: "",
-        firstName: "",
-        lastName: "",
-        isRev: false,
-        isBrd: false,
-        idType: "",
-        acctId: "",
-        orgId: "",
-        plcGlcCode: "",
-        perHourRate: "",
-        status: "Act",
-      });
-      setNewEntryPeriodHours({});
-      setEmployeeSuggestions([]);
-      setLaborAccounts([]);
-      setPlcOptions([]);
-      setPlcSearch("");
-      setAutoPopulatedPLC(false);
-      if (onSaveSuccess) {
-        onSaveSuccess();
-      }
-      fetchEmployees();
-    } catch (err) {
-      setSuccessMessageText("Failed to save entry.");
-      setShowSuccessMessage(true);
-
-      // Enhanced error message extraction
-      let detailedErrorMessage = "Failed to save new entry. ";
-
-      if (err?.response?.data) {
-        const errorData = err.response.data;
-
-        // Handle validation errors specifically
-        if (errorData.errors) {
-          const fieldErrors = [];
-          Object.keys(errorData.errors).forEach((field) => {
-            const errors = errorData.errors[field];
-            if (Array.isArray(errors) && errors.length > 0) {
-              fieldErrors.push(`${field}: ${errors[0]}`);
-            }
-          });
-          if (fieldErrors.length > 0) {
-            detailedErrorMessage += `Validation errors - ${fieldErrors.join(
-              ", "
-            )}`;
-          }
-        } else if (errorData.error) {
-          detailedErrorMessage += `Reason: ${errorData.error}`;
-        } else if (errorData.message) {
-          detailedErrorMessage += `Reason: ${errorData.message}`;
-        } else if (typeof errorData === "string") {
-          detailedErrorMessage += `Reason: ${errorData}`;
-        } else {
-          // Check for specific field validation messages
-          const errorMessages = [];
-          if (errorData.ID) errorMessages.push(`ID: ${errorData.ID}`);
-          if (errorData.Account)
-            errorMessages.push(`Account: ${errorData.Account}`);
-          if (errorData.Organization)
-            errorMessages.push(`Organization: ${errorData.Organization}`);
-          if (errorData.PLC) errorMessages.push(`PLC: ${errorData.PLC}`);
-
-          if (errorMessages.length > 0) {
-            detailedErrorMessage += `Please check - ${errorMessages.join(
-              ", "
-            )}`;
-          } else {
-            detailedErrorMessage += `Server response: ${JSON.stringify(
-              errorData
-            )}`;
-          }
-        }
-      } else if (err?.message) {
-        detailedErrorMessage += `Reason: ${err.message}`;
-      } else {
-        detailedErrorMessage +=
-          "Unknown error occurred. Please check your input and try again.";
-      }
-
-      // Show detailed error in toast
-      toast.error(detailedErrorMessage, {
-        toastId: "save-entry-error",
-        autoClose: 7000, // Longer time for detailed messages
-      });
-
-      // Log for debugging
-      console.error("Save new entry error:", {
-        error: err,
-        response: err?.response?.data,
-        status: err?.response?.status,
-      });
-    } finally {
-      setIsDurationLoading(false);
-      setTimeout(() => setShowSuccessMessage(false), 2000);
-    }
-  };
-
-  const handleSaveMultipleEntry = async () => {
-    if (newEntries.length === 0) {
-      toast.info("No entries to save.", { autoClose: 2000 });
+    if (!isValidOrg(newEntry.orgId)) {
+      toast.error("Organization is required.", { autoClose: 3000 });
       return;
     }
 
-    setIsDurationLoading(true);
-    let successCount = 0;
-    let failCount = 0;
-    const failedIndices = [];
-
-    try {
-      for (let i = 0; i < newEntries.length; i++) {
-        const entry = newEntries[i];
-        const periodHours = newEntryPeriodHoursArray[i];
-
-        // Skip all validations if planType is NBBUD
-        if (planType !== "NBBUD") {
-          // Check for duplicate employee ID before validating anything else
-          const isDuplicate = localEmployees.some((emp) => {
-            if (!emp.emple) return false;
-
-            // For "Other" type, only check emplId
-            if (entry.idType === "Other") {
-              return emp.emple.emplId === entry.id.trim();
-            }
-
-            // For other types, check both emplId and plcGlcCode
-            return (
-              emp.emple.emplId === entry.id.trim() &&
-              emp.emple.plcGlcCode === entry.plcGlcCode.trim()
-            );
-          });
-
-          if (isDuplicate) {
-            toast.error(
-              "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
-              {
-                toastId: "duplicate-save-error",
-                autoClose: 3000,
-              }
-            );
-            failCount++;
-            failedIndices.push(i);
-            continue;
-          }
-
-          // UPDATED VALIDATION LOGIC - Apply to ALL ID types except "Other"
-          if (entry.idType === "PLC") {
-            if (!entry.id || entry.id !== "PLC") {
-              toast.error(
-                "ID must be automatically set to 'PLC' for PLC type.",
-                {
-                  autoClose: 3000,
-                }
-              );
-              failCount++;
-              failedIndices.push(i);
-              continue;
-            }
-          } else if (entry.idType === "Other") {
-            // For Other type, just check that it's not empty (no further validation)
-            if (!entry.id.trim()) {
-              toast.error("ID is required.", { autoClose: 3000 });
-              failCount++;
-              failedIndices.push(i);
-              continue;
-            }
-          } else {
-            // For ALL other ID types (Employee, Vendor), validate against suggestions
-            if (!entry.id.trim()) {
-              toast.error("ID is required.", { autoClose: 3000 });
-              failCount++;
-              failedIndices.push(i);
-              continue;
-            }
-
-            // MANDATORY validation against suggestions for Employee and Vendor types
-            const suggestions = pastedEntrySuggestions[i] || [];
-            if (suggestions.length > 0) {
-              const validEmployee = suggestions.find(
-                (emp) => emp.emplId === entry.id.trim()
-              );
-              if (!validEmployee) {
-                toast.error(
-                  "Please enter a valid ID from the available list.",
-                  {
-                    autoClose: 3000,
-                  }
-                );
-                failCount++;
-                failedIndices.push(i);
-                continue;
-              }
-            } else {
-              // If no suggestions are loaded, don't allow saving for Employee/Vendor
-              toast.error(
-                "Employee suggestions not loaded. Please try again.",
-                {
-                  autoClose: 3000,
-                }
-              );
-              failCount++;
-              failedIndices.push(i);
-              continue;
-            }
-          }
-
-          // Validate Account against pastedEntryAccounts
-          const entryAccounts = pastedEntryAccounts[i] || [];
-          const isValidAcc = entryAccounts.some(
-            (acc) => acc.id === entry.acctId
-          );
-          if (!isValidAcc) {
-            toast.error(
-              "Please enter a valid Account from the available list.",
-              {
-                autoClose: 3000,
-              }
-            );
-            failCount++;
-            failedIndices.push(i);
-            continue;
-          }
-
-          // Validate Organization against pastedEntryOrgs
-          const entryOrgs = pastedEntryOrgs[i] || [];
-
-          const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
-          
-          const isValidOrganization = entryOrgs.length > 0 
-            ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
-            : hasOrgValue;
-
-
-          // const isValidOrganization = entryOrgs.some(
-          //   (org) => org.value.toString() === entry.orgId.toString()
-          // );
-          if (!isValidOrganization) {
-            toast.error("Organization is required.", { autoClose: 3000 });
-            failCount++;
-            failedIndices.push(i);
-            continue;
-          }
-
-          // Validate PLC is not empty
-          if (!entry.plcGlcCode || !entry.plcGlcCode.trim()) {
-            toast.error("PLC is required and cannot be empty.", {
-              autoClose: 3000,
-            });
-            failCount++;
-            failedIndices.push(i);
-            continue;
-          }
-
-          // Enhanced PLC validation - must match exactly from suggestions
-          const entryPlcs = pastedEntryPlcs[i] || [];
-          if (entry.plcGlcCode && entry.plcGlcCode.trim() !== "") {
-            const exactPlcMatch = entryPlcs.find(
-              (option) =>
-                option.value.toLowerCase() ===
-                entry.plcGlcCode.toLowerCase().trim()
-            );
-
-            if (!exactPlcMatch) {
-              toast.error(
-                "PLC must be selected from the available suggestions. Custom values are not allowed.",
-                {
-                  autoClose: 4000,
-                }
-              );
-              failCount++;
-              failedIndices.push(i);
-              continue;
-            }
-          }
-        }
-
-        // Build payload forecasts
-        const payloadForecasts = durations.map((duration) => {
-          const uniqueKey = `${duration.monthNo}_${duration.year}`;
-          return {
-            ...(planType === "EAC"
-              ? { actualhours: Number(periodHours[uniqueKey] || 0) }
-              : { forecastedhours: Number(periodHours[uniqueKey] || 0) }),
-            projId: projectId,
-            plId: planId,
-            emplId: entry.id,
-            month: duration.monthNo,
-            year: duration.year,
-            acctId: entry.acctId,
-            orgId: entry.orgId,
-            plc: entry.plcGlcCode || "",
-            hrlyRate: Number(entry.perHourRate || 0),
-            effectDt: null,
-            plEmployee: null,
-          };
-        });
-
-        const payload = {
-          id: 0,
-          emplId: entry.id,
-          firstName: entry.firstName,
-          lastName: entry.lastName,
-          type: entry.idType,
-          isRev: entry.isRev,
-          isBrd: entry.isBrd,
-          plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
-          perHourRate: Number(entry.perHourRate || 0),
-          status: entry.status || "ACT",
-          accId: entry.acctId,
-          orgId: entry.orgId || "",
-          plId: planId,
-          plForecasts: payloadForecasts,
-        };
-
-        try {
-          await axios.post(`${backendUrl}/Employee/AddNewEmployee`, payload);
-          successCount++;
-        } catch (err) {
-          failCount++;
-          failedIndices.push(i);
-
-          // Enhanced error message extraction (same as handleSaveNewEntry)
-          let detailedErrorMessage = "Failed to save entry. ";
-
-          if (err?.response?.data) {
-            const errorData = err.response.data;
-
-            if (errorData.errors) {
-              const fieldErrors = [];
-              Object.keys(errorData.errors).forEach((field) => {
-                const errors = errorData.errors[field];
-                if (Array.isArray(errors) && errors.length > 0) {
-                  fieldErrors.push(`${field}: ${errors[0]}`);
-                }
-              });
-              if (fieldErrors.length > 0) {
-                detailedErrorMessage += `Validation errors - ${fieldErrors.join(
-                  ", "
-                )}`;
-              }
-            } else if (errorData.error) {
-              detailedErrorMessage += `Reason: ${errorData.error}`;
-            } else if (errorData.message) {
-              detailedErrorMessage += `Reason: ${errorData.message}`;
-            } else if (typeof errorData === "string") {
-              detailedErrorMessage += `Reason: ${errorData}`;
-            } else {
-              const errorMessages = [];
-              if (errorData.ID) errorMessages.push(`ID: ${errorData.ID}`);
-              if (errorData.Account)
-                errorMessages.push(`Account: ${errorData.Account}`);
-              if (errorData.Organization)
-                errorMessages.push(`Organization: ${errorData.Organization}`);
-              if (errorData.PLC) errorMessages.push(`PLC: ${errorData.PLC}`);
-
-              if (errorMessages.length > 0) {
-                detailedErrorMessage += `Please check - ${errorMessages.join(
-                  ", "
-                )}`;
-              } else {
-                detailedErrorMessage += `Server response: ${JSON.stringify(
-                  errorData
-                )}`;
-              }
-            }
-          } else if (err?.message) {
-            detailedErrorMessage += `Reason: ${err.message}`;
-          } else {
-            detailedErrorMessage +=
-              "Unknown error occurred. Please check your input and try again.";
-          }
-
-          toast.error(detailedErrorMessage, {
-            toastId: `save-entry-error-${i}`,
-            autoClose: 7000,
-          });
-
-          console.error(`Save entry ${i + 1} error:`, {
-            error: err,
-            response: err?.response?.data,
-            status: err?.response?.status,
-          });
-        }
-
-        // Small delay between saves
-        await new Promise((resolve) => setTimeout(resolve, 300));
-      }
-
-      // After all saves, handle results
-      if (failedIndices.length > 0) {
-        // Keep only failed entries
-        const remainingEntries = newEntries.filter((_, idx) =>
-          failedIndices.includes(idx)
-        );
-        const remainingHours = newEntryPeriodHoursArray.filter((_, idx) =>
-          failedIndices.includes(idx)
-        );
-
-        setNewEntries(remainingEntries);
-        setNewEntryPeriodHoursArray(remainingHours);
-      } else {
-        // All saved successfully
-        setNewEntries([]);
-        setNewEntryPeriodHoursArray([]);
-        // toast.success(`Entries saved successfully!`, { autoClose: 3000 });
-      }
-
-      if (successCount > 0) {
-        fetchEmployees();
-        if (onSaveSuccess) {
-          onSaveSuccess();
-        }
-      }
-    } catch (err) {
-      console.error("Save multiple entries error:", err);
-      toast.error("Failed to save entries.", { autoClose: 3000 });
-    } finally {
-      setIsDurationLoading(false);
+    if (!newEntry.plcGlcCode || !newEntry.plcGlcCode.trim()) {
+      toast.error("PLC is required and cannot be empty.", {
+        autoClose: 3000,
+      });
+      return;
     }
+    // Enhanced PLC validation - must match exactly from suggestions
+    if (newEntry.plcGlcCode && newEntry.plcGlcCode.trim() !== "") {
+      const exactPlcMatch = plcOptions.find(
+        (option) =>
+          option.value.toLowerCase() ===
+          newEntry.plcGlcCode.toLowerCase().trim()
+      );
+
+      if (!exactPlcMatch) {
+        toast.error(
+          "PLC must be selected from the available suggestions. Custom values are not allowed.",
+          {
+            autoClose: 4000,
+          }
+        );
+        return;
+      }
+    }
+  }
+
+  setIsDurationLoading(true);
+  const payloadForecasts = durations.map((duration) => ({
+    ...(planType === "EAC"
+      ? {
+          actualhours:
+            Number(
+              newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
+            ) || 0,
+        }
+      : {
+          forecastedhours:
+            Number(
+              newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
+            ) || 0,
+        }),
+    projId: projectId,
+    plId: planId,
+    emplId: newEntry.id,
+    month: duration.monthNo,
+    year: duration.year,
+    acctId: newEntry.acctId,
+    orgId: newEntry.orgId,
+    plc: newEntry.plcGlcCode || "",
+    hrlyRate: Number(newEntry.perHourRate) || 0,
+    effectDt: null,
+    plEmployee: null,
+  }));
+
+  const payload = {
+    id: 0,
+    emplId: newEntry.id,
+    firstName: newEntry.firstName,
+    lastName: newEntry.lastName,
+    type: newEntry.idType,
+    isRev: newEntry.isRev,
+    isBrd: newEntry.isBrd,
+    plcGlcCode: (newEntry.plcGlcCode || "").substring(0, 20),
+    perHourRate: Number(newEntry.perHourRate) || 0,
+    status: newEntry.status || "-",
+    accId: newEntry.acctId,
+    orgId: newEntry.orgId || "",
+    plId: planId,
+    plForecasts: payloadForecasts,
   };
 
-  const handleSaveMultipleEntries = async () => {
+  try {
+    // REPLACED: Call AddNewEmployees bulk API with array payload and dynamic params
+    await axios.post(
+      `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+      [payload]
+    );
+
+    setSuccessMessageText("Entry saved successfully!");
+    setShowSuccessMessage(true);
+    setShowNewForm(false);
+    setNewEntry({
+      id: "",
+      firstName: "",
+      lastName: "",
+      isRev: false,
+      isBrd: false,
+      idType: "",
+      acctId: "",
+      orgId: "",
+      plcGlcCode: "",
+      perHourRate: "",
+      status: "Act",
+    });
+    setNewEntryPeriodHours({});
+    setEmployeeSuggestions([]);
+    setLaborAccounts([]);
+    setPlcOptions([]);
+    setPlcSearch("");
+    setAutoPopulatedPLC(false);
+    if (onSaveSuccess) {
+      onSaveSuccess();
+    }
+    fetchEmployees();
+  } catch (err) {
+    setSuccessMessageText("Failed to save entry.");
+    setShowSuccessMessage(true);
+
+    // Enhanced error message extraction
+    let detailedErrorMessage = "Failed to save new entry. ";
+
+    if (err?.response?.data) {
+      const errorData = err.response.data;
+
+      // Handle validation errors specifically
+      if (errorData.errors) {
+        const fieldErrors = [];
+        Object.keys(errorData.errors).forEach((field) => {
+          const errors = errorData.errors[field];
+          if (Array.isArray(errors) && errors.length > 0) {
+            fieldErrors.push(`${field}: ${errors[0]}`);
+          }
+        });
+        if (fieldErrors.length > 0) {
+          detailedErrorMessage += `Validation errors - ${fieldErrors.join(
+            ", "
+          )}`;
+        }
+      } else if (errorData.error) {
+        detailedErrorMessage += `Reason: ${errorData.error}`;
+      } else if (errorData.message) {
+        detailedErrorMessage += `Reason: ${errorData.message}`;
+      } else if (typeof errorData === "string") {
+        detailedErrorMessage += `Reason: ${errorData}`;
+      } else {
+        // Check for specific field validation messages
+        const errorMessages = [];
+        if (errorData.ID) errorMessages.push(`ID: ${errorData.ID}`);
+        if (errorData.Account)
+          errorMessages.push(`Account: ${errorData.Account}`);
+        if (errorData.Organization)
+          errorMessages.push(`Organization: ${errorData.Organization}`);
+        if (errorData.PLC) errorMessages.push(`PLC: ${errorData.PLC}`);
+
+        if (errorMessages.length > 0) {
+          detailedErrorMessage += `Please check - ${errorMessages.join(
+            ", "
+          )}`;
+        } else {
+          detailedErrorMessage += `Server response: ${JSON.stringify(
+            errorData
+          )}`;
+        }
+      }
+    } else if (err?.message) {
+      detailedErrorMessage += `Reason: ${err.message}`;
+    } else {
+      detailedErrorMessage +=
+        "Unknown error occurred. Please check your input and try again.";
+    }
+
+    // Show detailed error in toast
+    toast.error(detailedErrorMessage, {
+      toastId: "save-entry-error",
+      autoClose: 7000, // Longer time for detailed messages
+    });
+
+    // Log for debugging
+    console.error("Save new entry error:", {
+      error: err,
+      response: err?.response?.data,
+      status: err?.response?.status,
+    });
+  } finally {
+    setIsDurationLoading(false);
+    setTimeout(() => setShowSuccessMessage(false), 2000);
+  }
+};
+
+// const handleSaveMultipleEntry = async () => {
+//   if (newEntries.length === 0) {
+//     toast.info("No entries to save.", { autoClose: 2000 });
+//     return;
+//   }
+
+//   setIsDurationLoading(true);
+//   let failCount = 0;
+//   const failedIndices = [];
+
+//   try {
+//     const bulkPayload = [];
+
+//     for (let i = 0; i < newEntries.length; i++) {
+//       const entry = newEntries[i];
+//       const periodHours = newEntryPeriodHoursArray[i];
+
+//       // Keep existing validation logic
+//       if (planType !== "NBBUD") {
+//         const isDuplicate = localEmployees.some((emp) => {
+//           if (!emp.emple) return false;
+//           if (entry.idType === "Other") {
+//             return emp.emple.emplId === entry.id.trim();
+//           }
+//           return (
+//             emp.emple.emplId === entry.id.trim() &&
+//             emp.emple.plcGlcCode === entry.plcGlcCode.trim()
+//           );
+//         });
+
+//         if (isDuplicate) {
+//           toast.error(
+//             "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
+//             { toastId: "duplicate-save-error", autoClose: 3000 }
+//           );
+//           failCount++;
+//           failedIndices.push(i);
+//           continue;
+//         }
+
+//         if (entry.idType === "PLC") {
+//           if (!entry.id || entry.id !== "PLC") {
+//             toast.error("ID must be automatically set to 'PLC' for PLC type.", { autoClose: 3000 });
+//             failCount++;
+//             failedIndices.push(i);
+//             continue;
+//           }
+//         } else if (entry.idType === "Other") {
+//           if (!entry.id.trim()) {
+//             toast.error("ID is required.", { autoClose: 3000 });
+//             failCount++;
+//             failedIndices.push(i);
+//             continue;
+//           }
+//         } else {
+//           if (!entry.id.trim()) {
+//             toast.error("ID is required.", { autoClose: 3000 });
+//             failCount++;
+//             failedIndices.push(i);
+//             continue;
+//           }
+//           const suggestions = pastedEntrySuggestions[i] || [];
+//           if (suggestions.length > 0) {
+//             const validEmployee = suggestions.find((emp) => emp.emplId === entry.id.trim());
+//             if (!validEmployee) {
+//               toast.error("Please enter a valid ID from the available list.", { autoClose: 3000 });
+//               failCount++;
+//               failedIndices.push(i);
+//               continue;
+//             }
+//           } else {
+//             toast.error("Employee suggestions not loaded. Please try again.", { autoClose: 3000 });
+//             failCount++;
+//             failedIndices.push(i);
+//             continue;
+//           }
+//         }
+
+//         const entryAccounts = pastedEntryAccounts[i] || [];
+//         const isValidAcc = entryAccounts.some((acc) => acc.id === entry.acctId);
+//         if (!isValidAcc) {
+//           toast.error("Please enter a valid Account from the available list.", { autoClose: 3000 });
+//           failCount++;
+//           failedIndices.push(i);
+//           continue;
+//         }
+
+//         const entryOrgs = pastedEntryOrgs[i] || [];
+//         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+//         const isValidOrganization = entryOrgs.length > 0 
+//           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+//           : hasOrgValue;
+
+//         if (!isValidOrganization) {
+//           toast.error("Organization is required.", { autoClose: 3000 });
+//           failCount++;
+//           failedIndices.push(i);
+//           continue;
+//         }
+
+//         if (!entry.plcGlcCode || !entry.plcGlcCode.trim()) {
+//           toast.error("PLC is required and cannot be empty.", { autoClose: 3000 });
+//           failCount++;
+//           failedIndices.push(i);
+//           continue;
+//         }
+
+//         const entryPlcs = pastedEntryPlcs[i] || [];
+//         if (entry.plcGlcCode && entry.plcGlcCode.trim() !== "") {
+//           const exactPlcMatch = entryPlcs.find(
+//             (option) => option.value.toLowerCase() === entry.plcGlcCode.toLowerCase().trim()
+//           );
+//           if (!exactPlcMatch) {
+//             toast.error("PLC must be selected from the available suggestions.", { autoClose: 4000 });
+//             failCount++;
+//             failedIndices.push(i);
+//             continue;
+//           }
+//         }
+//       }
+
+//       // Build individual payload
+//       const payloadForecasts = durations.map((duration) => ({
+//         ...(planType === "EAC"
+//           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+//           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+//         projId: projectId,
+//         plId: planId,
+//         emplId: entry.id,
+//         month: duration.monthNo,
+//         year: duration.year,
+//         acctId: entry.acctId,
+//         orgId: entry.orgId,
+//         plc: entry.plcGlcCode || "",
+//         hrlyRate: Number(entry.perHourRate || 0),
+//         effectDt: null,
+//         plEmployee: null,
+//       }));
+
+//       bulkPayload.push({
+//         id: 0,
+//         emplId: entry.id,
+//         firstName: entry.firstName,
+//         lastName: entry.lastName,
+//         type: entry.idType,
+//         isRev: entry.isRev,
+//         isBrd: entry.isBrd,
+//         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+//         perHourRate: Number(entry.perHourRate || 0),
+//         status: entry.status || "ACT",
+//         accId: entry.acctId,
+//         orgId: entry.orgId || "",
+//         plId: planId,
+//         plForecasts: payloadForecasts,
+//       });
+//     }
+
+//     // Call API only if there are valid items in the payload
+//     if (bulkPayload.length > 0) {
+//       await axios.post(
+//         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+//         bulkPayload
+//       );
+      
+//       // If we made it here, bulk API call was successful
+//       if (failedIndices.length === 0) {
+//         setNewEntries([]);
+//         setNewEntryPeriodHoursArray([]);
+//       } else {
+//         // Keep only failed entries (those that failed local validation)
+//         setNewEntries(newEntries.filter((_, idx) => failedIndices.includes(idx)));
+//         setNewEntryPeriodHoursArray(newEntryPeriodHoursArray.filter((_, idx) => failedIndices.includes(idx)));
+//       }
+
+//       fetchEmployees();
+//       if (onSaveSuccess) onSaveSuccess();
+//     } else if (failCount > 0) {
+//        // All entries failed local validation
+//        setNewEntries(newEntries.filter((_, idx) => failedIndices.includes(idx)));
+//        setNewEntryPeriodHoursArray(newEntryPeriodHoursArray.filter((_, idx) => failedIndices.includes(idx)));
+//     }
+
+//   } catch (err) {
+//     console.error("Save multiple entries error:", err);
+//     toast.error("Failed to save entries: " + (err.response?.data?.message || err.message), { autoClose: 3000 });
+//   } finally {
+//     setIsDurationLoading(false);
+//   }
+// };
+
+  // const handleSaveMultipleEntry = async () => {
+  //   if (newEntries.length === 0) {
+  //     toast.info("No entries to save.", { autoClose: 2000 });
+  //     return;
+  //   }
+
+  //   setIsDurationLoading(true);
+  //   let successCount = 0;
+  //   let failCount = 0;
+  //   const failedIndices = [];
+
+  //   try {
+  //     for (let i = 0; i < newEntries.length; i++) {
+  //       const entry = newEntries[i];
+  //       const periodHours = newEntryPeriodHoursArray[i];
+
+  //       // Skip all validations if planType is NBBUD
+  //       if (planType !== "NBBUD") {
+  //         // Check for duplicate employee ID before validating anything else
+  //         const isDuplicate = localEmployees.some((emp) => {
+  //           if (!emp.emple) return false;
+
+  //           // For "Other" type, only check emplId
+  //           if (entry.idType === "Other") {
+  //             return emp.emple.emplId === entry.id.trim();
+  //           }
+
+  //           // For other types, check both emplId and plcGlcCode
+  //           return (
+  //             emp.emple.emplId === entry.id.trim() &&
+  //             emp.emple.plcGlcCode === entry.plcGlcCode.trim()
+  //           );
+  //         });
+
+  //         if (isDuplicate) {
+  //           toast.error(
+  //             "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
+  //             {
+  //               toastId: "duplicate-save-error",
+  //               autoClose: 3000,
+  //             }
+  //           );
+  //           failCount++;
+  //           failedIndices.push(i);
+  //           continue;
+  //         }
+
+  //         // UPDATED VALIDATION LOGIC - Apply to ALL ID types except "Other"
+  //         if (entry.idType === "PLC") {
+  //           if (!entry.id || entry.id !== "PLC") {
+  //             toast.error(
+  //               "ID must be automatically set to 'PLC' for PLC type.",
+  //               {
+  //                 autoClose: 3000,
+  //               }
+  //             );
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //         } else if (entry.idType === "Other") {
+  //           // For Other type, just check that it's not empty (no further validation)
+  //           if (!entry.id.trim()) {
+  //             toast.error("ID is required.", { autoClose: 3000 });
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //         } else {
+  //           // For ALL other ID types (Employee, Vendor), validate against suggestions
+  //           if (!entry.id.trim()) {
+  //             toast.error("ID is required.", { autoClose: 3000 });
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+
+  //           // MANDATORY validation against suggestions for Employee and Vendor types
+  //           const suggestions = pastedEntrySuggestions[i] || [];
+  //           if (suggestions.length > 0) {
+  //             const validEmployee = suggestions.find(
+  //               (emp) => emp.emplId === entry.id.trim()
+  //             );
+  //             if (!validEmployee) {
+  //               toast.error(
+  //                 "Please enter a valid ID from the available list.",
+  //                 {
+  //                   autoClose: 3000,
+  //                 }
+  //               );
+  //               failCount++;
+  //               failedIndices.push(i);
+  //               continue;
+  //             }
+  //           } else {
+  //             // If no suggestions are loaded, don't allow saving for Employee/Vendor
+  //             toast.error(
+  //               "Employee suggestions not loaded. Please try again.",
+  //               {
+  //                 autoClose: 3000,
+  //               }
+  //             );
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //         }
+
+  //         // Validate Account against pastedEntryAccounts
+  //         const entryAccounts = pastedEntryAccounts[i] || [];
+  //         const isValidAcc = entryAccounts.some(
+  //           (acc) => acc.id === entry.acctId
+  //         );
+  //         if (!isValidAcc) {
+  //           toast.error(
+  //             "Please enter a valid Account from the available list.",
+  //             {
+  //               autoClose: 3000,
+  //             }
+  //           );
+  //           failCount++;
+  //           failedIndices.push(i);
+  //           continue;
+  //         }
+
+  //         // Validate Organization against pastedEntryOrgs
+  //         const entryOrgs = pastedEntryOrgs[i] || [];
+
+  //         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+          
+  //         const isValidOrganization = entryOrgs.length > 0 
+  //           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+  //           : hasOrgValue;
+
+
+  //         // const isValidOrganization = entryOrgs.some(
+  //         //   (org) => org.value.toString() === entry.orgId.toString()
+  //         // );
+  //         if (!isValidOrganization) {
+  //           toast.error("Organization is required.", { autoClose: 3000 });
+  //           failCount++;
+  //           failedIndices.push(i);
+  //           continue;
+  //         }
+
+  //         // Validate PLC is not empty
+  //         if (!entry.plcGlcCode || !entry.plcGlcCode.trim()) {
+  //           toast.error("PLC is required and cannot be empty.", {
+  //             autoClose: 3000,
+  //           });
+  //           failCount++;
+  //           failedIndices.push(i);
+  //           continue;
+  //         }
+
+  //         // Enhanced PLC validation - must match exactly from suggestions
+  //         const entryPlcs = pastedEntryPlcs[i] || [];
+  //         if (entry.plcGlcCode && entry.plcGlcCode.trim() !== "") {
+  //           const exactPlcMatch = entryPlcs.find(
+  //             (option) =>
+  //               option.value.toLowerCase() ===
+  //               entry.plcGlcCode.toLowerCase().trim()
+  //           );
+
+  //           if (!exactPlcMatch) {
+  //             toast.error(
+  //               "PLC must be selected from the available suggestions. Custom values are not allowed.",
+  //               {
+  //                 autoClose: 4000,
+  //               }
+  //             );
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //         }
+  //       }
+
+  //       // Build payload forecasts
+  //       const payloadForecasts = durations.map((duration) => {
+  //         const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //         return {
+  //           ...(planType === "EAC"
+  //             ? { actualhours: Number(periodHours[uniqueKey] || 0) }
+  //             : { forecastedhours: Number(periodHours[uniqueKey] || 0) }),
+  //           projId: projectId,
+  //           plId: planId,
+  //           emplId: entry.id,
+  //           month: duration.monthNo,
+  //           year: duration.year,
+  //           acctId: entry.acctId,
+  //           orgId: entry.orgId,
+  //           plc: entry.plcGlcCode || "",
+  //           hrlyRate: Number(entry.perHourRate || 0),
+  //           effectDt: null,
+  //           plEmployee: null,
+  //         };
+  //       });
+
+  //       const payload = {
+  //         id: 0,
+  //         emplId: entry.id,
+  //         firstName: entry.firstName,
+  //         lastName: entry.lastName,
+  //         type: entry.idType,
+  //         isRev: entry.isRev,
+  //         isBrd: entry.isBrd,
+  //         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+  //         perHourRate: Number(entry.perHourRate || 0),
+  //         status: entry.status || "ACT",
+  //         accId: entry.acctId,
+  //         orgId: entry.orgId || "",
+  //         plId: planId,
+  //         plForecasts: payloadForecasts,
+  //       };
+
+  //       try {
+  //         await axios.post(`${backendUrl}/Employee/AddNewEmployee`, payload);
+  //         successCount++;
+  //       } catch (err) {
+  //         failCount++;
+  //         failedIndices.push(i);
+
+  //         // Enhanced error message extraction (same as handleSaveNewEntry)
+  //         let detailedErrorMessage = "Failed to save entry. ";
+
+  //         if (err?.response?.data) {
+  //           const errorData = err.response.data;
+
+  //           if (errorData.errors) {
+  //             const fieldErrors = [];
+  //             Object.keys(errorData.errors).forEach((field) => {
+  //               const errors = errorData.errors[field];
+  //               if (Array.isArray(errors) && errors.length > 0) {
+  //                 fieldErrors.push(`${field}: ${errors[0]}`);
+  //               }
+  //             });
+  //             if (fieldErrors.length > 0) {
+  //               detailedErrorMessage += `Validation errors - ${fieldErrors.join(
+  //                 ", "
+  //               )}`;
+  //             }
+  //           } else if (errorData.error) {
+  //             detailedErrorMessage += `Reason: ${errorData.error}`;
+  //           } else if (errorData.message) {
+  //             detailedErrorMessage += `Reason: ${errorData.message}`;
+  //           } else if (typeof errorData === "string") {
+  //             detailedErrorMessage += `Reason: ${errorData}`;
+  //           } else {
+  //             const errorMessages = [];
+  //             if (errorData.ID) errorMessages.push(`ID: ${errorData.ID}`);
+  //             if (errorData.Account)
+  //               errorMessages.push(`Account: ${errorData.Account}`);
+  //             if (errorData.Organization)
+  //               errorMessages.push(`Organization: ${errorData.Organization}`);
+  //             if (errorData.PLC) errorMessages.push(`PLC: ${errorData.PLC}`);
+
+  //             if (errorMessages.length > 0) {
+  //               detailedErrorMessage += `Please check - ${errorMessages.join(
+  //                 ", "
+  //               )}`;
+  //             } else {
+  //               detailedErrorMessage += `Server response: ${JSON.stringify(
+  //                 errorData
+  //               )}`;
+  //             }
+  //           }
+  //         } else if (err?.message) {
+  //           detailedErrorMessage += `Reason: ${err.message}`;
+  //         } else {
+  //           detailedErrorMessage +=
+  //             "Unknown error occurred. Please check your input and try again.";
+  //         }
+
+  //         toast.error(detailedErrorMessage, {
+  //           toastId: `save-entry-error-${i}`,
+  //           autoClose: 7000,
+  //         });
+
+  //         console.error(`Save entry ${i + 1} error:`, {
+  //           error: err,
+  //           response: err?.response?.data,
+  //           status: err?.response?.status,
+  //         });
+  //       }
+
+  //       // Small delay between saves
+  //       await new Promise((resolve) => setTimeout(resolve, 300));
+  //     }
+
+  //     // After all saves, handle results
+  //     if (failedIndices.length > 0) {
+  //       // Keep only failed entries
+  //       const remainingEntries = newEntries.filter((_, idx) =>
+  //         failedIndices.includes(idx)
+  //       );
+  //       const remainingHours = newEntryPeriodHoursArray.filter((_, idx) =>
+  //         failedIndices.includes(idx)
+  //       );
+
+  //       setNewEntries(remainingEntries);
+  //       setNewEntryPeriodHoursArray(remainingHours);
+  //     } else {
+  //       // All saved successfully
+  //       setNewEntries([]);
+  //       setNewEntryPeriodHoursArray([]);
+  //       // toast.success(`Entries saved successfully!`, { autoClose: 3000 });
+  //     }
+
+  //     if (successCount > 0) {
+  //       fetchEmployees();
+  //       if (onSaveSuccess) {
+  //         onSaveSuccess();
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error("Save multiple entries error:", err);
+  //     toast.error("Failed to save entries.", { autoClose: 3000 });
+  //   } finally {
+  //     setIsDurationLoading(false);
+  //   }
+  // };
+
+//   const handleSaveMultipleEntry = async () => {
+//   if (newEntries.length === 0) return true; // Nothing to do, so technically "success"
+
+//   setIsDurationLoading(true);
+//   let validationFailed = false;
+//   const bulkPayload = [];
+
+//   try {
+//     for (let i = 0; i < newEntries.length; i++) {
+//       const entry = newEntries[i];
+//       const periodHours = newEntryPeriodHoursArray[i];
+
+//       if (planType !== "NBBUD") {
+//         // 1. Duplicate ID/PLC Check
+//         const isDuplicate = localEmployees.some((emp) => {
+//           if (!emp.emple) return false;
+//           if (entry.idType === "Other") return emp.emple.emplId === entry.id.trim();
+//           return emp.emple.emplId === entry.id.trim() && emp.emple.plcGlcCode === entry.plcGlcCode.trim();
+//         });
+
+//         if (isDuplicate) {
+//           toast.error(`Row ${i + 1}: Duplicate ID and PLC combination found.`);
+//           validationFailed = true;
+//           break; 
+//         }
+
+//         // 2. Account Validation (Added detailed message as requested)
+//         const entryAccounts = pastedEntryAccounts[i] || [];
+//         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
+//           toast.error(`Row ${i + 1}: Account ${entry.acctId} is not valid for this project.`);
+//           validationFailed = true;
+//           break;
+//         }
+
+//         // 3. Organization Validation
+//         const entryOrgs = pastedEntryOrgs[i] || [];
+//         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+//         const isValidOrg = entryOrgs.length > 0 
+//           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+//           : hasOrgValue;
+
+//         if (!isValidOrg) {
+//           toast.error(`Row ${i + 1}: Valid Organization is required.`);
+//           validationFailed = true;
+//           break;
+//         }
+//       }
+
+//       // Build Forecast Data
+//       const payloadForecasts = durations.map((duration) => ({
+//         ...(planType === "EAC"
+//           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+//           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+//         projId: projectId,
+//         plId: planId,
+//         emplId: entry.id,
+//         month: duration.monthNo,
+//         year: duration.year,
+//         acctId: entry.acctId,
+//         orgId: entry.orgId,
+//         plc: entry.plcGlcCode || "",
+//         hrlyRate: Number(entry.perHourRate || 0),
+//       }));
+
+//       bulkPayload.push({
+//         id: 0,
+//         emplId: entry.id,
+//         firstName: entry.firstName,
+//         lastName: entry.lastName,
+//         type: entry.idType,
+//         isRev: entry.isRev,
+//         isBrd: entry.isBrd,
+//         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+//         perHourRate: Number(entry.perHourRate || 0),
+//         status: entry.status || "ACT",
+//         accId: entry.acctId,
+//         orgId: entry.orgId || "",
+//         plId: planId,
+//         plForecasts: payloadForecasts,
+//       });
+//     }
+
+//     if (validationFailed) return false; // EXIT WITHOUT CALLING API
+
+//     if (bulkPayload.length > 0) {
+//       await axios.post(
+//         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+//         bulkPayload
+//       );
+//       return true; // SUCCESS
+//     }
+//     return true;
+
+//   } catch (err) {
+//     toast.error("API Error: " + (err.response?.data?.message || err.message));
+//     return false; // FAILURE
+//   } finally {
+//     setIsDurationLoading(false);
+//   }
+// };
+ 
+
+
+const handleSaveMultipleEntry = async () => {
+  if (newEntries.length === 0) return true;
+
+  setIsDurationLoading(true);
+  let validationFailed = false;
+  const bulkPayload = [];
+
+  try {
+    for (let i = 0; i < newEntries.length; i++) {
+      const entry = newEntries[i];
+      const periodHours = newEntryPeriodHoursArray[i];
+
+      if (planType !== "NBBUD") {
+        // 1. Duplicate Check
+        const isDuplicate = localEmployees.some((emp) => {
+          if (!emp.emple) return false;
+          if (entry.idType === "Other") return emp.emple.emplId === entry.id.trim();
+          return emp.emple.emplId === entry.id.trim() && emp.emple.plcGlcCode === entry.plcGlcCode.trim();
+        });
+
+        if (isDuplicate) {
+          toast.error(`Duplicate ID and PLC combination`);
+          validationFailed = true; break; 
+        }
+
+        // 2. Account Validation
+        const entryAccounts = pastedEntryAccounts[i] || [];
+        if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
+          toast.error(`Invalid Account selected for ID ${entry.id}.`);
+          validationFailed = true; break;
+        }
+
+        // 3. Organization Validation
+        const entryOrgs = pastedEntryOrgs[i] || [];
+        const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+        const isValidOrg = entryOrgs.length > 0 
+          ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+          : hasOrgValue;
+
+        if (!isValidOrg) {
+          toast.error(`Organization ID ${entry.orgId} is not valid.`);
+          validationFailed = true; break;
+        }
+      }
+
+      // Build payload for this row
+      const payloadForecasts = durations.map((duration) => ({
+        ...(planType === "EAC"
+          ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+          : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+        projId: projectId,
+        plId: planId,
+        emplId: entry.id,
+        month: duration.monthNo,
+        year: duration.year,
+        acctId: entry.acctId,
+        orgId: entry.orgId,
+        plc: entry.plcGlcCode || "",
+        hrlyRate: Number(entry.perHourRate || 0),
+        effectDt: null,
+        plEmployee: null,
+      }));
+
+      bulkPayload.push({
+        id: 0,
+        emplId: entry.id,
+        firstName: entry.firstName,
+        lastName: entry.lastName,
+        type: entry.idType,
+        isRev: entry.isRev,
+        isBrd: entry.isBrd,
+        plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+        perHourRate: Number(entry.perHourRate || 0),
+        status: entry.status || "ACT",
+        accId: entry.acctId,
+        orgId: entry.orgId || "",
+        plId: planId,
+        plForecasts: payloadForecasts,
+      });
+    }
+
+    if (validationFailed) return false;
+
+    if (bulkPayload.length > 0) {
+      // Use the new bulk endpoint
+      await axios.post(
+        `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+        bulkPayload
+      );
+      return true; // Return true to signal the UI can refresh
+    }
+    return true;
+
+  } catch (err) {
+    toast.error("Error: " + (err.response?.data?.message || err.message));
+    return false;
+  } finally {
+    setIsDurationLoading(false);
+  }
+};
+
+const handleSaveMultipleEntries = async () => {
     for (let i = 0; i < newEntries.length; i++) {
       // Temporarily set state for this entry
       setNewEntry(newEntries[i]);
@@ -7133,7 +7911,7 @@ const handleFindReplace = async () => {
 
     if (bulkPayload.length > 0) {
       const apiType = planType === 'NBBUD' ? 'BUD' : planType;
-      await axios.put(`${backendUrl}/Forecast/BulkUpdateForecastHours/${apiType}`, bulkPayload);
+      await axios.put(`${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiPlanType}?plid=${planId}&templateid=${templateId}`, bulkPayload);
       setInputValues(updatedInputValues);
       toast.success(`Replaced ${replacementsCount} matches.`);
     }
@@ -8042,7 +8820,8 @@ const handleSelectAllCheckboxes = (isChecked) => {
                   >
                     Delete
                   </button> */}
-               <button
+
+               {/* <button
   className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
     ${planType === "EAC" ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
   onClick={async () => {
@@ -8082,6 +8861,52 @@ const handleSelectAllCheckboxes = (isChecked) => {
   disabled={planType === "EAC"}
 >
   Delete
+</button> */}
+
+<button
+  className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
+    ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
+  disabled={planType === "EAC" || checkedRows.size === 0}
+  onClick={async () => {
+    // Gather all IDs from the checked rows
+    const selectedIndices = Array.from(checkedRows);
+    const idsToDelete = selectedIndices
+      .map(index => localEmployees[index]?.emple_Id)
+      .filter(id => id !== undefined);
+
+    if (idsToDelete.length === 0) {
+      toast.error("No valid records selected for deletion");
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to delete ${idsToDelete.length} selected record(s)?`)) {
+      setIsLoading(true);
+      try {
+        // Execute all delete requests in parallel
+        await Promise.all(
+          idsToDelete.map(id => axios.delete(`${backendUrl}/Employee/DeleteEmployee/${id}`))
+        );
+
+        toast.success("Selected record(s) deleted successfully!");
+        
+        // Reset selection states
+        setCheckedRows(new Set());
+        setShowCopyButton(false);
+        setSelectedEmployeeId(null);
+        setSelectedEmployeeScheduleId(null);
+        
+        // Refresh the data grid
+        fetchEmployees(); 
+      } catch (err) {
+        toast.error("Failed to delete some records. Please try again.");
+        console.error("Multiple delete error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }}
+>
+  {checkedRows.size > 1 ? `Delete Selected (${checkedRows.size})` : "Delete"}
 </button>
                 </>
               )}

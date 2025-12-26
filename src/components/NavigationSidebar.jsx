@@ -357,7 +357,7 @@ const NavigationSidebar = () => {
                       onClick={handleLinkClick}
                     />
                     <NavItem
-                      label="Transfer Utility"
+                      label="Create Project Budget"
                       path="/dashboard/create-project-budget"
                       selected={selectedPage}
                       onClick={handleLinkClick}
@@ -503,15 +503,18 @@ const NavigationSidebar = () => {
                         selected={selectedPage}
                         onClick={handleLinkClick}
                       />
+                       <NavItem
+                        label="Project Org Security"
+                        path="/dashboard/projectmapping"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                      />
                       <NavItem
-                        label="Account Mapping"
+                        label="Chart of Accounts"
                         path="/dashboard/account-mapping"
                         selected={selectedPage}
                         onClick={handleLinkClick}
                       />
-                      
-
-                   
                       <NavItem
                         label="Ceiling Configuration"
                         path="/dashboard/ceiling-configuration"
@@ -525,12 +528,7 @@ const NavigationSidebar = () => {
                         onClick={handleLinkClick}
                       />
                      
-                      <NavItem
-                        label="Project Org Security"
-                        path="/dashboard/projectmapping"
-                        selected={selectedPage}
-                        onClick={handleLinkClick}
-                      />
+                     
                       <NavItem
                         label="Annual Holidays"
                         path="/dashboard/annual-holidays"

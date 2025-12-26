@@ -678,6 +678,7 @@
 
 // export default ProspectiveIDSetup;
 
+import { IdCard } from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
 import { FaSave, FaEdit, FaTrash, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -839,7 +840,7 @@ const ProspectiveIDSetup = () => {
       !employeeType
     ) {
       // alert("Please fill all fields for Employee data.");
-      toast.info("Please fill all fields for Employee data.")
+      toast.info("Please fill all fields for Employee data.");
       return;
     }
     const newEmployee = {
@@ -903,7 +904,7 @@ const ProspectiveIDSetup = () => {
   const handleAddVendor = useCallback(() => {
     if (!vendorID || !vendorName) {
       // alert("Please fill all fields for Vendor data.");
-      toast.info("Please fill all fields for Vendor data.")
+      toast.info("Please fill all fields for Vendor data.");
       return;
     }
     const newVendor = {
@@ -955,7 +956,7 @@ const ProspectiveIDSetup = () => {
   const handleAddPLC = useCallback(() => {
     if (!plcCategory || !plcHrlyRate) {
       // alert("Please fill all fields for PLC data.");
-      toast.info("Please fill all fields for PLC data.")
+      toast.info("Please fill all fields for PLC data.");
       return;
     }
     const newPLC = {
@@ -1026,28 +1027,28 @@ const ProspectiveIDSetup = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-100 text-gray-900 flex flex-col items-center justify-center p-4">
-        <div className="w-full px-8 bg-white rounded-xl shadow-lg p-8 space-y-6 border border-gray-300">
+      <div className="min-h-screen text-gray-900 flex flex-col gap-y-2 justify-center p-4">
+        <div className="p-4 w-full flex items-center justify-between bg-white">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <IdCard size={20} className="text-blue-500" />
+            Prospective ID Setup
+          </h2>
+        </div>
+        <div className="w-full px-4 bg-white rounded-sm p-4 space-y-6 ">
           {/* Header */}
           {/* <div className="flex justify-between items-center gap-2 mb-6">
             <h2 className="w-full bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
               Prospective ID Setup
             </h2>
           </div> */}
-          	<div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             Prospective ID Setup
-          </h2>
-          
-        </div>	
 
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 mb-6">
+          <div className="flex gap-x-2 mb-4">
             {["employee", "vendor", "PLC"].map((tab) => (
               <button
                 key={tab}
                 className={cn(
-                  "py-2 px-4 text-lg font-medium focus:outline-none",
+                  "py-1.5 rounded-sm px-4 text-lg font-medium focus:outline-none",
                   activeTab === tab
                     ? "bg-[#17414d] text-white group-hover:text-gray"
                     : "text-gray-600 hover:text-gray-800"
@@ -1060,14 +1061,24 @@ const ProspectiveIDSetup = () => {
           </div>
 
           {/* Content */}
-          <div className="bg-gray-50 p-4 rounded-lg shadow-inner border border-gray-200">
+          <div className=" p-4 rounded-sm ">
             {/* Employee Tab */}
             {activeTab === "employee" && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                  Employee Data Entry
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className=" flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Employee Data Entry
+                  </h3>
+                  <div className="flex">
+                    <button
+                      onClick={handleAddEmployee}
+                      className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                    >
+                      Add Employee
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 flex items-center">
                   <div>
                     <label
                       htmlFor="hourlyRate"
@@ -1153,19 +1164,11 @@ const ProspectiveIDSetup = () => {
                     </select>
                   </div>
                 </div>
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleAddEmployee}
-                    className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
-                  >
-                    Add Employee
-                  </button>
-                </div>
 
                 <div className="flex items-center justify-between mt-8 mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  {/* <h3 className="text-lg font-semibold text-gray-800">
                     All Employees
-                  </h3>
+                  </h3> */}
                   {/* <button
                     onClick={handleSaveAll}
                     className="bg-blue-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-xs py-2 px-4 shadow-sm hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1321,10 +1324,20 @@ const ProspectiveIDSetup = () => {
             {/* Vendor Tab */}
             {activeTab === "vendor" && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                  Vendor Data Entry
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Vendor Data Entry
+                  </h3>
+                  <div>
+                    <button
+                      onClick={handleAddVendor}
+                      className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                    >
+                      Add Vendor
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                   <div>
                     <label
                       htmlFor="vendID"
@@ -1358,19 +1371,11 @@ const ProspectiveIDSetup = () => {
                     />
                   </div>
                 </div>
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleAddVendor}
-                    className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
-                  >
-                    Add Vendor
-                  </button>
-                </div>
 
                 <div className="flex items-center justify-between mt-8 mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  {/* <h3 className="text-lg font-semibold text-gray-800">
                     All Vendors
-                  </h3>
+                  </h3> */}
                   {/* <button
                     onClick={handleSaveAll}
                     className="bg-blue-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-xs py-2 px-4 shadow-sm hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1477,9 +1482,19 @@ const ProspectiveIDSetup = () => {
             {/* PLC Tab */}
             {activeTab === "PLC" && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                  PLC Data Entry
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    PLC Data Entry
+                  </h3>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleAddPLC}
+                      className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                    >
+                      Add PLC
+                    </button>
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label
@@ -1514,19 +1529,11 @@ const ProspectiveIDSetup = () => {
                     />
                   </div>
                 </div>
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleAddPLC}
-                    className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
-                  >
-                    Add PLC
-                  </button>
-                </div>
 
                 <div className="flex items-center justify-between mt-8 mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  {/* <h3 className="text-xl font-semibold text-gray-800">
                     All PLCs
-                  </h3>
+                  </h3> */}
                   {/* <button
                     onClick={handleSaveAll}
                     className="bg-blue-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-xs py-2 px-4 shadow-sm hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"

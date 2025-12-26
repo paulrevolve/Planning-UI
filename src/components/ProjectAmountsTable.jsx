@@ -62,6 +62,7 @@ const ProjectAmountsTable = ({
   startDate,
   endDate,
   planType,
+  templateId,
   fiscalYear: propFiscalYear,
   onSaveSuccess,
   refreshKey,
@@ -1586,7 +1587,7 @@ const getSortIcon = (key) => {
       console.log("Bulk Payload:", JSON.stringify(bulkPayload, null, 2));
 
       const response = await axios.put(
-        `${backendUrl}/Forecast/BulkUpdateForecastAmount/${planType}`,
+        `${backendUrl}/Forecast/BulkUpdateForecastAmountV1/${planType}?plid=${planId}&templateid=${templateId}`,
         bulkPayload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -1807,42 +1808,140 @@ const getSortIcon = (key) => {
 
   // Handler for canceling field changes
   
-  const handleMasterSave = async () => {
-  setIsLoading(true);
-  try {
-    const savePromises = [];
+//   const handleMasterSave = async () => {
+//   setIsLoading(true);
+//   try {
+//     const savePromises = [];
 
-    if (newEntries.length > 0) {
-      savePromises.push(handleSaveMultiplePastedEntries());
-    } 
+//     if (newEntries.length > 0) {
+//       savePromises.push(handleSaveMultiplePastedEntries());
+//     } 
 
-    if (hasUnsavedAmountChanges) {
-      savePromises.push(handleSaveAllAmounts());
+//     if (hasUnsavedAmountChanges) {
+//       savePromises.push(handleSaveAllAmounts());
+//     }
+
+//     if (hasUnsavedFieldChanges) {
+//       savePromises.push(handleSaveFieldChanges());
+//     }
+
+//     await Promise.all(savePromises);
+    
+//     // --- ADD THESE LINES TO HIDE BUTTONS AFTER SAVE ---
+//     setNewEntries([]); // Clears the list of new forms
+//     setNewEntryPeriodAmountsArray([]); 
+//     setShowNewForm(false); // Hides the new entry section
+//     setHasUnsavedAmountChanges(false);
+//     setHasUnsavedFieldChanges(false);
+//     // ------------------------------------------------
+    
+//     setSelectedRows(new Set());
+//     setShowCopyButton(false);
+    
+//   } catch (err) {
+//     console.error("Master Save Error:", err);
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+// const handleMasterSave = async () => {
+//   setIsLoading(true);
+//   try {
+//     // 1. Run the save for New/Pasted entries
+//     const saveSuccess = await handleSaveMultiplePastedEntries();
+    
+//     // 2. IF SAVE FAILED (Validation or API error), STOP HERE.
+//     // The forms stay open because we haven't reached the state reset logic below.
+//     if (!saveSuccess) {
+//       setIsLoading(false);
+//       return; 
+//     }
+
+//     // 3. Continue to save existing grid edits if necessary
+//     if (hasUnsavedAmountChanges) {
+//       await handleSaveAllAmounts();
+//     }
+
+//     if (hasUnsavedFieldChanges) {
+//       await handleSaveFieldChanges();
+//     }
+
+//     // 4. ONLY RESET STATE IF EVERYTHING SAVED SUCCESSFULLY
+//     setNewEntries([]);
+//     setNewEntryPeriodAmountsArray([]); 
+//     setShowNewForm(false);
+//     setHasUnsavedAmountChanges(false);
+//     setHasUnsavedFieldChanges(false);
+//     setModifiedAmounts({});
+//     setEditedRowData({});
+//     setInputValues({});
+//     setSelectedRows(new Set());
+//     setShowCopyButton(false);
+
+//     toast.success("All changes saved successfully!");
+    
+//   } catch (err) {
+//     console.error("Master Save Error:", err);
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+const handleMasterSave = async () => {
+    setIsLoading(true);
+    try {
+      let saveSuccess = false;
+
+      // 1. Process New Entries or Manual Single Entry
+      if (newEntries.length > 0) {
+        saveSuccess = await handleSaveMultiplePastedEntries();
+      } else if (showNewForm && newEntry.id) {
+        saveSuccess = await handleSaveNewEntry();
+      } else {
+        saveSuccess = true; // Nothing new to save, just grid edits
+      }
+
+      // 2. STOP if saving new entries failed validation or API
+      if (!saveSuccess) {
+        setIsLoading(false);
+        return; 
+      }
+
+      // 3. Save existing grid edits
+      if (hasUnsavedAmountChanges) {
+        await handleSaveAllAmounts();
+      }
+
+      if (hasUnsavedFieldChanges) {
+        await handleSaveFieldChanges();
+      }
+
+      // 4. RESET STATE only after successful database commit
+      setNewEntries([]);
+      setNewEntryPeriodAmountsArray([]); 
+      setShowNewForm(false);
+      setHasUnsavedAmountChanges(false);
+      setHasUnsavedFieldChanges(false);
+      setModifiedAmounts({});
+      setEditedRowData({});
+      setInputValues({});
+      setSelectedRows(new Set());
+      setShowCopyButton(false);
+
+      // 5. AUTOMATIC RELOAD: Call onSaveSuccess to trigger the parent's refresh logic
+      if (onSaveSuccess) {
+        onSaveSuccess(); 
+      }
+
+      toast.success("All changes saved successfully!");
+
+    } catch (err) {
+      console.error("Master Save Error:", err);
+    } finally {
+      setIsLoading(false);
     }
-
-    if (hasUnsavedFieldChanges) {
-      savePromises.push(handleSaveFieldChanges());
-    }
-
-    await Promise.all(savePromises);
-    
-    // --- ADD THESE LINES TO HIDE BUTTONS AFTER SAVE ---
-    setNewEntries([]); // Clears the list of new forms
-    setNewEntryPeriodAmountsArray([]); 
-    setShowNewForm(false); // Hides the new entry section
-    setHasUnsavedAmountChanges(false);
-    setHasUnsavedFieldChanges(false);
-    // ------------------------------------------------
-    
-    setSelectedRows(new Set());
-    setShowCopyButton(false);
-    
-  } catch (err) {
-    console.error("Master Save Error:", err);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
   
   
   // handleCancelFieldChanges = () => {
@@ -2195,78 +2294,500 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
 
   
 
+  // const handleSaveNewEntry = async () => {
+  //   if (!planId) {
+  //     toast.error("Plan ID is required to save a new entry.", {
+  //       toastId: "no-plan-id",
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+
+  //   // Check for empty ID
+  //   if (!newEntry.id || newEntry.id.trim() === "") {
+  //     toast.error("ID is required to save a new entry.", {
+  //       toastId: "empty-id-error",
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+
+  //   // **NEW VALIDATION: Check if ID is from valid suggestions (not for "Other" type)**
+  //   if (newEntry.idType !== "Other") {
+  //     const isValidEmployeeId = employeeSuggestions.some(
+  //       (emp) => emp.emplId === newEntry.id
+  //     );
+
+  //     if (!isValidEmployeeId) {
+  //       toast.error("Please select a valid employee ID from the suggestions.", {
+  //         toastId: "invalid-employee-selection",
+  //         autoClose: 3000,
+  //       });
+  //       return; // Prevent saving
+  //     }
+  //   }
+
+  //   // **NEW VALIDATION: Check if account is valid**
+  //   // if (newEntry.acctId) {
+  //   //   const validAccounts =
+  //   //     newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee"
+  //   //       ? subContractorNonLaborAccounts.map((a) => a.id || a.accountId)
+  //   //        : newEntry.idType === "Other"  // ADD THIS
+  //   //   ? otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId || "")
+  //   //       : employeeNonLaborAccounts.map((a) => a.id || a.accountId);
+
+  //   //   if (!validAccounts.includes(newEntry.acctId)) {
+  //   //     toast.error("Please select a valid account from the suggestions.", {
+  //   //       toastId: "invalid-account-selection",
+  //   //       autoClose: 3000,
+  //   //     });
+  //   //     return;
+  //   //   }
+  //   // }
+
+  //   // FIXED VALIDATION - Combine ALL accounts for Other type
+  //   if (newEntry.acctId) {
+  //     let validAccounts;
+  //     if (
+  //       newEntry.idType === "Vendor" ||
+  //       newEntry.idType === "Vendor Employee"
+  //     ) {
+  //       validAccounts = subContractorNonLaborAccounts.map(
+  //         (a) => a.id || a.accountId
+  //       );
+  //     } else if (newEntry.idType === "Other") {
+  //       // COMBINE ALL THREE LISTS for Other - THIS WAS MISSING
+  //       validAccounts = [
+  //         ...employeeNonLaborAccounts.map((a) => a.id || a.accountId),
+  //         ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId),
+  //         ...otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId),
+  //       ];
+  //     } else {
+  //       validAccounts = employeeNonLaborAccounts.map(
+  //         (a) => a.id || a.accountId
+  //       );
+  //     }
+
+  //     if (!validAccounts.includes(newEntry.acctId)) {
+  //       toast.error("Please select a valid account from the suggestions.", {
+  //         toastId: "invalid-account-selection",
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     }
+  //   }
+
+  //   //     if (newEntry.acctId) {
+  //   //   const validAccounts =
+  //   //     newEntry.idType === 'Vendor' || newEntry.idType === 'Vendor Employee'
+  //   //       ? subContractorNonLaborAccounts.map(a => a.id || a.accountId)
+  //   //       : newEntry.idType === 'Other'
+  //   //       ? otherDirectCostNonLaborAccounts.map(a => a.id || a.accountId)
+  //   //       : employeeNonLaborAccounts.map(a => a.id || a.accountId);
+
+  //   //   if (!validAccounts.includes(newEntry.acctId)) {
+  //   //     toast.error("Please select a valid account from the suggestions.", {
+  //   //       toastId: 'invalid-account-selection',
+  //   //       autoClose: 3000,
+  //   //     });
+  //   //     return;
+  //   //   }
+  //   // }
+
+  //   // **NEW VALIDATION: Check if organization is valid**
+  //   if (newEntry.orgId) {
+  //     const validOrgs = organizationOptions.map((org) => org.value);
+  //     if (!validOrgs.includes(newEntry.orgId)) {
+  //       toast.error(
+  //         "Please select a valid organization from the suggestions.",
+  //         {
+  //           toastId: "invalid-org-selection",
+  //           autoClose: 3000,
+  //         }
+  //       );
+  //       return;
+  //     }
+  //   }
+
+  //   // Check for duplicate ID
+  //   // const isDuplicateId = employees.some((emp) => {
+  //   //   const emple = emp.emple;
+  //   //   if (!emple) return false;
+  //   //   return emple.emplId === newEntry.id;
+  //   // });
+
+  //   // Check for duplicate ID (Combined ID + Account check)
+  //   const isDuplicateId = employees.some((emp) => {
+  //     const emple = emp.emple;
+  //     if (!emple) return false;
+
+  //     // Only consider it a duplicate if BOTH ID and Account match
+  //     return emple.emplId === newEntry.id && emple.accId === newEntry.acctId;
+  //   });
+
+  //   if (isDuplicateId) {
+  //     toast.error(
+  //       "An entry with this ID already exists; cannot save duplicate.",
+  //       {
+  //         toastId: "duplicate-id-error",
+  //         autoClose: 3000,
+  //       }
+  //     );
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+
+  //   const payloadForecasts = durations.map((duration) => ({
+  //     forecastedamt:
+  //       Number(newEntryPeriodAmounts[`${duration.monthNo}_${duration.year}`]) ||
+  //       0,
+  //     forecastid: 0,
+  //     projId: projectId,
+  //     plId: planId,
+  //     emplId: newEntry.id,
+  //     dctId: 0,
+  //     month: duration.monthNo,
+  //     year: duration.year,
+  //     totalBurdenCost: 0,
+  //     fees: 0,
+  //     burden: 0,
+  //     ccffRevenue: 0,
+  //     tnmRevenue: 0,
+  //     revenue: 0,
+  //     cost: 0,
+  //     fringe: 0,
+  //     overhead: 0,
+  //     gna: 0,
+  //     forecastedhours: 0,
+  //     updatedat: new Date().toISOString().split("T")[0],
+  //     displayText: "",
+  //     acctId: newEntry.acctId,
+  //     orgId: newEntry.orgId,
+  //     hrlyRate: Number(newEntry.perHourRate) || 0,
+  //     effectDt: null,
+  //   }));
+
+  //   const payload = {
+  //     dctId: 0,
+  //     plId: planId,
+  //     acctId: newEntry.acctId || "",
+  //     orgId: newEntry.orgId || "",
+  //     notes: "",
+  //     category:
+  //       newEntry.lastName && newEntry.firstName
+  //         ? `${newEntry.lastName}, ${newEntry.firstName}`
+  //         : newEntry.lastName || newEntry.firstName || "",
+  //     amountType: "",
+  //     id: newEntry.id,
+  //     type: newEntry.idType || "-",
+  //     isRev: newEntry.isRev || false,
+  //     isBrd: newEntry.isBrd || false,
+  //     status: newEntry.status || "-",
+  //     createdBy: "System",
+  //     lastModifiedBy: "System",
+  //     plForecasts: payloadForecasts,
+  //     plDct: {},
+  //   };
+
+  //   try {
+  //     const response = await axios.post(
+  //       `${backendUrl}/DirectCost/AddNewDirectCost`,
+  //       payload,
+  //       { headers: { "Content-Type": "application/json" } }
+  //     );
+
+  //     const newEmployee = {
+  //       emple: {
+  //         empleId: newEntry.id,
+  //         emplId: newEntry.id,
+  //         firstName: newEntry.firstName || "",
+  //         lastName: newEntry.lastName || "",
+  //         accId: newEntry.acctId || "",
+  //         orgId: newEntry.orgId || "",
+  //         perHourRate: Number(newEntry.perHourRate) || 0,
+  //         isRev: newEntry.isRev || false,
+  //         isBrd: newEntry.isBrd || false,
+  //         status: newEntry.status || "Act",
+  //         type: newEntry.idType || "Employee",
+  //         category:
+  //           newEntry.lastName && newEntry.firstName
+  //             ? `${newEntry.lastName}, ${newEntry.firstName}`
+  //             : newEntry.lastName || newEntry.firstName || "",
+  //         plForecasts: payloadForecasts.map((forecast) => ({
+  //           ...forecast,
+  //           forecastid:
+  //             response.data?.plForecasts?.find(
+  //               (f) => f.month === forecast.month && f.year === forecast.year
+  //             )?.forecastid || 0,
+  //           createdat: new Date().toISOString(),
+  //         })),
+  //       },
+  //     };
+
+  //     setEmployees((prevEmployees) => {
+  //       const employeeMap = new Map();
+  //       prevEmployees.forEach((emp) => {
+  //         const emplId = emp.emple.emplId || `auto-${Math.random()}`;
+  //         employeeMap.set(emplId, emp);
+  //       });
+  //       employeeMap.set(newEntry.id, newEmployee);
+  //       return Array.from(employeeMap.values());
+  //     });
+
+  //     setSuccessMessageText("Entry saved successfully!");
+  //     setShowSuccessMessage(true);
+  //     setShowNewForm(false);
+  //     setNewEntry({
+  //       id: "",
+  //       firstName: "",
+  //       lastName: "",
+  //       isRev: false,
+  //       isBrd: false,
+  //       idType: "",
+  //       acctId: "",
+  //       orgId: "",
+  //       perHourRate: "",
+  //       status: "Act",
+  //     });
+  //     setEmployeeSuggestions([]);
+  //     setNonLaborAccounts([]);
+
+  //     if (onSaveSuccess) {
+  //       onSaveSuccess();
+  //     }
+
+  //     toast.success("New entry saved and added to table!", {
+  //       toastId: "save-entry-success",
+  //       autoClose: 3000,
+  //     });
+  //   } catch (err) {
+  //     const errorMessage = err.response?.data?.errors
+  //       ? Object.entries(err.response.data.errors)
+  //           .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+  //           .join("; ")
+  //       : err.response?.data?.message || err.message;
+  //     setSuccessMessageText("Failed to save entry.");
+  //     setShowSuccessMessage(true);
+  //     toast.error(`Failed to save new entry: ${errorMessage}`, {
+  //       toastId: "save-entry-error",
+  //       autoClose: 5000,
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //     setTimeout(() => setShowSuccessMessage(false), 2000);
+  //   }
+  // };
+  
+  // const handleSaveNewEntry = async () => {
+  //   if (!planId) {
+  //     toast.error("Plan ID is required to save a new entry.", {
+  //       toastId: "no-plan-id",
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+
+  //   if (!newEntry.id || newEntry.id.trim() === "") {
+  //     toast.error("ID is required to save a new entry.", {
+  //       toastId: "empty-id-error",
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+
+  //   if (newEntry.idType !== "Other") {
+  //     const isValidEmployeeId = employeeSuggestions.some(
+  //       (emp) => emp.emplId === newEntry.id
+  //     );
+  //     if (!isValidEmployeeId) {
+  //       toast.error("Please select a valid employee ID from the suggestions.", {
+  //         toastId: "invalid-employee-selection",
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     }
+  //   }
+
+  //   if (newEntry.acctId) {
+  //     let validAccounts;
+  //     if (newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") {
+  //       validAccounts = subContractorNonLaborAccounts.map((a) => a.id || a.accountId);
+  //     } else if (newEntry.idType === "Other") {
+  //       validAccounts = [
+  //         ...employeeNonLaborAccounts.map((a) => a.id || a.accountId),
+  //         ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId),
+  //         ...otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId),
+  //       ];
+  //     } else {
+  //       validAccounts = employeeNonLaborAccounts.map((a) => a.id || a.accountId);
+  //     }
+
+  //     if (!validAccounts.includes(newEntry.acctId)) {
+  //       toast.error("Please select a valid account from the suggestions.", {
+  //         toastId: "invalid-account-selection",
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     }
+  //   }
+
+  //   if (newEntry.orgId) {
+  //     const validOrgs = organizationOptions.map((org) => org.value);
+  //     if (!validOrgs.includes(newEntry.orgId)) {
+  //       toast.error("Please select a valid organization from the suggestions.", {
+  //         toastId: "invalid-org-selection",
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     }
+  //   }
+
+  //   const isDuplicateId = employees.some((emp) => {
+  //     const emple = emp.emple;
+  //     if (!emple) return false;
+  //     return emple.emplId === newEntry.id && emple.accId === newEntry.acctId;
+  //   });
+
+  //   if (isDuplicateId) {
+  //     toast.error("An entry with this ID already exists; cannot save duplicate.", {
+  //       toastId: "duplicate-id-error",
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+
+  //   const payloadForecasts = durations.map((duration) => ({
+  //     forecastedamt: Number(newEntryPeriodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
+  //     forecastid: 0,
+  //     projId: projectId,
+  //     plId: planId,
+  //     emplId: newEntry.id,
+  //     dctId: 0,
+  //     month: duration.monthNo,
+  //     year: duration.year,
+  //     totalBurdenCost: 0,
+  //     fees: 0,
+  //     burden: 0,
+  //     ccffRevenue: 0,
+  //     tnmRevenue: 0,
+  //     revenue: 0,
+  //     cost: 0,
+  //     fringe: 0,
+  //     overhead: 0,
+  //     gna: 0,
+  //     forecastedhours: 0,
+  //     updatedat: new Date().toISOString().split("T")[0],
+  //     displayText: "",
+  //     acctId: newEntry.acctId,
+  //     orgId: newEntry.orgId,
+  //     hrlyRate: Number(newEntry.perHourRate) || 0,
+  //     effectDt: null,
+  //   }));
+
+  //   const payload = {
+  //     dctId: 0,
+  //     plId: planId,
+  //     acctId: newEntry.acctId || "",
+  //     orgId: newEntry.orgId || "",
+  //     notes: "",
+  //     category: newEntry.lastName && newEntry.firstName
+  //       ? `${newEntry.lastName}, ${newEntry.firstName}`
+  //       : newEntry.lastName || newEntry.firstName || "",
+  //     amountType: "",
+  //     id: newEntry.id,
+  //     type: newEntry.idType || "-",
+  //     isRev: newEntry.isRev || false,
+  //     isBrd: newEntry.isBrd || false,
+  //     status: newEntry.status || "-",
+  //     createdBy: "System",
+  //     lastModifiedBy: "System",
+  //     plForecasts: payloadForecasts,
+  //     plDct: {},
+  //   };
+
+  //   try {
+  //     // REPLACED: Bulk API with dynamic parameters and Array payload
+  //     const response = await axios.post(
+  //       `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
+  //       [payload],
+  //       { headers: { "Content-Type": "application/json" } }
+  //     );
+
+  //     setSuccessMessageText("Entry saved successfully!");
+  //     setShowSuccessMessage(true);
+  //     setShowNewForm(false);
+      
+  //     // Cleanup logic preserved
+  //     setNewEntry({
+  //       id: "", firstName: "", lastName: "", isRev: false, isBrd: false,
+  //       idType: "", acctId: "", orgId: "", perHourRate: "", status: "Act",
+  //     });
+  //     setEmployeeSuggestions([]);
+  //     setNonLaborAccounts([]);
+
+  //     if (onSaveSuccess) onSaveSuccess();
+
+  //     toast.success("New entry saved and added to table!", {
+  //       toastId: "save-entry-success",
+  //       autoClose: 3000,
+  //     });
+  //   } catch (err) {
+  //     const errorMessage = err.response?.data?.message || err.message;
+  //     toast.error(`Failed to save new entry: ${errorMessage}`, {
+  //       toastId: "save-entry-error",
+  //       autoClose: 5000,
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //     setTimeout(() => setShowSuccessMessage(false), 2000);
+  //   }
+  // };
+
   const handleSaveNewEntry = async () => {
     if (!planId) {
       toast.error("Plan ID is required to save a new entry.", {
         toastId: "no-plan-id",
         autoClose: 3000,
       });
-      return;
+      return false;
     }
 
-    // Check for empty ID
     if (!newEntry.id || newEntry.id.trim() === "") {
       toast.error("ID is required to save a new entry.", {
         toastId: "empty-id-error",
         autoClose: 3000,
       });
-      return;
+      return false;
     }
 
-    // **NEW VALIDATION: Check if ID is from valid suggestions (not for "Other" type)**
     if (newEntry.idType !== "Other") {
       const isValidEmployeeId = employeeSuggestions.some(
         (emp) => emp.emplId === newEntry.id
       );
-
       if (!isValidEmployeeId) {
         toast.error("Please select a valid employee ID from the suggestions.", {
           toastId: "invalid-employee-selection",
           autoClose: 3000,
         });
-        return; // Prevent saving
+        return false;
       }
     }
 
-    // **NEW VALIDATION: Check if account is valid**
-    // if (newEntry.acctId) {
-    //   const validAccounts =
-    //     newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee"
-    //       ? subContractorNonLaborAccounts.map((a) => a.id || a.accountId)
-    //        : newEntry.idType === "Other"  // ADD THIS
-    //   ? otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId || "")
-    //       : employeeNonLaborAccounts.map((a) => a.id || a.accountId);
-
-    //   if (!validAccounts.includes(newEntry.acctId)) {
-    //     toast.error("Please select a valid account from the suggestions.", {
-    //       toastId: "invalid-account-selection",
-    //       autoClose: 3000,
-    //     });
-    //     return;
-    //   }
-    // }
-
-    // FIXED VALIDATION - Combine ALL accounts for Other type
     if (newEntry.acctId) {
       let validAccounts;
-      if (
-        newEntry.idType === "Vendor" ||
-        newEntry.idType === "Vendor Employee"
-      ) {
-        validAccounts = subContractorNonLaborAccounts.map(
-          (a) => a.id || a.accountId
-        );
+      if (newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") {
+        validAccounts = subContractorNonLaborAccounts.map((a) => a.id || a.accountId);
       } else if (newEntry.idType === "Other") {
-        // COMBINE ALL THREE LISTS for Other - THIS WAS MISSING
         validAccounts = [
           ...employeeNonLaborAccounts.map((a) => a.id || a.accountId),
           ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId),
           ...otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId),
         ];
       } else {
-        validAccounts = employeeNonLaborAccounts.map(
-          (a) => a.id || a.accountId
-        );
+        validAccounts = employeeNonLaborAccounts.map((a) => a.id || a.accountId);
       }
 
       if (!validAccounts.includes(newEntry.acctId)) {
@@ -2274,75 +2795,39 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
           toastId: "invalid-account-selection",
           autoClose: 3000,
         });
-        return;
+        return false;
       }
     }
 
-    //     if (newEntry.acctId) {
-    //   const validAccounts =
-    //     newEntry.idType === 'Vendor' || newEntry.idType === 'Vendor Employee'
-    //       ? subContractorNonLaborAccounts.map(a => a.id || a.accountId)
-    //       : newEntry.idType === 'Other'
-    //       ? otherDirectCostNonLaborAccounts.map(a => a.id || a.accountId)
-    //       : employeeNonLaborAccounts.map(a => a.id || a.accountId);
-
-    //   if (!validAccounts.includes(newEntry.acctId)) {
-    //     toast.error("Please select a valid account from the suggestions.", {
-    //       toastId: 'invalid-account-selection',
-    //       autoClose: 3000,
-    //     });
-    //     return;
-    //   }
-    // }
-
-    // **NEW VALIDATION: Check if organization is valid**
     if (newEntry.orgId) {
       const validOrgs = organizationOptions.map((org) => org.value);
       if (!validOrgs.includes(newEntry.orgId)) {
-        toast.error(
-          "Please select a valid organization from the suggestions.",
-          {
-            toastId: "invalid-org-selection",
-            autoClose: 3000,
-          }
-        );
-        return;
+        toast.error("Please select a valid organization from the suggestions.", {
+          toastId: "invalid-org-selection",
+          autoClose: 3000,
+        });
+        return false;
       }
     }
 
-    // Check for duplicate ID
-    // const isDuplicateId = employees.some((emp) => {
-    //   const emple = emp.emple;
-    //   if (!emple) return false;
-    //   return emple.emplId === newEntry.id;
-    // });
-
-    // Check for duplicate ID (Combined ID + Account check)
     const isDuplicateId = employees.some((emp) => {
       const emple = emp.emple;
       if (!emple) return false;
-
-      // Only consider it a duplicate if BOTH ID and Account match
       return emple.emplId === newEntry.id && emple.accId === newEntry.acctId;
     });
 
     if (isDuplicateId) {
-      toast.error(
-        "An entry with this ID already exists; cannot save duplicate.",
-        {
-          toastId: "duplicate-id-error",
-          autoClose: 3000,
-        }
-      );
-      return;
+      toast.error("An entry with this ID already exists; cannot save duplicate.", {
+        toastId: "duplicate-id-error",
+        autoClose: 3000,
+      });
+      return false;
     }
 
     setIsLoading(true);
 
     const payloadForecasts = durations.map((duration) => ({
-      forecastedamt:
-        Number(newEntryPeriodAmounts[`${duration.monthNo}_${duration.year}`]) ||
-        0,
+      forecastedamt: Number(newEntryPeriodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
       forecastid: 0,
       projId: projectId,
       plId: planId,
@@ -2375,10 +2860,9 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
       acctId: newEntry.acctId || "",
       orgId: newEntry.orgId || "",
       notes: "",
-      category:
-        newEntry.lastName && newEntry.firstName
-          ? `${newEntry.lastName}, ${newEntry.firstName}`
-          : newEntry.lastName || newEntry.firstName || "",
+      category: newEntry.lastName && newEntry.firstName
+        ? `${newEntry.lastName}, ${newEntry.firstName}`
+        : newEntry.lastName || newEntry.firstName || "",
       amountType: "",
       id: newEntry.id,
       type: newEntry.idType || "-",
@@ -2392,91 +2876,18 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
     };
 
     try {
-      const response = await axios.post(
-        `${backendUrl}/DirectCost/AddNewDirectCost`,
-        payload,
+      await axios.post(
+        `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
+        [payload],
         { headers: { "Content-Type": "application/json" } }
       );
-
-      const newEmployee = {
-        emple: {
-          empleId: newEntry.id,
-          emplId: newEntry.id,
-          firstName: newEntry.firstName || "",
-          lastName: newEntry.lastName || "",
-          accId: newEntry.acctId || "",
-          orgId: newEntry.orgId || "",
-          perHourRate: Number(newEntry.perHourRate) || 0,
-          isRev: newEntry.isRev || false,
-          isBrd: newEntry.isBrd || false,
-          status: newEntry.status || "Act",
-          type: newEntry.idType || "Employee",
-          category:
-            newEntry.lastName && newEntry.firstName
-              ? `${newEntry.lastName}, ${newEntry.firstName}`
-              : newEntry.lastName || newEntry.firstName || "",
-          plForecasts: payloadForecasts.map((forecast) => ({
-            ...forecast,
-            forecastid:
-              response.data?.plForecasts?.find(
-                (f) => f.month === forecast.month && f.year === forecast.year
-              )?.forecastid || 0,
-            createdat: new Date().toISOString(),
-          })),
-        },
-      };
-
-      setEmployees((prevEmployees) => {
-        const employeeMap = new Map();
-        prevEmployees.forEach((emp) => {
-          const emplId = emp.emple.emplId || `auto-${Math.random()}`;
-          employeeMap.set(emplId, emp);
-        });
-        employeeMap.set(newEntry.id, newEmployee);
-        return Array.from(employeeMap.values());
-      });
-
-      setSuccessMessageText("Entry saved successfully!");
-      setShowSuccessMessage(true);
-      setShowNewForm(false);
-      setNewEntry({
-        id: "",
-        firstName: "",
-        lastName: "",
-        isRev: false,
-        isBrd: false,
-        idType: "",
-        acctId: "",
-        orgId: "",
-        perHourRate: "",
-        status: "Act",
-      });
-      setEmployeeSuggestions([]);
-      setNonLaborAccounts([]);
-
-      if (onSaveSuccess) {
-        onSaveSuccess();
-      }
-
-      toast.success("New entry saved and added to table!", {
-        toastId: "save-entry-success",
-        autoClose: 3000,
-      });
+      return true; // SUCCESS
     } catch (err) {
-      const errorMessage = err.response?.data?.errors
-        ? Object.entries(err.response.data.errors)
-            .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-            .join("; ")
-        : err.response?.data?.message || err.message;
-      setSuccessMessageText("Failed to save entry.");
-      setShowSuccessMessage(true);
-      toast.error(`Failed to save new entry: ${errorMessage}`, {
-        toastId: "save-entry-error",
-        autoClose: 5000,
-      });
+      const errorMessage = err.response?.data?.message || err.message;
+      toast.error(`Failed to save entry: ${errorMessage}`);
+      return false; // FAILED
     } finally {
       setIsLoading(false);
-      setTimeout(() => setShowSuccessMessage(false), 2000);
     }
   };
 
@@ -2531,343 +2942,561 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
     organizationOptions,
   ]);
 
+  // const handleSaveMultiplePastedEntries = async () => {
+  //   if (newEntries.length === 0) {
+  //     toast.info("No pasted entries to save", { autoClose: 2000 });
+  //     return;
+  //   }
+
+  //   if (!planId) {
+  //     toast.error("Plan ID is required to save entries.", {
+  //       toastId: "no-plan-id",
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   let successCount = 0;
+  //   let errorCount = 0;
+  //   const errors = [];
+  //   const successfulIndices = []; // Track which entries were saved successfully
+
+  //   try {
+  //     // Loop through each pasted entry
+  //     for (let entryIndex = 0; entryIndex < newEntries.length; entryIndex++) {
+  //       const entry = newEntries[entryIndex];
+  //       const periodAmounts = newEntryPeriodAmountsArray[entryIndex] || {};
+
+  //       // SAME VALIDATION AS handleSaveNewEntry
+  //       // 1. Check for empty ID
+  //       if (!entry.id || entry.id.trim() === "") {
+  //         errors.push(`Entry ${entryIndex + 1}: ID is required`);
+  //         errorCount++;
+  //         continue;
+  //       }
+
+  //       // 2. Check for valid employee ID (not for "Other" type)
+  //       if (entry.idType !== "Other") {
+  //         const isValidEmployeeId = (
+  //           pastedEntrySuggestions[entryIndex] || []
+  //         ).some((emp) => emp.emplId === entry.id);
+  //         if (!isValidEmployeeId) {
+  //           errors.push(
+  //             `Entry ${entryIndex + 1}: Invalid employee ID "${entry.id}"`
+  //           );
+  //           errorCount++;
+  //           continue;
+  //         }
+  //       }
+
+  //       // 3. Check for valid account
+  //       // if (entry.acctId) {
+  //       //   const validAccounts =
+  //       //     entry.idType === "Vendor" || entry.idType === "Vendor Employee"
+  //       //       ? (pastedEntryAccounts[entryIndex] || []).map(
+  //       //           (a) => a.id || a.accountId
+  //       //         )
+  //       //       : (pastedEntryAccounts[entryIndex] || []).map(
+  //       //           (a) => a.id || a.accountId
+  //       //         );
+
+  //       //   if (!validAccounts.includes(entry.acctId)) {
+  //       //     errors.push(
+  //       //       `Entry ${entryIndex + 1}: Invalid account "${entry.acctId}"`
+  //       //     );
+  //       //     errorCount++;
+  //       //     continue;
+  //       //   }
+  //       // }
+
+  //       // 3. Check for valid account - FIXED for Other type
+  //       if (entry.acctId) {
+  //         let validAccounts;
+  //         if (entry.idType === "Vendor" || entry.idType === "Vendor Employee") {
+  //           validAccounts = pastedEntryAccounts[entryIndex].map(
+  //             (a) => a.id || a.accountId
+  //           );
+  //         } else if (entry.idType === "Other") {
+  //           // ✅ COMBINE ALL accounts for Other (same as new entry form)
+  //           validAccounts = [
+  //             ...employeeNonLaborAccounts.map((a) => a.id || a.accountId),
+  //             ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId),
+  //             ...otherDirectCostNonLaborAccounts.map(
+  //               (a) => a.id || a.accountId
+  //             ),
+  //           ];
+  //         } else {
+  //           validAccounts = pastedEntryAccounts[entryIndex].map(
+  //             (a) => a.id || a.accountId
+  //           );
+  //         }
+
+  //         if (!validAccounts.includes(entry.acctId)) {
+  //           errors.push(
+  //             `Entry ${entryIndex + 1}: Invalid account ${entry.acctId}`
+  //           );
+  //           errorCount++;
+  //           continue;
+  //         }
+  //       }
+
+  //       // 4. Check for valid organization
+  //       if (entry.orgId) {
+  //         const validOrgs = (pastedEntryOrgs[entryIndex] || []).map(
+  //           (org) => org.value
+  //         );
+  //         if (!validOrgs.includes(entry.orgId)) {
+  //           errors.push(
+  //             `Entry ${entryIndex + 1}: Invalid organization "${entry.orgId}"`
+  //           );
+  //           errorCount++;
+  //           continue;
+  //         }
+  //       }
+
+  //       // Check for duplicate ID (Combined ID + Account check)
+  //       const isDuplicateId = employees.some((emp) => {
+  //         const emple = emp.emple;
+  //         if (!emple) return false;
+
+  //         // Only consider it a duplicate if BOTH ID and Account match
+  //         return emple.emplId === entry.id && emple.accId === entry.acctId;
+  //       });
+
+  //       if (isDuplicateId) {
+  //         errors.push(
+  //           `Entry ${entryIndex + 1}: ID "${entry.id}" with Account "${
+  //             entry.acctId
+  //           }" already exists in table`
+  //         );
+  //         errorCount++;
+  //         continue;
+  //       }
+
+  //       // const isDuplicateId = employees.some((emp) => {
+  //       //   const emple = emp.emple;
+  //       //   if (!emple) return false;
+  //       //   return emple.emplId === entry.id;
+  //       // });
+
+  //       // if (isDuplicateId) {
+  //       //   errors.push(
+  //       //     `Entry ${entryIndex + 1}: ID "${entry.id}" already exists in table`
+  //       //   );
+  //       //   errorCount++;
+  //       //   continue;
+  //       // }
+
+  //       // SAME PAYLOAD STRUCTURE AS handleSaveNewEntry
+  //       const payloadForecasts = durations.map((duration) => ({
+  //         forecastedamt:
+  //           Number(periodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
+  //         forecastid: 0,
+  //         projId: projectId,
+  //         plId: planId,
+  //         emplId: entry.id,
+  //         dctId: 0,
+  //         month: duration.monthNo,
+  //         year: duration.year,
+  //         totalBurdenCost: 0,
+  //         fees: 0,
+  //         burden: 0,
+  //         ccffRevenue: 0,
+  //         tnmRevenue: 0,
+  //         revenue: 0,
+  //         cost: 0,
+  //         fringe: 0,
+  //         overhead: 0,
+  //         gna: 0,
+  //         forecastedhours: 0,
+  //         updatedat: new Date().toISOString().split("T")[0],
+  //         displayText: "",
+  //         acctId: entry.acctId,
+  //         orgId: entry.orgId,
+  //         hrlyRate: 0,
+  //         effectDt: null,
+  //       }));
+
+  //       const payload = {
+  //         dctId: 0,
+  //         plId: planId,
+  //         acctId: entry.acctId || "",
+  //         orgId: entry.orgId || "",
+  //         notes: "",
+  //         category:
+  //           entry.lastName && entry.firstName
+  //             ? `${entry.lastName}, ${entry.firstName}`
+  //             : entry.lastName || entry.firstName || "",
+  //         amountType: "",
+  //         id: entry.id,
+  //         type: entry.idType || "Employee",
+  //         isRev: entry.isRev || false,
+  //         isBrd: entry.isBrd || false,
+  //         status: entry.status || "Act",
+  //         createdBy: "System",
+  //         lastModifiedBy: "System",
+  //         plForecasts: payloadForecasts,
+  //         plDct: "",
+  //       };
+
+  //       // SAME API CALL AS handleSaveNewEntry
+  //       try {
+  //         const response = await axios.post(
+  //           `${backendUrl}/DirectCost/AddNewDirectCost`,
+  //           payload,
+  //           {
+  //             headers: { "Content-Type": "application/json" },
+  //           }
+  //         );
+
+  //         // Add to local state
+  //         const newEmployee = {
+  //           emple: {
+  //             empleId: entry.id,
+  //             emplId: entry.id,
+  //             firstName: entry.firstName || "",
+  //             lastName: entry.lastName || "",
+  //             accId: entry.acctId || "",
+  //             orgId: entry.orgId || "",
+  //             perHourRate: 0,
+  //             isRev: entry.isRev || false,
+  //             isBrd: entry.isBrd || false,
+  //             status: entry.status || "Act",
+  //             type: entry.idType || "Employee",
+  //             category:
+  //               entry.lastName && entry.firstName
+  //                 ? `${entry.lastName}, ${entry.firstName}`
+  //                 : entry.lastName || entry.firstName || "",
+  //             plForecasts: payloadForecasts.map((forecast) => ({
+  //               ...forecast,
+  //               forecastid:
+  //                 response.data?.plForecasts?.find(
+  //                   (f) =>
+  //                     f.month === forecast.month && f.year === forecast.year
+  //                 )?.forecastid || 0,
+  //               createdat: new Date().toISOString(),
+  //             })),
+  //           },
+  //         };
+
+  //         setEmployees((prevEmployees) => {
+  //           const employeeMap = new Map();
+  //           prevEmployees.forEach((emp) => {
+  //             const emplId = emp.emple.emplId || `auto-${Math.random()}`;
+  //             employeeMap.set(emplId, emp);
+  //           });
+  //           employeeMap.set(entry.id, newEmployee);
+  //           return Array.from(employeeMap.values());
+  //         });
+
+  //         successCount++;
+  //         successfulIndices.push(entryIndex); // Mark this entry as successfully saved
+  //       } catch (err) {
+  //         const errorMessage = err.response?.data?.message || err.message;
+  //         errors.push(`Entry ${entryIndex + 1}: ${errorMessage}`);
+  //         errorCount++;
+  //       }
+  //     }
+
+  //     // ONLY REMOVE SUCCESSFULLY SAVED ENTRIES
+  //     if (successfulIndices.length > 0) {
+  //       setNewEntries((prev) =>
+  //         prev.filter((_, idx) => !successfulIndices.includes(idx))
+  //       );
+  //       setNewEntryPeriodAmountsArray((prev) =>
+  //         prev.filter((_, idx) => !successfulIndices.includes(idx))
+  //       );
+
+  //       // Also clean up suggestions for removed entries
+  //       setPastedEntrySuggestions((prev) => {
+  //         const updated = { ...prev };
+  //         successfulIndices.forEach((idx) => delete updated[idx]);
+  //         // Re-index remaining entries
+  //         const reindexed = {};
+  //         Object.keys(updated).forEach((key) => {
+  //           const oldIdx = parseInt(key);
+  //           const newIdx =
+  //             oldIdx - successfulIndices.filter((si) => si < oldIdx).length;
+  //           reindexed[newIdx] = updated[key];
+  //         });
+  //         return reindexed;
+  //       });
+
+  //       setPastedEntryAccounts((prev) => {
+  //         const updated = { ...prev };
+  //         successfulIndices.forEach((idx) => delete updated[idx]);
+  //         const reindexed = {};
+  //         Object.keys(updated).forEach((key) => {
+  //           const oldIdx = parseInt(key);
+  //           const newIdx =
+  //             oldIdx - successfulIndices.filter((si) => si < oldIdx).length;
+  //           reindexed[newIdx] = updated[key];
+  //         });
+  //         return reindexed;
+  //       });
+
+  //       setPastedEntryOrgs((prev) => {
+  //         const updated = { ...prev };
+  //         successfulIndices.forEach((idx) => delete updated[idx]);
+  //         const reindexed = {};
+  //         Object.keys(updated).forEach((key) => {
+  //           const oldIdx = parseInt(key);
+  //           const newIdx =
+  //             oldIdx - successfulIndices.filter((si) => si < oldIdx).length;
+  //           reindexed[newIdx] = updated[key];
+  //         });
+  //         return reindexed;
+  //       });
+  //     }
+
+  //     // Show results
+  //     if (successCount > 0) {
+  //       toast.success(`Successfully saved ${successCount} entries!`, {
+  //         autoClose: 3000,
+  //       });
+  //       if (onSaveSuccess) {
+  //         onSaveSuccess();
+  //       }
+  //     }
+
+  //     if (errorCount > 0) {
+  //       toast.error(
+  //         `Failed to save ${errorCount} entries:\n${errors
+  //           .slice(0, 3)
+  //           .join("\n")}${
+  //           errors.length > 3 ? `\n...and ${errors.length - 3} more` : ""
+  //         }`,
+  //         { toastId: "save-pasted-error", autoClose: 5000 }
+  //       );
+  //     }
+  //   } catch (err) {
+  //     toast.error(`Failed to save pasted entries: ${err.message}`, {
+  //       toastId: "save-pasted-error",
+  //       autoClose: 3000,
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  
+  // const handleSaveMultiplePastedEntries = async () => {
+  //   if (newEntries.length === 0) {
+  //     toast.info("No pasted entries to save", { autoClose: 2000 });
+  //     return;
+  //   }
+
+  //   if (!planId) {
+  //     toast.error("Plan ID is required to save entries.", {
+  //       toastId: "no-plan-id",
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   let validationFailed = false;
+  //   const bulkPayload = [];
+
+  //   try {
+  //     for (let i = 0; i < newEntries.length; i++) {
+  //       const entry = newEntries[i];
+  //       const periodAmounts = newEntryPeriodAmountsArray[i] || {};
+
+  //       // 1. Basic ID Check
+  //       if (!entry.id || entry.id.trim() === "") {
+  //         toast.error(`Entry ${i + 1}: ID is required`);
+  //         validationFailed = true; break;
+  //       }
+
+  //       // 2. Duplicate Check
+  //       const isDuplicateId = employees.some((emp) => {
+  //         const emple = emp.emple;
+  //         if (!emple) return false;
+  //         return emple.emplId === entry.id && emple.accId === entry.acctId;
+  //       });
+
+  //       if (isDuplicateId) {
+  //         toast.error(`Entry ${i + 1}: ID "${entry.id}" with this Account already exists.`);
+  //         validationFailed = true; break;
+  //       }
+
+  //       // 3. Construct Forecasts for this entry
+  //       const payloadForecasts = durations.map((duration) => ({
+  //         forecastedamt: Number(periodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
+  //         forecastid: 0,
+  //         projId: projectId,
+  //         plId: planId,
+  //         emplId: entry.id,
+  //         dctId: 0,
+  //         month: duration.monthNo,
+  //         year: duration.year,
+  //         totalBurdenCost: 0,
+  //         fees: 0,
+  //         burden: 0,
+  //         ccffRevenue: 0,
+  //         tnmRevenue: 0,
+  //         revenue: 0,
+  //         cost: 0,
+  //         fringe: 0,
+  //         overhead: 0,
+  //         gna: 0,
+  //         forecastedhours: 0,
+  //         updatedat: new Date().toISOString().split("T")[0],
+  //         displayText: "",
+  //         acctId: entry.acctId,
+  //         orgId: entry.orgId,
+  //         hrlyRate: 0,
+  //         effectDt: null,
+  //       }));
+
+  //       bulkPayload.push({
+  //         dctId: 0,
+  //         plId: planId,
+  //         acctId: entry.acctId || "",
+  //         orgId: entry.orgId || "",
+  //         notes: "",
+  //         category: entry.lastName && entry.firstName
+  //           ? `${entry.lastName}, ${entry.firstName}`
+  //           : entry.lastName || entry.firstName || "",
+  //         amountType: "",
+  //         id: entry.id,
+  //         type: entry.idType || "-",
+  //         isRev: entry.isRev || false,
+  //         isBrd: entry.isBrd || false,
+  //         status: entry.status || "Act",
+  //         createdBy: "System",
+  //         lastModifiedBy: "System",
+  //         plForecasts: payloadForecasts,
+  //         plDct: {},
+  //       });
+  //     }
+
+  //     if (!validationFailed && bulkPayload.length > 0) {
+  //       // REPLACED: Bulk API Call
+  //       await axios.post(
+  //         `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
+  //         bulkPayload,
+  //         { headers: { "Content-Type": "application/json" } }
+  //       );
+
+  //       toast.success(`Successfully saved ${bulkPayload.length} entries!`);
+  //       setNewEntries([]);
+  //       setNewEntryPeriodAmountsArray([]);
+  //       setShowNewForm(false);
+  //       if (onSaveSuccess) onSaveSuccess();
+  //     }
+
+  //   } catch (err) {
+  //     toast.error(`Failed to save entries: ${err.response?.data?.message || err.message}`);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  
   const handleSaveMultiplePastedEntries = async () => {
-    if (newEntries.length === 0) {
-      toast.info("No pasted entries to save", { autoClose: 2000 });
-      return;
-    }
+  if (newEntries.length === 0) return true;
 
-    if (!planId) {
-      toast.error("Plan ID is required to save entries.", {
-        toastId: "no-plan-id",
-        autoClose: 3000,
+  if (!planId) {
+    toast.error("Plan ID is required to save entries.");
+    return false;
+  }
+
+  setIsLoading(true);
+  let validationFailed = false;
+  const bulkPayload = [];
+
+  try {
+    for (let i = 0; i < newEntries.length; i++) {
+      const entry = newEntries[i];
+      const periodAmounts = newEntryPeriodAmountsArray[i] || {};
+
+      // 1. Basic ID Check
+      if (!entry.id || entry.id.trim() === "") {
+        toast.error(`ID is required for all entries.`);
+        validationFailed = true; break;
+      }
+
+      // 2. Duplicate Check
+      const isDuplicateId = employees.some((emp) => {
+        const emple = emp.emple;
+        if (!emple) return false;
+        return emple.emplId === entry.id && emple.accId === entry.acctId;
       });
-      return;
-    }
 
-    setIsLoading(true);
-    let successCount = 0;
-    let errorCount = 0;
-    const errors = [];
-    const successfulIndices = []; // Track which entries were saved successfully
-
-    try {
-      // Loop through each pasted entry
-      for (let entryIndex = 0; entryIndex < newEntries.length; entryIndex++) {
-        const entry = newEntries[entryIndex];
-        const periodAmounts = newEntryPeriodAmountsArray[entryIndex] || {};
-
-        // SAME VALIDATION AS handleSaveNewEntry
-        // 1. Check for empty ID
-        if (!entry.id || entry.id.trim() === "") {
-          errors.push(`Entry ${entryIndex + 1}: ID is required`);
-          errorCount++;
-          continue;
-        }
-
-        // 2. Check for valid employee ID (not for "Other" type)
-        if (entry.idType !== "Other") {
-          const isValidEmployeeId = (
-            pastedEntrySuggestions[entryIndex] || []
-          ).some((emp) => emp.emplId === entry.id);
-          if (!isValidEmployeeId) {
-            errors.push(
-              `Entry ${entryIndex + 1}: Invalid employee ID "${entry.id}"`
-            );
-            errorCount++;
-            continue;
-          }
-        }
-
-        // 3. Check for valid account
-        // if (entry.acctId) {
-        //   const validAccounts =
-        //     entry.idType === "Vendor" || entry.idType === "Vendor Employee"
-        //       ? (pastedEntryAccounts[entryIndex] || []).map(
-        //           (a) => a.id || a.accountId
-        //         )
-        //       : (pastedEntryAccounts[entryIndex] || []).map(
-        //           (a) => a.id || a.accountId
-        //         );
-
-        //   if (!validAccounts.includes(entry.acctId)) {
-        //     errors.push(
-        //       `Entry ${entryIndex + 1}: Invalid account "${entry.acctId}"`
-        //     );
-        //     errorCount++;
-        //     continue;
-        //   }
-        // }
-
-        // 3. Check for valid account - FIXED for Other type
-        if (entry.acctId) {
-          let validAccounts;
-          if (entry.idType === "Vendor" || entry.idType === "Vendor Employee") {
-            validAccounts = pastedEntryAccounts[entryIndex].map(
-              (a) => a.id || a.accountId
-            );
-          } else if (entry.idType === "Other") {
-            // ✅ COMBINE ALL accounts for Other (same as new entry form)
-            validAccounts = [
-              ...employeeNonLaborAccounts.map((a) => a.id || a.accountId),
-              ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId),
-              ...otherDirectCostNonLaborAccounts.map(
-                (a) => a.id || a.accountId
-              ),
-            ];
-          } else {
-            validAccounts = pastedEntryAccounts[entryIndex].map(
-              (a) => a.id || a.accountId
-            );
-          }
-
-          if (!validAccounts.includes(entry.acctId)) {
-            errors.push(
-              `Entry ${entryIndex + 1}: Invalid account ${entry.acctId}`
-            );
-            errorCount++;
-            continue;
-          }
-        }
-
-        // 4. Check for valid organization
-        if (entry.orgId) {
-          const validOrgs = (pastedEntryOrgs[entryIndex] || []).map(
-            (org) => org.value
-          );
-          if (!validOrgs.includes(entry.orgId)) {
-            errors.push(
-              `Entry ${entryIndex + 1}: Invalid organization "${entry.orgId}"`
-            );
-            errorCount++;
-            continue;
-          }
-        }
-
-        // Check for duplicate ID (Combined ID + Account check)
-        const isDuplicateId = employees.some((emp) => {
-          const emple = emp.emple;
-          if (!emple) return false;
-
-          // Only consider it a duplicate if BOTH ID and Account match
-          return emple.emplId === entry.id && emple.accId === entry.acctId;
-        });
-
-        if (isDuplicateId) {
-          errors.push(
-            `Entry ${entryIndex + 1}: ID "${entry.id}" with Account "${
-              entry.acctId
-            }" already exists in table`
-          );
-          errorCount++;
-          continue;
-        }
-
-        // const isDuplicateId = employees.some((emp) => {
-        //   const emple = emp.emple;
-        //   if (!emple) return false;
-        //   return emple.emplId === entry.id;
-        // });
-
-        // if (isDuplicateId) {
-        //   errors.push(
-        //     `Entry ${entryIndex + 1}: ID "${entry.id}" already exists in table`
-        //   );
-        //   errorCount++;
-        //   continue;
-        // }
-
-        // SAME PAYLOAD STRUCTURE AS handleSaveNewEntry
-        const payloadForecasts = durations.map((duration) => ({
-          forecastedamt:
-            Number(periodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
-          forecastid: 0,
-          projId: projectId,
-          plId: planId,
-          emplId: entry.id,
-          dctId: 0,
-          month: duration.monthNo,
-          year: duration.year,
-          totalBurdenCost: 0,
-          fees: 0,
-          burden: 0,
-          ccffRevenue: 0,
-          tnmRevenue: 0,
-          revenue: 0,
-          cost: 0,
-          fringe: 0,
-          overhead: 0,
-          gna: 0,
-          forecastedhours: 0,
-          updatedat: new Date().toISOString().split("T")[0],
-          displayText: "",
-          acctId: entry.acctId,
-          orgId: entry.orgId,
-          hrlyRate: 0,
-          effectDt: null,
-        }));
-
-        const payload = {
-          dctId: 0,
-          plId: planId,
-          acctId: entry.acctId || "",
-          orgId: entry.orgId || "",
-          notes: "",
-          category:
-            entry.lastName && entry.firstName
-              ? `${entry.lastName}, ${entry.firstName}`
-              : entry.lastName || entry.firstName || "",
-          amountType: "",
-          id: entry.id,
-          type: entry.idType || "Employee",
-          isRev: entry.isRev || false,
-          isBrd: entry.isBrd || false,
-          status: entry.status || "Act",
-          createdBy: "System",
-          lastModifiedBy: "System",
-          plForecasts: payloadForecasts,
-          plDct: "",
-        };
-
-        // SAME API CALL AS handleSaveNewEntry
-        try {
-          const response = await axios.post(
-            `${backendUrl}/DirectCost/AddNewDirectCost`,
-            payload,
-            {
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-
-          // Add to local state
-          const newEmployee = {
-            emple: {
-              empleId: entry.id,
-              emplId: entry.id,
-              firstName: entry.firstName || "",
-              lastName: entry.lastName || "",
-              accId: entry.acctId || "",
-              orgId: entry.orgId || "",
-              perHourRate: 0,
-              isRev: entry.isRev || false,
-              isBrd: entry.isBrd || false,
-              status: entry.status || "Act",
-              type: entry.idType || "Employee",
-              category:
-                entry.lastName && entry.firstName
-                  ? `${entry.lastName}, ${entry.firstName}`
-                  : entry.lastName || entry.firstName || "",
-              plForecasts: payloadForecasts.map((forecast) => ({
-                ...forecast,
-                forecastid:
-                  response.data?.plForecasts?.find(
-                    (f) =>
-                      f.month === forecast.month && f.year === forecast.year
-                  )?.forecastid || 0,
-                createdat: new Date().toISOString(),
-              })),
-            },
-          };
-
-          setEmployees((prevEmployees) => {
-            const employeeMap = new Map();
-            prevEmployees.forEach((emp) => {
-              const emplId = emp.emple.emplId || `auto-${Math.random()}`;
-              employeeMap.set(emplId, emp);
-            });
-            employeeMap.set(entry.id, newEmployee);
-            return Array.from(employeeMap.values());
-          });
-
-          successCount++;
-          successfulIndices.push(entryIndex); // Mark this entry as successfully saved
-        } catch (err) {
-          const errorMessage = err.response?.data?.message || err.message;
-          errors.push(`Entry ${entryIndex + 1}: ${errorMessage}`);
-          errorCount++;
-        }
+      if (isDuplicateId) {
+        toast.error(`Duplicate entry: ID with this Account already exists.`);
+        validationFailed = true; break;
       }
 
-      // ONLY REMOVE SUCCESSFULLY SAVED ENTRIES
-      if (successfulIndices.length > 0) {
-        setNewEntries((prev) =>
-          prev.filter((_, idx) => !successfulIndices.includes(idx))
-        );
-        setNewEntryPeriodAmountsArray((prev) =>
-          prev.filter((_, idx) => !successfulIndices.includes(idx))
-        );
-
-        // Also clean up suggestions for removed entries
-        setPastedEntrySuggestions((prev) => {
-          const updated = { ...prev };
-          successfulIndices.forEach((idx) => delete updated[idx]);
-          // Re-index remaining entries
-          const reindexed = {};
-          Object.keys(updated).forEach((key) => {
-            const oldIdx = parseInt(key);
-            const newIdx =
-              oldIdx - successfulIndices.filter((si) => si < oldIdx).length;
-            reindexed[newIdx] = updated[key];
-          });
-          return reindexed;
-        });
-
-        setPastedEntryAccounts((prev) => {
-          const updated = { ...prev };
-          successfulIndices.forEach((idx) => delete updated[idx]);
-          const reindexed = {};
-          Object.keys(updated).forEach((key) => {
-            const oldIdx = parseInt(key);
-            const newIdx =
-              oldIdx - successfulIndices.filter((si) => si < oldIdx).length;
-            reindexed[newIdx] = updated[key];
-          });
-          return reindexed;
-        });
-
-        setPastedEntryOrgs((prev) => {
-          const updated = { ...prev };
-          successfulIndices.forEach((idx) => delete updated[idx]);
-          const reindexed = {};
-          Object.keys(updated).forEach((key) => {
-            const oldIdx = parseInt(key);
-            const newIdx =
-              oldIdx - successfulIndices.filter((si) => si < oldIdx).length;
-            reindexed[newIdx] = updated[key];
-          });
-          return reindexed;
-        });
+      // 3. Account Validation (Ensure suggestions are loaded and valid)
+      const validAccountsForThisEntry = pastedEntryAccounts[i] || [];
+      if (entry.acctId && validAccountsForThisEntry.length > 0) {
+          const isValidAcc = validAccountsForThisEntry.some(acc => (acc.id || acc.accountId) === entry.acctId);
+          if (!isValidAcc) {
+              toast.error(`Invalid account ${entry.acctId} for entry ${entry.id}`);
+              validationFailed = true; break;
+          }
       }
 
-      // Show results
-      if (successCount > 0) {
-        toast.success(`Successfully saved ${successCount} entries!`, {
-          autoClose: 3000,
-        });
-        if (onSaveSuccess) {
-          onSaveSuccess();
-        }
-      }
+      const payloadForecasts = durations.map((duration) => ({
+        forecastedamt: Number(periodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
+        forecastid: 0,
+        projId: projectId,
+        plId: planId,
+        emplId: entry.id,
+        dctId: 0,
+        month: duration.monthNo,
+        year: duration.year,
+        updatedat: new Date().toISOString().split("T")[0],
+        acctId: entry.acctId,
+        orgId: entry.orgId,
+        hrlyRate: 0,
+        effectDt: null,
+      }));
 
-      if (errorCount > 0) {
-        toast.error(
-          `Failed to save ${errorCount} entries:\n${errors
-            .slice(0, 3)
-            .join("\n")}${
-            errors.length > 3 ? `\n...and ${errors.length - 3} more` : ""
-          }`,
-          { toastId: "save-pasted-error", autoClose: 5000 }
-        );
-      }
-    } catch (err) {
-      toast.error(`Failed to save pasted entries: ${err.message}`, {
-        toastId: "save-pasted-error",
-        autoClose: 3000,
+      bulkPayload.push({
+        dctId: 0,
+        plId: planId,
+        acctId: entry.acctId || "",
+        orgId: entry.orgId || "",
+        category: entry.lastName && entry.firstName
+          ? `${entry.lastName}, ${entry.firstName}`
+          : entry.lastName || entry.firstName || "",
+        id: entry.id,
+        type: entry.idType || "-",
+        isRev: entry.isRev || false,
+        isBrd: entry.isBrd || false,
+        status: entry.status || "Act",
+        createdBy: "System",
+        lastModifiedBy: "System",
+        plForecasts: payloadForecasts,
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    // CRITICAL: If validation failed, exit here and return false
+    if (validationFailed) {
+        setIsLoading(false);
+        return false; 
+    }
+
+    if (bulkPayload.length > 0) {
+      await axios.post(
+        `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
+        bulkPayload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      return true; // SUCCESS
+    }
+    return true;
+
+  } catch (err) {
+    toast.error(`Failed to save entries: ${err.response?.data?.message || err.message}`);
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleRowClickMultiple = (actualEmpIdx) => {
     if (!isEditable) return;
@@ -2917,30 +3546,49 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
   // };
 
   const handleRowClick = (actualEmpIdx) => {
-  // if (!isEditable) return;
-
-  // Toggle selection highlight
-  setSelectedRowIndex((prev) => (prev === actualEmpIdx ? null : actualEmpIdx));
-
   const selectedEmployee = employees[actualEmpIdx];
-  setSelectedEmployeeId(selectedEmployee ? selectedEmployee.emple.dctId : null);
+  const dctId = selectedEmployee ? selectedEmployee.emple.dctId : null;
 
-  setSelectedColumnKey(null);
-  setReplaceScope(actualEmpIdx ? "row" : "all");
+  setSelectedRowIndex((prev) => (prev === actualEmpIdx ? null : actualEmpIdx));
+  setSelectedEmployeeId((prev) => (prev === dctId ? null : dctId));
 
-  if (showNewForm) {
-    setSourceRowIndex(actualEmpIdx);
-  }
-
-  // Toggle selection for copy/fill
   setSelectedRows((prev) => {
     const newSelection = new Set(prev);
-    if (newSelection.has(actualEmpIdx)) newSelection.delete(actualEmpIdx);
-    else newSelection.add(actualEmpIdx);
+    if (newSelection.has(actualEmpIdx)) {
+      newSelection.delete(actualEmpIdx);
+    } else {
+      newSelection.add(actualEmpIdx);
+    }
     setShowCopyButton(newSelection.size > 0);
     return newSelection;
   });
 };
+
+//   const handleRowClick = (actualEmpIdx) => {
+//   // if (!isEditable) return;
+
+//   // Toggle selection highlight
+//   setSelectedRowIndex((prev) => (prev === actualEmpIdx ? null : actualEmpIdx));
+
+//   const selectedEmployee = employees[actualEmpIdx];
+//   setSelectedEmployeeId(selectedEmployee ? selectedEmployee.emple.dctId : null);
+
+//   setSelectedColumnKey(null);
+//   setReplaceScope(actualEmpIdx ? "row" : "all");
+
+//   if (showNewForm) {
+//     setSourceRowIndex(actualEmpIdx);
+//   }
+
+//   // Toggle selection for copy/fill
+//   setSelectedRows((prev) => {
+//     const newSelection = new Set(prev);
+//     if (newSelection.has(actualEmpIdx)) newSelection.delete(actualEmpIdx);
+//     else newSelection.add(actualEmpIdx);
+//     setShowCopyButton(newSelection.size > 0);
+//     return newSelection;
+//   });
+// };
 
 
   const handleNewClick = () => {
@@ -2956,38 +3604,38 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
     // Reset form state...
   };
 
-  const handleDeleteEmployee = async (dctId) => {
-    if (!dctId) {
-      toast.error("No record selected for deletion");
-      return;
-    }
+  // const handleDeleteEmployee = async (dctId) => {
+  //   if (!dctId) {
+  //     toast.error("No record selected for deletion");
+  //     return;
+  //   }
 
-    try {
-      // Confirm deletion with user
-      const confirmDelete = window.confirm(
-        "Are you sure you want to delete this record?"
-      );
-      if (!confirmDelete) return;
+  //   try {
+  //     // Confirm deletion with user
+  //     const confirmDelete = window.confirm(
+  //       "Are you sure you want to delete this record?"
+  //     );
+  //     if (!confirmDelete) return;
 
-      // Call delete API
-      await axios.delete(`${backendUrl}/DirectCost/DeleteDirectCost/${dctId}`);
+  //     // Call delete API
+  //     await axios.delete(`${backendUrl}/DirectCost/DeleteDirectCost/${dctId}`);
 
-      // Show success message
-      toast.success("Records Deleted Successfully!");
+  //     // Show success message
+  //     toast.success("Records Deleted Successfully!");
 
-      // Remove employee from local state
-      setEmployees((prev) => prev.filter((emp) => emp.emple.dctId !== dctId));
+  //     // Remove employee from local state
+  //     setEmployees((prev) => prev.filter((emp) => emp.emple.dctId !== dctId));
 
-      // Clear selection
-      setSelectedRowIndex(null);
-      setSelectedEmployeeId(null);
-    } catch (err) {
-      toast.error(
-        "Failed to delete record: " +
-          (err.response?.data?.message || err.message)
-      );
-    }
-  };
+  //     // Clear selection
+  //     setSelectedRowIndex(null);
+  //     setSelectedEmployeeId(null);
+  //   } catch (err) {
+  //     toast.error(
+  //       "Failed to delete record: " +
+  //         (err.response?.data?.message || err.message)
+  //     );
+  //   }
+  // };
 
   // const handleColumnHeaderClick = (uniqueKey) => {
   //   if (!isEditable) return;
@@ -2995,6 +3643,50 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
   //   setSelectedRowIndex(null);
   //   setReplaceScope(uniqueKey === selectedColumnKey ? "all" : "column");
   // };
+  
+  const handleDeleteEmployee = async () => {
+  // 1. Identify which records to delete
+  // If multiple rows are checked, use those. Otherwise, use the single selectedEmployeeId
+  const idsToDelete = selectedRows.size > 0 
+    ? Array.from(selectedRows).map(idx => employees[idx]?.emple?.dctId).filter(id => id)
+    : [selectedEmployeeId].filter(id => id);
+
+  if (idsToDelete.length === 0) {
+    toast.error("No record selected for deletion");
+    return;
+  }
+
+  const confirmDelete = window.confirm(
+    `Are you sure you want to delete ${idsToDelete.length} record(s)?`
+  );
+  if (!confirmDelete) return;
+
+  try {
+    setIsLoading(true);
+    
+    // 2. Execute Deletions (Assuming your API supports single delete, we loop)
+    // If your backend has a BulkDelete endpoint, use that instead for better performance
+    await Promise.all(
+      idsToDelete.map(id => axios.delete(`${backendUrl}/DirectCost/DeleteDirectCost/${id}`))
+    );
+
+    toast.success("Records Deleted Successfully!");
+
+    // 3. FIX: Update local state to remove the records
+    setEmployees((prev) => prev.filter((emp) => !idsToDelete.includes(emp.emple.dctId)));
+
+    // 4. FIX: Clear selection states so the "Copy Selected" number goes back to 0
+    setSelectedRows(new Set());
+    setShowCopyButton(false);
+    setSelectedRowIndex(null);
+    setSelectedEmployeeId(null);
+
+  } catch (err) {
+    toast.error("Failed to delete records: " + (err.response?.data?.message || err.message));
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleColumnHeaderClick = (uniqueKey) => {
   if (!isEditable) return;
 
@@ -3447,7 +4139,7 @@ const handleFindReplace = async () => {
 
     if (bulkPayload.length > 0) {
       const apiType = planType === 'NBBUD' ? 'BUD' : planType;
-      await axios.put(`${backendUrl}/Forecast/BulkUpdateForecastAmount/${apiType}`, bulkPayload);
+      await axios.put(`${backendUrl}/Forecast/BulkUpdateForecastAmountV1/${apiType}?plid=${planId}&templateid=${templateId}`, bulkPayload);
       
       setInputValues(updatedInputValues);
       toast.success(`Replaced ${replacementsCount} matches.`);
@@ -5156,7 +5848,7 @@ const isIndeterminate =
           )} */}
 
 
-          {isEditable && !shouldHideButtons && (
+          {/* {isEditable && !shouldHideButtons && (
   <button
     className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer ${
       shouldDisableDelete
@@ -5174,6 +5866,20 @@ const isIndeterminate =
     disabled={shouldDisableDelete}
   >
     Delete
+  </button>
+)} */}
+
+{isEditable && !shouldHideButtons && (
+  <button
+    className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer ${
+      shouldDisableDelete || (selectedRows.size === 0 && !selectedEmployeeId)
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-red-500 hover:bg-red-600"
+    }`}
+    onClick={handleDeleteEmployee} // Call the new bulk handler
+    disabled={shouldDisableDelete || (selectedRows.size === 0 && !selectedEmployeeId)}
+  >
+    {selectedRows.size > 1 ? `Delete Selected (${selectedRows.size})` : "Delete"}
   </button>
 )}
 

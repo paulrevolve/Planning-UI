@@ -828,7 +828,7 @@ const Dashboard = () => {
 
         {/* Main Content Area - Enabled scrolling here */}
         <div
-          className="flex-1 h-full p-4 ml-2  overflow-y-scroll"
+          className="flex-1 h-full p-4 ml-2 overflow-y-scroll"
           style={{ scrollbarGutter: "stable" }}
         >
           <Routes>
@@ -856,7 +856,7 @@ const Dashboard = () => {
               element={<ProjectBudgetStatus />}
             />
             <Route path="/project-report" element={
-              <div className="mt-12">
+              <div className="mt-12 ml-2">
 
                 <FinancialDashboard />
               </div>
@@ -864,17 +864,17 @@ const Dashboard = () => {
             <Route
               path="/mass-utility"
               element={
-                <div className="mt-12">
+                <div className="mt-12 ml-2">
                   <MassUtilityProject />
                 </div>
               }
             />
-            <Route path="/projectmapping" element={<div className="mt-12"><UserOrgProjectMapping /></div>} />
+            <Route path="/projectmapping" element={<div className="mt-12 ml-2"><UserOrgProjectMapping /></div>} />
 
             <Route
               path="/new-business"
               element={
-                <div className="mt-12">
+                <div className="mt-12 ml-2">
                   <NewBusinessComponent />
                 </div>
               }
@@ -882,7 +882,7 @@ const Dashboard = () => {
             <Route
               path="/create-project-budget"
               element={
-                <div className="mt-12">
+                <div className="mt-12 ml-2">
                   <CreateProjectBudget />
                 </div>
               }
@@ -891,7 +891,7 @@ const Dashboard = () => {
               path="/manage-groups"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
                     <ManageGroups />
                   </div>
                 </ProtectedRoute>
@@ -901,7 +901,7 @@ const Dashboard = () => {
               path="/manage-users"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
                     <ManageUser />
                   </div>
                 </ProtectedRoute>
@@ -910,7 +910,7 @@ const Dashboard = () => {
             <Route
               path="/monthly-forecast"
               element={
-                <div className="mt-12">
+                <div className="mt-12 ml-2">
                   <AnalysisByPeriodContent />
                 </div>
               }
@@ -919,7 +919,7 @@ const Dashboard = () => {
               path="/pool-rate-tabs"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
                     <PoolRateTabs />
                   </div>
                 </ProtectedRoute>
@@ -929,7 +929,7 @@ const Dashboard = () => {
               path="/role-rights"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
                     <ConfigureField />
                   </div>
                 </ProtectedRoute>
@@ -939,7 +939,7 @@ const Dashboard = () => {
               path="/pool-configuration"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
                     <PoolConfigurationTable />
                   </div>
                 </ProtectedRoute>
@@ -949,7 +949,7 @@ const Dashboard = () => {
               path="/template-pool-mapping"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
                     <TemplatePoolMapping />
                     </div>
                 </ProtectedRoute>
@@ -959,7 +959,7 @@ const Dashboard = () => {
               path="/template"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
                     <Template />
                     </div>
                 </ProtectedRoute>
@@ -969,7 +969,7 @@ const Dashboard = () => {
               path="/ceiling-configuration"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12"><CeilingConfiguration /></div>
+                  <div className="mt-12 ml-2"><CeilingConfiguration /></div>
                 </ProtectedRoute>
               }
             />
@@ -977,7 +977,7 @@ const Dashboard = () => {
               path="/analog-rate"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12"><AnalogRate /></div>
+                  <div className="mt-12 ml-2"><AnalogRate /></div>
                 </ProtectedRoute>
               }
             />
@@ -985,7 +985,7 @@ const Dashboard = () => {
               path="/global-configuration"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
                   <GlobalConfiguration />
                   </div>
                 </ProtectedRoute>
@@ -995,7 +995,7 @@ const Dashboard = () => {
               path="/prospective-id-setup"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
 
                   <ProspectiveIdSetup />
                   </div>
@@ -1006,7 +1006,7 @@ const Dashboard = () => {
               path="/display-settings"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
 
                   <DisplaySettings />
                   </div>
@@ -1017,7 +1017,7 @@ const Dashboard = () => {
               path="/annual-holidays"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
 
                   <AnnualHolidays />
                   </div>
@@ -1028,7 +1028,7 @@ const Dashboard = () => {
               path="/maintain-fiscal-year-periods"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
 
                   <MaintainFiscalYearPeriods />
                   </div>
@@ -1039,7 +1039,7 @@ const Dashboard = () => {
               path="/account-mapping"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12">
+                  <div className="mt-12 ml-2">
 
                   <AccountMapping />
                   </div>

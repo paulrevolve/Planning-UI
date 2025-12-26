@@ -129,13 +129,12 @@ const MaintainFiscalYearPeriods = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen text-gray-900 flex flex-col items-center justify-center p-4">
       {/* Adjusted max-w-7xl to w-full px-8 for wider display within its parent */}
-      <div className="w-full px-8 bg-white rounded-xl shadow-lg p-8 space-y-6 border border-gray-300">
+      <div className="w-full px-8 bg-white rounded-xl shadow-lg p-4 space-y-6 border border-gray-300">
         {/* Header with Save Button */}
         {/* <div className="flex justify-between items-center gap-3 mb-6">
           <h2 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text  ">
-            
           </h2>
         </div> */}
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
