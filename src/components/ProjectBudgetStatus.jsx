@@ -626,7 +626,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
   }
 
   return (
-    <div className="p-2 sm:p-4  space-y-6 text-sm sm:text-base text-gray-800 font-inter mt-7 ">
+    <div className="sm:p-4  space-y-6 text-sm sm:text-base text-gray-800 font-inter mt-7 ">
 
       {viewMode === "plans" && (
         <div className="bg-white p-2 rounded shadow-sm border border-gray-100 mb-2">

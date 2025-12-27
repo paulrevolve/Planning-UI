@@ -164,10 +164,10 @@ const NewBusinessComponent = () => {
       </div>
 
       <div className="space-y-4 sm:p-4 border-overall p-2 bg-white mb-8">
-        <div className="flex items-center mb-2 gap-1 w-full whitespace-nowrap">
+        <div className="flex items-center mb-2 gap-1 w-full flex-nowrap">
           <button
             onClick={() => setShowNewBusinessPopup(true)}
-            className="btn1 btn-blue"
+            className="btn1 btn-blue shrink-0"
             disabled={editNewBusinessPopup}
           >
             New Business
@@ -175,7 +175,7 @@ const NewBusinessComponent = () => {
 
           <div
             className={`flex gap-1 w-full items-center ${
-              showDelete ? "block" : "hidden"
+              showDelete ? "inline" : "hidden"
             }`}
           >
             {/* <button
@@ -188,11 +188,11 @@ const NewBusinessComponent = () => {
             </button> */}
             <button
               onClick={handleDelete}
-              className="btn1 px-2 py-1.5 btn-red"
+              className="btn1 px-4 py-1.5 btn-red"
               title="Delete"
               disabled={editNewBusinessPopup || showNewBusinessPopup}
             >
-              Delete
+              Delete {selectedRows.size}
             </button>
           </div>
         </div>

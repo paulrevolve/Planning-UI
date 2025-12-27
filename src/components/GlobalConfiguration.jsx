@@ -535,7 +535,7 @@ const LaborForm = () => {
   return (
     <div className="min-h-screen text-gray-900 flex justify-center">
       {/* Retained w-full px-8 for wider display within its parent */}
-      <div className="w-full px-8 p-6 space-y-2">
+      <div className="w-full space-y-2">
         <div className="p-4 flex items-center justify-between bg-white rounded-sm">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <Cog size={20} className="text-blue-500" />

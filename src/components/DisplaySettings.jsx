@@ -209,7 +209,7 @@ const DisplaySettingsContent = () => {
   return (
     <div>
       {/* Changed max-w-5xl to w-full px-8 for wider display */}
-      <div className="w-full px-8  p-8 space-y-2 ">
+      <div className="w-full space-y-2 ">
         {/* Changed text-center to text-left */}
         <div className="p-4  flex items-center justify-between rounded-sm bg-white">
             <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">

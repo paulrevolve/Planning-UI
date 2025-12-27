@@ -543,7 +543,7 @@ const PoolRate = ({ userName = "User" }) => {
 
   return (
     <ErrorBoundary>
-      <div className="p-4 sm:p-5 max-w-6xl mx-auto font-roboto bg-gray-50 rounded-xl shadow-md">
+      <div className="sm:p-5 max-w-6xl mx-auto font-roboto bg-gray-50 rounded-xl shadow-md">
         <ToastContainer
           position="top-right"
           autoClose={3000}

@@ -6,6 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { backendUrl } from "./config";
+import { CableCar } from "lucide-react";
 
 const years = Array.from({ length: 2035 - 2020 + 1 }, (_, i) => 2020 + i);
 const getCurrentYear = () => new Date().getFullYear();
@@ -249,26 +250,26 @@ const parseDate = (dateStr) => {
 
 
   return (
-    <div className="min-h-screen text-gray-900 flex items-center justify-center p-4">
-      <div className="w-full px-8 bg-white p-8 space-y-6 border-line">
+    <div className="min-h-screen text-gray-900 flex justify-center">
+      <div className="w-full px-8 p-8 space-y-2">
         {/* <h2 className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
           Setup Annual Holidays
         </h2> */}
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="p-4 border-b rounded-sm border-gray-100 flex items-center justify-between bg-white">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             Manage Holidays
+            <CableCar size={20} className="text-blue-500" />
+            Manage holidays
           </h2>
-          
-        </div>	
+        </div>
         {/* <div className="bg-gray-50 p-4  grid grid-cols-1 md:grid-cols-4 gap-4 items-center border-line">
        
         </div> */}
 
-        <div className="bg-gray-50 p-4 border-line">
+        <div className="bg-white p-4 rounded-sm">
           {/* <h3 className="text-xl font-semibold text-gray-900 mb-4">
             Target Year Holidays
           </h3> */}
-             {/* <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <label
               htmlFor="year"
               className="text-sm font-medium whitespace-nowrap text-gray-900"
@@ -305,46 +306,46 @@ const parseDate = (dateStr) => {
             />
           </div> */}
           <div className="flex items-center gap-3 w-full">
-  {/* LEFT: New + Search */}
-  <div className="flex items-center gap-2 mb-2">
-    <button
-      onClick={handleAddNewRow}
-      disabled={isLoading}
-      className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm whitespace-nowrap"
-    >
-      New
-    </button>
-    <input
-      type="text"
-      placeholder="Search holiday..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-    />
-  </div>
+            {/* LEFT: New + Search */}
+            <div className="flex items-center gap-2 mb-2">
+              <button
+                onClick={handleAddNewRow}
+                disabled={isLoading}
+                className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm whitespace-nowrap"
+              >
+                New
+              </button>
+              <input
+                type="text"
+                placeholder="Search holiday..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              />
+            </div>
 
-  {/* RIGHT: Fiscal Year (Year select) */}
-  <div className="flex items-center space-x-2 ml-auto">
-    <label
-      htmlFor="year"
-      className="text-sm font-medium whitespace-nowrap text-gray-900"
-    >
-      Year <span className="text-red-500">*</span>
-    </label>
-    <select
-      id="year"
-      value={year}
-      onChange={handleYearChange}
-      className="w-40 border border-gray-300 bg-white rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-    >
-      {years.map((y) => (
-        <option key={y} value={y}>
-          {y}
-        </option>
-      ))}
-    </select>
-  </div>
-</div>
+            {/* RIGHT: Fiscal Year (Year select) */}
+            <div className="flex items-center space-x-2 ml-auto">
+              <label
+                htmlFor="year"
+                className="text-sm font-medium whitespace-nowrap text-gray-900"
+              >
+                Year <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="year"
+                value={year}
+                onChange={handleYearChange}
+                className="w-40 border border-gray-300 bg-white rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+              >
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           {isLoading && <p className="text-center text-gray-500">Loading...</p>}
 
@@ -389,17 +390,25 @@ const parseDate = (dateStr) => {
                               //   )
                               // }
                               onChange={(date) => {
-  if (!date) {
-    handleHolidayChange(holiday, "date", "");
-    return;
-  }
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  const yyyy = date.getFullYear();
-  handleHolidayChange(holiday, "date", `${mm}/${dd}/${yyyy}`);
-}}
-
-
+                                if (!date) {
+                                  handleHolidayChange(holiday, "date", "");
+                                  return;
+                                }
+                                const mm = String(date.getMonth() + 1).padStart(
+                                  2,
+                                  "0"
+                                );
+                                const dd = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
+                                const yyyy = date.getFullYear();
+                                handleHolidayChange(
+                                  holiday,
+                                  "date",
+                                  `${mm}/${dd}/${yyyy}`
+                                );
+                              }}
                               dateFormat="MM/dd/yyyy"
                               placeholderText="MM/DD/YYYY"
                               className="w-full bg-white border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"

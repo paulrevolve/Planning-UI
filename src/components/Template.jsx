@@ -136,7 +136,7 @@ const Template = ({ updatedBy = "User" }) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
+    <div className="bg-white rounded-lg shadow-lg">
       <div className="flex justify-between items-center gap-2 mb-4">
         <h2 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
           Burden Setup

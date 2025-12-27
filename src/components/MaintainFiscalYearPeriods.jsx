@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { backendUrl } from "./config";
 import { toast } from "react-toastify";
+import { CalendarRange } from "lucide-react";
 
 // Utility function for combining Tailwind CSS classes
 const cn = (...args) => {
@@ -129,26 +130,27 @@ const MaintainFiscalYearPeriods = () => {
   );
 
   return (
-    <div className="min-h-screen text-gray-900 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen  text-gray-900 flex flex-col gap-y-2 items-center justify-center ">
       {/* Adjusted max-w-7xl to w-full px-8 for wider display within its parent */}
-      <div className="w-full px-8 bg-white rounded-xl shadow-lg p-4 space-y-6 border border-gray-300">
+      <div className="p-4 w-full  flex items-center rounded-sm bg-white">
+        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <CalendarRange size={20} className="text-blue-500" />
+          Maintain Fiscal Year Periods
+        </h2>
+      </div>
+      <div className="w-full px-4 bg-white rounded-sm p-4 space-y-6 ">
         {/* Header with Save Button */}
         {/* <div className="flex justify-between items-center gap-3 mb-6">
           <h2 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text  ">
+            
           </h2>
         </div> */}
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-             Maintain Fiscal Year Periods
-          </h2>
-          
-        </div>
 
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-200 mb-6">
           <button
             className={cn(
-              "py-2 px-4 text-lg font-medium focus:outline-none",
+              "py-2 px-4 text-[16px] font-medium focus:outline-none",
               activeTab === "accountingPeriods"
                 ? "border-b-2 text-gray-600 group-hover:text-[#17414d]"
                 : "text-gray-600 group-hover:text-[#17414d]"
@@ -159,7 +161,7 @@ const MaintainFiscalYearPeriods = () => {
           </button>
           <button
             className={cn(
-              "py-2 px-4 text-lg font-medium focus:outline-none",
+              "py-2 px-4 text-[16px] font-medium focus:outline-none",
               activeTab === "budgetingPeriods"
                 ? "border-b-2 text-gray-600 group-hover:text-[#17414d]"
                 : "text-gray-600 group-hover:text-[#17414d]"
@@ -171,46 +173,57 @@ const MaintainFiscalYearPeriods = () => {
         </div>
 
         {/* Year Navigation */}
-        <div className="flex items-center justify-center space-x-4 mb-6">
-          <button
-            onClick={() => handleYearChange(-1)}
-            disabled={currentYear === 2020}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            &lt; Previous Year
-          </button>
-          <select
-            value={currentYear}
-            onChange={handleManualYearChange}
-            className="border border-gray-300 rounded-md shadow-sm py-2 px-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={() => handleYearChange(1)}
-            disabled={currentYear === 2035}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next Year &gt;
-          </button>
+        <div className="flex items-center justify-between space-x-4 mb-6">
+          <div></div>
+          <div className="flex gap-2 text-sm">
+            <button
+              onClick={() => handleYearChange(-1)}
+              disabled={currentYear === 2020}
+              className=" bg-[#17414d] text-white font-bold py-1.5 px-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &lt; Previous Year
+            </button>
+            <select
+              value={currentYear}
+              onChange={handleManualYearChange}
+              className="border border-gray-300 rounded-md shadow-sm py-1.5 px-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => handleYearChange(1)}
+              disabled={currentYear === 2035}
+              className="bg-[#17414d] text-white font-bold py-1.5 px-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next Year &gt;
+            </button>
+          </div>
+          <div className="">
+            <button
+              onClick={handleSaveSettings}
+              className="bg-[#17414d] text-white group-hover:text-gray  font-semibold py-2 px-4  rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mr-4 transition-colors duration-200"
+            >
+              Save
+            </button>
+          </div>
         </div>
 
         {/* Table Content */}
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-300 overflow-hidden">
+        <div className=" p-4 rounded-lg overflow-hidden">
           {" "}
           {/* Added overflow-hidden */}
-          <div className="flex justify-end">
+          {/* <div className="flex justify-end">
             <button
               onClick={handleSaveSettings}
               className="bg-[#17414d] text-white group-hover:text-gray  font-semibold py-2 px-4  rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 -mt-3 mb-2 transition-colors duration-200"
             >
               Save
             </button>
-          </div>
+          </div> */}
           <div className="overflow-x-auto rounded-lg border border-gray-300">
             <table className="min-w-full divide-y divide-gray-300 table">
               <thead className="thead">

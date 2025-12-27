@@ -183,7 +183,7 @@ const TemplatePoolMapping = () => {
           Template Pool Mapping
         </h2>
       </div>
-      <div className="p-4 sm:p-5 w-full mx-auto font-roboto bg-white rounded-sm  ml-5">
+      <div className="sm:p-5 w-full mx-auto font-roboto bg-white rounded-sm  ml-5">
         <ToastContainer
           position="top-right"
           autoClose={3000}

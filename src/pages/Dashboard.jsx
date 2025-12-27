@@ -1017,7 +1017,7 @@ const Dashboard = () => {
               path="/annual-holidays"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12 ml-2">
+                  <div className="mt-4">
 
                   <AnnualHolidays />
                   </div>
