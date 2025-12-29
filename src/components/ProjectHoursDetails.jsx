@@ -9689,954 +9689,473 @@ const handleSelectAllCheckboxes = (isChecked) => {
                 <tbody className="tbody">
               
 
-                  {newEntries.length > 0 &&
-                    newEntries.map((entry, entryIndex) => (
-                      <React.Fragment key={`new-entry-months-${entryIndex}`}>
-                        <tr
-                          key={`new-entry-${entryIndex}`}
-                          className="bg-gray-50"
-                          style={{
-                            height: `${ROW_HEIGHT_DEFAULT}px`,
-                            lineHeight: "normal",
-                          }}
-                        >
+               {newEntries.length > 0 &&
+  newEntries.map((entry, entryIndex) => (
+    <React.Fragment key={`new-entry-months-${entryIndex}`}>
+      <tr
+        key={`new-entry-${entryIndex}`}
+        className="bg-gray-50"
+        style={{
+          height: `${ROW_HEIGHT_DEFAULT}px`,
+          lineHeight: "normal",
+        }}
+      >
+        <td className="tbody-td min-w-[45px] px-2 text-center">
+          <input type="checkbox" disabled className="w-4 h-4 opacity-50 cursor-not-allowed" />
+        </td>
 
-                          {/* <td className="tbody-td min-w-[45px]"></td> */}
-                          <td className="tbody-td min-w-[45px] px-2 text-center">
-        <input type="checkbox" disabled className="w-4 h-4 opacity-50 cursor-not-allowed" />
-      </td>
-
-                          {/* ID Type */}
-                          <td className="tbody-td">
-                            {/* <select
-                              name="idType"
-                              value={entry.idType}
-                              // onChange={(e) => {
-                              //   const value = e.target.value;
-                              //   setNewEntries((prev) =>
-                              //     prev.map((ent, idx) =>
-                              //       idx === entryIndex
-                              //         ? {
-                              //             id: "",
-                              //             firstName: "",
-                              //             lastName: "",
-                              //             isRev: false,
-                              //             isBrd: false,
-                              //             idType: value,
-                              //             acctId:
-                              //               laborAccounts.length > 0
-                              //                 ? laborAccounts[0].id
-                              //                 : "",
-                              //             orgId: "",
-                              //             plcGlcCode: "",
-                              //             perHourRate: "",
-                              //             status: "Act",
-                              //           }
-                              //         : ent
-                              //     )
-                              //   );
-                              //   setPlcSearch("");
-                              //   setAutoPopulatedPLC(false);
-                              // }}
-                              onChange={(e) => {
-  const value = e.target.value;
-  
-  // 1. Update State
-  setNewEntries((prev) =>
-    prev.map((ent, idx) =>
-      idx === entryIndex
-        ? {
-            id: "",
-            firstName: "",
-            lastName: "",
-            isRev: false,
-            isBrd: false,
-            idType: value,
-            acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
-            orgId: "",
-            plcGlcCode: "",
-            perHourRate: "",
-            status: "Act",
-          }
-        : ent
-    )
-  );
-  setPlcSearch("");
-  setAutoPopulatedPLC(false);
-
-  // 2. FIX: Fetch suggestions immediately for the new ID Type
-  // Create a temporary entry object with the NEW idType to pass to the fetcher
-  const updatedEntryForFetch = { ...entry, idType: value };
-  fetchSuggestionsForPastedEntry(entryIndex, updatedEntryForFetch);
-}}
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                            >
-                              {ID_TYPE_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </select> */}
-                            <select
-  name="idType"
-  value={entry.idType}
-  onChange={(e) => {
-    const value = e.target.value;
-
-    // FIX: Auto-populate ID if type is PLC
-    const newId = value === "PLC" ? "PLC" : "";
-
-    setNewEntries((prev) =>
-      prev.map((ent, idx) =>
-        idx === entryIndex
-          ? {
-              id: newId, // <--- Updated here to use newId
-              firstName: "",
-              lastName: "",
-              isRev: false,
-              isBrd: false,
-              idType: value,
-              acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
-              orgId: "",
-              plcGlcCode: "",
-              perHourRate: "",
-              status: "Act",
-            }
-          : ent
-      )
-    );
-    setPlcSearch("");
-    setAutoPopulatedPLC(false);
-
-    // Fetch suggestions for the new ID Type
-    const updatedEntryForFetch = { ...entry, idType: value };
-    fetchSuggestionsForPastedEntry(entryIndex, updatedEntryForFetch);
-  }}
-  className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
->
-  {ID_TYPE_OPTIONS.map((opt) => (
-    <option key={opt.value} value={opt.value}>
-      {opt.label}
-    </option>
-  ))}
-</select>
-                          </td>
-                          {/* ID */}
-                         {/* ID Input in Pasted Entry */}
-<td className="tbody-td">
-  <input
-    type="text"
-    name="id"
-    value={entry.id}
-    // FIX: Allow spaces by preventing row click propagation on space key
-    onKeyDown={(e) => {
-      if (e.key === ' ') {
-        e.stopPropagation();
-      }
-    }}
-    onChange={(e) => {
-      // FIX: Remove emojis for ALL types
-      const valueWithoutEmojis = e.target.value.replace(
-        /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-        ""
-      );
-      
-      const trimmedValue = valueWithoutEmojis.trim();
-
-      setNewEntries((prev) =>
-        prev.map((ent, idx) =>
-          idx === entryIndex
-            ? { ...ent, id: valueWithoutEmojis } // Store raw value to allow typing spaces
-            : ent
-        )
-      );
-
-      // Auto-populate fields if employee found (only if not "Other" type)
-      if (entry.idType !== "Other") {
-        const suggestions = pastedEntrySuggestions[entryIndex] || [];
-        const selectedEmployee = suggestions.find(
-          (emp) => emp.emplId === trimmedValue
-        );
-        if (selectedEmployee) {
-          setNewEntries((prev) =>
-            prev.map((ent, idx) =>
-              idx === entryIndex
-                ? {
-                    ...ent,
-                    id: trimmedValue, // Snap to trimmed ID on match
-                    firstName: selectedEmployee.firstName || "",
-                    lastName: selectedEmployee.lastName || "",
-                    perHourRate: selectedEmployee.perHourRate || "",
-                    orgId: selectedEmployee.orgId || ent.orgId,
-                    plcGlcCode: selectedEmployee.plc || "",
-                  }
-                : ent
-            )
-          );
-        }
-      }
-    }}
-    disabled={entry.idType === "PLC"}
-    className={`w-full rounded px-1 py-0.5 text-xs outline-none focus:ring-0 no-datalist-border ${
-      entry.idType === "PLC"
-        ? "bg-gray-100 cursor-not-allowed"
-        : ""
-    }`}
-    list={`employee-id-list-${entryIndex}`}
-    placeholder={
-      entry.idType === "PLC"
-        ? "Not required for PLC"
-        : "Enter ID"
-    }
-  />
-  {/* Datalist logic remains the same as previously fixed */}
-  <datalist id={`employee-id-list-${entryIndex}`}>
-    {entry.idType !== "Other" && 
-      (pastedEntrySuggestions[entryIndex] || [])
-        .filter(
-          (emp) =>
-            emp.emplId && typeof emp.emplId === "string"
-        )
-        .map((emp, index) => (
-          <option
-            key={`${emp.emplId}-${index}`}
-            value={emp.emplId}
+        <td className="tbody-td min-w-[70px]">
+          <select
+            name="idType"
+            value={entry.idType}
+            onChange={(e) => {
+              const value = e.target.value;
+              const newId = value === "PLC" ? "PLC" : "";
+              setNewEntries((prev) =>
+                prev.map((ent, idx) =>
+                  idx === entryIndex
+                    ? {
+                        ...ent,
+                        id: newId,
+                        firstName: "",
+                        lastName: "",
+                        isRev: false,
+                        isBrd: false,
+                        idType: value,
+                        acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
+                        orgId: "",
+                        plcGlcCode: "",
+                        perHourRate: "",
+                        status: "Act",
+                      }
+                    : ent
+                )
+              );
+              setPlcSearch("");
+              setAutoPopulatedPLC(false);
+              const updatedEntryForFetch = { ...entry, idType: value };
+              fetchSuggestionsForPastedEntry(entryIndex, updatedEntryForFetch);
+            }}
+            className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
           >
-            {emp.lastName && emp.firstName
-              ? `${emp.lastName}, ${emp.firstName}`
-              : emp.lastName ||
-                emp.firstName ||
-                emp.emplId}
-          </option>
-        ))
-    }
-  </datalist>
-</td>
-                          {/* Warning Column - Empty */}
-                          <td className="tbody-td text-center">
-                            <span className="text-gray-400 text-xs">-</span>
-                          </td>
-                          {/* Name */}
-                          {/* <td className="tbody-td">
-                            <input
-                              type="text"
-                              name="name"
-                              value={
-                                entry.idType === "PLC"
-                                  ? entry.firstName
-                                  : entry.idType === "Vendor"
-                                  ? entry.lastName || entry.firstName
-                                  : `${entry.firstName || ""} ${
-                                      entry.lastName || ""
-                                    }`.trim()
-                              }
-                              readOnly
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed"
-                              placeholder="Name auto-filled"
-                            />
-                          </td> */}
-                          {/* Name Input in Pasted Entry */}
-<td className="tbody-td">
-  <input
-    type="text"
-    name="name"
-    // Logic to display name based on type
-    value={
-      entry.idType === "Other" || planType === "NBBUD"
-        ? entry.firstName || "" 
-        : entry.idType === "PLC"
-        ? entry.firstName // PLC Description
-        : entry.idType === "Vendor"
-        ? entry.lastName || entry.firstName || ""
-        : `${entry.lastName || ""} ${entry.firstName || ""}`.trim()
-    }
-    readOnly={planType !== "NBBUD" && entry.idType !== "Other"}
-    
-    // FIX: Allow spaces for "Other" type
-    onKeyDown={(e) => {
-      if (e.key === " ") {
-        e.stopPropagation();
-      }
-    }}
+            {ID_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </td>
 
-    onChange={(e) => {
-      // Only allow editing if type is "Other" or plan is NBBUD
-      if (entry.idType === "Other" || planType === "NBBUD") {
-        // FIX: Remove emojis immediately
-        const cleanValue = e.target.value.replace(
-          /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-          ""
-        );
-        
-        // Remove leading space only (allow spaces in middle/end)
-        const valueToStore = cleanValue.startsWith(" ") ? cleanValue.trimStart() : cleanValue;
-
-        setNewEntries((prev) => 
-          prev.map((ent, idx) => 
-            idx === entryIndex 
-            ? {
-                ...ent,
-                firstName: valueToStore, // Store full string here temporarily
-                lastName: "" // Clear last name, will be split on save if needed
+        {/* ID Column */}
+        <td className="tbody-td min-w-[100px]">
+          <input
+            type="text"
+            name="id"
+            value={entry.id}
+            onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
+            onChange={(e) => {
+              const val = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+              const trimmedValue = val.trim();
+              setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, id: val } : ent)));
+              if (entry.idType !== "Other") {
+                const suggestions = pastedEntrySuggestions[entryIndex] || [];
+                const selectedEmployee = suggestions.find((emp) => emp.emplId === trimmedValue);
+                if (selectedEmployee) {
+                  setNewEntries((prev) =>
+                    prev.map((ent, idx) =>
+                      idx === entryIndex
+                        ? {
+                            ...ent,
+                            id: trimmedValue,
+                            firstName: selectedEmployee.firstName || "",
+                            lastName: selectedEmployee.lastName || "",
+                            perHourRate: selectedEmployee.perHourRate || "",
+                            orgId: selectedEmployee.orgId || ent.orgId,
+                            plcGlcCode: selectedEmployee.plc || "",
+                          }
+                        : ent
+                    )
+                  );
+                }
               }
-            : ent
-          )
-        );
-      }
-    }}
-    className={`w-full border border-gray-300 rounded px-1 py-0.5 text-xs ${
-      entry.idType === "Other" || planType === "NBBUD"
-        ? "bg-white"
-        : "bg-gray-100 cursor-not-allowed"
-    }`}
-    placeholder={
-      entry.idType === "Other" 
-        ? "Enter Name" 
-        : "Name (auto-filled)"
-    }
-  />
-</td>
-                          {/* Account */}
-                          <td className="tbody-td">
-                            <input
-                              type="text"
-                              name="acctId"
-                              value={entry.acctId}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? { ...ent, acctId: value }
-                                      : ent
-                                  )
-                                );
+            }}
+            disabled={entry.idType === "PLC"}
+            style={{ maxWidth: "90px" }}
+            className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
+            list={`employee-id-list-${entryIndex}`}
+            placeholder="Enter ID"
+          />
+          <datalist id={`employee-id-list-${entryIndex}`}>
+            {entry.idType !== "Other" && (pastedEntrySuggestions[entryIndex] || []).filter((emp) => emp.emplId).map((emp, idx) => (
+              <option key={idx} value={emp.emplId}>{emp.lastName}, {emp.firstName}</option>
+            ))}
+          </datalist>
+        </td>
 
-                                // Auto-populate account name if account found
-                                const accounts =
-                                  pastedEntryAccounts[entryIndex] || [];
-                                const selectedAccount = accounts.find(
-                                  (acc) => acc.id === value
-                                );
-                                if (selectedAccount) {
-                                  setNewEntries((prev) =>
-                                    prev.map((ent, idx) =>
-                                      idx === entryIndex
-                                        ? {
-                                            ...ent,
-                                            acctId: value,
-                                            acctName: selectedAccount.name,
-                                          }
-                                        : ent
-                                    )
-                                  );
-                                }
-                              }}
-                              className="w-full rounded px-1 py-0.5 text-xs outline-none focus:ring-0 no-datalist-border"
-                              list={`account-list-${entryIndex}`}
-                              placeholder="Enter Account"
-                            />
-                            <datalist id={`account-list-${entryIndex}`}>
-                              {(pastedEntryAccounts[entryIndex] || []).map(
-                                (account, index) => (
-                                  <option
-                                    key={`${account.id}-${index}`}
-                                    value={account.id}
-                                  >
-                                    {account.name}
-                                  </option>
-                                )
-                              )}
-                            </datalist>
-                          </td>
-                          {/* Account Name */}
-                          {/* <td className="tbody-td">
-                            <input
-                              type="text"
-                              value={(() => {
-                                const accountWithName =
-                                  accountOptionsWithNames.find(
-                                    (acc) => acc.id === entry.acctId
-                                  );
-                                return accountWithName
-                                  ? accountWithName.name
-                                  : "";
-                              })()}
-                              readOnly
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed"
-                              placeholder="Account Name auto-filled"
-                            />
-                          </td> */}
-                          <td className="tbody-td">
+        <td className="tbody-td text-center text-gray-400 text-xs">-</td>
+
+        {/* Name Column */}
+        <td className="tbody-td min-w-[100px]">
+          <input
+            type="text"
+            name="name"
+            value={entry.idType === "Other" || planType === "NBBUD" ? entry.firstName || "" : entry.idType === "PLC" ? entry.firstName : entry.idType === "Vendor" ? entry.lastName || entry.firstName || "" : `${entry.lastName || ""} ${entry.firstName || ""}`.trim()}
+            readOnly={planType !== "NBBUD" && entry.idType !== "Other"}
+            onKeyDown={(e) => e.key === " " && e.stopPropagation()}
+            onChange={(e) => {
+              if (entry.idType === "Other" || planType === "NBBUD") {
+                const cleanValue = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+                const valToStore = cleanValue.startsWith(" ") ? cleanValue.trimStart() : cleanValue;
+                setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, firstName: valToStore, lastName: "" } : ent)));
+              }
+            }}
+            style={{ maxWidth: "90px" }}
+            className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
+            placeholder="Name"
+          />
+        </td>
+
+        {/* Account Column */}
+        {/* <td className="tbody-td min-w-[110px]">
+          <input
+            type="text"
+            value={entry.acctId}
+            onChange={(e) => {
+              const val = e.target.value;
+              const accountList = accountOptionsWithNames || [];
+              const matchedAccount = accountList.find((acc) => (acc.id || acc.accountId) === val);
+              setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, acctId: val, acctName: matchedAccount ? matchedAccount.name : "" } : ent)));
+            }}
+            style={{ maxWidth: "100px" }}
+            className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+            list={`account-list-pasted-${entryIndex}`}
+            placeholder="Account"
+          />
+          <datalist id={`account-list-pasted-${entryIndex}`}>
+            {(pastedEntryAccounts[entryIndex] || []).map((account, index) => (
+              <option key={index} value={account.id || account.accountId} />
+            ))}
+          </datalist>
+        </td> */}
+        <td className="tbody-td min-w-[110px]">
   <input
     type="text"
-    value={(() => {
-      // Look for the account name in the list we fetched for this specific pasted/new row
-      const accounts = pastedEntryAccounts[entryIndex] || accountOptionsWithNames;
-      const accountWithName = accounts.find((acc) => acc.id === entry.acctId);
-      return accountWithName ? accountWithName.name : "";
-    })()}
-    readOnly
-    className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed"
-    placeholder="Account Name"
-  />
-</td>
-                          {/* Organization */}
-                          <td className="tbody-td">
-                            <input
-                              type="text"
-                              name="orgId"
-                              value={entry.orgId}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? { ...ent, orgId: value }
-                                      : ent
-                                  )
-                                );
-                              }}
-                              className="w-full rounded px-1 py-0.5 text-xs outline-none focus:ring-0 no-datalist-border"
-                              list={`organization-list-${entryIndex}`}
-                              placeholder="Enter Organization"
-                            />
-                            <datalist id={`organization-list-${entryIndex}`}>
-                              {(pastedEntryOrgs[entryIndex] || []).map(
-                                (org, index) => (
-                                  <option
-                                    key={`${org.value}-${index}`}
-                                    value={org.value}
-                                  >
-                                    {org.label}
-                                  </option>
-                                )
-                              )}
-                            </datalist>
-                          </td>
-                          {/* PLC */}
-                          {/* <td className="tbody-td">
-                            <input
-                              type="text"
-                              name="plcGlcCode"
-                              value={entry.plcGlcCode}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? { ...ent, plcGlcCode: value }
-                                      : ent
-                                  )
-                                );
-                              }}
-                              className="w-full rounded px-1 py-0.5 text-xs outline-none focus:ring-0 no-datalist-border"
-                              list={`plc-list-${entryIndex}`}
-                              placeholder="Enter PLC"
-                            />
-                            <datalist id={`plc-list-${entryIndex}`}>
-                              {(pastedEntryPlcs[entryIndex] || []).map(
-                                (plc, index) => (
-                                  <option
-                                    key={`${plc.value}-${index}`}
-                                    value={plc.value}
-                                  >
-                                    {plc.label}
-                                  </option>
-                                )
-                              )}
-                            </datalist>
-                          </td> */}
-                          {/* PLC Input in Pasted Entry */}
-<td className="tbody-td">
-  <input
-    type="text"
-    name="plcGlcCode"
-    value={entry.plcGlcCode}
+    value={entry.acctId}
     onChange={(e) => {
-      const value = e.target.value;
+      const val = e.target.value;
+      // Get the list of accounts with names already fetched in your component
+      const accountList = accountOptionsWithNames || [];
       
-      // 1. Find the matching PLC option to get the description
-      const currentPlcOptions = pastedEntryPlcs[entryIndex] || [];
-      const selectedOption = currentPlcOptions.find(
-        (opt) => opt.value.toLowerCase() === value.toLowerCase()
+      // Find the account object that matches the ID entered/pasted
+      const matchedAccount = accountList.find(
+        (acc) => (acc.id || acc.accountId) === val
       );
 
-      // 2. Update State
+      // Update the specific entry in the array with BOTH the ID and the looked-up Name
       setNewEntries((prev) =>
         prev.map((ent, idx) =>
           idx === entryIndex
             ? { 
                 ...ent, 
-                plcGlcCode: value,
-                // If type is PLC and we found a match, update the Name (firstName)
-                firstName: (ent.idType === "PLC" && selectedOption) 
-                  ? selectedOption.label 
-                  : ent.firstName
+                acctId: val, 
+                acctName: matchedAccount ? matchedAccount.name : "" 
               }
             : ent
         )
       );
     }}
-    className="w-full rounded px-1 py-0.5 text-xs outline-none focus:ring-0 no-datalist-border"
-    list={`plc-list-${entryIndex}`}
-    placeholder="Enter PLC"
+    style={{ maxWidth: "100px" }}
+    className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+    list={`account-list-pasted-${entryIndex}`}
+    placeholder="Account"
   />
-  <datalist id={`plc-list-${entryIndex}`}>
-    {(pastedEntryPlcs[entryIndex] || []).map((plc, index) => (
-      <option key={`${plc.value}-${index}`} value={plc.value}>
-        {plc.label}
-      </option>
+  <datalist id={`account-list-pasted-${entryIndex}`}>
+    {(pastedEntryAccounts[entryIndex] || []).map((account, index) => (
+      <option key={index} value={account.id || account.accountId} />
     ))}
   </datalist>
 </td>
-                          {/* Rev */}
-                          <td className="tbody-td text-center">
-                            <input
-                              type="checkbox"
-                              name="isRev"
-                              checked={entry.isRev}
-                              onChange={(e) => {
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? { ...ent, isRev: e.target.checked }
-                                      : ent
-                                  )
-                                );
-                              }}
-                            />
-                          </td>
-                          {/* Brd */}
-                          <td className="tbody-td text-center">
-                            <input
-                              type="checkbox"
-                              name="isBrd"
-                              checked={entry.isBrd}
-                              onChange={(e) => {
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? { ...ent, isBrd: e.target.checked }
-                                      : ent
-                                  )
-                                );
-                              }}
-                            />
-                          </td>
-                          {/* Status */}
-                          <td className="tbody-td">
-                            <input
-                              type="text"
-                              name="status"
-                              value={entry.status}
-                              onChange={(e) => {
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? { ...ent, status: e.target.value }
-                                      : ent
-                                  )
-                                );
-                              }}
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                            />
-                          </td>
-                          {/* Hour Rate */}
-                          <td className="tbody-td">
-                            <input
-                              type="text"
-                              name="perHourRate"
-                              value={entry.perHourRate}
-                              onChange={(e) => {
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? {
-                                          ...ent,
-                                          perHourRate: e.target.value.replace(
-                                            /[^0-9.]/g,
-                                            ""
-                                          ),
-                                        }
-                                      : ent
-                                  )
-                                );
-                              }}
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                            />
-                          </td>
-                          {/* Total */}
-                          <td className="tbody-td">
-                            {Object.values(
-                              newEntryPeriodHoursArray[entryIndex] || {}
-                            )
-                              .reduce(
-                                (sum, val) => sum + parseFloat(val || 0),
-                                0
-                              )
-                              .toFixed(2)}
-                          </td>
-                        </tr>
-                      </React.Fragment>
-                    ))}
 
-                  {sortedEmployees
-                    .filter((_, idx) => !hiddenRows[idx])
-                    .map((emp, idx) => {
-                      const actualEmpIdx = localEmployees.findIndex(
-                        (e) => e === emp
-                      );
-                      const row = getEmployeeRow(emp, actualEmpIdx);
-                      const editedData = editedEmployeeData[actualEmpIdx] || {};
-                      return (
-                        <tr
-                          key={`employee-${actualEmpIdx}`}
-                          className={`whitespace-nowrap hover:bg-blue-50 transition border-b border-gray-200 ${
-                            selectedRows.has(actualEmpIdx)
-                              ? "bg-blue-100"
-                              : selectedRowIndex === actualEmpIdx
-                              ? "bg-yellow-100"
-                              : "even:bg-gray-50"
-                          }`}
-                          style={{
-                            height: `${ROW_HEIGHT_DEFAULT}px`,
-                            lineHeight: "normal",
-                            cursor: "pointer", // Make it clear it's clickable
-                          }}
-                          // onClick={() => {
-                          //   // Handle row click for selection
-                          //   handleRowSelection(
-                          //     actualEmpIdx,
-                          //     !selectedRows.has(actualEmpIdx)
-                          //   );
-                          //   handleRowClick(actualEmpIdx); // Keep existing row click functionality
-                          // }}
-                          // onClick={() => handleRowClick(actualEmpIdx)}
-                        >
-                          <td className="tbody-td min-w-[45px] px-2">
-    <input
-      type="checkbox"
-      checked={checkedRows.has(actualEmpIdx)}
-      onChange={e => handleCheckboxSelection(actualEmpIdx, e.target.checked)}
-      className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-    />
-  </td>
-                          <td className="tbody-td min-w-[70px]">
-                            {row.idType}
-                          </td>
-                          <td className="tbody-td min-w-[70px]">
-                            {row.emplId}
-                          </td>
+        {/* <td className="tbody-td min-w-[120px]">
+          <input type="text" value={entry.acctName || ""} readOnly style={{ maxWidth: "110px" }} className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100" placeholder="Account Name" />
+        </td> */}
 
-                          {/* UPDATE THIS WARNING CELL */}
-                          <td className="tbody-td min-w-[70px]">
-                            {row.warning ? (
-                              <span
-                                className="text-yellow-500 text-lg cursor-pointer hover:text-yellow-600"
-                                title="Click to view warnings"
-                                onClick={(e) =>
-                                  handleWarningClick(e, row.emplId)
-                                }
-                              >
-                                ⚠️
-                              </span>
-                            ) : (
-                              <span className="text-gray-300 text-xs">-</span>
-                            )}
-                          </td>
-
-                          {/* <td className="tbody-td min-w-[70px]">{row.name}</td> */}
-                          <td className="tbody-td min-w-[70px] text-left">
-  {/* FIX: Check if we have an edited first name (PLC description) and display it, otherwise show original */}
-  {editedData.firstName !== undefined 
-    ? editedData.firstName 
-    : row.name}
+        <td className="tbody-td min-w-[120px]">
+  <input 
+    type="text" 
+    value={entry.acctName || ""} 
+    readOnly 
+    style={{ maxWidth: "110px" }} 
+    className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed" 
+    placeholder="Account Name" 
+  />
 </td>
 
-                          <td className="tbody-td min-w-[70px]">
-                            {isBudPlan && isEditable ? (
-                              <input
-                                type="text"
-                                value={
-                                  editedData.acctId !== undefined
-                                    ? editedData.acctId
-                                    : row.acctId
-                                }
-                                onChange={(e) =>
-                                  handleAccountInputChangeForUpdate(
-                                    e.target.value,
-                                    actualEmpIdx
-                                  )
-                                }
-                                onBlur={(e) => {
-                                  if (planType === "NBBUD") return; // Add this line
-                                  const val = e.target.value;
-                                  const originalValue = row.acctId;
+        {/* Organization Column */}
+        <td className="tbody-td min-w-[110px]">
+          <input
+            type="text"
+            name="orgId"
+            value={entry.orgId}
+            onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, orgId: e.target.value } : ent)))}
+            style={{ maxWidth: "100px" }}
+            className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+            list={`organization-list-${entryIndex}`}
+            placeholder="Org"
+          />
+          <datalist id={`organization-list-${entryIndex}`}>
+            {(pastedEntryOrgs[entryIndex] || []).map((org, index) => (
+              <option key={index} value={org.value}>{org.label}</option>
+            ))}
+          </datalist>
+        </td>
 
-                                  if (
-                                    val !== originalValue &&
-                                    !isValidAccountForUpdate(
-                                      val,
-                                      updateAccountOptions
-                                    )
-                                  ) {
-                                    toast.error(
-                                      "Please enter a valid Account from the available list.",
-                                      {
-                                        autoClose: 3000,
-                                      }
-                                    );
-                                  } else {
-                                    // handleEmployeeDataBlur(actualEmpIdx, emp);
-                                  }
-                                }}
-                                className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                                list={`account-list-${actualEmpIdx}`}
-                                placeholder="Enter Account"
-                              />
-                            ) : (
-                              row.acctId
-                            )}
-                            <datalist id={`account-list-${actualEmpIdx}`}>
-                              {updateAccountOptions.map((account, index) => (
-                                <option
-                                  key={`${account.id}-${index}`}
-                                  value={account.id}
-                                >
-                                  {account.id}
-                                </option>
-                              ))}
-                            </datalist>
-                          </td>
+        {/* PLC Column */}
+        <td className="tbody-td min-w-[110px]">
+          <input
+            type="text"
+            name="plcGlcCode"
+            value={entry.plcGlcCode}
+            onChange={(e) => {
+              const val = e.target.value;
+              const currentPlcOptions = pastedEntryPlcs[entryIndex] || [];
+              const selectedOption = currentPlcOptions.find((opt) => opt.value.toLowerCase() === val.toLowerCase());
+              setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, plcGlcCode: val, firstName: (ent.idType === "PLC" && selectedOption) ? selectedOption.label : ent.firstName } : ent)));
+            }}
+            style={{ maxWidth: "100px" }}
+            className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+            list={`plc-list-${entryIndex}`}
+            placeholder="PLC"
+          />
+          <datalist id={`plc-list-${entryIndex}`}>
+            {(pastedEntryPlcs[entryIndex] || []).map((plc, index) => (
+              <option key={index} value={plc.value}>{plc.label}</option>
+            ))}
+          </datalist>
+        </td>
 
-                          {/* ADD THIS MISSING TD FOR ACCOUNT NAME */}
-                          <td className="tbody-td min-w-[70px]">
-                            {row.acctName}
-                          </td>
+        <td className="tbody-td text-center">
+          <input type="checkbox" checked={entry.isRev} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, isRev: e.target.checked } : ent)))} />
+        </td>
+        <td className="tbody-td text-center">
+          <input type="checkbox" checked={entry.isBrd} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, isBrd: e.target.checked } : ent)))} />
+        </td>
+        <td className="tbody-td">
+          <input type="text" value={entry.status} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, status: e.target.value } : ent)))} className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" />
+        </td>
+        <td className="tbody-td">
+          <input type="text" value={entry.perHourRate} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, perHourRate: e.target.value.replace(/[^0-9.]/g, "") } : ent)))} className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" />
+        </td>
+        <td className="tbody-td">
+          {Object.values(newEntryPeriodHoursArray[entryIndex] || {}).reduce((sum, val) => sum + parseFloat(val || 0), 0).toFixed(2)}
+        </td>
+      </tr>
+    </React.Fragment>
+  ))}
 
-                          <td className="tbody-td min-w-[70px]">
-                            {isBudPlan && isEditable ? (
-                              <input
-                                type="text"
-                                value={
-                                  editedData.orgId !== undefined
-                                    ? editedData.orgId
-                                    : row.orgId
-                                }
-                                onChange={(e) =>
-                                  handleOrgInputChangeForUpdate(
-                                    e.target.value,
-                                    actualEmpIdx
-                                  )
-                                }
-                                onBlur={(e) => {
-                                  if (planType === "NBBUD") return; // Add this line
-                                  const val = e.target.value;
-                                  const originalValue = row.orgId;
+           {sortedEmployees
+  .filter((_, idx) => !hiddenRows[idx])
+  .map((emp, idx) => {
+    const actualEmpIdx = localEmployees.findIndex((e) => e === emp);
+    const row = getEmployeeRow(emp, actualEmpIdx);
+    const editedData = editedEmployeeData[actualEmpIdx] || {};
+    return (
+      <tr
+        key={`employee-${actualEmpIdx}`}
+        className={`whitespace-nowrap hover:bg-blue-50 transition border-b border-gray-200 ${
+          selectedRows.has(actualEmpIdx)
+            ? "bg-blue-100"
+            : selectedRowIndex === actualEmpIdx
+            ? "bg-yellow-100"
+            : "even:bg-gray-50"
+        }`}
+        style={{
+          height: `${ROW_HEIGHT_DEFAULT}px`,
+          lineHeight: "normal",
+          cursor: "pointer",
+        }}
+      >
+        <td className="tbody-td min-w-[45px] px-2">
+          <input
+            type="checkbox"
+            checked={checkedRows.has(actualEmpIdx)}
+            onChange={(e) => handleCheckboxSelection(actualEmpIdx, e.target.checked)}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+          />
+        </td>
+        <td className="tbody-td min-w-[70px]">{row.idType}</td>
 
-                                  if (
-                                    val !== originalValue &&
-                                    val &&
-                                    !isValidOrgForUpdate(
-                                      val,
-                                      updateOrganizationOptions
-                                    )
-                                  ) {
-                                    toast.error(
-                                      "Please enter a valid numeric Organization ID from the available list.",
-                                      {
-                                        autoClose: 3000,
-                                      }
-                                    );
-                                  } else {
-                                    // handleEmployeeDataBlur(actualEmpIdx, emp);
-                                  }
-                                }}
-                                className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                                list={`organization-list-${actualEmpIdx}`}
-                                placeholder="Enter Organization ID"
-                              />
-                            ) : (
-                              row.orgId
-                            )}
-                            <datalist id={`organization-list-${actualEmpIdx}`}>
-                              {updateOrganizationOptions.map((org, index) => (
-                                <option
-                                  key={`${org.value}-${index}`}
-                                  value={org.value}
-                                >
-                                  {org.label}
-                                </option>
-                              ))}
-                            </datalist>
-                          </td>
+        {/* ID Column */}
+        <td className="tbody-td min-w-[100px]">{row.emplId}</td>
 
-                          <td className="tbody-td min-w-[70px]">
-                            {isBudPlan && isEditable ? (
-                              <input
-                                type="text"
-                                value={
-                                  editedData.glcPlc !== undefined
-                                    ? editedData.glcPlc
-                                    : row.glcPlc
-                                }
-                                onChange={(e) =>
-                                  handlePlcInputChangeForUpdate(
-                                    e.target.value,
-                                    actualEmpIdx
-                                  )
-                                }
-                                onBlur={(e) => {
-                                  if (planType === "NBBUD") return;
-                                  const val = e.target.value.trim();
-                                  const originalValue = row.glcPlc;
+        {/* Warning Cell */}
+        <td className="tbody-td min-w-[70px]">
+          {row.warning ? (
+            <span
+              className="text-yellow-500 text-lg cursor-pointer hover:text-yellow-600"
+              title="Click to view warnings"
+              onClick={(e) => handleWarningClick(e, row.emplId)}
+            >
+              ⚠️
+            </span>
+          ) : (
+            <span className="text-gray-300 text-xs">-</span>
+          )}
+        </td>
 
-                                  // Only validate if value has changed and is not empty
-                                  if (val !== originalValue && val !== "") {
-                                    const exactPlcMatch = plcOptions.find(
-                                      (option) =>
-                                        option.value.toLowerCase() ===
-                                        val.toLowerCase()
-                                    );
+        <td className="tbody-td min-w-[70px] text-left">
+          {editedData.firstName !== undefined ? editedData.firstName : row.name}
+        </td>
 
-                                    if (!exactPlcMatch) {
-                                      toast.error(
-                                        "PLC must be selected from the available suggestions. Custom values are not allowed.",
-                                        {
-                                          autoClose: 4000,
-                                        }
-                                      );
-                                      // Reset to original value
-                                      handleEmployeeDataChange(
-                                        actualEmpIdx,
-                                        "glcPlc",
-                                        originalValue
-                                      );
-                                      setPlcSearch(originalValue);
-                                    }
-                                  }
-                                }}
-                                className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                                list={`plc-list-${actualEmpIdx}`}
-                                placeholder="Enter PLC"
-                              />
-                            ) : (
-                              row.glcPlc
-                            )}
-                            <datalist id={`plc-list-${actualEmpIdx}`}>
-                              {/* Use updatePlcOptions if available, otherwise fallback to plcOptions */}
-                              {(updatePlcOptions.length > 0
-                                ? updatePlcOptions
-                                : plcOptions
-                              ).map((plc, index) => (
-                                <option
-                                  key={`${plc.value}-${index}`}
-                                  value={plc.value}
-                                >
-                                  {plc.label}
-                                </option>
-                              ))}
-                            </datalist>
-                          </td>
+        {/* Account Column - Width decreased and Input max-width added */}
+        <td className="tbody-td min-w-[110px]">
+          {isBudPlan && isEditable ? (
+            <input
+              type="text"
+              value={editedData.acctId !== undefined ? editedData.acctId : row.acctId}
+              onChange={(e) => handleAccountInputChangeForUpdate(e.target.value, actualEmpIdx)}
+              onBlur={(e) => {
+                if (planType === "NBBUD") return;
+                const val = e.target.value;
+                const originalValue = row.acctId;
+                if (val !== originalValue && !isValidAccountForUpdate(val, updateAccountOptions)) {
+                  toast.error("Please enter a valid Account from the available list.", { autoClose: 3000 });
+                }
+              }}
+              style={{ maxWidth: "100px" }}
+              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+              list={`account-list-${actualEmpIdx}`}
+              placeholder="Enter Account"
+            />
+          ) : (
+            row.acctId
+          )}
+          <datalist id={`account-list-${actualEmpIdx}`}>
+            {updateAccountOptions.map((account, index) => (
+              <option key={`${account.id}-${index}`} value={account.id}>
+                {account.id}
+              </option>
+            ))}
+          </datalist>
+        </td>
 
-                          <td className="tbody-td min-w-[70px] text-center">
-                            {isFieldEditable && isEditable ? (
-                              <input
-                                type="checkbox"
-                                checked={
-                                  editedData.isRev !== undefined
-                                    ? editedData.isRev
-                                    : emp.emple.isRev
-                                }
-                                onChange={(e) =>
-                                  handleEmployeeDataChange(
-                                    actualEmpIdx,
-                                    "isRev",
-                                    e.target.checked
-                                  )
-                                }
-                                className="w-4 h-4"
-                              />
-                            ) : (
-                              row.isRev
-                            )}
-                          </td>
-                          <td className="tbody-td min-w-[70px] text-center">
-                            {isFieldEditable && isEditable ? (
-                              <input
-                                type="checkbox"
-                                checked={
-                                  editedData.isBrd !== undefined
-                                    ? editedData.isBrd
-                                    : emp.emple.isBrd
-                                }
-                                onChange={(e) =>
-                                  handleEmployeeDataChange(
-                                    actualEmpIdx,
-                                    "isBrd",
-                                    e.target.checked
-                                  )
-                                }
-                                className="w-4 h-4"
-                              />
-                            ) : (
-                              row.isBrd
-                            )}
-                          </td>
-                          <td className="tbody-td min-w-[70px]">
-                            {row.status}
-                          </td>
+        <td className="tbody-td min-w-[120px]">{row.acctName}</td>
 
-                          <td className="tbody-td min-w-[70px]">
-                            {isBudPlan &&
-                            isEditable &&
-                            emp.emple.type !== "Employee" &&
-                            emp.emple.type !== "Vendor Employee" &&
-                            emp.emple.type !== "Vendor" ? (
-                              <input
-                                type="password"
-                                value={
-                                  editingPerHourRateIdx === actualEmpIdx
-                                    ? editedData.perHourRate !== undefined
-                                      ? editedData.perHourRate
-                                      : row.perHourRate
-                                    : ""
-                                }
-                                placeholder={
-                                  editingPerHourRateIdx === actualEmpIdx
-                                    ? ""
-                                    : "**"
-                                }
-                                onFocus={() =>
-                                  setEditingPerHourRateIdx(actualEmpIdx)
-                                }
-                                onChange={(e) =>
-                                  handleEmployeeDataChange(
-                                    actualEmpIdx,
-                                    "perHourRate",
-                                    e.target.value.replace(/[^0-9.]/g, "")
-                                  )
-                                }
-                                className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                                // disabled={false}
-                                disabled={
-                                  emp.emple.type !== "Employee" &&
-                                  emp.emple.type !== "Vendor Employee" &&
-                                  emp.emple.type !== "Vendor"
-                                }
-                              />
-                            ) : (
-                              <span className="text-gray-400 cursor-not-allowed">
-                                **
-                              </span>
-                            )}
-                          </td>
+        {/* Organization Column - Width decreased and Input max-width added */}
+        <td className="tbody-td min-w-[110px]">
+          {isBudPlan && isEditable ? (
+            <input
+              type="text"
+              value={editedData.orgId !== undefined ? editedData.orgId : row.orgId}
+              onChange={(e) => handleOrgInputChangeForUpdate(e.target.value, actualEmpIdx)}
+              onBlur={(e) => {
+                if (planType === "NBBUD") return;
+                const val = e.target.value;
+                const originalValue = row.orgId;
+                if (val !== originalValue && val && !isValidOrgForUpdate(val, updateOrganizationOptions)) {
+                  toast.error("Please enter a valid numeric Organization ID from the available list.", { autoClose: 3000 });
+                }
+              }}
+              style={{ maxWidth: "100px" }}
+              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+              list={`organization-list-${actualEmpIdx}`}
+              placeholder="Enter Organization ID"
+            />
+          ) : (
+            row.orgId
+          )}
+          <datalist id={`organization-list-${actualEmpIdx}`}>
+            {updateOrganizationOptions.map((org, index) => (
+              <option key={`${org.value}-${index}`} value={org.value}>
+                {org.label}
+              </option>
+            ))}
+          </datalist>
+        </td>
 
-                          <td className="tbody-td min-w-[70px]">{row.total}</td>
-                        </tr>
-                      );
-                    })}
+        {/* PLC Column - Width decreased and Input max-width added */}
+        <td className="tbody-td min-w-[110px]">
+          {isBudPlan && isEditable ? (
+            <input
+              type="text"
+              value={editedData.glcPlc !== undefined ? editedData.glcPlc : row.glcPlc}
+              onChange={(e) => handlePlcInputChangeForUpdate(e.target.value, actualEmpIdx)}
+              onBlur={(e) => {
+                if (planType === "NBBUD") return;
+                const val = e.target.value.trim();
+                const originalValue = row.glcPlc;
+                if (val !== originalValue && val !== "") {
+                  const exactPlcMatch = plcOptions.find((option) => option.value.toLowerCase() === val.toLowerCase());
+                  if (!exactPlcMatch) {
+                    toast.error("PLC must be selected from the available suggestions. Custom values are not allowed.", { autoClose: 4000 });
+                    handleEmployeeDataChange(actualEmpIdx, "glcPlc", originalValue);
+                    setPlcSearch(originalValue);
+                  }
+                }
+              }}
+              style={{ maxWidth: "100px" }}
+              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+              list={`plc-list-${actualEmpIdx}`}
+              placeholder="Enter PLC"
+            />
+          ) : (
+            row.glcPlc
+          )}
+          <datalist id={`plc-list-${actualEmpIdx}`}>
+            {(updatePlcOptions.length > 0 ? updatePlcOptions : plcOptions).map((plc, index) => (
+              <option key={`${plc.value}-${index}`} value={plc.value}>
+                {plc.label}
+              </option>
+            ))}
+          </datalist>
+        </td>
+
+        <td className="tbody-td min-w-[70px] text-center">
+          {isFieldEditable && isEditable ? (
+            <input
+              type="checkbox"
+              checked={editedData.isRev !== undefined ? editedData.isRev : emp.emple.isRev}
+              onChange={(e) => handleEmployeeDataChange(actualEmpIdx, "isRev", e.target.checked)}
+              className="w-4 h-4"
+            />
+          ) : (
+            row.isRev
+          )}
+        </td>
+        <td className="tbody-td min-w-[70px] text-center">
+          {isFieldEditable && isEditable ? (
+            <input
+              type="checkbox"
+              checked={editedData.isBrd !== undefined ? editedData.isBrd : emp.emple.isBrd}
+              onChange={(e) => handleEmployeeDataChange(actualEmpIdx, "isBrd", e.target.checked)}
+              className="w-4 h-4"
+            />
+          ) : (
+            row.isBrd
+          )}
+        </td>
+        <td className="tbody-td min-w-[70px]">{row.status}</td>
+
+        <td className="tbody-td min-w-[70px]">
+          {isBudPlan && isEditable && emp.emple.type !== "Employee" && emp.emple.type !== "Vendor Employee" && emp.emple.type !== "Vendor" ? (
+            <input
+              type="password"
+              value={editingPerHourRateIdx === actualEmpIdx ? (editedData.perHourRate !== undefined ? editedData.perHourRate : row.perHourRate) : ""}
+              placeholder={editingPerHourRateIdx === actualEmpIdx ? "" : "**"}
+              onFocus={() => setEditingPerHourRateIdx(actualEmpIdx)}
+              onChange={(e) => handleEmployeeDataChange(actualEmpIdx, "perHourRate", e.target.value.replace(/[^0-9.]/g, ""))}
+              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
+              disabled={emp.emple.type !== "Employee" && emp.emple.type !== "Vendor Employee" && emp.emple.type !== "Vendor"}
+            />
+          ) : (
+            <span className="text-gray-400 cursor-not-allowed">**</span>
+          )}
+        </td>
+
+        <td className="tbody-td min-w-[70px]">{row.total}</td>
+      </tr>
+    );
+  })}
                 </tbody>
                 <tfoot>
   {/* Spacer row to keep sticky totals from covering data */}

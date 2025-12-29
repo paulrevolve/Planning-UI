@@ -6674,848 +6674,269 @@ const isIndeterminate =
                 <tbody className="tbody">
                   {/* Pasted Entries */}
                   {/* Pasted Entries */}
+
                   {newEntries.length > 0 &&
-                    newEntries.map((entry, entryIndex) => (
-                      
-                      <React.Fragment key={`pasted-entry-${entryIndex}`}>
-                        
-                        <tr style={{ height: `${ROW_HEIGHT_DEFAULT}px` }}>
+  newEntries.map((entry, entryIndex) => (
+    <React.Fragment key={`pasted-duration-${entryIndex}`}>
+      <tr
+        key={`new-entry-${entryIndex}`}
+        className="bg-yellow-50"
+        style={{
+          height: `${ROW_HEIGHT_DEFAULT}px`,
+          lineHeight: "normal",
+        }}
+      >
+        <td className="tbody-td min-w-[45px] px-2 text-center">
+          <input type="checkbox" disabled className="w-4 h-4 opacity-50 cursor-not-allowed" />
+        </td>
 
-                            <td className="tbody-td min-w-[45px] px-2 text-center">
-        <input type="checkbox" disabled className="w-4 h-4 opacity-50 cursor-not-allowed" />
-      </td>
-                          
-                      
-                          {/* ID Type - Dropdown (EDITABLE) */}
-                          <td className="tbody-td">
-                            <select
-                              value={entry.idType}
-                              onChange={(e) => {
-                                updateNewEntry(entryIndex, {
-                                  idType: e.target.value,
-                                  id: "",
-                                  firstName: "",
-                                  lastName: "",
-                                  acctId: "",
-                                  orgId: "",
-                                });
-                                // Fetch suggestions for new ID type
-                                fetchSuggestionsForPastedEntry(entryIndex, {
-                                  ...entry,
-                                  idType: e.target.value,
-                                });
-                              }}
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                            >
-                              {ID_TYPE_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
+        <td className="tbody-td min-w-[70px]">
+          <select
+            name="idType"
+            value={entry.idType}
+            onChange={(e) => {
+              const value = e.target.value;
+              const newId = value === "PLC" ? "PLC" : "";
+              setNewEntries((prev) =>
+                prev.map((ent, idx) =>
+                  idx === entryIndex
+                    ? {
+                        ...ent,
+                        id: newId,
+                        firstName: "",
+                        lastName: "",
+                        isRev: false,
+                        isBrd: false,
+                        idType: value,
+                        acctId: "",
+                        orgId: "",
+                        status: "Act",
+                      }
+                    : ent
+                )
+              );
+              fetchSuggestionsForPastedEntry(entryIndex, { ...entry, idType: value });
+            }}
+            className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
+          >
+            {ID_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </td>
 
-                          {/* ID - Input with Suggestions (EDITABLE) */}
-                          <td className="tbody-td">
-                            <input
-                              type="text"
-                              value={entry.id}
-                              // onChange={(e) => {
-                              //   const value = e.target.value;
-                              //   updateNewEntry(entryIndex, { id: value });
-
-                              //   // Auto-fill name if employee is selected from suggestions
-                              //   const selectedEmployee = (
-                              //     pastedEntrySuggestions[entryIndex] || []
-                              //   ).find((emp) => emp.emplId === value);
-                              //   if (selectedEmployee) {
-                              //     updateNewEntry(entryIndex, {
-                              //       id: value,
-                              //       firstName: selectedEmployee.firstName || "",
-                              //       lastName: selectedEmployee.lastName || "",
-                              //       orgId: selectedEmployee.orgId || entry.orgId,
-                              //       acctId: selectedEmployee.acctId || entry.acctId,
-                              //     });
-                              //   }
-                              // }}
-                              onChange={(e) => {
-                                // --- FIX: SANITIZE INPUT ON EDIT ---
-                                const rawValue = e.target.value;
-                                const value = rawValue.replace(
-                                  /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-                                  ""
-                                );
-                                // -----------------------------------
-
-                                updateNewEntry(entryIndex, { id: value });
-
-                                // Auto-fill name if employee is selected from suggestions
-                                const selectedEmployee = (
-                                  pastedEntrySuggestions[entryIndex] || []
-                                ).find((emp) => emp.emplId === value);
-
-                                if (selectedEmployee) {
-                                  updateNewEntry(entryIndex, {
-                                    id: value,
-                                    firstName: selectedEmployee.firstName || "",
-                                    lastName: selectedEmployee.lastName || "",
-                                    orgId:
-                                      selectedEmployee.orgId || entry.orgId,
-                                    acctId:
-                                      selectedEmployee.acctId || entry.acctId,
-                                  });
-                                }
-                              }}
-                              list={`employee-id-list-${entryIndex}`}
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                              placeholder="Enter ID"
-                            />
-                            {entry.idType !== "Other" && (
-                              <datalist id={`employee-id-list-${entryIndex}`}>
-                                {(pastedEntrySuggestions[entryIndex] || [])
-                                  .filter(
-                                    (emp) =>
-                                      emp.emplId &&
-                                      typeof emp.emplId === "string"
-                                  )
-                                  .map((emp, idx) => (
-                                    <option
-                                      key={`${emp.emplId}-${idx}`}
-                                      value={emp.emplId}
-                                    >
-                                      {emp.lastName && emp.firstName
-                                        ? `${emp.lastName}, ${emp.firstName}`
-                                        : emp.lastName ||
-                                          emp.firstName ||
-                                          emp.emplId}
-                                    </option>
-                                  ))}
-                              </datalist>
-                            )}
-                          </td>
-
-                          {/* Name - Auto-filled or Editable for "Other" */}
-                          {/* <td className="tbody-td">
+        {/* ID Column */}
+        <td className="tbody-td min-w-[115px]">
           <input
             type="text"
-            value={
-              entry.idType === "Other"
-                ? (entry.firstName || "") +
-                  (entry.lastName ? " " + entry.lastName : "")
-                : entry.lastName && entry.firstName
-                ? `${entry.lastName}, ${entry.firstName}`
-                : entry.lastName || entry.firstName || ""
-            }
-            readOnly={entry.idType !== "Other"}
-            className={`w-full border border-gray-300 rounded px-1 py-0.5 text-xs ${
-              entry.idType === "Other"
-                ? "bg-white cursor-text"
-                : "bg-gray-100 cursor-not-allowed"
-            }`}
-            placeholder="Name (auto-filled or editable for 'Other')"
+            value={entry.id}
+            onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
             onChange={(e) => {
-              if (entry.idType === "Other") {
-                const fullName = e.target.value.trim();
-                const parts = fullName.split(" ");
-                const firstName = parts[0] || "";
-                const lastName = parts.slice(1).join(" ") || "";
-                updateNewEntry(entryIndex, {
-                  firstName,
-                  lastName,
-                });
+              const val = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+              const trimmedValue = val.trim();
+              setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, id: val } : ent)));
+              if (entry.idType !== "Other") {
+                const suggestions = pastedEntrySuggestions[entryIndex] || [];
+                const selectedEmployee = suggestions.find((emp) => emp.emplId === trimmedValue);
+                if (selectedEmployee) {
+                  setNewEntries((prev) =>
+                    prev.map((ent, idx) =>
+                      idx === entryIndex
+                        ? {
+                            ...ent,
+                            id: trimmedValue,
+                            firstName: selectedEmployee.firstName || "",
+                            lastName: selectedEmployee.lastName || "",
+                            orgId: selectedEmployee.orgId || ent.orgId,
+                          }
+                        : ent
+                    )
+                  );
+                }
               }
             }}
+            disabled={entry.idType === "PLC"}
+            style={{ maxWidth: "100px" }}
+            className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
+            list={`employee-id-list-${entryIndex}`}
+            placeholder="ID"
           />
-        </td> */}
-                          {/* Name - Auto-filled or Editable for "Other" */}
-                          <td className="tbody-td">
-                            <input
-                              type="text"
-                              value={
-                                entry.idType === "Other"
-                                  ? (entry.firstName || "") +
-                                    (entry.lastName ? " " + entry.lastName : "")
-                                  : entry.lastName && entry.firstName
-                                  ? `${entry.lastName}, ${entry.firstName}`
-                                  : entry.lastName || entry.firstName || ""
-                              }
-                              readOnly={entry.idType !== "Other"}
-                              className={`w-full border border-gray-300 rounded px-1 py-0.5 text-xs ${
-                                entry.idType === "Other"
-                                  ? "bg-white cursor-text"
-                                  : "bg-gray-100 cursor-not-allowed"
-                              }`}
-                              placeholder="Name (auto-filled or editable for 'Other')"
-                              onChange={(e) => {
-                                if (entry.idType === "Other") {
-                                  const rawInput = e.target.value;
+          <datalist id={`employee-id-list-${entryIndex}`}>
+            {(pastedEntrySuggestions[entryIndex] || []).filter((emp) => emp.emplId).map((emp, idx) => (
+              <option key={idx} value={emp.emplId}>{emp.lastName}, {emp.firstName}</option>
+            ))}
+          </datalist>
+        </td>
 
-                                  // 1. Remove Emojis
-                                  const noEmojiInput = rawInput.replace(
-                                    /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-                                    ""
-                                  );
-
-                                  // 2. Update State directly
-                                  // We store the whole string in firstName and clear lastName to allow spaces while typing
-                                  updateNewEntry(entryIndex, {
-                                    firstName: noEmojiInput,
-                                    lastName: "",
-                                  });
-                                }
-                              }}
-                            />
-                          </td>
-
-                          {/* Account - Editable with Suggestions */}
-                          <td
-                            key={`${entry.id}-${entryIndex}-acctId`}
-                            className="tbody-td min-w-70px"
-                          >
-                            {/* <input
-                              type="text"
-                              value={entry.acctId}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                const accountList =
-                                  pastedEntryAccounts[entryIndex] || [];
-                                const accountWithName = accountList.find(
-                                  (acc) => (acc.id || acc.accountId) === val
-                                );
-
-                                updateNewEntry(entryIndex, {
-                                  acctId: val,
-                                  acctName: accountWithName
-                                    ? accountWithName.name ||
-                                      accountWithName.acctName
-                                    : "",
-                                });
-                              }}
-                              list={`account-list-pasted-${entryIndex}`}
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                              placeholder="Enter Account"
-                            /> */}
-                            <input
-  type="text"
-  value={entry.acctId}
-  onChange={(e) => {
-    const val = e.target.value;
-    
-    // Get the account list from your existing state
-    const accountList = accountOptionsWithNames || [];
-    
-    // Find the name associated with this ID
-    const matchedAccount = accountList.find(
-      (acc) => (acc.id || acc.accountId) === val
-    );
-
-    // Update the specific entry in the array with BOTH ID and Name
-    const updatedEntries = [...newEntries];
-    updatedEntries[entryIndex] = {
-      ...updatedEntries[entryIndex],
-      acctId: val,
-      acctName: matchedAccount ? matchedAccount.name : "" // This auto-fills the next cell
-    };
-    setNewEntries(updatedEntries);
-  }}
-  list={`account-list-pasted-${entryIndex}`}
-  className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-  placeholder="Enter Account"
-/>
-                            <datalist id={`account-list-pasted-${entryIndex}`}>
-                              {(pastedEntryAccounts[entryIndex] || []).map(
-                                (account, index) => {
-                                  const valueText =
-                                    account.id || account.accountId;
-                                  return (
-                                    <option
-                                      key={`${valueText}-${index}`}
-                                      value={valueText}
-                                    />
-                                  );
-                                }
-                              )}
-                            </datalist>
-                          </td>
-
-                          {/* Account Name - Auto-filled (READ-ONLY) */}
-                          <td
-                            key={`${entry.id}-${entryIndex}-acctName`}
-                            className="tbody-td"
-                          >
-                            <input
-                              type="text"
-                              value={entry.acctName || ""}
-                              readOnly
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed"
-                              placeholder="Account Name (auto-filled)"
-                            />
-                          </td>
-
-                          {/* Organization - Editable with Suggestions */}
-                          <td
-                            key={`${entry.id}-${entryIndex}-orgId`}
-                            className="tbody-td"
-                          >
-                            <input
-                              type="text"
-                              value={entry.orgId}
-                              onChange={(e) =>
-                                isFieldEditable &&
-                                updateNewEntry(entryIndex, {
-                                  orgId: e.target.value,
-                                })
-                              }
-                              onBlur={(e) => {
-                                const val = e.target.value.trim();
-                                const validOrgs = (
-                                  pastedEntryOrgs[entryIndex] || []
-                                ).map((org) => org.value);
-
-                                if (val !== "" && !validOrgs.includes(val)) {
-                                  toast.error(
-                                    "Please select a valid organization from suggestions"
-                                  );
-                                  updateNewEntry(entryIndex, { orgId: "" });
-                                }
-                              }}
-                              list={`org-list-${entryIndex}`}
-                              className={`w-full border border-gray-300 rounded px-1 py-0.5 text-xs ${
-                                !isFieldEditable
-                                  ? "bg-gray-100 cursor-not-allowed"
-                                  : ""
-                              }`}
-                              placeholder="Enter Organization"
-                              readOnly={!isFieldEditable}
-                            />
-                            <datalist id={`org-list-${entryIndex}`}>
-                              {(pastedEntryOrgs[entryIndex] || []).map(
-                                (org, idx) => (
-                                  <option
-                                    key={`${org.value}-${idx}`}
-                                    value={org.value}
-                                  >
-                                    {org.label}
-                                  </option>
-                                )
-                              )}
-                            </datalist>
-                          </td>
-
-                          {/* Rev - Checkbox */}
-                          <td className="tbody-td text-center">
-                            <input
-                              type="checkbox"
-                              checked={entry.isRev}
-                              onChange={(e) =>
-                                isFieldEditable &&
-                                updateNewEntry(entryIndex, {
-                                  isRev: e.target.checked,
-                                })
-                              }
-                              className={`w-4 h-4 ${
-                                !isFieldEditable ? "cursor-not-allowed" : ""
-                              }`}
-                              disabled={!isFieldEditable}
-                            />
-                          </td>
-
-                          {/* Brd - Checkbox */}
-                          <td className="tbody-td text-center">
-                            <input
-                              type="checkbox"
-                              checked={entry.isBrd}
-                              onChange={(e) =>
-                                isFieldEditable &&
-                                updateNewEntry(entryIndex, {
-                                  isBrd: e.target.checked,
-                                })
-                              }
-                              className={`w-4 h-4 ${
-                                !isFieldEditable ? "cursor-not-allowed" : ""
-                              }`}
-                              disabled={!isFieldEditable}
-                            />
-                          </td>
-
-                          {/* Status */}
-                          <td className="tbody-td">
-                            <input
-                              type="text"
-                              value={entry.status}
-                              onChange={(e) =>
-                                updateNewEntry(entryIndex, {
-                                  status: e.target.value,
-                                })
-                              }
-                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                              placeholder="Enter Status"
-                              disabled={entry.idType === "Other"}
-                              readOnly={entry.idType === "Other"}
-                            />
-                          </td>
-
-                          {/* Total */}
-                          <td className="tbody-td">
-                            {Object.values(
-                              newEntryPeriodAmountsArray[entryIndex] || {}
-                            )
-                              .reduce(
-                                (sum, val) => sum + (parseFloat(val) || 0),
-                                0
-                              )
-                              .toFixed(2)}
-                          </td>
-                        </tr>
-                      </React.Fragment>
-                    ))}
-
-
-                  {sortedEmployees
-                    .filter((_, idx) => !hiddenRows[idx])
-                    .map((emp, idx) => {
-                      const actualEmpIdx = employees.findIndex(
-                        (e) => e === emp
-                      );
-                      const row = getEmployeeRow(emp, actualEmpIdx);
-                      const uniqueRowKey = `${
-                        emp.emple.emplId || "emp"
-                      }-${actualEmpIdx}`;
-
-                      const isSelected = selectedRows.has(actualEmpIdx);
-                      
-                      return (
-                        <tr
-                          key={uniqueRowKey}
-                          className={`whitespace-nowrap hover:bg-blue-50 transition border-b border-gray-200 ${
-                            selectedRows.has(actualEmpIdx)
-                              ? "bg-blue-100" // Selected row background
-                              : selectedRowIndex === actualEmpIdx
-                              ? "bg-yellow-100"
-                              : "even:bg-gray-50"
-                          }`}
-                          style={{
-                            height: `${ROW_HEIGHT_DEFAULT}px`,
-                            lineHeight: "normal",
-                            cursor: isEditable ? "pointer" : "default",
-                          }}
-                          // onClick={() => handleRowClick(actualEmpIdx)}
-                        >
-                            <td className="tbody-td text-center w-6">
+        <td className="tbody-td min-w-[115px]">
           <input
-            type="checkbox"
-            className="w-4 h-4"
-            checked={isSelected}
-            // disabled={!isEditable}
-            onClick={(e) => {
-              e.stopPropagation();         // do not re-trigger row click twice
-              handleRowClick(actualEmpIdx);
+            type="text"
+            value={entry.idType === "Other" || planType === "NBBUD" ? entry.firstName || "" : entry.lastName && entry.firstName ? `${entry.lastName}, ${entry.firstName}` : entry.lastName || entry.firstName || ""}
+            readOnly={entry.idType !== "Other"}
+            onKeyDown={(e) => e.key === " " && e.stopPropagation()}
+            onChange={(e) => {
+              if (entry.idType === "Other" || planType === "NBBUD") {
+                const cleanValue = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+                setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, firstName: cleanValue.trimStart(), lastName: "" } : ent)));
+              }
             }}
+            style={{ maxWidth: "100px" }}
+            className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
+            placeholder="Name"
           />
         </td>
 
-                          {EMPLOYEE_COLUMNS.map((col) => {
-                            if (isBudPlan && isEditable) {
-                              // if (col.key === "acctId") {
-                              //                                 return (
-                              //                                   <td
-                              //                                     key={`${emp.emple.emplId}-${actualEmpIdx}-acctId`}
-                              //                                     className="tbody-td min-w-[70px]"
-                              //                                   >
-                              //                                     <input
-                              //                                       type="text"
-                              //                                       value={
-                              //                                         editedRowData[actualEmpIdx]?.acctId !==
-                              //                                         undefined
-                              //                                           ? editedRowData[actualEmpIdx].acctId
-                              //                                           : row.acctId
-                              //                                       }
-                              //                                        onChange={(e) => {
-                              //     const val = e.target.value;
+        {/* Account ID Column */}
+        <td className="tbody-td min-w-[125px]">
+          <input
+            type="text"
+            value={entry.acctId}
+            onChange={(e) => {
+              const val = e.target.value;
+              const accountList = accountOptionsWithNames || [];
+              const matchedAccount = accountList.find((acc) => (acc.id || acc.accountId) === val);
+              setNewEntries((prev) => prev.map((ent, idx) => 
+                idx === entryIndex ? { ...ent, acctId: val, acctName: matchedAccount ? (matchedAccount.name || matchedAccount.acctName) : "" } : ent
+              ));
+            }}
+            style={{ maxWidth: "110px" }}
+            className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+            list={`account-list-pasted-${entryIndex}`}
+            placeholder="Account"
+          />
+          <datalist id={`account-list-pasted-${entryIndex}`}>
+            {(pastedEntryAccounts[entryIndex] || []).map((account, index) => (
+              <option key={index} value={account.id || account.accountId} />
+            ))}
+          </datalist>
+        </td>
 
-                              //     // Determine correct account list based on ID type
-                              //     const accountList =
-                              //       emp.emple.type === 'Vendor' || emp.emple.type === 'Vendor Employee'
-                              //         ? subContractorNonLaborAccounts
-                              //         : emp.emple.type === 'Other'
-                              //         ? [ // START FIX: Combine all three lists for 'Other'
-                              //             ...employeeNonLaborAccounts,
-                              //             ...subContractorNonLaborAccounts,
-                              //             ...otherDirectCostNonLaborAccounts
-                              //           ]
-                              //         : employeeNonLaborAccounts;
+        <td className="tbody-td min-w-[120px]">
+          <input type="text" value={entry.acctName || ""} readOnly style={{ maxWidth: "110px" }} className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed" placeholder="Account Name" />
+        </td>
 
-                              //     // Find matching account
-                              //     const accountWithName = accountList.find(acc =>
-                              //       (acc.id || acc.accountId) === val
-                              //     );
+        {/* Organization Column */}
+        <td className="tbody-td min-w-[125px]">
+          <input
+            type="text"
+            value={entry.orgId}
+            onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, orgId: e.target.value } : ent)))}
+            style={{ maxWidth: "110px" }}
+            className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+            list={`org-list-pasted-${entryIndex}`}
+            placeholder="Org"
+          />
+          <datalist id={`org-list-pasted-${entryIndex}`}>
+            {(pastedEntryOrgs[entryIndex] || []).map((org, index) => (
+              <option key={index} value={org.value}>{org.label}</option>
+            ))}
+          </datalist>
+        </td>
 
-                              //     // Update BOTH acctId and acctName at the same time
-                              //     setEditedRowData(prev => ({
-                              //       ...prev,
-                              //       [actualEmpIdx]: {
-                              //         ...prev[actualEmpIdx],
-                              //         acctId: val,
-                              //         acctName: accountWithName ? (accountWithName.name || accountWithName.acctName) : '',
-                              //       },
-                              //     }));
+        <td className="tbody-td text-center">
+          <input type="checkbox" checked={entry.isRev} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, isRev: e.target.checked } : ent)))} />
+        </td>
+        <td className="tbody-td text-center">
+          <input type="checkbox" checked={entry.isBrd} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, isBrd: e.target.checked } : ent)))} />
+        </td>
+        <td className="tbody-td">
+          <input type="text" value={entry.status} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, status: e.target.value } : ent)))} className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" />
+        </td>
+        <td className="tbody-td">
+          {Object.values(newEntryPeriodAmountsArray[entryIndex] || {}).reduce((sum, val) => sum + (parseFloat(val) || 0), 0).toFixed(2)}
+        </td>
+      </tr>
+    </React.Fragment>
+  ))}
 
-                              //     setEditingRowIndex(actualEmpIdx);
-                              //     setHasUnsavedFieldChanges(true);
-                              //   }}
-                              //                                       // onChange={(e) => {
-                              //                                       //   const val = e.target.value;
-                              //                                       //   handleRowFieldChange(
-                              //                                       //     actualEmpIdx,
-                              //                                       //     "acctId",
-                              //                                       //     val
-                              //                                       //   );
-                              //                                       //   setEditingRowIndex(actualEmpIdx);
-                              //                                       //   setHasUnsavedFieldChanges(true);
-                              //                                       // }}
-                              //                                       // disabled={isEAC}
-                              //                                       // readOnly={isEAC}
-                              //                                       list={`account-list-${actualEmpIdx}`}
-                              //                                       className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                              //                                       placeholder="Enter Account"
-                              //                                     />
+  {sortedEmployees
+  .filter((_, idx) => !hiddenRows[idx])
+  .map((emp, idx) => {
+    const actualEmpIdx = employees.findIndex((e) => e === emp);
+    const row = getEmployeeRow(emp, actualEmpIdx);
+    const uniqueRowKey = `${emp.emple.emplId || "emp"}-${actualEmpIdx}`;
+    const isSelected = selectedRows.has(actualEmpIdx);
 
-                              //                                     {/* <datalist
-                              //                                       id={`account-list-${actualEmpIdx}`}
-                              //                                     >
-                              //                                       {(emp.idType === "Vendor" ||
-                              //                                       emp.idType === "Vendor Employee"
-                              //                                         ? subContractorNonLaborAccounts
-                              //                                         : employeeNonLaborAccounts
-                              //                                       ).map((account, index) => {
-                              //                                         const valueText =
-                              //                                           account.id || account.accountId || "";
+    return (
+      <tr
+        key={uniqueRowKey}
+        className={`whitespace-nowrap hover:bg-blue-50 transition border-b border-gray-200 ${
+          isSelected ? "bg-blue-100" : selectedRowIndex === actualEmpIdx ? "bg-yellow-100" : "even:bg-gray-50"
+        }`}
+        style={{
+          height: `${ROW_HEIGHT_DEFAULT}px`,
+          lineHeight: "normal",
+          cursor: isEditable ? "pointer" : "default",
+        }}
+      >
+        <td className="tbody-td text-center w-6">
+          <input type="checkbox" className="w-4 h-4" checked={isSelected} onClick={(e) => { e.stopPropagation(); handleRowClick(actualEmpIdx); }} />
+        </td>
 
-                              //                                         return (
-                              //                                           <option
-                              //                                             key={`${valueText}-${index}`}
-                              //                                             value={valueText}
-                              //                                           >
+        {EMPLOYEE_COLUMNS.map((col) => {
+          let tdWidth = "min-w-[70px]";
+          if (col.key === "emplId") tdWidth = "min-w-[115px]";
+          if (col.key === "acctId" || col.key === "orgId") tdWidth = "min-w-[125px]";
+          if (col.key === "acctName" || col.key === "name") tdWidth = "min-w-[130px]";
 
-                              //                                           </option>
-                              //                                         );
-                              //                                       })}
-                              //                                     </datalist> */}
-                              //                                     {/* <datalist id={`account-list-${actualEmpIdx}`}>
-                              //   {(emp.emple.type === "Vendor" || emp.emple.type === "Vendor Employee"
-                              //     ? subContractorNonLaborAccounts
-                              //     : emp.emple.type === "Other"
-                              //     ? otherDirectCostNonLaborAccounts
-                              //     : employeeNonLaborAccounts
-                              //   ).map((account, index) => {
-                              //     const valueText = account.id || account.accountId || "";
-                              //     return (
-                              //       <option
-                              //         key={`${valueText}-index`}
-                              //         value={valueText}
-                              //       >
-                              //       </option>
-                              //     );
-                              //   })}
-                              // </datalist> */}
-                              // <datalist id={`account-list-${actualEmpIdx}`}>  {/* or id="account-list" for new entry */}
-                              //   {(emp.emple.type === 'Vendor' || emp.emple.type === 'Vendor Employee'
-                              //     ? subContractorNonLaborAccounts
-                              //     : emp.emple.type === 'Other'
-                              //     ? [ // START FIX: Combine all three lists for 'Other'
-                              //             ...employeeNonLaborAccounts,
-                              //             ...subContractorNonLaborAccounts,
-                              //             ...otherDirectCostNonLaborAccounts
-                              //           ]
-                              //     : employeeNonLaborAccounts
-                              //   ).map((account, index) => {
-                              //     const valueText = account.id || account.accountId;
-                              //     const displayText = account.name || account.acctName || valueText;
-                              //     return (
-                              //       <option key={`${valueText}-${index}`} value={valueText}>
-                              //         {/* {displayText} */}
-                              //       </option>
-                              //     );
-                              //   })}
-                              // </datalist>
+          if (isBudPlan && isEditable) {
+            if (col.key === "acctId") {
+              return (
+                <td key={`${uniqueRowKey}-acctId`} className={`tbody-td ${tdWidth}`}>
+                  <input
+                    type="text"
+                    value={editedRowData[actualEmpIdx]?.acctId !== undefined ? editedRowData[actualEmpIdx].acctId : row.acctId}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const matched = accountOptionsWithNames.find(acc => (acc.id || acc.accountId) === val);
+                      setEditedRowData(prev => ({
+                        ...prev,
+                        [actualEmpIdx]: { ...prev[actualEmpIdx], acctId: val, acctName: matched ? (matched.name || matched.acctName) : "" }
+                      }));
+                      setEditingRowIndex(actualEmpIdx);
+                      setHasUnsavedFieldChanges(true);
+                    }}
+                    style={{ maxWidth: "110px" }}
+                    className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                    list={`account-list-${actualEmpIdx}`}
+                  />
+                  <datalist id={`account-list-${actualEmpIdx}`}>
+                    {accountOptionsWithNames.map((acc, i) => <option key={i} value={acc.id} />)}
+                  </datalist>
+                </td>
+              );
+            }
+            if (col.key === "orgId") {
+              return (
+                <td key={`${uniqueRowKey}-orgId`} className={`tbody-td ${tdWidth}`}>
+                  <input
+                    type="text"
+                    value={editedRowData[actualEmpIdx]?.orgId !== undefined ? editedRowData[actualEmpIdx].orgId : row.orgId}
+                    onChange={(e) => handleRowFieldChange(actualEmpIdx, "orgId", e.target.value)}
+                    style={{ maxWidth: "110px" }}
+                    className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                    list={`org-list-${actualEmpIdx}`}
+                  />
+                  <datalist id={`org-list-${actualEmpIdx}`}>
+                    {organizationOptions.map((org, i) => <option key={i} value={org.value}>{org.label}</option>)}
+                  </datalist>
+                </td>
+              );
+            }
+          }
+          return (
+            <td key={`${uniqueRowKey}-${col.key}`} className={`tbody-td ${tdWidth} ${col.key === "name" ? "text-left" : ""}`}>
+              {row[col.key]}
+            </td>
+          );
+        })}
+      </tr>
+    );
+  })}
+                  
 
-                              //                                   </td>
-                              //                                 );
 
-                              if (col.key === "acctId") {
-                                return (
-                                  <td
-                                    key={`${emp.emple.emplId}-${actualEmpIdx}-acctId`}
-                                    className="tbody-td min-w-[70px]"
-                                  >
-                                    <input
-                                      type="text"
-                                      value={
-                                        editedRowData[actualEmpIdx]?.acctId !==
-                                        undefined
-                                          ? editedRowData[actualEmpIdx].acctId
-                                          : row.acctId
-                                      }
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-
-                                        // FIXED: Show ALL accounts for 'Other' type
-                                        const accountList =
-                                          emp.emple.type === "Vendor" ||
-                                          emp.emple.type === "Vendor Employee"
-                                            ? subContractorNonLaborAccounts
-                                            : emp.emple.type === "Other"
-                                            ? [
-                                                ...employeeNonLaborAccounts,
-                                                ...subContractorNonLaborAccounts,
-                                                ...otherDirectCostNonLaborAccounts,
-                                              ]
-                                            : employeeNonLaborAccounts;
-
-                                        // Find matching account
-                                        const accountWithName =
-                                          accountList.find(
-                                            (acc) =>
-                                              (acc.id || acc.accountId) === val
-                                          );
-
-                                        // Update BOTH acctId and acctName at the same time
-                                        setEditedRowData((prev) => ({
-                                          ...prev,
-                                          [actualEmpIdx]: {
-                                            ...prev[actualEmpIdx],
-                                            acctId: val,
-                                            acctName: accountWithName
-                                              ? accountWithName.name ||
-                                                accountWithName.acctName
-                                              : "",
-                                          },
-                                        }));
-
-                                        setEditingRowIndex(actualEmpIdx);
-                                        setHasUnsavedFieldChanges(true);
-                                      }}
-                                      list={`account-list-${actualEmpIdx}`}
-                                      className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                                      placeholder="Enter Account"
-                                    />
-
-                                    {/* FIXED: Datalist shows ALL accounts for 'Other' type */}
-                                    <datalist
-                                      id={`account-list-${actualEmpIdx}`}
-                                    >
-                                      {(() => {
-                                        // Same logic as onChange - show ALL accounts for 'Other'
-                                        const accountList =
-                                          emp.emple.type === "Vendor" ||
-                                          emp.emple.type === "Vendor Employee"
-                                            ? subContractorNonLaborAccounts
-                                            : emp.emple.type === "Other"
-                                            ? [
-                                                ...employeeNonLaborAccounts,
-                                                ...subContractorNonLaborAccounts,
-                                                ...otherDirectCostNonLaborAccounts,
-                                              ]
-                                            : employeeNonLaborAccounts;
-
-                                        return accountList.map(
-                                          (account, index) => {
-                                            const valueText =
-                                              account.id || account.accountId;
-                                            return (
-                                              <option
-                                                key={`${valueText}-${index}`}
-                                                value={valueText}
-                                              />
-                                            );
-                                          }
-                                        );
-                                      })()}
-                                    </datalist>
-                                  </td>
-                                );
-                              }
-
-                              // }
-                              if (col.key === "orgId") {
-                                return (
-                                  // <td
-                                  //   key={`${uniqueRowKey}-orgId`}
-                                  //   className="p-1.5 border-r border-gray-200 text-xs text-gray-700 min-w-[70px]"
-                                  // >
-                                  //   {" "}
-                                  //   {/* Changed p-2 to p-1.5, min-w-[80px] to min-w-[70px] */}
-                                  //   <input
-                                  //     type="text"
-                                  //     value={
-                                  //       editedRowData[actualEmpIdx]?.orgId !==
-                                  //       undefined
-                                  //         ? editedRowData[actualEmpIdx].orgId
-                                  //         : row.orgId
-                                  //     }
-                                  //     onChange={(e) =>
-                                  //       handleRowFieldChange(
-                                  //         actualEmpIdx,
-                                  //         "orgId",
-                                  //         e.target.value
-                                  //       )
-                                  //     }
-                                  //     onBlur={() =>
-                                  //       handleRowFieldBlur(actualEmpIdx, emp)
-                                  //     }
-                                  //     list={`organization-list-${actualEmpIdx}`}
-                                  //     className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                                  //   />
-                                  //   <datalist
-                                  //     id={`organization-list-${actualEmpIdx}`}
-                                  //   >
-                                  //     {organizationOptions.map((org, index) => (
-                                  //       <option
-                                  //         key={`${org.value}-${index}`}
-                                  //         value={org.value}
-                                  //       >
-                                  //         {org.label}
-                                  //       </option>
-                                  //     ))}
-                                  //   </datalist>
-                                  // </td>
-                                  <td
-                                    key={`${emp.emple.emplId}-${actualEmpIdx}-orgId`}
-                                    className="tbody-td min-w-[70px]"
-                                  >
-                                    <input
-                                      type="text"
-                                      value={
-                                        editedRowData[actualEmpIdx]?.orgId !==
-                                        undefined
-                                          ? editedRowData[actualEmpIdx].orgId
-                                          : row.orgId
-                                      }
-                                      // onChange={(e) =>
-                                      //   handleRowFieldChange(
-                                      //     actualEmpIdx,
-                                      //     "orgId",
-                                      //     e.target.value
-                                      //   )
-                                      // }
-                                      onChange={(e) => {
-                                        handleRowFieldChange(
-                                          actualEmpIdx,
-                                          "orgId",
-                                          e.target.value
-                                        );
-                                        setEditingRowIndex(actualEmpIdx);
-                                        setHasUnsavedFieldChanges(true);
-                                      }}
-                                      disabled={isEAC}
-                                      readOnly={isEAC}
-                                      list={`organization-list-${actualEmpIdx}`}
-                                      className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-                                    />
-                                    <datalist
-                                      id={`organization-list-${actualEmpIdx}`}
-                                    >
-                                      {organizationOptions.map((org, index) => (
-                                        <option
-                                          key={`${org.value}-${index}`}
-                                          value={org.value}
-                                        >
-                                          {org.label}
-                                        </option>
-                                      ))}
-                                    </datalist>
-                                  </td>
-                                );
-                              }
-                              if (col.key === "isRev") {
-                                return (
-                                  <td
-                                    key={`${emp.emple.emplId}-${actualEmpIdx}-isRev`}
-                                    className="tbody-td min-w-[70px] text-center"
-                                  >
-                                    {" "}
-                                    {/* Changed p-2 to p-1.5, min-w-[80px] to min-w-[70px] */}
-                                    <input
-                                      type="checkbox"
-                                      checked={
-                                        editedRowData[actualEmpIdx]?.isRev !==
-                                        undefined
-                                          ? editedRowData[actualEmpIdx].isRev
-                                          : emp.emple.isRev
-                                      }
-                                      // onChange={(e) =>
-                                      //   handleRowFieldChange(
-                                      //     actualEmpIdx,
-                                      //     "isRev",
-                                      //     e.target.checked
-                                      //   )
-                                      // }
-                                      onChange={(e) => {
-                                        handleRowFieldChange(
-                                          actualEmpIdx,
-                                          "isRev",
-                                          e.target.checked
-                                        );
-                                        setEditingRowIndex(actualEmpIdx);
-                                        setHasUnsavedFieldChanges(true);
-                                      }}
-                                      disabled={isEAC}
-                                      readOnly={isEAC}
-                                      className="w-4 h-4"
-                                    />
-                                  </td>
-                                );
-                              }
-                              if (col.key === "isBrd") {
-                                return (
-                                  <td
-                                    key={`${emp.emple.emplId}-${actualEmpIdx}-isBrd`}
-                                    className="tbody-td min-w-[70px] text-center"
-                                  >
-                                    {" "}
-                                    {/* Changed p-2 to p-1.5, min-w-[80px] to min-w-[70px] */}
-                                    <input
-                                      type="checkbox"
-                                      checked={
-                                        editedRowData[actualEmpIdx]?.isBrd !==
-                                        undefined
-                                          ? editedRowData[actualEmpIdx].isBrd
-                                          : emp.emple.isBrd
-                                      }
-                                      onChange={(e) => {
-                                        handleRowFieldChange(
-                                          actualEmpIdx,
-                                          "isBrd",
-                                          e.target.checked
-                                        );
-                                        setEditingRowIndex(actualEmpIdx);
-                                        setHasUnsavedFieldChanges(true);
-                                      }}
-                                      disabled={isEAC}
-                                      readOnly={isEAC}
-                                      className="w-4 h-4"
-                                    />
-                                  </td>
-                                );
-                              }
-                            }
-                            return (
-                              <td
-                                key={`${uniqueRowKey}-${col.key}`}
-                                // className="tbody-td min-w-[70px]"
-                                className={`tbody-td min-w-[70px] ${
-                                  col.key === "name" ? "text-left" : ""
-                                }`}
-                              >
-                                {" "}
-                                {/* Changed p-2 to p-1.5, min-w-[80px] to min-w-[70px] */}
-                                {row[col.key]}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })}
+                
                 </tbody>
                <tfoot>
   <tr
@@ -7630,7 +7051,8 @@ const isIndeterminate =
                 </thead>
                 <tbody className="tbody">
                   {/* Pasted Entries in Second Table */}
-                  {newEntries.length > 0 &&
+                  
+                    {newEntries.length > 0 &&
                     newEntries.map((entry, entryIndex) => (
                       <tr
                         key={`pasted-duration-${entryIndex}`}
@@ -7700,7 +7122,7 @@ const isIndeterminate =
                       </tr>
                     ))}
 
-                  {employees
+                     {employees
                     .filter((_, idx) => !hiddenRows[idx])
                     .map((emp, idx) => {
                       const actualEmpIdx = employees.findIndex(
@@ -7877,6 +7299,8 @@ const isIndeterminate =
                         </tr>
                       );
                     })}
+
+
                 </tbody>
              
 
