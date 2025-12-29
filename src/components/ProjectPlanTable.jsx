@@ -4129,7 +4129,7 @@ useImperativeHandle(ref, () => ({
   // Apply existing BUD/EAC filter if active
   if (budEacFilter) {
     filtered = filtered.filter(plan => 
-      plan.plType === 'BUD' || plan.plType === 'EAC'
+      plan.plType === 'BUD' || plan.plType === 'EAC' || plan.plType === 'NBBUD'
     )
   }
   
