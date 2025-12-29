@@ -17,6 +17,8 @@ const NewBusinessComponent = () => {
   const [columns] = useState([
     "businessBudgetId",
     "description",
+    "orgId",
+    "accountGroup",
     "level",
     "isActive",
     "version",
@@ -24,9 +26,9 @@ const NewBusinessComponent = () => {
     "startDate",
     "endDate",
     "escalationRate",
-    "orgId",
-    "accountGroup",
     "burdenTemplateId",
+    "status",
+    "trf_ProjId",
   ]);
 
   const isAllSelected = data.length > 0 && selectedRows.size === data.length;
@@ -41,11 +43,11 @@ const NewBusinessComponent = () => {
   }, [searchTerm]);
 
   const COLUMN_LABELS = {
-    businessBudgetId: "Business Budget Id",
+    businessBudgetId: "Id",
     description: "Description",
     level: "Level",
     isActive: "Active",
-    version: "Version",
+    version: "Ver",
     versionCode: "Version Code",
     startDate: "Start Date",
     endDate: "End Date",
@@ -53,6 +55,8 @@ const NewBusinessComponent = () => {
     orgId: "Org Id",
     accountGroup: "Account Group",
     burdenTemplateId: "Template",
+    status: "Status",
+    trf_ProjId: "Transferred Project",
   };
 
   const handleKeyPress = (e) => {
@@ -237,7 +241,7 @@ const NewBusinessComponent = () => {
               showNewBusinessPopup ? "blur-sm pointer-events-none" : ""
             }`}
           >
-            <table className="min-w-full table-auto  divide-gray-200">
+            <table className="min-w-full table-auto divide-gray-200">
               <thead className="bg-gray-200 sticky top-0">
                 <tr>
                   <th className="py-2 w-10">
@@ -305,7 +309,12 @@ const NewBusinessComponent = () => {
                       {columns.map((col, idx) => (
                         <td
                           key={idx}
-                          className="px-4 py-2 text-xs text-gray-600 text-center"
+                          // className="px-4 py-2 text-xs text-gray-600 text-center"
+                                                   className={`px-4 py-2 text-xs text-gray-600 text-center ${
+  col === "startDate" ||col === "endDate" || col === "trf_ProjId  "
+    ? "whitespace-nowrap"
+    : ""
+}`}
                         >
                           {col === "startDate" || col === "endDate"
                             ? item[col]?.split("T")[0]
