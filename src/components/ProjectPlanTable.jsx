@@ -3911,7 +3911,7 @@ useImperativeHandle(ref, () => ({
         "None",
         "Create Budget",
         "Create Blank Budget",
-        "Create EAC",
+        // "Create EAC",
       ];
 
       if (lockDotLevel === null) {
