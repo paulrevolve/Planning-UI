@@ -357,7 +357,7 @@ const NavigationSidebar = () => {
                       onClick={handleLinkClick}
                     />
                     <NavItem
-                      label="Create Project Budget"
+                      label="Transfer Project Budget"
                       path="/dashboard/create-project-budget"
                       selected={selectedPage}
                       onClick={handleLinkClick}
