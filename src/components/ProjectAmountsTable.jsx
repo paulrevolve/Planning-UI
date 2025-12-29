@@ -146,6 +146,8 @@ const ProjectAmountsTable = ({
   const [pastedEntryOrgs, setPastedEntryOrgs] = useState({});
   const isPastingRef = useRef(false);
 
+  const isSilentRefreshing = useRef(false);
+
   const [findMatches, setFindMatches] = useState([]);
   const [showFindOnly, setShowFindOnly] = useState(false);
 
@@ -555,7 +557,10 @@ const getSortIcon = (key) => {
         return;
       }
 
-      setIsLoading(true);
+      // setIsLoading(true);
+      if (!isSilentRefreshing.current) {
+            setIsLoading(true);
+        }
       setError(null);
 
       try {
@@ -624,6 +629,7 @@ const getSortIcon = (key) => {
         }
       } finally {
         setIsLoading(false);
+        isSilentRefreshing.current = false;
       }
     };
 
@@ -1394,8 +1400,15 @@ const getSortIcon = (key) => {
       return sum + (value && !isNaN(value) ? Number(value) : 0);
     }, 0);
 
+    const formatIdType = (str) => {
+      if (!str || str === "-") return "-";
+      // Capitalize first letter, lowercase the rest
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    };
+
     return {
-      idType: emp.emple.type || "-",
+      // idType: emp.emple.type || "-",
+      idType: formatIdType(emp.emple.type || "-"),
       emplId: emp.emple.emplId || "-",
       name:
         emp.emple.category || emp.emple.firstName || emp.emple.lastName
@@ -1639,9 +1652,9 @@ const getSortIcon = (key) => {
       setModifiedAmounts({});
       setHasUnsavedAmountChanges(false);
 
-      toast.success(`Successfully saved ${successCount} amount entries`, {
-        autoClose: 3000,
-      });
+      // toast.success(`Successfully saved ${successCount} amount entries`, {
+      //   autoClose: 3000,
+      // });
 
       if (errorCount > 0) {
         toast.warning(`${errorCount} entries could not be processed.`, {
@@ -1917,6 +1930,15 @@ const handleMasterSave = async () => {
         await handleSaveFieldChanges();
       }
 
+      // if (onSaveSuccess) {
+      //   await onSaveSuccess(); 
+      // }
+
+      if (onSaveSuccess) {
+            isSilentRefreshing.current = true; // Tell the effect not to show the spinner
+            await onSaveSuccess(); 
+        }
+
       // 4. RESET STATE only after successful database commit
       setNewEntries([]);
       setNewEntryPeriodAmountsArray([]); 
@@ -1926,13 +1948,13 @@ const handleMasterSave = async () => {
       setModifiedAmounts({});
       setEditedRowData({});
       setInputValues({});
-      setSelectedRows(new Set());
-      setShowCopyButton(false);
+      // setSelectedRows(new Set());
+      // setShowCopyButton(false);
 
       // 5. AUTOMATIC RELOAD: Call onSaveSuccess to trigger the parent's refresh logic
-      if (onSaveSuccess) {
-        onSaveSuccess(); 
-      }
+      // if (onSaveSuccess) {
+      //   onSaveSuccess(); 
+      // }
 
       toast.success("All changes saved successfully!");
 
@@ -3393,7 +3415,7 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
   //     setIsLoading(false);
   //   }
   // };
-  
+
   const handleSaveMultiplePastedEntries = async () => {
   if (newEntries.length === 0) return true;
 
@@ -3402,7 +3424,7 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
     return false;
   }
 
-  setIsLoading(true);
+  // setIsLoading(true);
   let validationFailed = false;
   const bulkPayload = [];
 
@@ -3413,23 +3435,11 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
 
       // 1. Basic ID Check
       if (!entry.id || entry.id.trim() === "") {
-        toast.error(`ID is required for all entries.`);
+        toast.error(`Entry ${i + 1}: ID is required.`);
         validationFailed = true; break;
       }
 
-      // 2. Duplicate Check
-      const isDuplicateId = employees.some((emp) => {
-        const emple = emp.emple;
-        if (!emple) return false;
-        return emple.emplId === entry.id && emple.accId === entry.acctId;
-      });
-
-      if (isDuplicateId) {
-        toast.error(`Duplicate entry: ID with this Account already exists.`);
-        validationFailed = true; break;
-      }
-
-      // 3. Account Validation (Ensure suggestions are loaded and valid)
+      // 2. Account Validation (Ensure suggestions are loaded and valid)
       const validAccountsForThisEntry = pastedEntryAccounts[i] || [];
       if (entry.acctId && validAccountsForThisEntry.length > 0) {
           const isValidAcc = validAccountsForThisEntry.some(acc => (acc.id || acc.accountId) === entry.acctId);
@@ -3444,7 +3454,7 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
         forecastid: 0,
         projId: projectId,
         plId: planId,
-        emplId: entry.id,
+        emplId: entry.id.trim(),
         dctId: 0,
         month: duration.monthNo,
         year: duration.year,
@@ -3463,7 +3473,7 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
         category: entry.lastName && entry.firstName
           ? `${entry.lastName}, ${entry.firstName}`
           : entry.lastName || entry.firstName || "",
-        id: entry.id,
+        id: entry.id.trim(),
         type: entry.idType || "-",
         isRev: entry.isRev || false,
         isBrd: entry.isBrd || false,
@@ -3474,10 +3484,9 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
       });
     }
 
-    // CRITICAL: If validation failed, exit here and return false
     if (validationFailed) {
-        setIsLoading(false);
-        return false; 
+      // setIsLoading(false);
+      return false;
     }
 
     if (bulkPayload.length > 0) {
@@ -3486,17 +3495,128 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
         bulkPayload,
         { headers: { "Content-Type": "application/json" } }
       );
-      return true; // SUCCESS
+      return true; 
     }
     return true;
 
   } catch (err) {
-    toast.error(`Failed to save entries: ${err.response?.data?.message || err.message}`);
+    // console.error("Save multiple entries error:", err);
+    // FIX: Catch the specific "Employee already exists" or other backend error
+    const apiError = err.response?.data?.error || err.response?.data?.message || err.message;
+    toast.error(apiError, {
+      autoClose: 5000,
+      toastId: "backend-error-direct-cost"
+    });
     return false;
-  } finally {
-    setIsLoading(false);
-  }
+  } 
+  // finally {
+  //   setIsLoading(false);
+  // }
 };
+  
+//   const handleSaveMultiplePastedEntries = async () => {
+//   if (newEntries.length === 0) return true;
+
+//   if (!planId) {
+//     toast.error("Plan ID is required to save entries.");
+//     return false;
+//   }
+
+//   setIsLoading(true);
+//   let validationFailed = false;
+//   const bulkPayload = [];
+
+//   try {
+//     for (let i = 0; i < newEntries.length; i++) {
+//       const entry = newEntries[i];
+//       const periodAmounts = newEntryPeriodAmountsArray[i] || {};
+
+//       // 1. Basic ID Check
+//       if (!entry.id || entry.id.trim() === "") {
+//         toast.error(`ID is required for all entries.`);
+//         validationFailed = true; break;
+//       }
+
+//       // 2. Duplicate Check
+//       const isDuplicateId = employees.some((emp) => {
+//         const emple = emp.emple;
+//         if (!emple) return false;
+//         return emple.emplId === entry.id && emple.accId === entry.acctId;
+//       });
+
+//       if (isDuplicateId) {
+//         toast.error(`Duplicate entry: ID with this Account already exists.`);
+//         validationFailed = true; break;
+//       }
+
+//       // 3. Account Validation (Ensure suggestions are loaded and valid)
+//       const validAccountsForThisEntry = pastedEntryAccounts[i] || [];
+//       if (entry.acctId && validAccountsForThisEntry.length > 0) {
+//           const isValidAcc = validAccountsForThisEntry.some(acc => (acc.id || acc.accountId) === entry.acctId);
+//           if (!isValidAcc) {
+//               toast.error(`Invalid account ${entry.acctId} for entry ${entry.id}`);
+//               validationFailed = true; break;
+//           }
+//       }
+
+//       const payloadForecasts = durations.map((duration) => ({
+//         forecastedamt: Number(periodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
+//         forecastid: 0,
+//         projId: projectId,
+//         plId: planId,
+//         emplId: entry.id,
+//         dctId: 0,
+//         month: duration.monthNo,
+//         year: duration.year,
+//         updatedat: new Date().toISOString().split("T")[0],
+//         acctId: entry.acctId,
+//         orgId: entry.orgId,
+//         hrlyRate: 0,
+//         effectDt: null,
+//       }));
+
+//       bulkPayload.push({
+//         dctId: 0,
+//         plId: planId,
+//         acctId: entry.acctId || "",
+//         orgId: entry.orgId || "",
+//         category: entry.lastName && entry.firstName
+//           ? `${entry.lastName}, ${entry.firstName}`
+//           : entry.lastName || entry.firstName || "",
+//         id: entry.id,
+//         type: entry.idType || "-",
+//         isRev: entry.isRev || false,
+//         isBrd: entry.isBrd || false,
+//         status: entry.status || "Act",
+//         createdBy: "System",
+//         lastModifiedBy: "System",
+//         plForecasts: payloadForecasts,
+//       });
+//     }
+
+//     // CRITICAL: If validation failed, exit here and return false
+//     if (validationFailed) {
+//         setIsLoading(false);
+//         return false; 
+//     }
+
+//     if (bulkPayload.length > 0) {
+//       await axios.post(
+//         `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
+//         bulkPayload,
+//         { headers: { "Content-Type": "application/json" } }
+//       );
+//       return true; // SUCCESS
+//     }
+//     return true;
+
+//   } catch (err) {
+//     toast.error(`Failed to save entries: ${err.response?.data?.message || err.message}`);
+//     return false;
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
 
   const handleRowClickMultiple = (actualEmpIdx) => {
     if (!isEditable) return;
@@ -4777,10 +4897,10 @@ const isIndeterminate =
           }
         );
 
-        Promise.resolve().then(() => {
-          setSelectedRows(new Set());
-          setShowCopyButton(false);
-        });
+        // Promise.resolve().then(() => {
+        //   setSelectedRows(new Set());
+        //   setShowCopyButton(false);
+        // });
       })
       .catch((err) => {
         console.error("Copy failed:", err);
@@ -5337,9 +5457,6 @@ const isIndeterminate =
     setNewEntries(processedEntries);
     setNewEntryPeriodAmountsArray(processedAmountsArray);
 
-    // **OPTIMIZED: Fetch common data ONCE, then populate all entries**
-    await fetchAllSuggestionsOptimizedForAmounts(processedEntries);
-
     setHasClipboardData(false);
     setCopiedRowsData([]);
     setCopiedMonthMetadata([]);
@@ -5348,6 +5465,13 @@ const isIndeterminate =
       `Pasted ${processedEntries.length} entries with all fiscal year data!`,
       { autoClose: 3000 }
     );
+
+    
+     fetchAllSuggestionsOptimizedForAmounts(processedEntries);
+
+    
+
+    
   };
 
   const fetchSuggestionsForPastedEntry = async (entryIndex, entry) => {
@@ -6028,7 +6152,7 @@ const isIndeterminate =
     {isLoading ? (
       "Saving..."
     ) : (
-      `Save Changes (${
+      `Save All (${
         newEntries.length + 
         Object.keys(modifiedAmounts).length + 
         (hasUnsavedFieldChanges ? 1 : 0)

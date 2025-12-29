@@ -275,7 +275,7 @@ const CreateProjectBudget = () => {
     disabled:pointer-events-none
   "
 >
-  {loading ? "Create..." : "Create"}
+  {loading ? "Transfering..." : "Transfer"}
           </button>
         </div>
       </div>

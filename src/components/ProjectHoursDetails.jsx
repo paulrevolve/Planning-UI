@@ -2953,10 +2953,7 @@ useEffect(() => {
     setNewEntries(processedEntries);
     setNewEntryPeriodHoursArray(processedHoursArray);
 
-    // **OPTIMIZED** - Fetch common data ONCE, then process all entries
-    await fetchAllSuggestionsOptimized(processedEntries);
-
-    // Disable paste button
+     // Disable paste button
     setHasClipboardData(false);
     setCopiedRowsData([]);
     setCopiedMonthMetadata([]);
@@ -2965,6 +2962,15 @@ useEffect(() => {
       `Pasted ${processedEntries.length} entries for fiscal year ${fiscalYear}!`,
       { autoClose: 3000 }
     );
+
+    
+    fetchAllSuggestionsOptimized(processedEntries);
+
+    
+
+   
+
+    
   };
 
   useEffect(() => {
@@ -3780,6 +3786,16 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
       };
     }
 
+    const formatIdType = (str) => {
+    if (!str || str === "-") return "-";
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
+  const rawType = emp.emple.type || "-";
+  
+  
+  const typeLabel = ID_TYPE_OPTIONS.find((opt) => opt.value === rawType)?.label || rawType;
+
     const monthHours = getMonthHours(emp);
     const totalHours = sortedDurations.reduce((sum, duration) => {
       const uniqueKey = `${duration.monthNo}_${duration.year}`;
@@ -3827,12 +3843,13 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
       false;
 
     return {
-      idType:
-        ID_TYPE_OPTIONS.find(
-          (opt) => opt.value === (emp.emple.type || "-")
-        )?.label ||
-        emp.emple.type ||
-        "-",
+      // idType:
+      //   ID_TYPE_OPTIONS.find(
+      //     (opt) => opt.value === (emp.emple.type || "-")
+      //   )?.label ||
+      //   emp.emple.type ||
+      //   "-",
+      idType: formatIdType(typeLabel),
       emplId: emp.emple.emplId,
       warning: Boolean(warningValue),
       name:
@@ -7109,7 +7126,7 @@ const handleSaveMultipleEntry = async () => {
     console.error("Save multiple entries error:", err);
     // NEW: Catch specific backend error (e.g., "Employee combination already exists")
     const detailedError = err.response?.data?.error || err.response?.data?.message || err.message;
-    toast.error("Save Failed: " + detailedError, { 
+    toast.error(detailedError, { 
         autoClose: 6000,
         toastId: "backend-error-toast" 
     });

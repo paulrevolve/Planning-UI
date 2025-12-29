@@ -2356,7 +2356,8 @@
 
 // export default ProjectPlanTable;
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef,  forwardRef,
+  useImperativeHandle,        } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -2386,7 +2387,7 @@ const COLUMN_LABELS = {
   updatedAt: "Updated At",
 };
 
-const ProjectPlanTable = ({
+const ProjectPlanTable = forwardRef(({
   onPlanSelect,
   selectedPlan,
   projectId,
@@ -2398,7 +2399,9 @@ const ProjectPlanTable = ({
   onPlanCreated,
   onOpenDetails,
   onOpenMonthly,
-}) => {
+  onExportPlan,
+  onImportPlan
+}, ref) => {
   const [plans, setPlans] = useState([]);
   const [filteredPlans, setFilteredPlans] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -3171,11 +3174,14 @@ const [statusFilter, setStatusFilter] = useState('All')
   };
 
   const handleExportPlan = async (plan) => {
+    if (typeof onExportPlan === "function") {
+      // delegate to parent if provided
+      return onExportPlan(plan);
+    }
     if (!selectedPlan?.projId || !plan.version || !plan.plType) {
       toast.error("Missing required parameters for export");
       return;
     }
-
     try {
       setIsActionLoading(true);
       toast.info("Exporting plan...");
@@ -3241,6 +3247,9 @@ const [statusFilter, setStatusFilter] = useState('All')
   };
 
   const handleImportPlan = async (event) => {
+      if (typeof onImportPlan === "function") {
+      return onImportPlan(event);
+    }
     const file = event.target.files[0];
     if (!file) {
       toast.error("No file selected");
@@ -3305,6 +3314,39 @@ const [statusFilter, setStatusFilter] = useState('All')
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
+
+    // EXPOSE HANDLERS TO PARENT
+// useImperativeHandle(ref, () => ({
+//   exportSelectedPlan() {
+//     if (!selectedPlan?.projId) {
+//       toast.info("Please select a plan first.");
+//       return;
+//     }
+//     return handleExportPlan(selectedPlan);  // ✅ Works even without parent props
+//   },
+//   importPlanFile(event) {
+//     return handleImportPlan(event);  // ✅ Works even without parent props
+//   },
+//   openFileDialog() {
+//     fileInputRef.current?.click();
+//   },
+// }));
+
+useImperativeHandle(ref, () => ({
+  exportSelectedPlan() {
+    // This checks the selectedPlan prop passed from the parent
+    if (!selectedPlan || !selectedPlan.projId) {
+      toast.warning("Please select a plan in the table first.");
+      return;
+    }
+    // Calls the axios function with the dynamic plan parameters
+    return handleExportPlan(selectedPlan);
+  },
+  importPlanFile(event) {
+    return handleImportPlan(event);
+  }
+}), [selectedPlan]);
+
 
   const handleUpdateProjectDates = async (newDates) => {
     if (!projectId || !newDates.startDate || !newDates.endDate) {
@@ -3918,7 +3960,9 @@ const [statusFilter, setStatusFilter] = useState('All')
     if (col === "isApproved")
       return { checked: plan.isApproved, disabled: !plan.isCompleted || plan.finalVersion };
 
-    if (col === "finalVersion") {
+    
+
+     if (col === "finalVersion") {
       const anotherFinalVersionIdx = plans.findIndex(
         (p, i) =>
           i !== idx &&
@@ -3926,10 +3970,10 @@ const [statusFilter, setStatusFilter] = useState('All')
           p.projId === plan.projId &&
           p.finalVersion
       );
-
+ 
       return {
         checked: plan.finalVersion,
-        disabled: anotherFinalVersionIdx !== -1,
+        disabled: anotherFinalVersionIdx !== -1 || !plan.isCompleted || !plan.isApproved ,
       };
     }
 
@@ -4937,6 +4981,6 @@ const [statusFilter, setStatusFilter] = useState('All')
       </div>
     </div>
   );
-};
+});
 
 export default ProjectPlanTable;

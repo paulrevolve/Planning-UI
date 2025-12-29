@@ -28,6 +28,8 @@ const ProjectBudgetStatus = () => {
   const [viewMode, setViewMode] = useState("plans");
   const [showTabs, setShowTabs] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [searched, setSearched] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [forecastData, setForecastData] = useState([]);
@@ -52,6 +54,7 @@ const [otherColumnTotalsFromAmounts, setOtherColumnTotalsFromAmounts] = useState
   const inputRef = useRef(null);
   const dashboardRefs = useRef({});
   const warningRefs = useRef({});
+  const fileInputRef = useRef(null);
 
   const EXTERNAL_API_BASE_URL = backendUrl;
   const CALCULATE_COST_ENDPOINT = "/Forecast/CalculateCost";
@@ -59,6 +62,7 @@ const [otherColumnTotalsFromAmounts, setOtherColumnTotalsFromAmounts] = useState
   const [currentUserRole, setCurrentUserRole] = useState(null);
   const [userName, setUserName] = useState("User");
   const [tabVisibility, setTabVisibility] = useState({});
+  const planTableRef = useRef(null);
 
 //   useEffect(() => {
 //   const loadTabVisibility = async () => {
@@ -98,6 +102,154 @@ const [otherColumnTotalsFromAmounts, setOtherColumnTotalsFromAmounts] = useState
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
+ 
+
+
+const handleExportPlan = async (planOverride) => {
+    const plan = planOverride || selectedPlan;
+
+    if (!plan?.projId || !plan?.version || !plan?.plType) {
+      toast.error("Missing required parameters for export.");
+      return;
+    }
+
+    // 1. SET EXPORT-SPECIFIC LOADING (Don't use the global 'setLoading')
+    setIsExporting(true); 
+    const toastId = toast.loading("Preparing Excel file, please wait...");
+
+    try {
+      const response = await axios.get(
+        `${backendUrl}/Forecast/ExportPlanDirectCost`,
+        {
+          params: {
+            projId: plan.projId,
+            version: plan.version,
+            type: plan.plType,
+          },
+          responseType: "blob",
+        }
+      );
+
+      if (!response.data || response.data.size === 0) {
+        toast.update(toastId, { render: "No data received from server", type: "error", isLoading: false, autoClose: 3000 });
+        return;
+      }
+
+      // Handle the file download silently in the background
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Plan_${plan.projId}_${plan.version}_${plan.plType}.xlsx`);
+
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+
+      toast.update(toastId, { render: "Export successful!", type: "success", isLoading: false, autoClose: 2000 });
+    } catch (err) {
+      console.error("Export Error:", err);
+      toast.update(toastId, { 
+        render: "Export failed: " + (err.response?.data?.message || err.message), 
+        type: "error", 
+        isLoading: false, 
+        autoClose: 3000 
+      });
+    } finally {
+      // 2. RELEASE EXPORT LOADING (UI stays intact)
+      setIsExporting(false); 
+    }
+  };
+
+
+const handleExportPlanFromDetails = () => {
+  if (selectedPlan) {
+    handleExportPlan(selectedPlan);
+  } else {
+    toast.warning("Please select a plan first.");
+  }
+};
+
+
+const handleImportPlanFromDetails = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!selectedPlan?.projId) {
+      toast.error("Please select a project before importing data.");
+      return;
+    }
+
+    const validExtensions = [".xlsx", ".xls"];
+    const fileExtension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+    
+    if (!validExtensions.includes(fileExtension)) {
+      toast.error("Invalid file format. Please upload an Excel file (.xlsx or .xls)");
+      return;
+    }
+
+    // 1. USE LOCALIZED LOADING (Prevents whole page flicker)
+    setIsImporting(true);
+    const toastId = toast.loading("Processing data import...");
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("projId", selectedPlan.projId);
+
+    try {
+      const response = await axios.post(
+        `${backendUrl}/Forecast/ImportDirectCostPlan`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      // Refresh data after import success
+      if (typeof refreshPlans === 'function') {
+        await refreshPlans(selectedPlan.projId);
+      }
+
+      toast.update(toastId, { 
+        render: "Data imported successfully.", 
+        type: "success", 
+        isLoading: false, 
+        autoClose: 3000 
+      });
+      
+      // Force a re-render of the details view if needed
+      setRefreshKey(prev => prev + 1);
+
+    } catch (err) {
+      console.error("Import Error:", err);
+      let errorMessage = "Failed to import file. Please verify the project ID and file format.";
+      if (err.response?.data) {
+        errorMessage = typeof err.response.data === "string" ? err.response.data : err.response.data.message;
+      }
+
+      toast.update(toastId, { 
+        render: errorMessage, 
+        type: "error", 
+        isLoading: false, 
+        autoClose: 5000 
+      });
+    } finally {
+      // 2. RELEASE LOADING
+      setIsImporting(false);
+      if (event.target) event.target.value = ""; // Reset file input
+    }
+  };
+
+
+ 
+
+  
 
 
 const safeFormatDate = (value) => {
@@ -122,6 +274,7 @@ const safeFormatDate = (value) => {
     return "N/A";
   }
 };
+
 
   useEffect(() => {
     const userString = localStorage.getItem("currentUser");
@@ -1021,6 +1174,8 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
           <div className="flex-1 min-w-0 overflow-hidden">
             {viewMode === "plans" && (
            <ProjectPlanTable
+           ref={planTableRef}  
+           onExportPlan={handleExportPlan}
   projectId={searchTerm.trim()}
   searched={searched}
   onPlanSelect={handlePlanSelect}
@@ -1229,11 +1384,61 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
       <span className="font-semibold">Period of Performance: </span>
       Start Date: {selectedPlan.projStartDt ? formatDate(selectedPlan.projStartDt) : "N/A"} | End Date: {selectedPlan.projEndDt ? formatDate(selectedPlan.projEndDt) : "N/A"}
     </span>
+
   </div>
 </div>
 
     {/* centered cards, outer div has NO overflow */}
     <div className="w-full mx-auto grid gap-4 md:grid-cols-1">
+      <div className="flex gap-2 items-center">
+    {/* ✅ IMPORT BUTTON - uses table ref */}
+    <button
+      onClick={() => fileInputRef.current.click()}
+      className="btn1 btn-blue cursor-pointer flex items-center"
+      title="Import Plan"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-3 w-3 mr-1"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+        />
+      </svg>
+      Import
+    </button>
+    <input
+      type="file"
+      ref={fileInputRef}
+      onChange={handleImportPlanFromDetails}
+      accept=".xlsx,.xls"
+      className="hidden"
+    />
+
+    {/* ✅ EXPORT BUTTON - uses table ref */}
+    <button
+      // onClick={(e) => {
+      //   e.stopPropagation();
+      //   handleExportPlanFromDetails;      
+      // }}
+      type="button"
+      onClick={() => handleExportPlanFromDetails()}
+      className="btn1 btn-blue cursor-pointer flex items-center"
+      title="Export to Excel"
+      disabled={!selectedPlan?.projId || !selectedPlan?.version || !selectedPlan?.plType}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 4v12m0 0l-4-4m4 4l4-4" />
+      </svg>
+      Export
+    </button>
+  </div>
       {/* HOURS CARD */}
       <div className="border border-gray-200 rounded-md shadow-sm bg-white">
         {/* <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
@@ -1242,6 +1447,7 @@ const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
           </span>
         </div> */}
         {/* inner scroll handled by grid component; no extra scroll here */}
+                 
         <div className="px-2 pb-2">
           <ProjectHoursDetails
             planId={selectedPlan.plId}
