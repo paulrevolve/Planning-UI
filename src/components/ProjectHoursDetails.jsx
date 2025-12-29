@@ -4429,9 +4429,10 @@ useEffect(() => {
         editedData.isRev !== undefined ? editedData.isRev : emp.emple.isRev,
       isBrd:
         editedData.isBrd !== undefined ? editedData.isBrd : emp.emple.isBrd,
-      plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "")
-        .split("-")[0]
-        .substring(0, 20),
+      // plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "")
+      //   .split("-")[0]
+      //   .substring(0, 20),
+      plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "").split("-")[0].trim().substring(0, 20),
       perHourRate: Number(editedData.perHourRate || emp.emple.perHourRate || 0),
       status: emp.emple.status || "Act",
       accId:
@@ -6921,6 +6922,108 @@ const handleFillValues = () => {
  
 
 
+// const handleSaveMultipleEntry = async () => {
+//   if (newEntries.length === 0) return true;
+
+//   setIsDurationLoading(true);
+//   let validationFailed = false;
+//   const bulkPayload = [];
+
+//   try {
+//     for (let i = 0; i < newEntries.length; i++) {
+//       const entry = newEntries[i];
+//       const periodHours = newEntryPeriodHoursArray[i];
+
+//       if (planType !== "NBBUD") {
+//         // 1. Duplicate Check
+//         const isDuplicate = localEmployees.some((emp) => {
+//           if (!emp.emple) return false;
+//           if (entry.idType === "Other") return emp.emple.emplId === entry.id.trim();
+//           return emp.emple.emplId === entry.id.trim() && emp.emple.plcGlcCode === entry.plcGlcCode.trim();
+//         });
+
+//         if (isDuplicate) {
+//           toast.error(`Duplicate ID and PLC combination`);
+//           validationFailed = true; break; 
+//         }
+
+//         // 2. Account Validation
+//         const entryAccounts = pastedEntryAccounts[i] || [];
+//         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
+//           toast.error(`Invalid Account selected for ID ${entry.id}.`);
+//           validationFailed = true; break;
+//         }
+
+//         // 3. Organization Validation
+//         const entryOrgs = pastedEntryOrgs[i] || [];
+//         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+//         const isValidOrg = entryOrgs.length > 0 
+//           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+//           : hasOrgValue;
+
+//         if (!isValidOrg) {
+//           toast.error(`Organization ID ${entry.orgId} is not valid.`);
+//           validationFailed = true; break;
+//         }
+//       }
+
+//       // Build payload for this row
+//       const payloadForecasts = durations.map((duration) => ({
+//         ...(planType === "EAC"
+//           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+//           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+//         projId: projectId,
+//         plId: planId,
+//         emplId: entry.id,
+//         month: duration.monthNo,
+//         year: duration.year,
+//         acctId: entry.acctId,
+//         orgId: entry.orgId,
+//         // plc: entry.plcGlcCode || "",
+//         plcGlcCode: (entry.plcGlcCode || "").split("-")[0].trim().substring(0, 20),
+//         hrlyRate: Number(entry.perHourRate || 0),
+//         effectDt: null,
+//         plEmployee: null,
+//       }));
+
+//       bulkPayload.push({
+//         id: 0,
+//         emplId: entry.id,
+//         firstName: entry.firstName,
+//         lastName: entry.lastName,
+//         type: entry.idType,
+//         isRev: entry.isRev,
+//         isBrd: entry.isBrd,
+//         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+//         perHourRate: Number(entry.perHourRate || 0),
+//         status: entry.status || "ACT",
+//         accId: entry.acctId,
+//         orgId: entry.orgId || "",
+//         plId: planId,
+//         plForecasts: payloadForecasts,
+//       });
+//     }
+
+//     if (validationFailed) return false;
+
+//     if (bulkPayload.length > 0) {
+//       // Use the new bulk endpoint
+//       await axios.post(
+//         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+//         bulkPayload
+//       );
+//       return true; // Return true to signal the UI can refresh
+//     }
+//     return true;
+
+//   } catch (err) {
+//     toast.error("Error: " + (err.response?.data?.error || err.message));
+//     return false;
+//   } finally {
+//     setIsDurationLoading(false);
+//   }
+// };
+
 const handleSaveMultipleEntry = async () => {
   if (newEntries.length === 0) return true;
 
@@ -6933,27 +7036,18 @@ const handleSaveMultipleEntry = async () => {
       const entry = newEntries[i];
       const periodHours = newEntryPeriodHoursArray[i];
 
+      // Robust PLC Parsing: Fixes deployment saving issues by removing trailing spaces
+      const cleanPlc = (entry.plcGlcCode || "").split("-")[0].trim().substring(0, 20);
+
       if (planType !== "NBBUD") {
-        // 1. Duplicate Check
-        const isDuplicate = localEmployees.some((emp) => {
-          if (!emp.emple) return false;
-          if (entry.idType === "Other") return emp.emple.emplId === entry.id.trim();
-          return emp.emple.emplId === entry.id.trim() && emp.emple.plcGlcCode === entry.plcGlcCode.trim();
-        });
-
-        if (isDuplicate) {
-          toast.error(`Duplicate ID and PLC combination`);
-          validationFailed = true; break; 
-        }
-
-        // 2. Account Validation
+        // 1. Account Validation
         const entryAccounts = pastedEntryAccounts[i] || [];
         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
-          toast.error(`Invalid Account selected for ID ${entry.id}.`);
+          toast.error(`Row ${i + 1}: Invalid Account ${entry.acctId}.`);
           validationFailed = true; break;
         }
 
-        // 3. Organization Validation
+        // 2. Organization Validation
         const entryOrgs = pastedEntryOrgs[i] || [];
         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
         const isValidOrg = entryOrgs.length > 0 
@@ -6961,38 +7055,36 @@ const handleSaveMultipleEntry = async () => {
           : hasOrgValue;
 
         if (!isValidOrg) {
-          toast.error(`Organization ID ${entry.orgId} is not valid.`);
+          toast.error(`Row ${i + 1}: Organization ID ${entry.orgId} is not valid.`);
           validationFailed = true; break;
         }
       }
 
-      // Build payload for this row
+      // Build individual payload forecasts
       const payloadForecasts = durations.map((duration) => ({
         ...(planType === "EAC"
           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
         projId: projectId,
         plId: planId,
-        emplId: entry.id,
+        emplId: entry.id.trim(),
         month: duration.monthNo,
         year: duration.year,
         acctId: entry.acctId,
         orgId: entry.orgId,
-        plc: entry.plcGlcCode || "",
+        plc: cleanPlc,
         hrlyRate: Number(entry.perHourRate || 0),
-        effectDt: null,
-        plEmployee: null,
       }));
 
       bulkPayload.push({
         id: 0,
-        emplId: entry.id,
+        emplId: entry.id.trim(),
         firstName: entry.firstName,
         lastName: entry.lastName,
         type: entry.idType,
         isRev: entry.isRev,
         isBrd: entry.isBrd,
-        plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+        plcGlcCode: cleanPlc,
         perHourRate: Number(entry.perHourRate || 0),
         status: entry.status || "ACT",
         accId: entry.acctId,
@@ -7005,18 +7097,23 @@ const handleSaveMultipleEntry = async () => {
     if (validationFailed) return false;
 
     if (bulkPayload.length > 0) {
-      // Use the new bulk endpoint
       await axios.post(
         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
         bulkPayload
       );
-      return true; // Return true to signal the UI can refresh
+      return true; 
     }
     return true;
 
   } catch (err) {
-    toast.error("Error: " + (err.response?.data?.message || err.message));
-    return false;
+    console.error("Save multiple entries error:", err);
+    // NEW: Catch specific backend error (e.g., "Employee combination already exists")
+    const detailedError = err.response?.data?.error || err.response?.data?.message || err.message;
+    toast.error("Save Failed: " + detailedError, { 
+        autoClose: 6000,
+        toastId: "backend-error-toast" 
+    });
+    return false; 
   } finally {
     setIsDurationLoading(false);
   }
