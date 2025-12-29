@@ -325,6 +325,18 @@ const AnalysisByPeriodContent = ({
               employee.detailSummary["General & Admin"][monthRange] =
                 (employee.detailSummary["General & Admin"][monthRange] || 0) +
                 (salaryEntry.gna || 0);
+
+              if (!employee.detailSummary["Human Resource"])
+                employee.detailSummary["Human Resource"] = {};
+              employee.detailSummary["Human Resource"][monthRange] =
+                (employee.detailSummary["Human Resource"][monthRange] || 0) +
+                (salaryEntry.hr || 0);
+
+              if (!employee.detailSummary["Material"])
+                employee.detailSummary["Material"] = {};
+              employee.detailSummary["Material"][monthRange] =
+                (employee.detailSummary["Material"][monthRange] || 0) +
+                (salaryEntry.materials || 0);
             }
           });
         });
@@ -346,6 +358,16 @@ const AnalysisByPeriodContent = ({
         const orgId = nonLaborSummary.orgID;
         const glcPlc = nonLaborSummary.plcCode || "";
         const accName = nonLaborSummary.accName || `Account: ${accountId}`;
+        const gna = nonLaborSummary.gna || 0;
+        const materials = nonLaborSummary.materials || 0;
+        const hr = nonLaborSummary.hr || 0;
+        const fringe = nonLaborSummary.fringe || 0;
+        const overhead = nonLaborSummary.overhead || 0;
+
+        // console.log('gna ', gna)
+        // console.log('materials ', materials)
+        // console.log('overhead ', overhead)
+        // console.log('fringe ', fringe)
 
         if (!nonLaborAcctDetailsMap.has(accountId)) {
           nonLaborAcctDetailsMap.set(accountId, {
@@ -370,6 +392,11 @@ const AnalysisByPeriodContent = ({
             id: employeeId,
             name: `${employeeName} (${employeeId})`,
             total: 0,
+            gna: gna,
+            materials: materials,
+            hr: hr,
+            fringe: fringe,
+            overhead: overhead,
             monthlyData: dynamicDateRanges.reduce(
               (acc, range) => ({ ...acc, [range]: 0 }),
               {}
@@ -409,6 +436,11 @@ const AnalysisByPeriodContent = ({
               }`,
               total: entryCost,
               monthlyValues: { [monthRange]: entryCost },
+              gna: scheduleEntry.gna,
+              overhead: scheduleEntry.overhead,
+              hr: scheduleEntry.hr,
+              materials: scheduleEntry.materials,
+              fringe: scheduleEntry.fringe,
             });
             employeeGroup.monthlyData[monthRange] += entryCost;
             employeeGroup.total += entryCost;
@@ -999,6 +1031,8 @@ const AnalysisByPeriodContent = ({
     setExpandedNonLaborAcctRows([]); // clears both parent + child IDs
   };
 
+  console.log(financialData);
+
   return (
     <div className="min-h-full bg-[#e9f6fb] rounded-sm p-8 text-gray-800 font-inter">
       <div className="mb-2">
@@ -1446,37 +1480,141 @@ const AnalysisByPeriodContent = ({
                                       ))}
                                     </tr>
                                     {acctGroup.employees.map(
-                                      (employeeGroup) => (
-                                        <tr
-                                          key={`${acctGroup.id}-${employeeGroup.id}`}
-                                          className="bg-gray-100 bg-opacity-40 hover:bg-gray-100 hover:bg-opacity-70 text-xs"
-                                        >
-                                          <td className="py-2 pl-16 pr-4 whitespace-nowrap sticky left-0 z-10 bg-inherit flex items-center text-gray-800">
-                                            {employeeGroup.name}
-                                          </td>
-                                          <td
-                                            className="py-2 px-4 text-left whitespace-nowrap"
-                                            colSpan="4"
-                                          ></td>
-                                          <td className="py-2 px-4 text-right whitespace-nowrap text-gray-800 font-semibold">
-                                            {formatValue(employeeGroup.total)}
-                                          </td>
-                                          {dynamicDateRanges.map(
-                                            (currentRange) => (
-                                              <td
-                                                key={`${employeeGroup.id}-${currentRange}-monthly-total`}
-                                                className="py-2 px-4 text-right whitespace-nowrap text-gray-800"
-                                              >
+                                      (employeeGroup) => {
+                                        // Build a lookup map once (PERFORMANCE OPTIMIZED)
+                                        const entryMap = Object.fromEntries(
+                                          employeeGroup.entries.map((e) => [
+                                            e.month || e.id,
+                                            e,
+                                          ])
+                                        );
+
+                                        return (
+                                          <React.Fragment
+                                            key={`${acctGroup.id}-${employeeGroup.id}-employee-block`}
+                                          >
+                                            <tr className="bg-gray-100 bg-opacity-40 hover:bg-gray-100 text-xs">
+                                              <td className="py-2 pl-16 pr-4 sticky left-0 bg-inherit text-gray-800">
+                                                {employeeGroup.name}
+                                              </td>
+                                              <td colSpan={4}></td>
+                                              <td className="py-2 px-4 text-right font-semibold">
                                                 {formatValue(
-                                                  employeeGroup.monthlyData[
-                                                    currentRange
-                                                  ] || 0
+                                                  employeeGroup.total
                                                 )}
                                               </td>
-                                            )
-                                          )}
-                                        </tr>
-                                      )
+                                              {dynamicDateRanges.map(
+                                                (month) => (
+                                                  <td
+                                                    key={`${employeeGroup.id}-${month}-total`}
+                                                    className="py-2 px-4 text-right"
+                                                  >
+                                                    {formatValue(
+                                                      employeeGroup
+                                                        .monthlyData?.[month] ??
+                                                        0
+                                                    )}
+                                                  </td>
+                                                )
+                                              )}
+                                            </tr>
+
+                                            <tr className="bg-gray-100 bg-opacity-30 text-xs">
+                                              <td className="py-2 pl-20 pr-4 sticky left-0 bg-inherit text-gray-700">
+                                                --- General & Admin
+                                              </td>
+                                              <td colSpan={4}></td>
+                                              <td className="py-2 px-4 text-right font-semibold">
+                                                {formatValue(employeeGroup.gna)}
+                                              </td>
+                                              {dynamicDateRanges.map(
+                                                (month) => (
+                                                  <td
+                                                    key={`${employeeGroup.id}-${month}-gna`}
+                                                    className="py-2 px-4 text-right"
+                                                  >
+                                                    {formatValue(
+                                                      entryMap[month]?.gna ?? 0
+                                                    )}
+                                                  </td>
+                                                )
+                                              )}
+                                            </tr>
+
+                                            <tr className="bg-gray-100 bg-opacity-30 text-xs">
+                                              <td className="py-2 pl-20 pr-4 sticky left-0 bg-inherit text-gray-700">
+                                                --- Human Resource
+                                              </td>
+                                              <td colSpan={4}></td>
+                                              <td className="py-2 px-4 text-right font-semibold">
+                                                {formatValue(employeeGroup.hr)}
+                                              </td>
+                                              {dynamicDateRanges.map(
+                                                (month) => (
+                                                  <td
+                                                    key={`${employeeGroup.id}-${month}-hr`}
+                                                    className="py-2 px-4 text-right"
+                                                  >
+                                                    {formatValue(
+                                                      entryMap[month]?.hr ?? 0
+                                                    )}
+                                                  </td>
+                                                )
+                                              )}
+                                            </tr>
+
+                                            <tr className="bg-gray-100 bg-opacity-30 text-xs">
+                                              <td className="py-2 pl-20 pr-4 sticky left-0 bg-inherit text-gray-700">
+                                                --- Material
+                                              </td>
+                                              <td colSpan={4}></td>
+                                              <td className="py-2 px-4 text-right font-semibold">
+                                                {formatValue(
+                                                  employeeGroup.materials
+                                                )}
+                                              </td>
+                                              {dynamicDateRanges.map(
+                                                (month) => (
+                                                  <td
+                                                    key={`${employeeGroup.id}-${month}-materials`}
+                                                    className="py-2 px-4 text-right"
+                                                  >
+                                                    {formatValue(
+                                                      entryMap[month]
+                                                        ?.materials ?? 0
+                                                    )}
+                                                  </td>
+                                                )
+                                              )}
+                                            </tr>
+
+                                            <tr className="bg-gray-100 bg-opacity-30 text-xs">
+                                              <td className="py-2 pl-20 pr-4 sticky left-0 bg-inherit text-gray-700">
+                                                --- Fringe Benefits
+                                              </td>
+                                              <td colSpan={4}></td>
+                                              <td className="py-2 px-4 text-right font-semibold">
+                                                {formatValue(
+                                                  employeeGroup.fringe
+                                                )}
+                                              </td>
+                                              {dynamicDateRanges.map(
+                                                (month) => (
+                                                  <td
+                                                    key={`${employeeGroup.id}-${month}-fringe`}
+                                                    className="py-2 px-4 text-right"
+                                                  >
+                                                    {formatValue(
+                                                      entryMap[month]?.fringe ??
+                                                        0
+                                                    )}
+                                                  </td>
+                                                )
+                                              )}
+                                            </tr>
+                                          </React.Fragment>
+                                        );
+                                      }
                                     )}
                                   </React.Fragment>
                                 )}

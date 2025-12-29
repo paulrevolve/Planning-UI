@@ -135,6 +135,12 @@ const ProjectHoursDetails = ({
   // ADD THIS BLOCK AFTER normalizedFiscalYear definition:
 
   // console.log("FISCAL YEAR DEBUG:", fiscalYear, "Normalized:", normalizedFiscalYear);
+
+  
+const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+const isAdmin = currentUser.role?.toLowerCase() === "admin";
+
+
   const [durations, setDurations] = useState([]);
   const [isDurationLoading, setIsDurationLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -2370,12 +2376,99 @@ useEffect(() => {
   // };
 
 
-  const handleCopySelectedRows = () => {
-    // FIX: Check checkedRows.size instead of selectedRows.size
+// const handleCopySelectedRows = () => {
+//     // FIX: Check checkedRows.size instead of selectedRows.size
+//     if (checkedRows.size === 0) {
+//         toast.info("No rows selected to copy.", { autoClose: 2000 });
+//         return;
+//     }
+
+//     const headers = [
+//         "ID Type", "ID", "Name", "Account", "Account Name", 
+//         "Organization", "PLC", "Rev", "Brd", "Status", "Hour Rate", "Total"
+//     ];
+
+//     const monthMetadata = [];
+//     sortedDurations.forEach((duration) => {
+//         const monthName = new Date(duration.year, duration.monthNo - 1)
+//             .toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+//         headers.push(monthName);
+//         monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+//     });
+
+//     const copyData = [headers];
+//     const structuredData = [];
+
+//     // FIX: Iterate over checkedRows
+//     checkedRows.forEach((rowIndex) => {
+//         const emp = localEmployees[rowIndex];
+//         if (emp && emp.emple && !hiddenRows[rowIndex]) {
+//             const employeeRow = getEmployeeRow(emp, rowIndex);
+//             const rowData = [
+//                 employeeRow.idType,
+//                 employeeRow.emplId,
+//                 employeeRow.name,
+//                 employeeRow.acctId,
+//                 employeeRow.acctName,
+//                 employeeRow.orgId,
+//                 employeeRow.glcPlc,
+//                 typeof employeeRow.isRev === "object" ? "✓" : employeeRow.isRev,
+//                 typeof employeeRow.isBrd === "object" ? "✓" : employeeRow.isBrd,
+//                 employeeRow.status,
+//                 employeeRow.perHourRate,
+//             ];
+
+//             // Calculate total and months
+//             let totalHours = 0;
+//             const monthValues = [];
+//             sortedDurations.forEach((duration) => {
+//                 const uniqueKey = `${duration.monthNo}_${duration.year}`;
+//                 const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
+//                 const monthHours = getMonthHours(emp);
+//                 const forecastValue = monthHours[uniqueKey]?.value;
+//                 const value = inputValue !== undefined && inputValue !== "" ? inputValue : forecastValue || "0.00";
+
+//                 totalHours += value && !isNaN(value) ? Number(value) : 0;
+//                 monthValues.push(value);
+//             });
+
+//             rowData.push(totalHours.toFixed(2)); // Push Total to column 12
+//             rowData.push(...monthValues);       // Add monthly data
+
+//             copyData.push(rowData);
+//             structuredData.push(rowData);
+//         }
+//     });
+
+//     const tsvContent = copyData.map((row) => row.join("\t")).join("\n");
+
+//     navigator.clipboard.writeText(tsvContent)
+//         .then(() => {
+//             setCopiedRowsData(structuredData);
+//             setCopiedMonthMetadata(monthMetadata);
+//             setHasClipboardData(true);
+//             toast.success(`Copied ${structuredData.length} rows!`, { autoClose: 3000 });
+            
+//             // Optional: Uncheck all after copying
+//             // setCheckedRows(new Set()); 
+//         })
+//         .catch((err) => {
+//             toast.error("Failed to copy data.");
+//         });
+// };  
+
+
+const handleCopySelectedRows = () => {
     if (checkedRows.size === 0) {
         toast.info("No rows selected to copy.", { autoClose: 2000 });
         return;
     }
+
+    // Use the full durations array (sorted by date) to ensure we capture all fiscal years
+    const allAvailableDurations = [...durations].sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.monthNo - b.monthNo;
+    });
 
     const headers = [
         "ID Type", "ID", "Name", "Account", "Account Name", 
@@ -2383,7 +2476,7 @@ useEffect(() => {
     ];
 
     const monthMetadata = [];
-    sortedDurations.forEach((duration) => {
+    allAvailableDurations.forEach((duration) => {
         const monthName = new Date(duration.year, duration.monthNo - 1)
             .toLocaleDateString("en-US", { month: "short", year: "2-digit" });
         headers.push(monthName);
@@ -2393,11 +2486,12 @@ useEffect(() => {
     const copyData = [headers];
     const structuredData = [];
 
-    // FIX: Iterate over checkedRows
     checkedRows.forEach((rowIndex) => {
         const emp = localEmployees[rowIndex];
         if (emp && emp.emple && !hiddenRows[rowIndex]) {
             const employeeRow = getEmployeeRow(emp, rowIndex);
+            
+            // Extract core data
             const rowData = [
                 employeeRow.idType,
                 employeeRow.emplId,
@@ -2406,28 +2500,30 @@ useEffect(() => {
                 employeeRow.acctName,
                 employeeRow.orgId,
                 employeeRow.glcPlc,
+                // Check if it's a React element (checkmark) or raw value
                 typeof employeeRow.isRev === "object" ? "✓" : employeeRow.isRev,
                 typeof employeeRow.isBrd === "object" ? "✓" : employeeRow.isBrd,
                 employeeRow.status,
                 employeeRow.perHourRate,
             ];
 
-            // Calculate total and months
-            let totalHours = 0;
+            // Calculate totals and collect hours for ALL years
+            let totalHoursSum = 0;
             const monthValues = [];
-            sortedDurations.forEach((duration) => {
+            const empMonthHours = getMonthHours(emp);
+
+            allAvailableDurations.forEach((duration) => {
                 const uniqueKey = `${duration.monthNo}_${duration.year}`;
                 const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
-                const monthHours = getMonthHours(emp);
-                const forecastValue = monthHours[uniqueKey]?.value;
+                const forecastValue = empMonthHours[uniqueKey]?.value;
                 const value = inputValue !== undefined && inputValue !== "" ? inputValue : forecastValue || "0.00";
 
-                totalHours += value && !isNaN(value) ? Number(value) : 0;
+                totalHoursSum += value && !isNaN(value) ? Number(value) : 0;
                 monthValues.push(value);
             });
 
-            rowData.push(totalHours.toFixed(2)); // Push Total to column 12
-            rowData.push(...monthValues);       // Add monthly data
+            rowData.push(totalHoursSum.toFixed(2)); // Total Column
+            rowData.push(...monthValues);         // All individual months
 
             copyData.push(rowData);
             structuredData.push(rowData);
@@ -2441,14 +2537,23 @@ useEffect(() => {
             setCopiedRowsData(structuredData);
             setCopiedMonthMetadata(monthMetadata);
             setHasClipboardData(true);
-            toast.success(`Copied ${structuredData.length} rows!`, { autoClose: 3000 });
             
-            // Optional: Uncheck all after copying
-            // setCheckedRows(new Set()); 
+            // Updated Toast Message
+            // toast.success(`Success! ${structuredData.length} records (including all fiscal years) copied to clipboard.`, { 
+            //     autoClose: 3000,
+            //     icon: "📋" 
+            // });
+             toast.success(
+                      `Copied ${structuredData.length} rows with all fiscal year data!`,
+                      {
+                        autoClose: 3000,
+                      }
+                    );
         })
-        .catch((err) => {
-            toast.error("Failed to copy data.");
-        });
+       .catch((err) => {
+        console.error("Copy failed:", err);
+        toast.error("Failed to copy data.", { autoClose: 3000 });
+      });
 };
 
   // const handlePasteMultipleRows = () => {
@@ -2884,9 +2989,16 @@ useEffect(() => {
       ] = rowData;
 
       // Map ID Type
-      const idType =
-        ID_TYPE_OPTIONS.find((opt) => opt.label === idTypeLabel)?.value ||
-        idTypeLabel;
+      // const idType =
+      //   ID_TYPE_OPTIONS.find((opt) => opt.label === idTypeLabel)?.value ||
+      //   idTypeLabel;
+
+      const idType = ID_TYPE_OPTIONS.find(
+            (opt) => opt.label.toLowerCase() === idTypeLabel.toLowerCase()
+        )?.value || idTypeLabel;
+
+        // AUTO-POPULATE Account Name from ID during paste
+        const matchedAccount = accountOptionsWithNames.find(acc => acc.id === acctId);
 
       // Parse name based on ID type
       let firstName = "";
@@ -4971,25 +5083,25 @@ const handleMasterSave = async () => {
   }
 };
 
-  const handleAccountInputChangeForUpdate = (value, actualEmpIdx) => {
-    handleEmployeeDataChange(actualEmpIdx, "acctId", value);
+  // const handleAccountInputChangeForUpdate = (value, actualEmpIdx) => {
+  //   handleEmployeeDataChange(actualEmpIdx, "acctId", value);
 
-    // Filter accounts based on input - ensure we're using all available accounts
-    if (value.length >= 1) {
-      const baseAccounts =
-        updateAccountOptions.length > 0 ? updateAccountOptions : laborAccounts;
-      const filtered = baseAccounts.filter((acc) =>
-        acc.id.toLowerCase().includes(value.toLowerCase())
-      );
-      // Don't update the state here, just use the filtered results for display
-      // The datalist will automatically show filtered options
-    } else {
-      // When input is empty, ensure all accounts are available
-      if (updateAccountOptions.length === 0 && laborAccounts.length > 0) {
-        setUpdateAccountOptions(laborAccounts);
-      }
-    }
-  };
+  //   // Filter accounts based on input - ensure we're using all available accounts
+  //   if (value.length >= 1) {
+  //     const baseAccounts =
+  //       updateAccountOptions.length > 0 ? updateAccountOptions : laborAccounts;
+  //     const filtered = baseAccounts.filter((acc) =>
+  //       acc.id.toLowerCase().includes(value.toLowerCase())
+  //     );
+  //     // Don't update the state here, just use the filtered results for display
+  //     // The datalist will automatically show filtered options
+  //   } else {
+  //     // When input is empty, ensure all accounts are available
+  //     if (updateAccountOptions.length === 0 && laborAccounts.length > 0) {
+  //       setUpdateAccountOptions(laborAccounts);
+  //     }
+  //   }
+  // };
 
 
   
@@ -5385,6 +5497,18 @@ const handleMasterSave = async () => {
 //   toast.success("Values applied successfully");
 // };
 
+const handleAccountInputChangeForUpdate = (value, actualEmpIdx) => {
+  // 1. Update the ID
+  handleEmployeeDataChange(actualEmpIdx, "acctId", value);
+
+  // 2. Lookup and Update Name automatically
+  const matchedAccount = accountOptionsWithNames.find(acc => acc.id === value);
+  if (matchedAccount) {
+    handleEmployeeDataChange(actualEmpIdx, "acctName", matchedAccount.name);
+  } else {
+    handleEmployeeDataChange(actualEmpIdx, "acctName", "");
+  }
+};
 
 const handleFillValues = () => {
   if (!isEditable) return;
@@ -9841,23 +9965,20 @@ const handleSelectAllCheckboxes = (isChecked) => {
   <input
     type="text"
     value={entry.acctId}
-    onChange={(e) => {
+   onChange={(e) => {
       const val = e.target.value;
-      // Get the list of accounts with names already fetched in your component
-      const accountList = accountOptionsWithNames || [];
-      
-      // Find the account object that matches the ID entered/pasted
-      const matchedAccount = accountList.find(
-        (acc) => (acc.id || acc.accountId) === val
+      // FIX: Look up name from your existing accountOptionsWithNames state
+      const matchedAccount = accountOptionsWithNames.find(
+        (acc) => acc.id === val
       );
 
-      // Update the specific entry in the array with BOTH the ID and the looked-up Name
       setNewEntries((prev) =>
         prev.map((ent, idx) =>
           idx === entryIndex
             ? { 
                 ...ent, 
                 acctId: val, 
+                // AUTO-POPULATE NAME HERE
                 acctName: matchedAccount ? matchedAccount.name : "" 
               }
             : ent
@@ -9943,9 +10064,19 @@ const handleSelectAllCheckboxes = (isChecked) => {
         <td className="tbody-td">
           <input type="text" value={entry.status} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, status: e.target.value } : ent)))} className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" />
         </td>
-        <td className="tbody-td">
+        {/* <td className="tbody-td">
           <input type="text" value={entry.perHourRate} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, perHourRate: e.target.value.replace(/[^0-9.]/g, "") } : ent)))} className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" />
-        </td>
+        </td> */}
+        <td className="tbody-td">
+  <input 
+    
+    type={isAdmin ? "text" : "password"} 
+    value={entry.perHourRate} 
+    onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, perHourRate: e.target.value.replace(/[^0-9.]/g, "") } : ent)))} 
+    className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" 
+    placeholder={isAdmin ? "0.00" : "**"}
+  />
+</td>
         <td className="tbody-td">
           {Object.values(newEntryPeriodHoursArray[entryIndex] || {}).reduce((sum, val) => sum + parseFloat(val || 0), 0).toFixed(2)}
         </td>
@@ -10136,7 +10267,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
         </td>
         <td className="tbody-td min-w-[70px]">{row.status}</td>
 
-        <td className="tbody-td min-w-[70px]">
+        {/* <td className="tbody-td min-w-[70px]">
           {isBudPlan && isEditable && emp.emple.type !== "Employee" && emp.emple.type !== "Vendor Employee" && emp.emple.type !== "Vendor" ? (
             <input
               type="password"
@@ -10150,7 +10281,29 @@ const handleSelectAllCheckboxes = (isChecked) => {
           ) : (
             <span className="text-gray-400 cursor-not-allowed">**</span>
           )}
-        </td>
+        </td> */}
+
+        <td className="tbody-td min-w-[70px]">
+  {isBudPlan && isEditable && emp.emple.type !== "Employee" && emp.emple.type !== "Vendor Employee" && emp.emple.type !== "Vendor" ? (
+    <input
+      // CHANGE: Type is text for Admin, password for others
+      type={isAdmin ? "text" : "password"} 
+      value={editingPerHourRateIdx === actualEmpIdx 
+        ? (editedData.perHourRate !== undefined ? editedData.perHourRate : row.perHourRate) 
+        : (isAdmin ? row.perHourRate : "")} // Show value if Admin even when not focused
+      placeholder={editingPerHourRateIdx === actualEmpIdx ? "" : (isAdmin ? "0.00" : "**")}
+      onFocus={() => setEditingPerHourRateIdx(actualEmpIdx)}
+      onChange={(e) => handleEmployeeDataChange(actualEmpIdx, "perHourRate", e.target.value.replace(/[^0-9.]/g, ""))}
+      className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
+      disabled={emp.emple.type === "Employee" || emp.emple.type === "Vendor Employee" || emp.emple.type === "Vendor"}
+    />
+  ) : (
+    // CHANGE: Admins can see the read-only value, Users see **
+    <span className="text-gray-400 cursor-not-allowed">
+       {isAdmin ? row.perHourRate : "**"}
+    </span>
+  )}
+</td>
 
         <td className="tbody-td min-w-[70px]">{row.total}</td>
       </tr>
