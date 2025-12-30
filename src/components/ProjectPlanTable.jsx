@@ -3935,7 +3935,7 @@ useImperativeHandle(ref, () => ({
         "Create Budget",
         "Create Blank Budget",
         "Create EAC",
-        "Delete",
+        // "Delete",
       ];
     else if (plan.status === "Concluded")
       options = ["None", "Create Budget", "Create Blank Budget", "Create EAC"];
@@ -4399,13 +4399,13 @@ useImperativeHandle(ref, () => ({
   </button>
 
   {/* New Business always visible */}
-  <button
+  {/* <button
     onClick={() => setShowNewBusinessPopup(true)}
     className="btn1 btn-green cursor-pointer"
     title="New Business"
   >
     New Business
-  </button>
+  </button> */}
 
   {/* Save Date */}
   {!isActionLoading && !isSaveDatesDisabled() && (
@@ -4546,11 +4546,11 @@ useImperativeHandle(ref, () => ({
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1">
-          <span className="text-xs font-bold text-gray-500 whitespace-nowrap">
+          <span className="text-xs font-bold text-gray-500 whitespace-nowrap ">
             Plan Type
           </span>
           <select
-            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed"
+            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100 "
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             disabled={filteredProjects.length === 0}
@@ -4567,7 +4567,7 @@ useImperativeHandle(ref, () => ({
             Status
           </span>
           <select
-            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed "
+            className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100  "
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
              disabled={filteredProjects.length === 0}
@@ -4847,7 +4847,7 @@ useImperativeHandle(ref, () => ({
                               disabled={plan.status !== "In Progress"}
                               className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${
                                 plan.status !== "In Progress"
-                                  ? "cursor-not-allowed"
+                                  ? "cursor-not-allowed bg-gray-100"
                                   : ""
                               }`}
                             >
