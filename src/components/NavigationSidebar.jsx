@@ -583,12 +583,12 @@ const NavigationSidebar = () => {
                         selected={selectedPage}
                         onClick={handleLinkClick}
                       />
-                            <NavItem
+                            {/* <NavItem
                         label="Display Settings"
                         path="/dashboard/display-settings"
                         selected={selectedPage}
                         onClick={handleLinkClick}
-                      />
+                      /> */}
                          {/* <NavItem
                         label="Rights Settings"
                         path="/dashboard/role-rights"
