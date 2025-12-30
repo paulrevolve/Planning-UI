@@ -217,23 +217,7 @@ const AccountMapping = () => {
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             Chart of Accounts
           </h2>
-          <div className="flex gap-2">
-            {editingIds.length > 1 && (
-              <button 
-                onClick={() => handleUpdateRows()} 
-                className="flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs cursor-pointer shadow-sm"
-              >
-                <CheckCircle size={14} /> Save All ({editingIds.length})
-              </button>
-            )}
-            <button 
-              onClick={() => setIsAdding(true)} 
-              className="flex items-center gap-1 text-white px-3 py-1 rounded text-xs cursor-pointer shadow-sm transition-colors"
-              style={{ backgroundColor: "#113d46" }}
-            >
-              <Plus size={14} /> Add Row
-            </button>
-          </div>
+          
         </div>
 
         <div className="px-4 pt-4 shrink-0">
@@ -264,18 +248,35 @@ const AccountMapping = () => {
           </div>
         </div>
 
+       <div className="flex gap-2 px-4 pb-2 pt-2 bg-white sticky top-0 z-20">
+  {editingIds.length > 1 && (
+    <button 
+      onClick={() => handleUpdateRows()} 
+      className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 text-xs cursor-pointer shadow-sm transition-colors"
+    >
+      <CheckCircle size={14} /> Save All ({editingIds.length})
+    </button>
+  )}
+  <button 
+    onClick={() => setIsAdding(true)} 
+    className="flex items-center gap-1 bg-[#113d46] text-white px-3 py-1.5 rounded hover:bg-[#0e2f36] text-xs cursor-pointer shadow-sm transition-colors flex-shrink-0"
+  >
+    <Plus size={14} /> Add Row
+  </button>
+</div>
+
         {/* Unified Scrollable Table Section */}
         <div className="flex-1 overflow-hidden px-4 pb-4">
           <div className="border border-gray-200 rounded h-full bg-white shadow-sm overflow-y-auto custom-scrollbar">
             <table className="w-full text-left border-collapse table-fixed">
               <thead className="sticky top-0 z-30 bg-[#fafafa]">
-                <tr className="text-[10px] uppercase text-gray-500 border-b">
-                  <th className="p-2 border-r border-gray-200 font-bold w-[15%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)]">Account ID</th>
-                  <th className="p-2 border-r border-gray-200 font-bold w-[25%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)]">Account Name</th>
-                  <th className="p-2 border-r border-gray-200 font-bold w-[18%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)]">Cost Type</th>
-                  <th className="p-2 border-r border-gray-200 font-bold w-[18%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)]">Account Type</th>
-                  <th className="p-2 border-r border-gray-200 font-bold w-[18%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)]">Budget Sheet</th>
-                  <th className="p-2 font-bold w-20 text-center shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)]">Action</th>
+                <tr className="text-[10px] captialize text-gray-500 border-b">
+                  <th className="p-2 border-r border-gray-200 font-bold w-[15%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)] ">Account ID</th>
+                  <th className="p-2 border-r border-gray-200 font-bold w-[25%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)] ">Account Name</th>
+                  <th className="p-2 border-r border-gray-200 font-bold w-[18%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)] ">Cost Type</th>
+                  <th className="p-2 border-r border-gray-200 font-bold w-[18%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)] ">Account Type</th>
+                  <th className="p-2 border-r border-gray-200 font-bold w-[18%] shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)] ">Expenses Type Mapping</th>
+                  <th className="p-2 font-bold w-20 text-center shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)] ">Action</th>
                 </tr>
               </thead>
               <tbody>
