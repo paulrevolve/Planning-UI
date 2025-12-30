@@ -230,7 +230,7 @@ const PoolConfigurationTable = () => {
 };
 
   return (
-    <div className="p-4 sm:p-5 w-[98%] mx-auto font-roboto rounded-xl ml-5">
+    <div className="w-[98%] mx-auto font-roboto rounded">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -241,11 +241,11 @@ const PoolConfigurationTable = () => {
         Pool Configuration
       </h2> */}
       <div className="font-roboto bg-gray-50 rounded-xl shadow-md p-2 mb-3 px-4">
-        <div className="py-4 border-b border-gray-200 w-full flex items-center justify-between bg-gray-50/50">
+        {/* <div className="py-4 border-b border-gray-200 w-full flex items-center justify-between bg-gray-50/50">
           <h2 className="text-lg  font-bold text-gray-800 flex items-center gap-2">
             <MonitorCog size={20} className="text-blue-600" /> Org Account Pool Mapping
           </h2>
-        </div>
+        </div> */}
         <div className="flex items-center gap-4 my-3">
           <label
             htmlFor="fiscalYear"

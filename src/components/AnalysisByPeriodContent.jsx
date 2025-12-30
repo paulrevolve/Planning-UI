@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { data } from "react-router-dom";
 import { backendUrl } from "./config";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const AnalysisByPeriodContent = ({
   onCancel,
@@ -13,17 +15,12 @@ const AnalysisByPeriodContent = ({
   error,
   fiscalYear,
 }) => {
-  // Added console.log for fiscalYear prop at the very top
-  // console.log("AnalysisByPeriodContent: Received fiscalYear prop:", fiscalYear);
-  // console.log(
-  //   "AnalysisByPeriodContent: Received initialApiData prop:",
-  //   initialApiData
-  // );
-
   const [expandedStaffRows, setExpandedStaffRows] = useState([]);
   const [expandedEmployeeDetails, setExpandedEmployeeDetails] = useState([]);
   const [expandedNonLaborAcctRows, setExpandedNonLaborAcctRows] = useState([]); // State for non-labor account expansion
   const [financialData, setFinancialData] = useState([]);
+
+  const [isExporting, setIsExporting] = useState(false);
 
   const [allApiData, setAllApiData] = useState(null); // This will now hold the fiscalYear-filtered data
   const [dynamicDateRanges, setDynamicDateRanges] = useState([]);
@@ -52,20 +49,6 @@ const AnalysisByPeriodContent = ({
       selectedRevenueView,
       planType
     ) => {
-      // console.log(
-      //   "transformApiDataToFinancialRows: RAW apiResponse",
-      //   apiResponse
-      // );
-      // console.log(
-      //   "transformApiDataToFinancialRows: currentOrgId",
-      //   currentOrgId
-      // );
-      // console.log(
-      //   "transformApiDataToFinancialRows: dynamicDateRanges (columns)",
-      //   dynamicDateRanges
-      // );
-      // console.log("transformApiDataToFinancialRows: planType", planType);
-
       const financialRows = [];
 
       // Initialize totals
@@ -129,102 +112,6 @@ const AnalysisByPeriodContent = ({
         0
       );
       const totalProfitOverall = totalRevenueOverall - totalExpenseOverall;
-
-      // ---------- EMPLOYEES ----------
-      // const uniqueEmployeesMap = new Map();
-      // const filteredEmployeeSummaries = (
-      //   apiResponse.employeeForecastSummary || []
-      // ).filter((empSummary) => {
-      //   const isOrgMatch = currentOrgId
-      //     ? empSummary.orgID === currentOrgId
-      //     : true;
-      //   return isOrgMatch;
-      // });
-
-      // if (filteredEmployeeSummaries.length > 0) {
-      //   filteredEmployeeSummaries.forEach((empSummary) => {
-      //     if (!uniqueEmployeesMap.has(empSummary.emplId)) {
-      //       uniqueEmployeesMap.set(empSummary.emplId, {
-      //         id: empSummary.emplId,
-      //         name: `${empSummary.name} (${empSummary.emplId})`,
-      //         cost: 0,
-      //         accountId: empSummary.accID || "",
-      //         orgId: empSummary.orgId || "",
-      //         glcPlc: empSummary.plcCode || "",
-      //         hrlyRate: empSummary.perHourRate || 0,
-      //         monthlyHours: {},
-      //         monthlyCost: {},
-
-      //         // 🔥 new breakdown fields
-      //         monthlyRawCost: {},
-      //         monthlyFringe: {},
-      //         monthlyOverhead: {},
-      //         monthlyGna: {},
-
-      //         detailSummary: {},
-      //       });
-      //     }
-      //     const employee = uniqueEmployeesMap.get(empSummary.emplId);
-
-      //     const payrollSalaries = empSummary.emplSchedule?.payrollSalary || [];
-      //     payrollSalaries.forEach((salaryEntry) => {
-      //       const monthRange = getMonthRangeKey(
-      //         salaryEntry.month,
-      //         salaryEntry.year
-      //       );
-
-      //       if (monthRange && dynamicDateRanges.includes(monthRange)) {
-      //         // 🔥 Changed: split into raw / fringe / overhead / gna
-      //         employee.monthlyRawCost[monthRange] =
-      //           (employee.monthlyRawCost[monthRange] || 0) +
-      //           (salaryEntry.cost || 0);
-      //         employee.monthlyFringe[monthRange] =
-      //           (employee.monthlyFringe[monthRange] || 0) +
-      //           (salaryEntry.fringe || 0);
-      //         employee.monthlyOverhead[monthRange] =
-      //           (employee.monthlyOverhead[monthRange] || 0) +
-      //           (salaryEntry.overhead || 0);
-      //         employee.monthlyGna[monthRange] =
-      //           (employee.monthlyGna[monthRange] || 0) + (salaryEntry.gna || 0);
-
-      //         // total burdened cost
-      //         employee.monthlyCost[monthRange] =
-      //           (employee.monthlyCost[monthRange] || 0) +
-      //           (salaryEntry.totalBurdenCost || 0);
-
-      //         // hours
-      //         employee.monthlyHours[monthRange] =
-      //           (employee.monthlyHours[monthRange] || 0) +
-      //           (salaryEntry.hours || 0);
-
-      //         // 🔥 Updated detailSummary to align with UI rows
-      //         if (!employee.detailSummary["Raw Cost"])
-      //           employee.detailSummary["Raw Cost"] = {};
-      //         employee.detailSummary["Raw Cost"][monthRange] =
-      //           (employee.detailSummary["Raw Cost"][monthRange] || 0) +
-      //           (salaryEntry.cost || 0);
-
-      //         if (!employee.detailSummary["Fringe Benefits"])
-      //           employee.detailSummary["Fringe Benefits"] = {};
-      //         employee.detailSummary["Fringe Benefits"][monthRange] =
-      //           (employee.detailSummary["Fringe Benefits"][monthRange] || 0) +
-      //           (salaryEntry.fringe || 0);
-
-      //         if (!employee.detailSummary["Overhead"])
-      //           employee.detailSummary["Overhead"] = {};
-      //         employee.detailSummary["Overhead"][monthRange] =
-      //           (employee.detailSummary["Overhead"][monthRange] || 0) +
-      //           (salaryEntry.overhead || 0);
-
-      //         if (!employee.detailSummary["General & Admin"])
-      //           employee.detailSummary["General & Admin"] = {};
-      //         employee.detailSummary["General & Admin"][monthRange] =
-      //           (employee.detailSummary["General & Admin"][monthRange] || 0) +
-      //           (salaryEntry.gna || 0);
-      //       }
-      //     });
-      //   });
-      // }
 
       // ✅ Use Map for unique employees
       const uniqueEmployeesMap = new Map();
@@ -514,7 +401,8 @@ const AnalysisByPeriodContent = ({
 
       financialRows.push({
         id: `total-staff-cost-${currentOrgId}`,
-        description: "Total Staff Cost",
+        // description: "Total Staff Cost",
+        description: "Total Burdened Labor Cost",
         total: totalStaffCostOverall,
         data: totalStaffCostByMonth,
         type: "expandable",
@@ -524,7 +412,8 @@ const AnalysisByPeriodContent = ({
 
       financialRows.push({
         id: `non-labor-staff-cost-${currentOrgId}`,
-        description: "Non-Labor Staff Cost",
+        // description: "Non-Labor Staff Cost",
+        description: "Total Burdened Non-Labor Cost",
         total: totalNonLaborCostOverall,
         data: totalNonLaborCostByMonth,
         type: "expandable",
@@ -885,8 +774,8 @@ const AnalysisByPeriodContent = ({
   };
 
   const getGlassmorphismClasses = () => `
-    bg-white bg-opacity-5 backdrop-filter backdrop-blur-lg rounded-lg
-    border border-opacity-10 border-white shadow-lg
+    bg-white bg-opacity-5 backdrop-filter backdrop-blur-lg rounded-sm
+    border border-opacity-10 border-white 
   `;
 
   if (isLoading) {
@@ -914,59 +803,6 @@ const AnalysisByPeriodContent = ({
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
   };
-
-  // const expandAll = () => {
-  //   // Expand all staff rows
-  //   const staffRowsToExpand = financialData
-  //     .filter(
-  //       (row) =>
-  //         row.type === "expandable" && row.id.startsWith("total-staff-cost")
-  //     )
-  //     .map((row) => row.id);
-  //   setExpandedStaffRows((prev) => [
-  //     ...new Set([...prev, ...staffRowsToExpand]),
-  //   ]);
-
-  //   // Expand all employee details
-  //   const employeeDetailsToExpand = [];
-  //   financialData.forEach((row) => {
-  //     if (
-  //       row.type === "expandable" &&
-  //       row.id.startsWith("total-staff-cost") &&
-  //       row.employees
-  //     ) {
-  //       row.employees.forEach((employee) =>
-  //         employeeDetailsToExpand.push(`${row.id}-${employee.id}`)
-  //       );
-  //     }
-  //   });
-  //   setExpandedEmployeeDetails((prev) => [
-  //     ...new Set([...prev, ...employeeDetailsToExpand]),
-  //   ]);
-
-  //   // Expand all non-labor account rows
-  //   const nonLaborAcctRowsToExpand = [];
-  //   financialData.forEach((row) => {
-  //     if (
-  //       row.type === "expandable" &&
-  //       row.id.startsWith("non-labor-staff-cost") &&
-  //       row.nonLaborAccts
-  //     ) {
-  //       row.nonLaborAccts.forEach((acct) =>
-  //         nonLaborAcctRowsToExpand.push(`${row.id}-${acct.id}`)
-  //       );
-  //     }
-  //   });
-  //   setExpandedNonLaborAcctRows((prev) => [
-  //     ...new Set([...prev, ...nonLaborAcctRowsToExpand]),
-  //   ]);
-  // };
-
-  // const collapseAll = () => {
-  //   setExpandedStaffRows([]);
-  //   setExpandedEmployeeDetails([]);
-  //   setExpandedNonLaborAcctRows([]);
-  // };
 
   const expandAll = () => {
     // ✅ Expand all staff rows (parents)
@@ -1031,84 +867,180 @@ const AnalysisByPeriodContent = ({
     setExpandedNonLaborAcctRows([]); // clears both parent + child IDs
   };
 
-  console.log(financialData);
+  // console.log(financialData);
+  const buildExcelRows = () => {
+    const rows = [];
+
+    financialData.forEach((row) => {
+      // 🔹 Parent row
+      const baseRow = {
+        Description: row.description,
+        Total: row.total ?? 0,
+      };
+
+      dynamicDateRanges.forEach((month) => {
+        baseRow[month] = row.data?.[month] ?? 0;
+      });
+
+      rows.push(baseRow);
+
+      // 🔹 Staff expandable
+      if (row.employees) {
+        row.employees.forEach((emp) => {
+          const empRow = {
+            Description: `   ${emp.name}`, // indent
+            Total: emp.cost ?? 0,
+          };
+
+          dynamicDateRanges.forEach((month) => {
+            empRow[month] = emp.monthlyCost?.[month] ?? 0;
+          });
+
+          rows.push(empRow);
+
+          // 🔹 Employee detail rows (Raw, Fringe, Overhead…)
+          Object.entries(emp.detailSummary || {}).forEach(
+            ([label, monthData]) => {
+              const detailRow = {
+                Description: `      ${label}`,
+                Total: Object.values(monthData).reduce((s, v) => s + v, 0),
+              };
+
+              dynamicDateRanges.forEach((month) => {
+                detailRow[month] = monthData?.[month] ?? 0;
+              });
+
+              rows.push(detailRow);
+            }
+          );
+        });
+      }
+
+      // 🔹 Non-labor expandable
+      if (row.nonLaborAccts) {
+        row.nonLaborAccts.forEach((acct) => {
+          const acctRow = {
+            Description: `   ${acct.description}`,
+            Total: acct.total ?? 0,
+          };
+
+          dynamicDateRanges.forEach((month) => {
+            acctRow[month] = acct.monthlyData?.[month] ?? 0;
+          });
+
+          rows.push(acctRow);
+
+          acct.employees.forEach((emp) => {
+            const empRow = {
+              Description: `      ${emp.name}`,
+              Total: emp.total ?? 0,
+            };
+
+            dynamicDateRanges.forEach((month) => {
+              empRow[month] = emp.monthlyData?.[month] ?? 0;
+            });
+
+            rows.push(empRow);
+          });
+        });
+      }
+    });
+
+    return rows;
+  };
+
+  const exportToExcel = () => {
+    try {
+      setIsExporting(true);
+
+      const excelRows = buildExcelRows();
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Financial Plan");
+
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+
+      const file = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      saveAs(
+        file,
+        `Financial_Plan_${selectedOrgId}_${new Date()
+          .toISOString()
+          .slice(0, 10)}.xlsx`
+      );
+    } catch (err) {
+      console.error("Excel export failed", err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
-    <div className="min-h-full bg-[#e9f6fb] rounded-sm p-8 text-gray-800 font-inter">
-      <div className="mb-2">
+    <div className="min-h-full  text-gray-800">
+      <div className="mb-2 flex item-center gap-x-1">
         <button
           onClick={expandAll}
-          className="px-3 py-1.5 text-sm bg-[#17414d] text-white rounded-md  transition-colors duration-200 mb-1"
+          className="px-3 py-1.5 cursor-pointer text-sm bg-[#17414d] text-white rounded-md  transition-colors duration-200 mb-1"
         >
           Expand All
         </button>
         <button
           onClick={collapseAll}
-          className="px-3 py-1.5 text-sm bg-[#17414d] text-white rounded-md  transition-colors duration-200 ml-2 mb-1"
+          className="px-3 py-1.5 cursor-pointer text-sm bg-[#17414d] text-white rounded-md  transition-colors duration-200 ml-2 mb-1"
         >
           Collapse All
         </button>
+        <div className="flex items-center ">
+          <button
+            onClick={exportToExcel}
+            className={`px-3 py-1.5 text-sm cursor-pointer rounded-md transition-colors duration-200 ml-2 mb-1 flex items-center ${isExporting ? "bg-[#11353f] text-gray-300" : "bg-[#17414d] text-white"}`}
+            disabled={isExporting}
+          >
+            {isExporting ? "Exporting" : "Export"}
+          </button>
+        </div>
       </div>
 
-      <div className={`p-6 ${getGlassmorphismClasses()}`}>
+      <div className={` ${getGlassmorphismClasses()}`}>
         <div className="mb-8 flex-wrap justify-center items-center gap-4 hidden"></div>
 
-        <div className="overflow-x-auto max-h-120 overflow-y-auto">
-          <table className="min-w-full divide-y divide-gray-300 divide-opacity-30">
-            {/* <thead>
-              <tr className="bg-gray-100 sticky bg-opacity-50">
-                <th className="py-3 px-4 text-left text-sm font-semibold text-blue-700 uppercase tracking-wider sticky left-0 z-10 bg-inherit">
+        <div className="overflow-x-auto max-h-120 rounded-sm overflow-y-auto">
+          <table className="min-w-full rounded-sm  divide-y divide-gray-300 divide-opacity-30">
+            <thead className="sticky top-0 z-30">
+              <tr className="bg-gray-200 bg-opacity-50 ">
+                <th
+                  className="relative px-3 py-2 pl-20 text-left text-[15px] font-semibold
+             text-gray-500 whitespace-nowrap
+             sticky top-0 left-0 z-40
+             bg-gray-200 bg-opacity-95
+             border-b border-gray-300
+             before:absolute before:top-0 before:right-0
+             before:h-full before:w-[2px]
+             before:bg-gray-300 before:content-['']"
+                >
                   Description
                 </th>
-                <th className="py-3 px-4 text-left text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap">
-                  Account ID
-                </th>
-                <th className="py-3 px-4 text-left text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap">
-                  Org ID
-                </th>
-                <th className="py-3 px-4 text-left text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap">
-                  GLC/PLC
-                </th>
-                <th className="py-3 px-4 text-right text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap">
-                  Hrly Rate
-                </th>
-                <th className="py-3 px-4 text-right text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap">
-                  CTD Total
-                </th>
-                 
-                {dynamicDateRanges.length > 0 &&
-                  dynamicDateRanges.map((range) => {
-                    const [monthPart, yearPart] = range.split("/");
 
-                    return (
-                      <th
-                        key={range}
-                        className="py-3 px-4 text-right text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap"
-                      >
-                        {`${monthPart}/${yearPart}`}
-                      </th>
-                    );
-                  })}
-              </tr>
-            </thead> */}
-            <thead>
-              <tr className="bg-gray-100 bg-opacity-50">
-                <th className="py-3 px-4 text-left text-sm font-semibold text-blue-700 uppercase tracking-wider sticky left-0 top-0 z-20 bg-gray-100 bg-opacity-50">
-                  Description
-                </th>
-                <th className="py-3 px-4 text-left text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap sticky top-0 z-10 bg-gray-100 bg-opacity-50">
+                <th className="px-3 py-2 text-left text-[15px] font-semibold text-gray-500 border-b border-gray-200 whitespace-nowrap">
                   Account ID
                 </th>
-                <th className="py-3 px-4 text-left text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap sticky top-0 z-10 bg-gray-100 bg-opacity-50">
+                <th className="px-3 py-2 text-left text-[15px] font-semibold text-gray-500 border-b border-gray-200 whitespace-nowrap">
                   Org ID
                 </th>
-                <th className="py-3 px-4 text-left text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap sticky top-0 z-10 bg-gray-100 bg-opacity-50">
+                <th className="px-3 py-2 text-left text-[15px] font-semibold text-gray-500 border-b border-gray-200 whitespace-nowrap">
                   GLC/PLC
                 </th>
-                <th className="py-3 px-4 text-right text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap sticky top-0 z-10 bg-gray-100 bg-opacity-50">
+                <th className="px-3 py-2 text-right text-[15px] font-semibold text-gray-500 border-b border-gray-200 whitespace-nowrap0">
                   Hrly Rate
                 </th>
-                <th className="py-3 px-4 text-right text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap sticky top-0 z-10 bg-gray-100 bg-opacity-50">
+                <th className="px-3 py-2 text-right text-[15px] font-semibold text-gray-500 border-b border-gray-200 whitespace-nowrap0">
                   CTD Total
                 </th>
                 {dynamicDateRanges.length > 0 &&
@@ -1118,7 +1050,7 @@ const AnalysisByPeriodContent = ({
                     return (
                       <th
                         key={range}
-                        className="py-3 px-4 text-right text-sm font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap sticky top-0 z-10 bg-gray-100 bg-opacity-50"
+                        className="px-3 py-2 text-right text-[16px] font-semibold text-gray-500 border-b border-gray-200 whitespace-nowrap"
                       >
                         {`${monthPart}/${yearPart}`}
                       </th>
@@ -1127,12 +1059,12 @@ const AnalysisByPeriodContent = ({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-300 divide-opacity-10">
+            <tbody className="divide-y text-[14px] divide-gray-300 bg-white divide-opacity-10">
               {financialData.length === 0 ? (
                 <tr>
                   <td
                     colSpan={dynamicDateRanges.length + 7}
-                    className="py-8 text-center text-gray-600 text-lg"
+                    className=" text-center text-gray-600 text-lg"
                   >
                     {isLoading
                       ? "Loading data..."
@@ -1166,7 +1098,7 @@ const AnalysisByPeriodContent = ({
                             : null
                       }
                     >
-                      <td className="py-3 px-4 whitespace-nowrap sticky left-0 z-10 bg-inherit flex items-center text-gray-800">
+                      <td className="py-3 px-4 whitespace-nowrap border-r-2 border-gray-300 sticky left-0 z-10 bg-inherit flex items-center text-gray-800">
                         {row.type === "expandable" && (
                           <span className="mr-2">
                             {(row.id.startsWith("total-staff-cost") &&
@@ -1266,14 +1198,14 @@ const AnalysisByPeriodContent = ({
                           {row.employees.map((employee) => (
                             <React.Fragment key={`${row.id}-${employee.id}`}>
                               <tr
-                                className="bg-gray-100 bg-opacity-20 hover:bg-gray-100 hover:bg-opacity-50 text-sm cursor-pointer group"
+                                className="bg-gray-100 bg-opacity-20  hover:bg-gray-100 hover:bg-opacity-50 text-sm cursor-pointer group"
                                 onClick={() =>
                                   toggleEmployeeDetail(
                                     `${row.id}-${employee.id}`
                                   )
                                 }
                               >
-                                <td className="py-2 pl-8 pr-4 whitespace-nowrap sticky left-0 z-10 bg-inherit flex items-center text-gray-800">
+                                <td className="py-2 pl-8 pr-4 border-r-2 border-gray-300 whitespace-nowrap sticky left-0 z-10 bg-inherit flex items-center text-gray-800">
                                   <span className="mr-2">
                                     {expandedEmployeeDetails.includes(
                                       `${row.id}-${employee.id}`
@@ -1319,7 +1251,13 @@ const AnalysisByPeriodContent = ({
                                   key={`${employee.id}-hours-detail-row`}
                                   className="bg-gray-100 bg-opacity-30 hover:bg-gray-100 hover:bg-opacity-60 text-xs"
                                 >
-                                  <td className="py-2 pl-16 pr-4 whitespace-nowrap sticky left-0 z-10 bg-inherit italic text-gray-700">
+                                  <td
+                                    className="py-2 pl-16  relative whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                  >
                                     --- Employee Hours
                                   </td>
                                   <td className="py-2 px-4 text-left whitespace-nowrap"></td>
@@ -1365,9 +1303,15 @@ const AnalysisByPeriodContent = ({
                                         return (
                                           <tr
                                             key={`${employee.id}-${detailDescription}-detail-row`}
-                                            className="bg-gray-100 bg-opacity-30 hover:bg-gray-100 hover:bg-opacity-60 text-xs"
+                                            className="bg-gray-100  bg-opacity-30 hover:bg-gray-100 hover:bg-opacity-60 text-xs"
                                           >
-                                            <td className="py-2 pl-16 pr-4 whitespace-nowrap sticky left-0 z-10 bg-inherit italic text-gray-700">
+                                            <td
+                                              className="py-2 pl-16 pr-4 relative whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                            >
                                               --- {detailDescription}
                                             </td>
                                             <td className="py-2 px-4 text-left whitespace-nowrap text-gray-700">
@@ -1420,7 +1364,7 @@ const AnalysisByPeriodContent = ({
                                   )
                                 }
                               >
-                                <td className="py-2 pl-8 pr-4 whitespace-nowrap sticky left-0 z-10 bg-inherit flex items-center text-gray-800">
+                                <td className="py-2 pl-8 pr-4 border-r-2 border-gray-300 whitespace-nowrap sticky left-0 z-10 bg-inherit flex items-center text-gray-800">
                                   <span className="mr-2">
                                     {expandedNonLaborAcctRows.includes(
                                       `${row.id}-${acctGroup.id}`
@@ -1448,7 +1392,7 @@ const AnalysisByPeriodContent = ({
                                 {dynamicDateRanges.map((currentRange) => (
                                   <td
                                     key={`${acctGroup.id}-${currentRange}-cost`}
-                                    className="py-2 px-4 text-right whitespace-nowrap text-gray-800"
+                                    className="py-2 px-4  Employee Hours text-right whitespace-nowrap text-gray-800"
                                   >
                                     {formatValue(
                                       acctGroup.monthlyData[currentRange] || 0
@@ -1464,7 +1408,13 @@ const AnalysisByPeriodContent = ({
                                 acctGroup.employees.length > 0 && (
                                   <React.Fragment>
                                     <tr className="bg-gray-100 bg-opacity-30">
-                                      <td className="py-2 pl-16 pr-4 text-left text-sm font-semibold text-gray-700 uppercase sticky left-0 z-10 bg-inherit">
+                                      <td
+                                        className="py-2 pl-16 relative pr-4 whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                      >
                                         Employee
                                       </td>
                                       <td
@@ -1475,7 +1425,7 @@ const AnalysisByPeriodContent = ({
                                       {dynamicDateRanges.map((range) => (
                                         <td
                                           key={`header-employee-group-${range}`}
-                                          className="py-2 px-4 text-right text-sm font-semibold text-gray-700 uppercase whitespace-nowrap"
+                                          className="py-2 px-4 border-r-2 border-gray-300 text-right text-sm font-semibold text-gray-700 uppercase whitespace-nowrap"
                                         ></td>
                                       ))}
                                     </tr>
@@ -1494,7 +1444,13 @@ const AnalysisByPeriodContent = ({
                                             key={`${acctGroup.id}-${employeeGroup.id}-employee-block`}
                                           >
                                             <tr className="bg-gray-100 bg-opacity-40 hover:bg-gray-100 text-xs">
-                                              <td className="py-2 pl-16 pr-4 sticky left-0 bg-inherit text-gray-800">
+                                              <td
+                                                className="relative py-2 pl-16 pr-4 whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                              >
                                                 {employeeGroup.name}
                                               </td>
                                               <td colSpan={4}></td>
@@ -1520,7 +1476,13 @@ const AnalysisByPeriodContent = ({
                                             </tr>
 
                                             <tr className="bg-gray-100 bg-opacity-30 text-xs">
-                                              <td className="py-2 pl-20 pr-4 sticky left-0 bg-inherit text-gray-700">
+                                              <td
+                                                className="py-2 relative py-3 pl-20 whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                              >
                                                 --- General & Admin
                                               </td>
                                               <td colSpan={4}></td>
@@ -1542,7 +1504,13 @@ const AnalysisByPeriodContent = ({
                                             </tr>
 
                                             <tr className="bg-gray-100 bg-opacity-30 text-xs">
-                                              <td className="py-2 pl-20 pr-4 sticky left-0 bg-inherit text-gray-700">
+                                              <td
+                                                className="relative py-3 pl-20 whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                              >
                                                 --- Human Resource
                                               </td>
                                               <td colSpan={4}></td>
@@ -1564,7 +1532,13 @@ const AnalysisByPeriodContent = ({
                                             </tr>
 
                                             <tr className="bg-gray-100 bg-opacity-30 text-xs">
-                                              <td className="py-2 pl-20 pr-4 sticky left-0 bg-inherit text-gray-700">
+                                              <td
+                                                className="relative py-3 pl-20 whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                              >
                                                 --- Material
                                               </td>
                                               <td colSpan={4}></td>
@@ -1589,7 +1563,13 @@ const AnalysisByPeriodContent = ({
                                             </tr>
 
                                             <tr className="bg-gray-100 bg-opacity-30 text-xs">
-                                              <td className="py-2 pl-20 pr-4 sticky left-0 bg-inherit text-gray-700">
+                                              <td
+                                                className="relative py-3 pl-20 whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                              >
                                                 --- Fringe Benefits
                                               </td>
                                               <td colSpan={4}></td>

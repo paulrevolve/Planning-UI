@@ -11,16 +11,18 @@ import {
   Layers,
   FileText,
   Settings,
-  BriefcaseBusiness, 
+  BriefcaseBusiness,
   SlidersHorizontal,
-  Users,// new icon for New Business Budget section
+  Users, // new icon for New Business Budget section
 } from "lucide-react";
 
 const NavigationSidebar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const [onHoverChange, setOnhoverChange] = useState(false)
+  const [onHoverChange, setOnhoverChange] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   // --- ALL ORIGINAL LOGIC PRESERVED ---
   const [generalMenuOpen, setGeneralMenuOpen] = useState(
@@ -43,8 +45,10 @@ const NavigationSidebar = () => {
       pathname.includes("/dashboard/account-mapping") ||
       pathname.includes("/dashboard/projectmapping") ||
       pathname.includes("/dashboard/monthly-forecast") ||
-      pathname.includes("/dashboard/create-project-budget") || pathname.includes("/dashboard/manage-users") ||
-          pathname.includes("/dashboard/manage-groups")
+      pathname.includes("/dashboard/create-project-budget") ||
+      pathname.includes("/dashboard/manage-users") ||
+      pathname.includes("/dashboard/manage-groups") ||
+      pathname.includes("/dashboard/override-settings")
   );
 
   const [planningOpen, setPlanningOpen] = useState(
@@ -61,15 +65,16 @@ const NavigationSidebar = () => {
       pathname.includes("/dashboard/template-pool-mapping") ||
       pathname.includes("/dashboard/template") ||
       pathname.includes("/dashboard/ceiling-configuration") ||
-      // pathname.includes("/dashboard/global-configuration") ||
+      pathname.includes("/dashboard/global-configuration") ||
       pathname.includes("/dashboard/prospective-id-setup") ||
-      // pathname.includes("/dashboard/display-settings") ||
+      pathname.includes("/dashboard/display-settings") ||
       pathname.includes("/dashboard/annual-holidays") ||
       pathname.includes("/dashboard/maintain-fiscal-year-periods") ||
       pathname.includes("/dashboard/analog-rate") ||
       pathname.includes("/dashboard/role-rights") ||
       pathname.includes("/dashboard/account-mapping") ||
-      pathname.includes("/dashboard/projectmapping")
+      pathname.includes("/dashboard/projectmapping") ||
+      pathname.includes("/dashboard/override-settings")
   );
 
   const [poolMappingOpen, setPoolMappingOpen] = useState(
@@ -83,13 +88,13 @@ const NavigationSidebar = () => {
       pathname.includes("/dashboard/create-project-budget")
   );
 
-   // NEW: Manage (Users & Groups) section open state
+  // NEW: Manage (Users & Groups) section open state
   const [manageSectionOpen, setManageSectionOpen] = useState(
     pathname.includes("/dashboard/manage-users") ||
       pathname.includes("/dashboard/manage-groups")
   );
 
-   const [manageSettingOpen, setManageSettingOpen] = useState(
+  const [manageSettingOpen, setManageSettingOpen] = useState(
     pathname.includes("/dashboard/global-configuration") ||
       pathname.includes("/dashboard/display-settings")
   );
@@ -142,8 +147,10 @@ const NavigationSidebar = () => {
           pathname.includes("/dashboard/account-mapping") ||
           pathname.includes("/dashboard/projectmapping") ||
           pathname.includes("/dashboard/monthly-forecast") ||
-          pathname.includes("/dashboard/create-project-budget") || pathname.includes("/dashboard/manage-users") ||
-          pathname.includes("/dashboard/manage-groups")
+          pathname.includes("/dashboard/create-project-budget") ||
+          pathname.includes("/dashboard/manage-users") ||
+          pathname.includes("/dashboard/manage-groups") ||
+          pathname.includes("/dashboard/override-settings")
       );
       setPlanningOpen(
         pathname.includes("/dashboard/project-budget-status") ||
@@ -158,15 +165,16 @@ const NavigationSidebar = () => {
           pathname.includes("/dashboard/template-pool-mapping") ||
           pathname.includes("/dashboard/template") ||
           pathname.includes("/dashboard/ceiling-configuration") ||
-          // pathname.includes("/dashboard/global-configuration") ||
+          pathname.includes("/dashboard/global-configuration") ||
           pathname.includes("/dashboard/prospective-id-setup") ||
-          // pathname.includes("/dashboard/display-settings") ||
+          pathname.includes("/dashboard/display-settings") ||
           pathname.includes("/dashboard/annual-holidays") ||
           pathname.includes("/dashboard/maintain-fiscal-year-periods") ||
           pathname.includes("/dashboard/analog-rate") ||
           pathname.includes("/dashboard/role-rights") ||
           pathname.includes("/dashboard/account-mapping") ||
-          pathname.includes("/dashboard/projectmapping")
+          pathname.includes("/dashboard/projectmapping") ||
+          pathname.includes("/dashboard/override-settings")
       );
       setPoolMappingOpen(
         pathname.includes("/dashboard/pool-configuration") ||
@@ -176,7 +184,7 @@ const NavigationSidebar = () => {
         pathname.includes("/dashboard/new-business") ||
           pathname.includes("/dashboard/create-project-budget")
       );
-       setManageSectionOpen(
+      setManageSectionOpen(
         pathname.includes("/dashboard/manage-users") ||
           pathname.includes("/dashboard/manage-groups")
       );
@@ -189,7 +197,7 @@ const NavigationSidebar = () => {
       setConfigurationOpen(false);
       setPoolMappingOpen(false);
       setNewBusinessSectionOpen(false);
-      setManageSectionOpen(false); 
+      setManageSectionOpen(false);
 
       if (!isProjectBudget) {
         navigate("/dashboard/project-budget-status");
@@ -206,15 +214,19 @@ const NavigationSidebar = () => {
   };
 
   const handleCloseSidebar = () => {
-
-      setIsSidebarOpen(false);
+    setSearchTerm("");
+    setIsSidebarOpen(false);
   };
   const handleOpenSidebar = () => {
-      setIsSidebarOpen(true);
+    setIsSidebarOpen(true);
   };
 
   return (
-    <div onMouseOver={handleOpenSidebar} onMouseLeave={handleCloseSidebar} className="flex min-h-screen font-inter bg-white">
+    <div
+      onMouseOver={handleOpenSidebar}
+      onMouseLeave={handleCloseSidebar}
+      className="flex min-h-screen font-inter bg-white"
+    >
       {/* Mobile Toggle */}
       <button
         className="md:hidden fixed top-4 left-4 z-50 text-white bg-gray-800 p-1 rounded-md"
@@ -260,48 +272,66 @@ const NavigationSidebar = () => {
               {/* --- PLANNING SECTION --- */}
               <div>
                 <div
-                  className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 group"
-                  onClick={() => setPlanningOpen(!planningOpen)}
+                  className={`px-3 pt-4 pb-2 ${isSidebarOpen ? "block" : "hidden"}`}
                 >
-                  <div className="flex items-center">
-                    <div className="w-8 flex justify-center">
-                      <BarChart2 className="w-6 h-6 text-gray-600 group-hover:text-[#17414d]" />
-                    </div>
-                    <span
-                      className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
-                        isSidebarOpen ? "opacity-100" : "opacity-0"
-                      }`}
-                    >
-                      Planning
-                    </span>
-                  </div>
-                  {isSidebarOpen &&
-                    (planningOpen ? (
-                      <ChevronDown size={14} />
-                    ) : (
-                      <ChevronRight size={14} />
-                    ))}
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) =>
+                      setSearchTerm(e.target.value.toLowerCase())
+                    }
+                    className="border border-gray-300 rounded px-2 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#17414d] w-full  bg-white shadow-inner"
+                  />
                 </div>
+                {!searchTerm && (
+                  <div
+                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 group"
+                    onClick={() => setPlanningOpen(!planningOpen)}
+                  >
+                    <div className="flex items-center">
+                      <div className="w-8 flex justify-center">
+                        <BarChart2 className="w-6 h-6 text-gray-600 group-hover:text-[#17414d]" />
+                      </div>
+                      <span
+                        className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
+                          isSidebarOpen ? "opacity-100" : "opacity-0"
+                        }`}
+                      >
+                        Planning
+                      </span>
+                    </div>
+                    {isSidebarOpen &&
+                      (planningOpen ? (
+                        <ChevronDown size={14} />
+                      ) : (
+                        <ChevronRight size={14} />
+                      ))}
+                  </div>
+                )}
 
-                {planningOpen && isSidebarOpen && (
+                {(planningOpen || searchTerm) && isSidebarOpen && (
                   <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
                     <NavItem
                       label="Project Planning"
                       path="/dashboard/project-budget-status"
                       selected={selectedPage}
                       onClick={handleLinkClick}
+                      searchTerm={searchTerm}
                     />
                     <NavItem
                       label="Reporting"
                       path="/dashboard/project-report"
                       selected={selectedPage}
                       onClick={handleLinkClick}
+                      searchTerm={searchTerm}
                     />
                     <NavItem
                       label="Mass Utility"
                       path="/dashboard/mass-utility"
                       selected={selectedPage}
                       onClick={handleLinkClick}
+                      searchTerm={searchTerm}
                     />
                     {/* <NavItem
                       label="New Business Budget"
@@ -322,96 +352,104 @@ const NavigationSidebar = () => {
 
               {/* --- NEW BUSINESS BUDGET SECTION (NEW) --- */}
               <div>
-                <div
-                  className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 group"
-                  onClick={() =>
-                    setNewBusinessSectionOpen(!newBusinessSectionOpen)
-                  }
-                >
-                  <div className="flex items-center">
-                    <div className="w-8 flex justify-center">
-                      <BriefcaseBusiness className="w-6 h-6 text-gray-600 group-hover:text-[#17414d]" />
+                {!searchTerm && (
+                  <div
+                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 group"
+                    onClick={() =>
+                      setNewBusinessSectionOpen(!newBusinessSectionOpen)
+                    }
+                  >
+                    <div className="flex items-center">
+                      <div className="w-8 flex justify-center">
+                        <BriefcaseBusiness className="w-6 h-6 text-gray-600 group-hover:text-[#17414d]" />
+                      </div>
+                      <span
+                        className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
+                          isSidebarOpen ? "opacity-100" : "opacity-0"
+                        }`}
+                      >
+                        New Business Budget
+                      </span>
                     </div>
-                    <span
-                      className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
-                        isSidebarOpen ? "opacity-100" : "opacity-0"
-                      }`}
-                    >
-                      New Business Budget
-                    </span>
+                    {isSidebarOpen &&
+                      (newBusinessSectionOpen ? (
+                        <ChevronDown size={14} />
+                      ) : (
+                        <ChevronRight size={14} />
+                      ))}
                   </div>
-                  {isSidebarOpen &&
-                    (newBusinessSectionOpen ? (
-                      <ChevronDown size={14} />
-                    ) : (
-                      <ChevronRight size={14} />
-                    ))}
-                </div>
+                )}
 
-                {newBusinessSectionOpen && isSidebarOpen && (
+                {(newBusinessSectionOpen || searchTerm) && isSidebarOpen && (
                   <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
                     <NavItem
                       label="Manage New Business"
                       path="/dashboard/new-business"
                       selected={selectedPage}
                       onClick={handleLinkClick}
+                      searchTerm={searchTerm}
                     />
                     <NavItem
                       label="Transfer Project Budget"
                       path="/dashboard/create-project-budget"
                       selected={selectedPage}
                       onClick={handleLinkClick}
+                      searchTerm={searchTerm}
                     />
                   </div>
                 )}
               </div>
 
-               {currentUserRole === "admin" && (
+              {currentUserRole === "admin" && (
                 <div>
-                  <div
-                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 group"
-                    onClick={() => setManageSectionOpen(!manageSectionOpen)}
-                  >
-                    <div className="flex items-center">
-                      <div className="w-8 flex justify-center">
-                        <Users className="w-6 h-6 text-gray-600 group-hover:text-[#17414d]" />
+                  {!searchTerm && (
+                    <div
+                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 group"
+                      onClick={() => setManageSectionOpen(!manageSectionOpen)}
+                    >
+                      <div className="flex items-center">
+                        <div className="w-8 flex justify-center">
+                          <Users className="w-6 h-6 text-gray-600 group-hover:text-[#17414d]" />
+                        </div>
+                        <span
+                          className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
+                            isHovered ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          Manage
+                        </span>
                       </div>
-                      <span
-                        className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
-                          isHovered ? "opacity-100" : "opacity-0"
-                        }`}
-                      >
-                        Manage
-                      </span>
+                      {isSidebarOpen &&
+                        (manageSectionOpen ? (
+                          <ChevronDown size={14} />
+                        ) : (
+                          <ChevronRight size={14} />
+                        ))}
                     </div>
-                    {isSidebarOpen &&
-                      (manageSectionOpen ? (
-                        <ChevronDown size={14} />
-                      ) : (
-                        <ChevronRight size={14} />
-                      ))}
-                  </div>
+                  )}
 
-                  {manageSectionOpen && isSidebarOpen &&(
+                  {(manageSectionOpen || searchTerm) && isSidebarOpen && (
                     <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
                       <NavItem
                         label="Manage Groups"
                         path="/dashboard/manage-groups"
                         selected={selectedPage}
                         onClick={handleLinkClick}
+                        searchTerm={searchTerm}
                       />
                       <NavItem
                         label="Manage Users"
                         path="/dashboard/manage-users"
                         selected={selectedPage}
                         onClick={handleLinkClick}
+                        searchTerm={searchTerm}
                       />
                     </div>
                   )}
                 </div>
               )}
-   {/* Nested Pool Mapping */}
-   {currentUserRole === "admin" && (
+              {/* Nested Pool Mapping */}
+              {/* {currentUserRole === "admin" && (
     <div>
      <div
                     className="flex items-center justify-between px-4 py-3 cursor-pointer hover:text-[#17414d] "
@@ -439,8 +477,8 @@ const NavigationSidebar = () => {
 {poolMappingOpen && isSidebarOpen && (
                       <div className="py-1">
                         {poolMappingOpen && (
-                          <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
-                            <NavItem
+                          <div className="ml-12 mr-4 space-y-1 border-l border-gray-100"> */}
+              {/* <NavItem
                               label="Org Account"
                               path="/dashboard/pool-configuration"
                               selected={selectedPage}
@@ -451,104 +489,123 @@ const NavigationSidebar = () => {
                               path="/dashboard/template-pool-mapping"
                               selected={selectedPage}
                               onClick={handleLinkClick}
-                            />
-                            <NavItem
-                        label="Forward Rate"
-                        path="/dashboard/pool-rate-tabs"
-                        selected={selectedPage}
-                        onClick={handleLinkClick}
-                      />
-                      <NavItem
-                        label="NBIs Analogous Rate"
-                        path="/dashboard/analog-rate"
-                        selected={selectedPage}
-                        onClick={handleLinkClick}
-                      />
-                          </div>
+                            /> */}
+
+              {/* </div>
                         )}
                       </div>
                       )}
                       </div>
-   )}
-
-  
-
+   )} */}
 
               {/* --- CONFIGURATION SECTION --- */}
               {currentUserRole === "admin" && (
                 <div>
-                  <div
-                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:text-[#17414d] "
-                    onClick={() => setConfigurationOpen(!configurationOpen)}
-                  >
-                    <div className="flex items-center">
-                      <div className="w-8 flex justify-center">
-                        <Layers className="w-6 h-6 text-gray-600 roup-hover:text-[#17414d]" />
+                  {!searchTerm && (
+                    <div
+                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:text-[#17414d] "
+                      onClick={() => setConfigurationOpen(!configurationOpen)}
+                    >
+                      <div className="flex items-center">
+                        <div className="w-8 flex justify-center">
+                          <Layers className="w-6 h-6 text-gray-600 roup-hover:text-[#17414d]" />
+                        </div>
+                        <span
+                          className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
+                            isHovered ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          Settings
+                        </span>
                       </div>
-                      <span
-                        className={`ml-4 text-sm font-medium text-gray-700 transition-opacity duration-200 ${
-                          isHovered ? "opacity-100" : "opacity-0"
-                        }`}
-                      >
-                        Configuration
-                      </span>
+                      {isSidebarOpen &&
+                        (configurationOpen ? (
+                          <ChevronDown size={14} />
+                        ) : (
+                          <ChevronRight size={14} />
+                        ))}
                     </div>
-                    {isSidebarOpen &&
-                      (configurationOpen ? (
-                        <ChevronDown size={14} />
-                      ) : (
-                        <ChevronRight size={14} />
-                      ))}
-                  </div>
+                  )}
 
-                  {configurationOpen && isSidebarOpen && (
+                  {(configurationOpen || searchTerm) && isSidebarOpen && (
                     <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
-                      
-                       <NavItem
+                      <NavItem
+                        label="Configuration Setting"
+                        path="/dashboard/global-configuration"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                        searchTerm={searchTerm}
+                      />
+                      <NavItem
+                        label="Burden Setup"
+                        path="/dashboard/pool-rate-tabs"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                        searchTerm={searchTerm}
+                      />
+                      <NavItem
                         label="Project Org Security"
                         path="/dashboard/projectmapping"
                         selected={selectedPage}
                         onClick={handleLinkClick}
+                        searchTerm={searchTerm}
                       />
                       <NavItem
                         label="Chart of Accounts"
                         path="/dashboard/account-mapping"
                         selected={selectedPage}
                         onClick={handleLinkClick}
+                        searchTerm={searchTerm}
+                      />
+                      <NavItem
+                        label="NBIs Analogous Rate"
+                        path="/dashboard/analog-rate"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                        searchTerm={searchTerm}
                       />
                       <NavItem
                         label="Ceiling Configuration"
                         path="/dashboard/ceiling-configuration"
                         selected={selectedPage}
                         onClick={handleLinkClick}
+                        searchTerm={searchTerm}
+                      />
+
+                      <NavItem
+                        label="Fiscal Year Periods"
+                        path="/dashboard/maintain-fiscal-year-periods"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                        searchTerm={searchTerm}
+                      />
+                      <NavItem
+                        label="Annual Holidays"
+                        path="/dashboard/annual-holidays"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                        searchTerm={searchTerm}
                       />
                       <NavItem
                         label="Prospective ID Setup"
                         path="/dashboard/prospective-id-setup"
                         selected={selectedPage}
                         onClick={handleLinkClick}
+                        searchTerm={searchTerm}
                       />
-                     
-                     
-                      <NavItem
-                        label="Annual Holidays"
-                        path="/dashboard/annual-holidays"
+                      {/* <NavItem
+                        label="Override Configuration"
+                        path="/dashboard/override-settings"
                         selected={selectedPage}
                         onClick={handleLinkClick}
-                      />
-                      <NavItem
-                        label="Fiscal Year Periods"
-                        path="/dashboard/maintain-fiscal-year-periods"
-                        selected={selectedPage}
-                        onClick={handleLinkClick}
-                      />
+                      /> */}
                     </div>
                   )}
                 </div>
               )}
 
-               {/* Setting Tap */}
-  {currentUserRole === "admin" && (
+              {/* Setting Tap */}
+              {/* {currentUserRole === "admin" && (
     <div>
      <div
                     className="flex items-center justify-between px-4 py-3 cursor-pointer hover:text-[#17414d] "
@@ -576,32 +633,26 @@ const NavigationSidebar = () => {
 {manageSettingOpen && isSidebarOpen && (
                       <div className="py-1">
                         {manageSettingOpen && (
-                          <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
-                            <NavItem
-                        label="Configuration Setting"
-                        path="/dashboard/global-configuration"
-                        selected={selectedPage}
-                        onClick={handleLinkClick}
-                      />
-                            {/* <NavItem
+                          <div className="ml-12 mr-4 space-y-1 border-l border-gray-100"> */}
+
+              {/* <NavItem
                         label="Display Settings"
                         path="/dashboard/display-settings"
                         selected={selectedPage}
                         onClick={handleLinkClick}
                       /> */}
-                         {/* <NavItem
+              {/* <NavItem
                         label="Rights Settings"
                         path="/dashboard/role-rights"
                         selected={selectedPage}
                         onClick={handleLinkClick}
                       /> */}
-                          </div>
+              {/* </div>
                         )}
                       </div>
                       )}
                       </div>
-   )}
-
+   )} */}
             </div>
           )}
         </div>
@@ -629,24 +680,30 @@ const NavigationSidebar = () => {
   );
 };
 
-const NavItem = ({ label, path, selected, onClick }) => (
-  <Link
-    to={path}
-    className={`block px-3 py-2 text-xs transition-colors rounded-md whitespace-nowrap ${
-      selected === path
-        ? "text-white font-semibold"
-        : "text-gray-500 hover:text-gray-900"
-    }`}
-    style={{
-      backgroundColor: selected === path ? "#17414d" : "rgb(245,245,245)",
-    }}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(path);
-    }}
-  >
-    {label}
-  </Link>
-);
+const NavItem = ({ label, path, selected, onClick, searchTerm }) => {
+  if (searchTerm && !label.toLowerCase().includes(searchTerm)) {
+    return null;
+  }
+
+  return (
+    <Link
+      to={path}
+      className={`block px-3 py-2 text-xs transition-colors rounded-md ${
+        selected === path
+          ? "text-white font-semibold"
+          : "text-gray-500 hover:text-gray-900"
+      }`}
+      style={{
+        backgroundColor: selected === path ? "#17414d" : "rgb(245,245,245)",
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(path);
+      }}
+    >
+      {label}
+    </Link>
+  );
+};
 
 export default NavigationSidebar;

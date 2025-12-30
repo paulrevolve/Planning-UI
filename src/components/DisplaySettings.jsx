@@ -211,12 +211,12 @@ const DisplaySettingsContent = () => {
       {/* Changed max-w-5xl to w-full px-8 for wider display */}
       <div className="w-full space-y-2 ">
         {/* Changed text-center to text-left */}
-        <div className="p-4  flex items-center justify-between rounded-sm bg-white">
+        {/* <div className="p-4  flex items-center justify-between rounded-sm bg-white">
             <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
               <Cog size={20} className="text-blue-500" />
               Display Settings
             </h2>
-        </div>
+        </div> */}
         {/* Added bg-gray-50, p-4, rounded-lg, border, and border-gray-300 to the grid container */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-white p-4 rounded-sm">
           {/* Left Column Fields */}

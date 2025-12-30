@@ -47,6 +47,7 @@ const nbiRateRows = [
   },
 ];
  
+ 
 
 useEffect(() => {
   const fetchNbiRates = async () => {
@@ -56,18 +57,31 @@ useEffect(() => {
     }
     try {
       const response = await fetch(
-        `${backendUrl}/AnalogRates/GetNbiRates?projectId=${selectedProjectId}`
+        `${backendUrl}/api/AnalgsRt`
       );
       if (!response.ok) {
         throw new Error(`HTTP error! status ${response.status}`);
       }
       const data = await response.json();
 
-      // Optional: normalize rates to always be 6 elements
+      // Transform API response to expected table format
       const normalized = data.map(row => ({
-        accountType: row.accountType,
-        actual: row.actual,
-        rates: (row.rates || []).slice(0, 6),
+        id: row.analgId,
+        totRev: row.totRev || 0,
+        labOnste: row.labOnste || 0,
+        labOnsteNonBill: row.labOnsteNonBill || 0,
+        nonLabTrvl: row.nonLabTrvl || 0,
+        subLab: row.subLab || 0,
+        subNonLab: row.subNonLab || 0,
+        clsPd: row.clsPd || '',
+        ovrwrteRt: row.ovrwrteRt || false,
+        fyCd: row.fyCd || 0,
+        actualAmt: row.actualAmt || false,
+        modifiedBy: row.modifiedBy || '',
+        timeStamp: row.timeStamp || '',
+        // Add any computed fields your table needs
+        isEditing: false,
+        isNew: false
       }));
 
       setNbiRateRows(normalized);
@@ -79,6 +93,7 @@ useEffect(() => {
 
   fetchNbiRates();
 }, [selectedProjectId, backendUrl]);
+
 
  
   return (

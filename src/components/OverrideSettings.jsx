@@ -10,7 +10,7 @@ const cn = (...args) => {
 };
 
 // --- Main LaborForm Component with Tabs ---
-const LaborForm = () => {
+const OverrideSettings = () => {
   const [activeTab, setActiveTab] = useState("OrganizationSettings");
 
   const [budgetHeaderDateFormat, setBudgetHeaderDateFormat] = useState(""); // Default to empty for "Select"
@@ -49,114 +49,7 @@ const LaborForm = () => {
   const [pendingChangesReportingMethod, setPendingChangesReportingMethod] =
     useState("Exclude From Total Cost");
 
-  // Handle saving Display Settings to an API
-  const handleSaveSettings = useCallback(async () => {
-    // console.log("Attempting to save Display Settings...");
-
-    // Basic validation for required fields
-    if (!budgetHeaderDateFormat) {
-      // alert("Please select a Budget Header Date Format.");
-      toast.info("Please select a Budget Header Date Format.");
-      return;
-    }
-    if (!reportVarianceCalculation) {
-      // alert("Please select a Report Variance Calculation option.");
-      toast.info("Please select a Report Variance Calculation option.");
-      return;
-    }
-    if (!reportPrecisionPercent) {
-      // alert("Report Precision Percent is required.");
-      toast.info("Report Precision Percent is required.");
-      return;
-    }
-    if (!poLagDays) {
-      // alert("PO Lag Days is required.");
-      toast.info("PO Lag Days is required.");
-      return;
-    }
-    if (!financialStatementCode) {
-      // alert("Financial Statement Code is required.");
-      toast.info("Financial Statement Code is required.");
-      return;
-    }
-
-    // Placeholder API endpoint for saving Display Settings
-    // You will need to replace this with your actual API endpoint.
-    // api/Configuration/UpdateConfigValues
-    const updateApiUrl = `${backendUrl}/api/Configuration/bulk-upsert`;
-
-    const dataToSave = {
-      budgetHeaderDateFormat: budgetHeaderDateFormat,
-      reportVarianceCalculation: reportVarianceCalculation,
-      reportHeaderDateFormatOrg: reportHeaderDateFormatOrg,
-      reportHeaderDateFormatProject: reportHeaderDateFormatProject,
-      dropdownListDateFormat: dropdownListDateFormat,
-      reportPrecisionDollar: reportPrecisionDollar,
-      reportPrecisionHour: reportPrecisionHour,
-      reportPrecisionPercent: reportPrecisionPercent,
-      poLagDays: poLagDays,
-      financialStatementCode: financialStatementCode,
-      includeInactiveOrganizations: includeInactiveOrganizations,
-      includeInactiveVendors: includeInactiveVendors,
-      includeEmployeeVendors: includeEmployeeVendors,
-      includeVendorEmployees: includeVendorEmployees,
-      includeCostOfMoneyRevenueFee: includeCostOfMoneyRevenueFee,
-      displayDetailAccounts: displayDetailAccounts,
-      includePendingApprovedRequisitions: includePendingApprovedRequisitions,
-      includeUnreleasedBlanketPO: includeUnreleasedBlanketPO,
-      pendingChangesReportingMethod: pendingChangesReportingMethod,
-    };
-
-    // console.log("Display Settings Data to Save:", dataToSave);
-
-    try {
-      const response = await fetch(updateApiUrl, {
-        method: "POST", // Or 'PUT' or 'PATCH' as per your API
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(dataToSave),
-      });
-
-      if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Server error" }));
-        throw new Error(
-          `Failed to save settings: ${errorData.message || response.statusText}`
-        );
-      }
-
-      const result = await response.json();
-      // console.log('Display settings saved successfully:', result);
-      // alert("Display settings saved successfully!"); // Provide user feedback
-      toast.success("Display settings saved successfully!");
-    } catch (e) {
-      // console.error("Error saving Display settings:", e);
-      alert(`Error saving Display settings: ${e.message}`);
-      toast.error(`Error saving Display settings: ${e.message}`); // Provide user feedback
-    }
-  }, [
-    budgetHeaderDateFormat,
-    reportVarianceCalculation,
-    reportHeaderDateFormatOrg,
-    reportHeaderDateFormatProject,
-    dropdownListDateFormat,
-    reportPrecisionDollar,
-    reportPrecisionHour,
-    reportPrecisionPercent,
-    poLagDays,
-    financialStatementCode,
-    includeInactiveOrganizations,
-    includeInactiveVendors,
-    includeEmployeeVendors,
-    includeVendorEmployees,
-    includeCostOfMoneyRevenueFee,
-    displayDetailAccounts,
-    includePendingApprovedRequisitions,
-    includeUnreleasedBlanketPO,
-    pendingChangesReportingMethod,
-  ]);
+ 
 
   // States from LaborFormContent
   const [projectBudgetPeriodMethod, setProjectBudgetPeriodMethod] = useState(
@@ -654,6 +547,115 @@ const LaborForm = () => {
     escalationPercentId,
   ]);
 
+   // Handle saving Display Settings to an API
+  const handleSaveSettings = useCallback(async () => {
+    // console.log("Attempting to save Display Settings...");
+
+    // Basic validation for required fields
+    if (!budgetHeaderDateFormat) {
+      // alert("Please select a Budget Header Date Format.");
+      toast.info("Please select a Budget Header Date Format.");
+      return;
+    }
+    if (!reportVarianceCalculation) {
+      // alert("Please select a Report Variance Calculation option.");
+      toast.info("Please select a Report Variance Calculation option.");
+      return;
+    }
+    if (!reportPrecisionPercent) {
+      // alert("Report Precision Percent is required.");
+      toast.info("Report Precision Percent is required.");
+      return;
+    }
+    if (!poLagDays) {
+      // alert("PO Lag Days is required.");
+      toast.info("PO Lag Days is required.");
+      return;
+    }
+    if (!financialStatementCode) {
+      // alert("Financial Statement Code is required.");
+      toast.info("Financial Statement Code is required.");
+      return;
+    }
+
+    // Placeholder API endpoint for saving Display Settings
+    // You will need to replace this with your actual API endpoint.
+    // api/Configuration/UpdateConfigValues
+    const updateApiUrl = `${backendUrl}/api/Configuration/bulk-upsert`;
+
+    const dataToSave = {
+      budgetHeaderDateFormat: budgetHeaderDateFormat,
+      reportVarianceCalculation: reportVarianceCalculation,
+      reportHeaderDateFormatOrg: reportHeaderDateFormatOrg,
+      reportHeaderDateFormatProject: reportHeaderDateFormatProject,
+      dropdownListDateFormat: dropdownListDateFormat,
+      reportPrecisionDollar: reportPrecisionDollar,
+      reportPrecisionHour: reportPrecisionHour,
+      reportPrecisionPercent: reportPrecisionPercent,
+      poLagDays: poLagDays,
+      financialStatementCode: financialStatementCode,
+      includeInactiveOrganizations: includeInactiveOrganizations,
+      includeInactiveVendors: includeInactiveVendors,
+      includeEmployeeVendors: includeEmployeeVendors,
+      includeVendorEmployees: includeVendorEmployees,
+      includeCostOfMoneyRevenueFee: includeCostOfMoneyRevenueFee,
+      displayDetailAccounts: displayDetailAccounts,
+      includePendingApprovedRequisitions: includePendingApprovedRequisitions,
+      includeUnreleasedBlanketPO: includeUnreleasedBlanketPO,
+      pendingChangesReportingMethod: pendingChangesReportingMethod,
+    };
+
+    // console.log("Display Settings Data to Save:", dataToSave);
+
+    try {
+      const response = await fetch(updateApiUrl, {
+        method: "POST", // Or 'PUT' or 'PATCH' as per your API
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSave),
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Server error" }));
+        throw new Error(
+          `Failed to save settings: ${errorData.message || response.statusText}`
+        );
+      }
+
+      const result = await response.json();
+      // console.log('Display settings saved successfully:', result);
+      // alert("Display settings saved successfully!"); // Provide user feedback
+      toast.success("Display settings saved successfully!");
+    } catch (e) {
+      // console.error("Error saving Display settings:", e);
+      alert(`Error saving Display settings: ${e.message}`);
+      toast.error(`Error saving Display settings: ${e.message}`); // Provide user feedback
+    }
+  }, [
+    budgetHeaderDateFormat,
+    reportVarianceCalculation,
+    reportHeaderDateFormatOrg,
+    reportHeaderDateFormatProject,
+    dropdownListDateFormat,
+    reportPrecisionDollar,
+    reportPrecisionHour,
+    reportPrecisionPercent,
+    poLagDays,
+    financialStatementCode,
+    includeInactiveOrganizations,
+    includeInactiveVendors,
+    includeEmployeeVendors,
+    includeVendorEmployees,
+    includeCostOfMoneyRevenueFee,
+    displayDetailAccounts,
+    includePendingApprovedRequisitions,
+    includeUnreleasedBlanketPO,
+    pendingChangesReportingMethod,
+  ]);
+
   const handleSaveAllSettings = async () => {
     // console.log("Saving all settings...");
     if (activeTab === "projectSettings") {
@@ -741,7 +743,7 @@ const LaborForm = () => {
         <div className="p-4 flex items-center justify-between bg-white rounded-sm">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <Cog size={20} className="text-blue-500" />
-            Settings
+            Override Configuration Settings
           </h2>
         </div>
 
@@ -799,8 +801,35 @@ const LaborForm = () => {
               <div className="flex items-center justify-between"></div>
               {/* Changed gap-y-8 back to gap-y-5 for more compact layout */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+
                 {/* Left Column */}
+
                 <div className="space-y-4">
+                    {/* project id */}
+                     <div>
+                    <label
+                      htmlFor="projectId"
+                      className="block text-sm font-medium"
+                    >
+                      Project ID <span className="text-red-500">*</span>
+                    </label>
+                    <Select
+                      inputId="projectId"
+                      options={projectOptions}
+                      isLoading={loading}
+                      value={
+                        projectOptions.find(
+                          (opt) => opt.value === selectedProjectId
+                        ) || null
+                      }
+                      onChange={(opt) =>
+                        setSelectedProjectId(opt ? opt.value : "")
+                      }
+                      isSearchable
+                      placeholder="Search & select a project"
+                      menuPlacement="auto"
+                    />
+                  </div>
                   {/* closing period */}
                   <div>
                     <label
@@ -868,6 +897,30 @@ const LaborForm = () => {
                       />
                     </div>
                   </div>
+
+                       {/* Workforce Rule */}
+                  <div>
+                    <label
+                      htmlFor="workforceRule"
+                      className="block text-sm font-medium"
+                    >
+                      Workforce Rule <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="workforceRule"
+                      value={workforceRule}
+                      onChange={(e) => setWorkforceRule(e.target.value)}
+                      className="w-full mt-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={loading}
+                    >
+                      {workforceRules.map((rule) => (
+                        <option key={rule} value={rule}>
+                          {rule}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div>
                     <label
                       htmlFor="paidTimeOffExpenseAccount"
@@ -1767,6 +1820,31 @@ const LaborForm = () => {
                   {/* Left Column Fields */}
                   <div className="space-y-4">
                     {" "}
+                    {/* project id */}
+                     <div>
+                    <label
+                      htmlFor="projectId"
+                      className="block text-sm font-medium"
+                    >
+                      Project ID <span className="text-red-500">*</span>
+                    </label>
+                    <Select
+                      inputId="projectId"
+                      options={projectOptions}
+                      isLoading={loading}
+                      value={
+                        projectOptions.find(
+                          (opt) => opt.value === selectedProjectId
+                        ) || null
+                      }
+                      onChange={(opt) =>
+                        setSelectedProjectId(opt ? opt.value : "")
+                      }
+                      isSearchable
+                      placeholder="Search & select a project"
+                      menuPlacement="auto"
+                    />
+                  </div>
                     {/* No changes to this inner div */}
                     {/* Budget Header Date Format (Existing) */}
                     <div>
@@ -2175,4 +2253,4 @@ const LaborForm = () => {
   );
 };
 
-export default LaborForm;
+export default OverrideSettings;

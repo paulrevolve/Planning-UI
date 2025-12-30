@@ -4848,7 +4848,7 @@ useImperativeHandle(ref, () => ({
                               className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${
                                 plan.status !== "In Progress"
                                   ? "cursor-not-allowed bg-gray-100"
-                                  : ""
+                                  : "bg-white"
                               }`}
                             >
                               <option value={0}>Select</option>

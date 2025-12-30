@@ -361,7 +361,7 @@ const parseDate = (dateStr) => {
                     <th className="th-thead uppercase tracking-wider">
                       Holiday Status
                     </th>
-                    <th className="th-thead uppercase tracking-wider">State</th>
+                    {/* <th className="th-thead uppercase tracking-wider">State</th> */}
                     <th className="th-thead uppercase tracking-wider">
                       Actions
                     </th>
@@ -461,7 +461,7 @@ const parseDate = (dateStr) => {
                           )}
                         </td>
                         {/* State */}
-                        <td className="tbody-td">
+                        {/* <td className="tbody-td">
                           <input
                             type="text"
                             value={holiday.state}
@@ -478,7 +478,7 @@ const parseDate = (dateStr) => {
                             placeholder="State Name"
                             disabled={!holiday.isEditing}
                           />
-                        </td>
+                        </td> */}
                         {/* Actions */}
                         <td className="tbody-td flex flex-row justify-end items-center space-x-2">
                           {holiday.isEditing ? (

@@ -875,6 +875,7 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
     const payload = {
       id: setupId,
       projId: selectedPlan?.projId || "",
+      plId: selectedPlan?.plId || "",
       revType: revenueFormula,
       revAcctId: revenueAccountState,
       dfltFeeRt: parseFloat(labFeeRt) || 0,

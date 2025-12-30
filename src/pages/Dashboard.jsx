@@ -755,6 +755,7 @@ import AnalysisByPeriodContent from "../components/AnalysisByPeriodContent";
 import CreateProjectBudget from "../components/CreateProjectBudget";
 import ManageGroups from "../components/ManageGroups";
 import ManageUser from "../components/ManageUser";
+import OverrideSettings from "../components/OverrideSettings";
 
 
 const SIDEBAR_WIDTH = 190; // px
@@ -931,6 +932,16 @@ const Dashboard = () => {
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <div className="mt-12 ml-2">
                     <ConfigureField />
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/override-settings"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <div className="mt-12 ml-2">
+                    <OverrideSettings />
                   </div>
                 </ProtectedRoute>
               }
