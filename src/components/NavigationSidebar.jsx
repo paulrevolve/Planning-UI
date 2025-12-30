@@ -452,6 +452,18 @@ const NavigationSidebar = () => {
                               selected={selectedPage}
                               onClick={handleLinkClick}
                             />
+                            <NavItem
+                        label="Forward Rate"
+                        path="/dashboard/pool-rate-tabs"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                      />
+                      <NavItem
+                        label="NBIs Analogous Rate"
+                        path="/dashboard/analog-rate"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                      />
                           </div>
                         )}
                       </div>
@@ -491,18 +503,7 @@ const NavigationSidebar = () => {
 
                   {configurationOpen && isSidebarOpen && (
                     <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
-                      <NavItem
-                        label="Forward Rate"
-                        path="/dashboard/pool-rate-tabs"
-                        selected={selectedPage}
-                        onClick={handleLinkClick}
-                      />
-                      <NavItem
-                        label="NBIs Analogous Rate"
-                        path="/dashboard/analog-rate"
-                        selected={selectedPage}
-                        onClick={handleLinkClick}
-                      />
+                      
                        <NavItem
                         label="Project Org Security"
                         path="/dashboard/projectmapping"
@@ -577,7 +578,7 @@ const NavigationSidebar = () => {
                         {manageSettingOpen && (
                           <div className="ml-12 mr-4 space-y-1 border-l border-gray-100">
                             <NavItem
-                        label="Organization Setting"
+                        label="Configuration Setting"
                         path="/dashboard/global-configuration"
                         selected={selectedPage}
                         onClick={handleLinkClick}
@@ -588,6 +589,12 @@ const NavigationSidebar = () => {
                         selected={selectedPage}
                         onClick={handleLinkClick}
                       />
+                         {/* <NavItem
+                        label="Rights Settings"
+                        path="/dashboard/role-rights"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                      /> */}
                           </div>
                         )}
                       </div>

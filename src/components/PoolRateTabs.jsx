@@ -14,12 +14,13 @@ const PoolRateTabs = () => {
 
   const tabs = [
     { id: "Rate Configure", label: "Rate Configure" },
-    { id: "Rate", label: "Rate" },
+    { id: "Rate", label: "Forecast Rate" },
     { id: "Fringe", label: "Fringe" },
     { id: "HR", label: "HR" },
     { id: "Overhead", label: "Overhead" },
     { id: "M&H", label: "M&H" },
     { id: "G&A", label: "G&A" },
+    { id: "Template", label: "Add Template" },
   ];
 
   const renderTabContent = () => {
