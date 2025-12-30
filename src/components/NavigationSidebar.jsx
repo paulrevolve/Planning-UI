@@ -551,7 +551,7 @@ const NavigationSidebar = () => {
                         searchTerm={searchTerm}
                       />
                       <NavItem
-                        label="Chart of Accounts"
+                        label="Account Mapping"
                         path="/dashboard/account-mapping"
                         selected={selectedPage}
                         onClick={handleLinkClick}
