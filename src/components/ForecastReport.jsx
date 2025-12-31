@@ -10,7 +10,6 @@
 // const FORECAST_API_PATH = "/api/ForecastReport/GetForecastView"; 
 // const ROWS_PER_PAGE = 20; 
 
-// // UPDATED: Extended to include 2026 periods
 // const PERIOD_MAP = {
 //     1: 'Jan-25', 2: 'Feb-25', 3: 'Mar-25', 4: 'Apr-25', 5: 'May-25', 6: 'Jun-25',
 //     7: 'Jul-25', 8: 'Aug-25', 9: 'Sep-25', 10: 'Oct-25', 11: 'Nov-25', 12: 'Dec-25',
@@ -21,13 +20,18 @@
 // const MONTHLY_PERIODS = Object.values(PERIOD_MAP);
 // const MOCK_TIME_PERIODS = [...MONTHLY_PERIODS, 'FY-Total'];
 
+// // HELPER: Identify if a period is in the "Yellow Zone" (Nov-25 onwards)
+// const isYellowZone = (period) => {
+//     const index = MOCK_TIME_PERIODS.indexOf(period);
+//     // Nov-25 is index 10 in the MOCK_TIME_PERIODS array
+//     return index >= 10; 
+// };
+
 // const CLOSE_PERIODS = [
-//     // This list would contain actual closed periods in a production environment
 //     'Jan-25', 'Feb-25', 'Mar-25', 'Apr-25', 'May-25', 
 //     'Jun-25', 'Jul-25', 'Aug-25', 'Sep-25', 'Oct-25'
 // ];
 
-// // Data Sink for Unclassified items (Will be excluded from final display)
 // const GENERAL_COSTS = 'GENERAL-COSTS';
 
 // const SECTION_LABELS = {
@@ -44,11 +48,10 @@
 //     'UNALLOW-SUBCON': 'Subcontractors (NON-Billable)',
 //     [GENERAL_COSTS]: '7 - Other Unclassified Direct Costs (Hidden)', 
 // };
+
 // const DISPLAYED_SECTION_KEYS = ['LABOR', 'UNALLOW-LABOR', 'NON-LABOR-TRAVEL', 'NON-LABOR-SUBCON', 'UNALLOW-SUBCON'];
 // const ALL_TOGGLEABLE_SECTIONS = [...DISPLAYED_SECTION_KEYS, 'REVENUE_SECTION', 'INDIRECT_SECTION'];
 // const INDIRECT_KEYS = ['FRINGE', 'OVERHEAD', 'MANDH', 'GNA'];
-// // --- END CONFIGURATION & UTILS ---
-
 
 // // --- HARD-CODED ACCT_ID → SECTION MAPPING ---
 // const LABOR_ACCTS = new Set(['50-000-000', '50-MJI-097']);
@@ -118,27 +121,20 @@
 //     if (TRAVEL_NONLABOR_ACCTS.has(acctId)) return 'NON-LABOR-TRAVEL';
 //     if (SUB_LABOR_ACCTS.has(acctId)) return 'NON-LABOR-SUBCON';
 //     if (SUB_UNALLOW_LABOR_ACCTS.has(acctId)) return 'UNALLOW-SUBCON';
-    
 //     return currentSection; 
 // };
 
 // const transformData = (detailData, forecastData) => {
 //     const aggregatedDataMap = {}; 
-
-//     const getForecastKey = (item) => {
-//         return `${item.projId}-${item.acctId}-0-0`; 
-//     }
+//     const getForecastKey = (item) => `${item.projId}-${item.acctId}-0-0`; 
     
-//     // 1. Process Forecast Data (Takes precedence for non-actual periods/rows)
 //     forecastData.forEach(item => {
 //         const periodKey = getPeriodKeyFromForecast(item.month, item.year);
 //         const detailRowKey = getForecastKey(item);
-        
 //         if (!periodKey) return; 
 
 //         let forecastSection = classifyCostSection(item.acctId, GENERAL_COSTS);
 //         let forecastSubTotTypeNo = 0; 
-        
 //         if (item.revenue !== undefined && item.revenue !== 0) {
 //              forecastSection = 'REVENUE_SECTION';
 //              forecastSubTotTypeNo = 1;
@@ -146,91 +142,50 @@
 
 //         if (!aggregatedDataMap[detailRowKey]) {
 //             aggregatedDataMap[detailRowKey] = {
-//                 id: detailRowKey,
-//                 project: item.projId,
-//                 acctId: item.acctId,
-//                 org: item.orgId || '' , 
-//                 accountName: `Forecast: ${item.acctId}`, 
-//                 projectName: item.projName, 
-//                 popStartDate: '' ,
-//                 popEndDate: '' ,
-//                 parentProject: null,
-//                 section: forecastSection, 
-//                 subTotTypeNo: forecastSubTotTypeNo, 
-//                 'FY-Total': 0, 
+//                 id: detailRowKey, project: item.projId, acctId: item.acctId, org: item.orgId || '', 
+//                 accountName: `Forecast: ${item.acctId}`, projectName: item.projName, 
+//                 popStartDate: '', popEndDate: '', parentProject: null,
+//                 section: forecastSection, subTotTypeNo: forecastSubTotTypeNo, 'FY-Total': 0, 
 //             };
 //         }
-
 //         const row = aggregatedDataMap[detailRowKey];
-        
-//         // A. Revenue (Uses item.revenue)
 //         if (row.section === 'REVENUE_SECTION') {
 //              row[`${periodKey}_Revenue`] = (row[`${periodKey}_Revenue`] || 0) + (item.revenue || 0);
 //         }
-
-//         // B. Direct Cost / Labor (Uses item.cost, only if it maps to a displayable section)
 //         if (DISPLAYED_SECTION_KEYS.includes(row.section)) {
 //             const costAmount = (item.cost || 0); 
-//             if (costAmount !== 0) {
-//                 row[periodKey] = (row[periodKey] || 0) + costAmount; 
-//             }
+//             if (costAmount !== 0) row[periodKey] = (row[periodKey] || 0) + costAmount; 
 //         }
-
-//         // C. Indirect Costs (Uses specific indirect fields: fringe, overhead, gna, mnh)
 //         INDIRECT_KEYS.forEach(ik => {
 //             const indirectAmount = (item[ik.toLowerCase()] || 0);
 //             if (indirectAmount !== 0) {
 //                 const indirectRowKey = `${item.projId}-${item.acctId}-0-4`; 
-
 //                 if (!aggregatedDataMap[indirectRowKey]) {
 //                     aggregatedDataMap[indirectRowKey] = {
-//                         id: indirectRowKey,
-//                         project: item.projId,
-//                         acctId: item.acctId,
-//                         org: item.orgId || '', 
-//                         accountName: `Forecast Indirect Costs for ${item.acctId}`, 
-//                         projectName: item.projName, 
-//                         popStartDate: '' ,
-//                         popEndDate: '' ,
-//                         parentProject: null,
-//                         section: GENERAL_COSTS, 
-//                         subTotTypeNo: 4, 
-//                         'FY-Total': 0, 
+//                         id: indirectRowKey, project: item.projId, acctId: item.acctId, org: item.orgId || '', 
+//                         accountName: `Forecast Indirect Costs for ${item.acctId}`, projectName: item.projName, 
+//                         popStartDate: '', popEndDate: '', parentProject: null,
+//                         section: GENERAL_COSTS, subTotTypeNo: 4, 'FY-Total': 0, 
 //                     };
 //                 }
-//                 aggregatedDataMap[indirectRowKey][`${periodKey}_${ik}`] = 
-//                     (aggregatedDataMap[indirectRowKey][`${periodKey}_${ik}`] || 0) + indirectAmount;
+//                 aggregatedDataMap[indirectRowKey][`${periodKey}_${ik}`] = (aggregatedDataMap[indirectRowKey][`${periodKey}_${ik}`] || 0) + indirectAmount;
 //             }
 //         });
 //     });
 
-//     // 2. Process Actual/Detail Data (Overwrites forecast data if keys match)
 //     detailData.forEach(item => {
 //         let { section, indirectKey, subTotTypeNo } = determineSectionAndIndirectKey(item);
-        
-//         if (section !== 'REVENUE_SECTION' && subTotTypeNo !== 4) {
-//              section = classifyCostSection(item.acctId, section);
-//         }
-
+//         if (section !== 'REVENUE_SECTION' && subTotTypeNo !== 4) section = classifyCostSection(item.acctId, section);
 //         const detailRowKey = `${item.projId}-${item.acctId}-${item.poolNo}-${subTotTypeNo || 0}`; 
 //         const periodKey = PERIOD_MAP[item.pdNo];
-        
 //         if (!periodKey) return; 
 
 //         if (!aggregatedDataMap[detailRowKey]) {
 //             aggregatedDataMap[detailRowKey] = {
-//                 id: detailRowKey,
-//                 project: item.projId,
-//                 acctId: item.acctId,
-//                 org: item.orgId , 
+//                 id: detailRowKey, project: item.projId, acctId: item.acctId, org: item.orgId, 
 //                 accountName: item.l1AcctName || item.poolName || 'Unknown Pool', 
-//                 projectName: item.projName ,
-//                 popStartDate: item.projStartDt ,
-//                 popEndDate: item.projEndDt ,
-//                 parentProject: null,
-//                 section: section, 
-//                 subTotTypeNo: subTotTypeNo, 
-//                 'FY-Total': 0, 
+//                 projectName: item.projName, popStartDate: item.projStartDt, popEndDate: item.projEndDt,
+//                 parentProject: null, section: section, subTotTypeNo: subTotTypeNo, 'FY-Total': 0, 
 //             };
 //         } else {
 //             const row = aggregatedDataMap[detailRowKey];
@@ -238,50 +193,34 @@
 //             row.popStartDate = item.projStartDt || row.popStartDate;
 //             row.popEndDate = item.projEndDt || row.popEndDate;
 //             row.section = section;
-//             if (item.projName) { // <--- Added conditional check for existence
-//         row.projectName = item.projName;
-//     }
+//             if (item.projName) row.projectName = item.projName;
 //             row.subTotTypeNo = subTotTypeNo;
 //         }
-
 //         const row = aggregatedDataMap[detailRowKey];
 //         const monthlyAmount = (item.ptdIncurAmt || 0); 
-        
-//         if (section === 'REVENUE_SECTION') {
-//             row[`${periodKey}_Revenue`] = (row[`${periodKey}_Revenue`] || 0) + monthlyAmount;
-//         } else if (indirectKey) {
-//             row[`${periodKey}_${indirectKey}`] = (row[`${periodKey}_${indirectKey}`] || 0) + monthlyAmount;
-//         } else {
-//             row[periodKey] = (row[periodKey] || 0) + monthlyAmount;
-//         }
+//         if (section === 'REVENUE_SECTION') row[`${periodKey}_Revenue`] = (row[`${periodKey}_Revenue`] || 0) + monthlyAmount;
+//         else if (indirectKey) row[`${periodKey}_${indirectKey}`] = (row[`${periodKey}_${indirectKey}`] || 0) + monthlyAmount;
+//         else row[periodKey] = (row[periodKey] || 0) + monthlyAmount;
 //     });
     
-//     // 3. Final Calculation Pass: Recalculate FY-Total for all rows
 //     Object.values(aggregatedDataMap).forEach(row => {
 //         if (DISPLAYED_SECTION_KEYS.includes(row.section)) {
 //             let total = 0;
-//             MONTHLY_PERIODS.forEach(period => {
-//                 total += (row[period] || 0);
-//             });
+//             MONTHLY_PERIODS.forEach(period => { total += (row[period] || 0); });
 //             row['FY-Total'] = total;
-//         } else {
-//              row['FY-Total'] = 0; 
-//         }
+//         } else row['FY-Total'] = 0; 
 //     });
-
 //     return Object.values(aggregatedDataMap); 
 // };
 
 // // --- FORECAST REPORT COMPONENT ---
 // const ForecastReport = () => {
 //     const [projectSearchTerm, setProjectSearchTerm] = useState('');
-//     const [closePeriodFilter, setClosePeriodFilter] = useState(CLOSE_PERIODS[CLOSE_PERIODS.length - 1]);
 //     const [loading, setLoading] = useState(true);
 //     const [error, setError] = useState(null);
 //     const [apiData, setApiData] = useState([]); 
 //     const [currentPage, setCurrentPage] = useState(1);
 
-//     // Initial state: ALL COLLAPSED
 //     const initialExpandedState = ALL_TOGGLEABLE_SECTIONS.reduce((acc, key) => ({ ...acc, [key]: false }), {});
 //     const [expandedSections, setExpandedSections] = useState(initialExpandedState);
 //     const [expandedProjects, setExpandedProjects] = useState({}); 
@@ -294,165 +233,88 @@
 //         setExpandedProjects(prev => ({ ...prev, [projectId]: !prev[projectId] }));
 //     }, []);
 
-//     // Helper to check if all sections are currently expanded
-//     const isAllExpanded = useMemo(() => {
-//         return ALL_TOGGLEABLE_SECTIONS.every(key => expandedSections[key]);
-//     }, [expandedSections]);
+//     const isAllExpanded = useMemo(() => ALL_TOGGLEABLE_SECTIONS.every(key => expandedSections[key]), [expandedSections]);
 
-//     // HANDLER FOR THE SINGLE TOGGLE BUTTON
 //     const handleToggleAll = () => {
 //         if (isAllExpanded) {
-//             // Collapse All
 //             setExpandedSections(initialExpandedState);
-//             setExpandedProjects({}); // Collapse all projects too
+//             setExpandedProjects({}); 
 //         } else {
-//             // Expand All
 //             const allExpanded = ALL_TOGGLEABLE_SECTIONS.reduce((acc, key) => ({ ...acc, [key]: true }), {});
 //             setExpandedSections(allExpanded);
-//             // We intentionally do NOT expand all projects here, only the top-level sections
 //         }
 //     };
 
-
-//     // --- DATA FETCHING ---
 //     const fetchReportData = useCallback(async () => {
 //         setLoading(true);
 //         setError(null);
-        
 //         const DETAIL_URL = `${backendUrl}${DETAIL_API_PATH}`;
 //         const FORECAST_URL = `${backendUrl}${FORECAST_API_PATH}`; 
-
 //         try {
-//             const [detailResponse, forecastResponse] = await Promise.all([
-//                 fetch(DETAIL_URL),
-//                 fetch(FORECAST_URL)
-//             ]);
-            
-//             if (!detailResponse.ok) {
-//                 throw new Error(`Detail API failed: ${detailResponse.statusText}`);
-//             }
-
+//             const [detailResponse, forecastResponse] = await Promise.all([fetch(DETAIL_URL), fetch(FORECAST_URL)]);
+//             if (!detailResponse.ok) throw new Error(`Detail API failed: ${detailResponse.statusText}`);
 //             const detailData = await detailResponse.json();
 //             const forecastData = forecastResponse.ok ? await forecastResponse.json() : [];
-            
 //             const transformedRows = transformData(detailData, forecastData);
-            
-//             if (transformedRows.length === 0) {
-//                  setError("APIs returned data, but transformation yielded zero relevant rows."); 
-//             } else {
-//                  setError(null);
-//             }
-            
+//             if (transformedRows.length === 0) setError("Zero relevant rows found."); 
+//             else setError(null);
 //             setApiData(transformedRows);
-
 //         } catch (e) {
 //             setApiData([]);
-//             setError(`Data load failed: ${e.message}. Check console for details.`);
-//         } finally {
-//             setLoading(false);
-//         }
+//             setError(`Data load failed: ${e.message}`);
+//         } finally { setLoading(false); }
 //     }, []);
 
-//     useEffect(() => {
-//         fetchReportData();
-//     }, [fetchReportData]); 
+//     useEffect(() => { fetchReportData(); }, [fetchReportData]); 
 
-//     // 1. Rollup Logic (Project/Section Grouping)
-//     const { allRows, rollupParents, uniqueProjectKeys, paginatedRollups } = useMemo(() => {
-//         const data = apiData; 
+//     const { allRows, uniqueProjectKeys, paginatedRollups } = useMemo(() => {
 //         const lowerCaseSearch = projectSearchTerm.toLowerCase();
-        
-//         const filtered = data.filter(item => {
-//             const matchesProject = !lowerCaseSearch || 
-//                 item.project.toLowerCase().includes(lowerCaseSearch) ||
-//                 item.projectName.toLowerCase().includes(lowerCaseSearch);
-//             return matchesProject;
-//         });
-
+//         const filtered = apiData.filter(item => !lowerCaseSearch || item.project.toLowerCase().includes(lowerCaseSearch) || item.projectName.toLowerCase().includes(lowerCaseSearch));
 //         const rollupGroup = {};
 //         const allProjectRows = [];
-//         const monthlyPeriods = MONTHLY_PERIODS; 
 //         const ALL_SECTION_KEYS = [...DISPLAYED_SECTION_KEYS, GENERAL_COSTS];
 
 //         filtered.forEach(item => {
 //             const rollupId = getRollupId(item.project);
-            
 //             let groupKey;
 //             let groupSection = item.section;
-            
 //             const isRevenueRow = item.section === 'REVENUE_SECTION';
 
-//             if (isRevenueRow) {
-//                 groupKey = `${rollupId}__REVENUE_SECTION`; 
-//                 groupSection = 'REVENUE_SECTION';
-//             } else if (ALL_SECTION_KEYS.includes(item.section)) {
-//                 groupKey = `${rollupId}__${item.section}`; 
-//                 groupSection = item.section;
-//             } else {
-//                 return; // Exclude unclassified data
-//             }
+//             if (isRevenueRow) { groupKey = `${rollupId}__REVENUE_SECTION`; groupSection = 'REVENUE_SECTION'; }
+//             else if (ALL_SECTION_KEYS.includes(item.section)) { groupKey = `${rollupId}__${item.section}`; groupSection = item.section; }
+//             else return; 
             
 //             allProjectRows.push(item);
-
 //             if (!rollupGroup[groupKey]) {
 //                 rollupGroup[groupKey] = {
-//                     id: groupKey,
-//                     project: rollupId, 
-//                     org: item.org || item.orgId || '',
-//                     acctId: null, 
-//                     popStartDate: item.popStartDate || item.proj_start_dt || '',
-//                     popEndDate: item.popEndDate || item.proj_end_dt || '',
-//                     isRollupParent: true,
-//                     'FY-Total': 0,
-//                     section: groupSection, 
-//                     children: [],
+//                     id: groupKey, project: rollupId, org: item.org || item.orgId || '', acctId: null, 
+//                     popStartDate: item.popStartDate || item.proj_start_dt || '', popEndDate: item.popEndDate || item.proj_end_dt || '',
+//                     isRollupParent: true, 'FY-Total': 0, section: groupSection, children: [],
 //                 };
 //             }
-
 //             const parent = rollupGroup[groupKey];
 //             parent.children.push(item);
-
-//             monthlyPeriods.forEach(period => {
-                
+//             MONTHLY_PERIODS.forEach(period => {
 //                 if (!isRevenueRow && item.section !== 'REVENUE_SECTION') {
-//                     if (item[period] !== undefined) {
-//                         parent[period] = (parent[period] || 0) + (item[period] || 0);
-//                     }
-                    
+//                     if (item[period] !== undefined) parent[period] = (parent[period] || 0) + (item[period] || 0);
 //                     INDIRECT_KEYS.forEach(ik => {
-//                         if (item[`${period}_${ik}`] !== undefined) {
-//                             parent[`${period}_${ik}`] = (parent[`${period}_${ik}`] || 0) + (item[`${period}_${ik}`] || 0);
-//                         }
+//                         if (item[`${period}_${ik}`] !== undefined) parent[`${period}_${ik}`] = (parent[`${period}_${ik}`] || 0) + (item[`${period}_${ik}`] || 0);
 //                     });
 //                 }
-                
-//                 if (item[`${period}_Revenue`] !== undefined) {
-//                     parent[`${period}_Revenue`] = (parent[`${period}_Revenue`] || 0) + (item[`${period}_Revenue`] || 0);
-//                 }
+//                 if (item[`${period}_Revenue`] !== undefined) parent[`${period}_Revenue`] = (parent[`${period}_Revenue`] || 0) + (item[`${period}_Revenue`] || 0);
 //             });
-
-//             if (!isRevenueRow) {
-//                 parent['FY-Total'] += (item['FY-Total'] || 0);
-//             }
+//             if (!isRevenueRow) parent['FY-Total'] += (item['FY-Total'] || 0);
 //         });
         
-//         const sortedRollupParents = Object.values(rollupGroup).sort((a, b) => 
-//             a.project.localeCompare(b.project) || a.section.localeCompare(b.section)
-//         );
-
+//         const sortedRollupParents = Object.values(rollupGroup).sort((a, b) => a.project.localeCompare(b.project) || a.section.localeCompare(b.section));
 //         const uniqueProjectKeys = [...new Set(sortedRollupParents.map(p => p.project))].sort();
 //         const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-//         const endIndex = startIndex + ROWS_PER_PAGE;
-//         const paginatedProjectKeys = uniqueProjectKeys.slice(startIndex, endIndex);
-        
-//         const paginatedRollups = sortedRollupParents
-//             .filter(p => paginatedProjectKeys.includes(p.project))
-//             .filter(p => p.section !== GENERAL_COSTS);
+//         const paginatedProjectKeys = uniqueProjectKeys.slice(startIndex, startIndex + ROWS_PER_PAGE);
+//         const paginatedRollups = sortedRollupParents.filter(p => paginatedProjectKeys.includes(p.project) && p.section !== GENERAL_COSTS);
 
-//         return { allRows: allProjectRows, rollupParents: sortedRollupParents, uniqueProjectKeys, paginatedRollups };
+//         return { allRows: allProjectRows, uniqueProjectKeys, paginatedRollups };
 //     }, [apiData, projectSearchTerm, currentPage]); 
 
-//     // 2. Define Headers and Sticky Positions
 //     const dimensionHeaders = [
 //         { key: 'project', label: 'PROJECT', width: '150px' },
 //         { key: 'projectName', label: 'PROJECT NAME', width: '260px' },
@@ -464,74 +326,44 @@
 //     ];
     
 //     const monthlyColWidth = 150;
-
 //     const stickyPositions = useMemo(() => {
 //         let currentPos = 0;
 //         const positions = {};
 //         dimensionHeaders.forEach((header, index) => {
-//             positions[header.key] = {
-//                 left: currentPos,
-//                 zIndex: 20 + dimensionHeaders.length - index, 
-//             };
+//             positions[header.key] = { left: currentPos, zIndex: 20 + dimensionHeaders.length - index };
 //             currentPos += parseInt(header.width);
 //         });
 //         return positions;
 //     }, [dimensionHeaders]); 
 
-//     const totalContentWidth = useMemo(() => {
-//         return dimensionHeaders.reduce((sum, h) => sum + parseInt(h.width), 0) + (MOCK_TIME_PERIODS.length * monthlyColWidth);
-//     }, [dimensionHeaders]); 
-
+//     const totalContentWidth = useMemo(() => dimensionHeaders.reduce((sum, h) => sum + parseInt(h.width), 0) + (MOCK_TIME_PERIODS.length * monthlyColWidth), [dimensionHeaders]); 
 //     const lastStickyKey = dimensionHeaders[dimensionHeaders.length - 1].key;
-//     const headerZIndex = 30; 
     
-//     // 3. Grand Total Calculation
 //     const { sectionTotals, grandCostTotal, grandRevenueTotal, grandIndirectComponents, grandIndirectTotal, finalIndirectKeys } = useMemo(() => {
-//         const sectionTotals = {};
-//         const grandCostTotal = {};
-//         const grandRevenueTotal = {};
-//         const grandIndirectComponents = {};
-        
+//         const sectionTotals = {}; const grandCostTotal = {}; const grandRevenueTotal = {}; const grandIndirectComponents = {};
 //         const PERIODS = MOCK_TIME_PERIODS; 
 
-//         // Calculate Cost Section Totals
 //         DISPLAYED_SECTION_KEYS.forEach(key => {
-//             const sectionRows = allRows.filter(row => 
-//                 row.section === key && 
-//                 row.section !== 'REVENUE_SECTION'
-//             );
+//             const sectionRows = allRows.filter(row => row.section === key && row.section !== 'REVENUE_SECTION');
 //             sectionTotals[key] = {};
-            
 //             PERIODS.forEach(period => {
 //                 const costSum = sectionRows.reduce((acc, row) => (row[period] !== undefined ? acc + row[period] : acc), 0);
-                
-//                 if (costSum !== 0) {
-//                     sectionTotals[key][period] = costSum;
-//                     grandCostTotal[period] = (grandCostTotal[period] || 0) + costSum;
-//                 }
+//                 if (costSum !== 0) { sectionTotals[key][period] = costSum; grandCostTotal[period] = (grandCostTotal[period] || 0) + costSum; }
 //             });
 //         });
 
-//         // Calculate Grand Revenue Total
 //         const revenueRows = allRows.filter(row => row.section === 'REVENUE_SECTION');
 //         PERIODS.forEach(period => {
 //             const revenueSum = revenueRows.reduce((acc, row) => (row[`${period}_Revenue`] !== undefined ? acc + row[`${period}_Revenue`] : acc), 0);
-//             if (revenueSum !== 0) {
-//                 grandRevenueTotal[period] = (grandRevenueTotal[period] || 0) + revenueSum; 
-//             }
+//             if (revenueSum !== 0) grandRevenueTotal[period] = (grandRevenueTotal[period] || 0) + revenueSum; 
 //         });
 
-//         // Calculate Grand Indirect Components
 //         const indirectRows = allRows.filter(row => INDIRECT_KEYS.some(k => PERIODS.some(p => row[`${p}_${k}`] !== undefined)));
-
 //         PERIODS.forEach(period => {
 //              INDIRECT_KEYS.forEach(indirectKey => {
 //                 const indirectSum = indirectRows.reduce((acc, row) => (row[`${period}_${indirectKey}`] !== undefined ? acc + row[`${period}_${indirectKey}`] : acc), 0);
-                
 //                 if (indirectSum !== 0) {
-//                     if (!grandIndirectComponents[indirectKey]) {
-//                         grandIndirectComponents[indirectKey] = {};
-//                     }
+//                     if (!grandIndirectComponents[indirectKey]) grandIndirectComponents[indirectKey] = {};
 //                     grandIndirectComponents[indirectKey][period] = (grandIndirectComponents[indirectKey][period] || 0) + indirectSum;
 //                 }
 //             });
@@ -540,94 +372,49 @@
 //         const grandIndirectTotal = {};
 //         PERIODS.forEach(period => {
 //             const indirectTotal = INDIRECT_KEYS.reduce((sum, key) => sum + (grandIndirectComponents[key]?.[period] || 0), 0);
-//             if (indirectTotal !== 0) {
-//                 grandIndirectTotal[period] = indirectTotal;
-//                 grandCostTotal[period] = (grandCostTotal[period] || 0) + indirectTotal;
-//             }
+//             if (indirectTotal !== 0) { grandIndirectTotal[period] = indirectTotal; grandCostTotal[period] = (grandCostTotal[period] || 0) + indirectTotal; }
 //         });
         
-//         const finalIndirectKeys = Object.keys(grandIndirectComponents).filter(key => 
-//             PERIODS.some(p => grandIndirectComponents[key][p] > 0)
-//         );
-
-//         return { 
-//             sectionTotals, 
-//             grandCostTotal, 
-//             grandRevenueTotal, 
-//             grandIndirectComponents, 
-//             grandIndirectTotal,
-//             finalIndirectKeys 
-//         };
+//         const finalIndirectKeys = Object.keys(grandIndirectComponents).filter(key => PERIODS.some(p => grandIndirectComponents[key][p] > 0));
+//         return { sectionTotals, grandCostTotal, grandRevenueTotal, grandIndirectComponents, grandIndirectTotal, finalIndirectKeys };
 //     }, [allRows]); 
 
 //     const totalRollupPages = Math.ceil(uniqueProjectKeys.length / ROWS_PER_PAGE); 
+//     const handlePageChange = (newPage) => { if (newPage >= 1 && newPage <= totalRollupPages) setCurrentPage(newPage); };
 
-//     const handlePageChange = (newPage) => {
-//         if (newPage >= 1 && newPage <= totalRollupPages) {
-//             setCurrentPage(newPage);
-//         }
-//     };
-
-//     const renderTotalRow = (sectionKey, totalData, isGrandTotal = false, isRevenueOrIndirect = false, isBreakdown = false) => {
+//     // UPDATED: Dynamic Background Logic for Summary Rows
+//     const renderTotalRow = (sectionKey, totalData, isGrandTotal = false, isRevenueOrIndirect = false) => {
 //         const totalLabel = SECTION_LABELS[sectionKey];
 //         const rowClass = isGrandTotal ? 'grand-total-row' : (isRevenueOrIndirect ? 'revenue-indirect-row' : 'section-total-row');
 //         const zIndex = isGrandTotal ? 40 : (isRevenueOrIndirect ? 35 : 25); 
-        
-//         const dataKeySuffix = sectionKey === 'REVENUE_SECTION' ? '_Revenue' : 
-//                             (INDIRECT_KEYS.includes(sectionKey) ? `_${sectionKey}` : '');
+//         const dataKeySuffix = sectionKey === 'REVENUE_SECTION' ? '_Revenue' : (INDIRECT_KEYS.includes(sectionKey) ? `_${sectionKey}` : '');
 
 //         return (
-//             <tr 
-//                 key={sectionKey} 
-//                 className={rowClass} 
-//                 onClick={!isGrandTotal ? () => toggleSection(sectionKey) : undefined} 
-//                 style={{ cursor: !isGrandTotal ? 'pointer' : 'default' }}
-//             >
-//                 {dimensionHeaders.map((header) => {
-//                     const isLastSticky = header.key === lastStickyKey;
-                    
-//                     const stickyStyle = {
-//                         left: `${stickyPositions[header.key].left}px`,
-//                         width: header.width,
-//                         zIndex: zIndex, 
-//                     };
-
-//                     let cellValue;
-//                     if (header.key === 'project') {
-//                         cellValue = isGrandTotal ? 'GRAND TOTAL' : (
-//                             <div className="flex items-center space-x-2">
-//                                 {!isGrandTotal && (
-//                                     <FaCaretRight className={`w-3 h-3 transition-transform ${expandedSections[sectionKey] ? 'rotate-90' : ''}`} />
-//                                 )}
-//                             </div>
-//                         );
-//                     } else if (header.key === 'projectName') {
-//                         cellValue = totalLabel;
-//                     } else if (header.key === 'accountName' && isBreakdown) {
-//                         cellValue = totalLabel;
-//                     } else {
-//                         cellValue = '';
-//                     }
-
+//             <tr key={sectionKey} className={rowClass} onClick={!isGrandTotal ? () => toggleSection(sectionKey) : undefined} style={{ cursor: !isGrandTotal ? 'pointer' : 'default' }}>
+//                 {dimensionHeaders.map((header) => (
+//                     <th 
+//                         key={header.key}
+//                         className={`px-3 py-2 text-left text-sm font-extrabold sticky left-0 ${rowClass}-sticky ${header.key === lastStickyKey ? 'last-sticky-col-border' : ''}`}
+//                         style={{ left: `${stickyPositions[header.key].left}px`, width: header.width, zIndex: zIndex }}
+//                     >
+//                         {header.key === 'project' ? (isGrandTotal ? 'GRAND TOTAL' : <FaCaretRight className={`w-3 h-3 transition-transform ${expandedSections[sectionKey] ? 'rotate-90' : ''}`} />) : (header.key === 'projectName' ? totalLabel : '')}
+//                     </th>
+//                 ))}
+//                 {MOCK_TIME_PERIODS.map(period => {
+//                     const yellow = isYellowZone(period);
 //                     return (
 //                         <th 
-//                             key={header.key}
-//                             className={`px-3 py-2 text-left text-sm font-extrabold sticky left-0 ${rowClass}-sticky ${isLastSticky ? 'last-sticky-col-border' : ''}`}
-//                             style={{ ...stickyStyle }}
+//                             key={period} 
+//                             className={`px-6 py-2 whitespace-nowrap text-sm text-right month-cell font-extrabold ${period === 'FY-Total' ? 'fy-total-col' : ''}`}
+//                             style={{ 
+//                                 backgroundColor: yellow ? '#FEF9C3' : '', // Light Yellow
+//                                 color: yellow ? '#1F2937' : 'white'      // Dark text for yellow, white for green
+//                             }}
 //                         >
-//                             {cellValue}
+//                             {formatCurrency(totalData[`${period}${dataKeySuffix}`] || totalData[period])}
 //                         </th>
 //                     );
 //                 })}
-                
-//                 {MOCK_TIME_PERIODS.map(period => (
-//                     <th 
-//                         key={period} 
-//                         className={`px-6 py-2 whitespace-nowrap text-sm text-right month-cell font-extrabold ${period === 'FY-Total' ? 'fy-total-col' : ''}`}
-//                     >
-//                         {formatCurrency(totalData[`${period}${dataKeySuffix}`] || totalData[period])}
-//                     </th>
-//                 ))}
 //             </tr>
 //         );
 //     };
@@ -635,414 +422,176 @@
 //     const renderBreakdownStickyCells = (item, isRevenueBreakdown, breakdownKey, isRollupParent = false) => {
 //         return dimensionHeaders.map((header) => {
 //             const isLastSticky = header.key === lastStickyKey;
-
-//             let cellContent = '';
-//             let paddingLeft = '12px';
+//             let cellContent = ''; let paddingLeft = '12px';
 
 //             if (isRevenueBreakdown) {
 //                 if (header.key === 'project') {
 //                     cellContent = item.project;
 //                     if (item.isRollupParent) {
 //                         return (
-//                             <td
-//                                 key={header.key}
-//                                 className={`px-3 py-2 whitespace-nowrap text-sm text-gray-700 sticky-left last-sticky-col-border`}
-//                                 style={{
-//                                     left: `${stickyPositions[header.key].left}px`,
-//                                     width: header.width,
-//                                     zIndex: stickyPositions[header.key].zIndex,
-//                                     cursor: 'pointer',
-//                                     paddingLeft: '12px',
-//                                     backgroundColor: 'white',
-//                                 }}
-//                                 onClick={() => toggleProject(`REV_${item.project}`)}
-//                             >
+//                             <td key={header.key} className={`px-3 py-2 whitespace-nowrap text-sm text-gray-700 sticky-left last-sticky-col-border`} style={{ left: `${stickyPositions[header.key].left}px`, width: header.width, zIndex: stickyPositions[header.key].zIndex, cursor: 'pointer', paddingLeft: '12px', backgroundColor: 'white' }} onClick={() => toggleProject(`REV_${item.project}`)}>
 //                                 <div className="flex items-center space-x-1">
-//                                     <FaCaretRight
-//                                         className={`w-3 h-3 transition-transform ${
-//                                             expandedProjects[`REV_${item.project}`] ? 'rotate-90' : ''
-//                                         }`}
-//                                     />
+//                                     <FaCaretRight className={`w-3 h-3 transition-transform ${expandedProjects[`REV_${item.project}`] ? 'rotate-90' : ''}`} />
 //                                     <span>{item.project}</span>
 //                                 </div>
 //                             </td>
 //                         );
 //                     }
 //                     paddingLeft = '35px';
-//                 } else if (header.key === 'projectName') {
-//                     cellContent = item.projectName; 
-//                 } else if (header.key === 'org') {
-//                     cellContent = item.org;
-//                 } else if (header.key === 'accountID') {
-//                     cellContent = item.acctId;
-//                 } else if (header.key === 'accountName') {
-//                     cellContent = item.accountName;
-//                 } else if (header.key === 'popStartDate') {
-//                     cellContent = formatDate(item.popStartDate);
-//                 } else if (header.key === 'popEndDate') {
-//                     cellContent = formatDate(item.popEndDate);
-//                 }
+//                 } else if (header.key === 'projectName') cellContent = item.projectName;
+//                 else if (header.key === 'org') cellContent = item.org;
+//                 else if (header.key === 'accountID') cellContent = item.acctId;
+//                 else if (header.key === 'accountName') cellContent = item.accountName;
+//                 else if (header.key === 'popStartDate') cellContent = formatDate(item.popStartDate);
+//                 else if (header.key === 'popEndDate') cellContent = formatDate(item.popEndDate);
 //             }
 //             else if (item) {
 //                 if (header.key === 'project') {
 //                     cellContent = item.project;
 //                     paddingLeft = item.isRollupParent ? '12px' : '35px'; 
-                    
-//                     if (item.isRollupParent) {
-//                         const childrenExist = item.children && item.children.length > 0;
-//                         if (childrenExist) {
-//                             return (
-//                                 <td 
-//                                     key={header.key}
-//                                     className={`px-3 py-2 whitespace-nowrap text-sm text-gray-700 sticky-left ${isLastSticky ? 'last-sticky-col-border' : ''} ${item.isRollupParent ? 'rollup-parent-row-sticky' : ''}`}
-//                                     style={{ 
-//                                         left: `${stickyPositions[header.key].left}px`, 
-//                                         width: header.width,
-//                                         zIndex: stickyPositions[header.key].zIndex,
-//                                         cursor: 'pointer',
-//                                         paddingLeft: paddingLeft,
-//                                         backgroundColor: 'white'
-//                                     }}
-//                                     onClick={() => toggleProject(item.project)}
-//                                 >
-//                                     <div className="flex items-center space-x-1">
-//                                         <FaCaretRight className={`w-3 h-3 transition-transform ${expandedProjects[item.project] ? 'rotate-90' : ''}`} />
-//                                         <span>{cellContent}</span>
-//                                     </div>
-//                                 </td>
-//                             );
-//                         }
+//                     if (item.isRollupParent && item.children && item.children.length > 0) {
+//                         return (
+//                             <td key={header.key} className={`px-3 py-2 whitespace-nowrap text-sm text-gray-700 sticky-left ${isLastSticky ? 'last-sticky-col-border' : ''} ${item.isRollupParent ? 'rollup-parent-row-sticky' : ''}`} style={{ left: `${stickyPositions[header.key].left}px`, width: header.width, zIndex: stickyPositions[header.key].zIndex, cursor: 'pointer', paddingLeft: paddingLeft, backgroundColor: 'white' }} onClick={() => toggleProject(item.project)}>
+//                                 <div className="flex items-center space-x-1">
+//                                     <FaCaretRight className={`w-3 h-3 transition-transform ${expandedProjects[item.project] ? 'rotate-90' : ''}`} />
+//                                     <span>{cellContent}</span>
+//                                 </div>
+//                             </td>
+//                         );
 //                     }
-//                 } else if (header.key === 'projectName') {
-//                     cellContent = item.projectName;
-//                     paddingLeft = item.isRollupParent ? '12px' : '35px';
-//                 } else if (header.key === 'org') {
-//                     cellContent = item.org;
-//                 } else if (header.key === 'accountID') {
-//                     cellContent = item.acctId || item.accountID; 
-//                 } else if (header.key === 'accountName') {
-//                     cellContent = item.accountName;
-//                 } else if (header.key === 'popStartDate') {
-//                     cellContent = formatDate(item.popStartDate);
-//                 } else if (header.key === 'popEndDate') {
-//                     cellContent = formatDate(item.popEndDate);
-//                 }
+//                 } else if (header.key === 'projectName') cellContent = item.projectName;
+//                 else if (header.key === 'org') cellContent = item.org;
+//                 else if (header.key === 'accountID') cellContent = item.acctId || item.accountID;
+//                 else if (header.key === 'accountName') cellContent = item.accountName;
+//                 else if (header.key === 'popStartDate') cellContent = formatDate(item.popStartDate);
+//                 else if (header.key === 'popEndDate') cellContent = formatDate(item.popEndDate);
 //             }
-//             else if (breakdownKey) {
-//                 if (header.key === 'project') {
-//                     cellContent = SECTION_LABELS[breakdownKey];
-//                     paddingLeft = '25px';
-//                 }
-//             }
+//             else if (breakdownKey && header.key === 'project') { cellContent = SECTION_LABELS[breakdownKey]; paddingLeft = '25px'; }
 
 //             return (
-//                 <td 
-//                     key={header.key}
-//                     className={`px-3 py-2 whitespace-nowrap text-sm text-gray-700 sticky-left ${isLastSticky ? 'last-sticky-col-border' : ''} ${isRollupParent ? 'rollup-parent-row-sticky' : ''}`}
-//                     style={{ 
-//                         left: `${stickyPositions[header.key].left}px`, 
-//                         width: header.width,
-//                         zIndex: stickyPositions[header.key].zIndex,
-//                         paddingLeft: paddingLeft,
-//                         backgroundColor: isRollupParent ? '#e5e7eb' : 'white'
-//                     }}
-//                 >
+//                 <td key={header.key} className={`px-3 py-2 whitespace-nowrap text-sm text-gray-700 sticky-left ${isLastSticky ? 'last-sticky-col-border' : ''} ${isRollupParent ? 'rollup-parent-row-sticky' : ''}`} style={{ left: `${stickyPositions[header.key].left}px`, width: header.width, zIndex: stickyPositions[header.key].zIndex, paddingLeft: paddingLeft, backgroundColor: isRollupParent ? '#e5e7eb' : 'white' }}>
 //                     {cellContent}
 //                 </td>
 //             );
 //         });
 //     };
-    
-//     // --- JSX RENDER ---
 
-//     if (loading) {
-//         return <div className="p-4 text-center text-lg font-semibold text-blue-600">Loading Report Data...</div>;
-//     }
-
-//     if (error) {
-//         return <div className="p-4 text-center text-lg font-semibold text-red-600">Error: {error}</div>;
-//     }
+//     if (loading) return <div className="p-4 text-center text-lg font-semibold text-blue-600">Loading Report Data...</div>;
+//     if (error) return <div className="p-4 text-center text-lg font-semibold text-red-600">Error: {error}</div>;
 
 //     return (
 //         <div className="p-4 bg-gray-50 min-h-full">
 //             <style>
 //                 {`
-//                     .sticky-table {
-//                         table-layout: fixed; 
-//                         border-collapse: separate;
-//                         border-spacing: 0;
-//                         min-width: ${totalContentWidth}px; 
-//                     }
-//                     .month-cell {
-//                         min-width: ${monthlyColWidth}px; 
-//                         width: ${monthlyColWidth}px;
-//                     }
-//                     .sticky-table th.sticky-left, .sticky-table td.sticky-left {
-//                         position: sticky;
-//                         z-index: 10; 
-//                         background-color: white !important; 
-//                         box-shadow: 2px 0 3px -2px rgba(0,0,0,0.1);
-//                         border-right: 1px solid #e5e7eb; 
-//                     }
-//                     .sticky-table thead th.sticky-left {
-//                         position: sticky; 
-//                         top: 0; 
-//                         z-index: ${headerZIndex + 10} !important; 
-//                         background-color: #e5e7eb !important;
-//                     }
-//                     .sticky-table th.last-sticky-col-border, .sticky-table td.last-sticky-col-border {
-//                         border-right: 2px solid #9ca3af !important;
-//                         box-shadow: 2px 0 3px -2px rgba(0,0,0,0.4); 
-//                     }
-//                     .fy-total-col {
-//                         background-color: #fffbe7; 
-//                         font-weight: 600;
-//                     }
-//                     .section-total-row, .revenue-indirect-row, .grand-total-row {
-//                         color: white;
-//                         font-weight: bold;
-//                         border-top: 2px solid #065f46;
-//                     }
-//                     .section-total-row-sticky, .revenue-indirect-row-sticky, .grand-total-row-sticky {
-//                         background-color: inherit !important; 
-//                     }
+//                     .sticky-table { table-layout: fixed; border-collapse: separate; border-spacing: 0; min-width: ${totalContentWidth}px; }
+//                     .month-cell { min-width: ${monthlyColWidth}px; width: ${monthlyColWidth}px; }
+//                     .sticky-table th.sticky-left, .sticky-table td.sticky-left { position: sticky; z-index: 10; background-color: white !important; box-shadow: 2px 0 3px -2px rgba(0,0,0,0.1); border-right: 1px solid #e5e7eb; }
+//                     .sticky-table thead th.sticky-left { position: sticky; top: 0; z-index: 40 !important; background-color: #e5e7eb !important; }
+//                     .sticky-table th.last-sticky-col-border, .sticky-table td.last-sticky-col-border { border-right: 2px solid #9ca3af !important; box-shadow: 2px 0 3px -2px rgba(0,0,0,0.4); }
+//                     .fy-total-col { background-color: #fffbe7; font-weight: 600; }
+//                     .section-total-row, .revenue-indirect-row, .grand-total-row { color: white; font-weight: bold; border-top: 2px solid #065f46; }
 //                     .section-total-row { background-color: #34d399; }
 //                     .revenue-indirect-row { background-color: #10b988; }
 //                     .grand-total-row { background-color: #065f46; } 
-//                     .rollup-parent-row { 
-//                         background-color: #e5e7eb; 
-//                         font-weight: bold;
-//                         border-bottom: 2px solid #9ca3af;
-//                         color: #1f2937;
-//                     }
-//                     .rollup-parent-row-sticky, .rollup-parent-row th {
-//                         background-color: #e5e7eb !important;
-//                         color: #1f2937 !important;
-//                     }
-//                     .revenue-breakdown-row td {
-//                         background-color: #f0fdfa !important; 
-//                         border-bottom: 1px dashed #6ee7b7;
-//                     }
-//                     .sticky-table th, .sticky-table td {
-//                         border-bottom: 1px solid #e5e7eb;
-//                     }
+                    
+//                     /* Ensure Sticky headers in Green rows stay green */
+//                     .section-total-row-sticky { background-color: #34d399 !important; color: white !important; }
+//                     .revenue-indirect-row-sticky { background-color: #10b988 !important; color: white !important; }
+//                     .grand-total-row-sticky { background-color: #065f46 !important; color: white !important; }
+
+//                     .rollup-parent-row { background-color: #e5e7eb; font-weight: bold; border-bottom: 2px solid #9ca3af; color: #1f2937; }
+//                     .rollup-parent-row-sticky { background-color: #e5e7eb !important; color: #1f2937 !important; }
+//                     .revenue-breakdown-row td { background-color: #f0fdfa !important; border-bottom: 1px dashed #6ee7b7; }
+//                     .sticky-table th, .sticky-table td { border-bottom: 1px solid #e5e7eb; }
 //                 `}
 //             </style>
             
 //             <h2 className="text-2xl font-bold text-gray-800 mb-6">Forecast Report (2025-2026 Integrated)</h2>
 
-            
-//             {/* Pagination Controls & Single Toggle Button */}
 //             <div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-md mb-4">
-//                 <span className="text-sm text-gray-600">
-//                     Showing {((currentPage - 1) * ROWS_PER_PAGE) + 1} to {Math.min(currentPage * ROWS_PER_PAGE, uniqueProjectKeys.length)} of {uniqueProjectKeys.length} Projects
-//                 </span>
+//                 <span className="text-sm text-gray-600">Showing {((currentPage - 1) * ROWS_PER_PAGE) + 1} to {Math.min(currentPage * ROWS_PER_PAGE, uniqueProjectKeys.length)} of {uniqueProjectKeys.length} Projects</span>
 //                 <div className="flex space-x-2">
-//                     {/* SINGLE TOGGLE BUTTON */}
-//                     <button
-//                         onClick={handleToggleAll}
-//                         className={`px-3 py-1 text-sm rounded-lg text-white ${isAllExpanded ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
-//                     >
-//                         {isAllExpanded ? (
-//                             <>
-//                                 <FaChevronUp className="inline-block w-3 h-3 mr-1" /> Collapse All
-//                             </>
-//                         ) : (
-//                             <>
-//                                 <FaChevronDown className="inline-block w-3 h-3 mr-1" /> Expand All
-//                             </>
-//                         )}
+//                     <button onClick={handleToggleAll} className={`px-3 py-1 text-sm rounded-lg text-white ${isAllExpanded ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}>
+//                         {isAllExpanded ? <><FaChevronUp className="inline-block w-3 h-3 mr-1" /> Collapse All</> : <><FaChevronDown className="inline-block w-3 h-3 mr-1" /> Expand All</>}
 //                     </button>
-                    
-//                     {/* PAGINATION */}
-//                     <button
-//                         onClick={() => handlePageChange(currentPage - 1)}
-//                         disabled={currentPage === 1}
-//                         className="px-3 py-1 text-sm rounded-lg text-gray-700 border hover:bg-gray-100 disabled:opacity-50"
-//                     >
-//                         <FaChevronLeft className="inline-block w-3 h-3" /> Previous
-//                     </button>
-//                     <span className="px-3 py-1 text-sm rounded-lg border bg-gray-100 text-gray-700">
-//                         Page {currentPage} of {totalRollupPages}
-//                     </span>
-//                     <button
-//                         onClick={() => handlePageChange(currentPage + 1)}
-//                         disabled={currentPage === totalRollupPages || totalRollupPages === 0}
-//                         className="px-3 py-1 text-sm rounded-lg text-gray-700 border hover:bg-gray-100 disabled:opacity-50"
-//                     >
-//                         Next <FaChevronRight className="inline-block w-3 h-3" />
-//                     </button>
+//                     <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 text-sm rounded-lg text-gray-700 border hover:bg-gray-100 disabled:opacity-50"><FaChevronLeft className="inline-block w-3 h-3" /> Previous</button>
+//                     <span className="px-3 py-1 text-sm rounded-lg border bg-gray-100 text-gray-700">Page {currentPage} of {totalRollupPages}</span>
+//                     <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalRollupPages || totalRollupPages === 0} className="px-3 py-1 text-sm rounded-lg text-gray-700 border hover:bg-gray-100 disabled:opacity-50">Next <FaChevronRight className="inline-block w-3 h-3" /></button>
 //                 </div>
 //             </div>
 
-//             {/* Data Table Container */}
 //             <div style={{ maxHeight: 'calc(100vh - 400px)', overflow: 'auto' }} className="rounded-lg shadow-md border border-gray-200">
 //                 <table className="min-w-full divide-y divide-gray-200 sticky-table">
 //                     <thead>
 //                         <tr>
 //                             {dimensionHeaders.map((header) => (
-//                                 <th
-//                                     key={header.key}
-//                                     scope="col"
-//                                     className={`px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 sticky-left ${header.key === lastStickyKey ? 'last-sticky-col-border' : ''}`}
-//                                     style={{ 
-//                                         left: `${stickyPositions[header.key].left}px`, 
-//                                         width: header.width,
-//                                     }}
-//                                 >
-//                                     {header.label}
-//                                 </th>
+//                                 <th key={header.key} scope="col" className={`px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 sticky-left ${header.key === lastStickyKey ? 'last-sticky-col-border' : ''}`} style={{ left: `${stickyPositions[header.key].left}px`, width: header.width }}>{header.label}</th>
 //                             ))}
-//                             {MOCK_TIME_PERIODS.map(period => (
-//                                 <th
-//                                     key={period}
-//                                     scope="col"
-//                                     className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider month-cell"
-//                                     style={{ backgroundColor: period === 'FY-Total' ? '#fefcbf' : '' }}
-//                                 >
-//                                     {period}
-//                                 </th>
-//                             ))}
+//                             {MOCK_TIME_PERIODS.map(period => {
+//                                 const yellow = isYellowZone(period);
+//                                 return (
+//                                     <th key={period} scope="col" className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider month-cell" 
+//                                         style={{ backgroundColor: yellow ? '#FDE047' : '#10B981', color: yellow ? '#1F2937' : 'white' }}>{period}</th>
+//                                 );
+//                             })}
 //                         </tr>
 //                     </thead>
 
-//                     {/* TBODY 1: Revenue summary and breakdown */}
 //                     <tbody>
 //                         {renderTotalRow('REVENUE_SECTION', grandRevenueTotal, false, true)}
-//                         {expandedSections.REVENUE_SECTION && paginatedRollups
-//                             .filter(p => p.section === 'REVENUE_SECTION')
-//                             .map(rollupItem => (
-//                                 <React.Fragment key={`rev-rollup-${rollupItem.id}`}>
-//                                     <tr 
-//                                         key={`rev-parent-${rollupItem.id}`} 
-//                                         className="revenue-breakdown-row"
-//                                         onClick={() => toggleProject(`REV_${rollupItem.project}`)} 
-//                                         style={{ cursor: 'pointer' }}
-//                                     >
-//                                         {renderBreakdownStickyCells({...rollupItem, projectName: `Total - ${rollupItem.project}`}, true, null, true)}
-//                                         {MOCK_TIME_PERIODS.map(period => (
-//                                             <td 
-//                                                 key={period} 
-//                                                 className="px-6 py-2 whitespace-nowrap text-sm text-right month-cell font-semibold"
-//                                                 style={{ backgroundColor: '#e0f2f1' }}
-//                                             >
-//                                                 {formatCurrency(rollupItem[`${period}_Revenue`] || 0)}
-//                                             </td>
-//                                         ))}
+//                         {expandedSections.REVENUE_SECTION && paginatedRollups.filter(p => p.section === 'REVENUE_SECTION').map(rollupItem => (
+//                             <React.Fragment key={`rev-rollup-${rollupItem.id}`}>
+//                                 <tr className="revenue-breakdown-row" onClick={() => toggleProject(`REV_${rollupItem.project}`)} style={{ cursor: 'pointer' }}>
+//                                     {renderBreakdownStickyCells({...rollupItem, projectName: `Total - ${rollupItem.project}`}, true, null, true)}
+//                                     {MOCK_TIME_PERIODS.map(period => (
+//                                         <td key={period} className="px-6 py-2 whitespace-nowrap text-sm text-right month-cell font-semibold" style={{ backgroundColor: '#e0f2f1' }}>{formatCurrency(rollupItem[`${period}_Revenue`] || 0)}</td>
+//                                     ))}
+//                                 </tr>
+//                                 {expandedProjects[`REV_${rollupItem.project}`] && rollupItem.children.filter(child => child.section === 'REVENUE_SECTION').map(projectItem => (
+//                                     <tr key={`rev-detail-${projectItem.id}`} className="revenue-breakdown-row">
+//                                         {renderBreakdownStickyCells({...projectItem, isRollupParent: false}, true, null, false)}
+//                                         {MOCK_TIME_PERIODS.map(period => (<td key={period} className="px-6 py-2 whitespace-nowrap text-sm text-right month-cell" style={{ backgroundColor: '#f0fdfa' }}>{formatCurrency(projectItem[`${period}_Revenue`] || 0)}</td>))}
 //                                     </tr>
-//                                     {expandedProjects[`REV_${rollupItem.project}`] && rollupItem.children
-//                                         .filter(child => child.section === 'REVENUE_SECTION') 
-//                                         .map(projectItem => (
-//                                             <tr key={`rev-detail-${projectItem.id}`} className="revenue-breakdown-row">
-//                                                 {renderBreakdownStickyCells({...projectItem, isRollupParent: false}, true, null, false)}
-//                                                 {MOCK_TIME_PERIODS.map(period => (
-//                                                     <td 
-//                                                         key={period} 
-//                                                         className="px-6 py-2 whitespace-nowrap text-sm text-right month-cell"
-//                                                         style={{ backgroundColor: '#f0fdfa' }}
-//                                                     >
-//                                                         {formatCurrency(projectItem[`${period}_Revenue`] || 0)}
-//                                                     </td>
-//                                                 ))}
-//                                             </tr>
-//                                         ))
-//                                     }
-//                                 </React.Fragment>
-//                             ))
-//                         }
+//                                 ))}
+//                             </React.Fragment>
+//                         ))}
 //                     </tbody>
 
-//                     {/* TBODY 2: Cost sections and rollups */}
 //                     <tbody>
 //                         {DISPLAYED_SECTION_KEYS.map(sectionKey => {
 //                             const sectionRollupParents = paginatedRollups.filter(rollup => rollup.section === sectionKey);
-//                             const isSectionExpanded = expandedSections[sectionKey];
-
-//                             const hasCostData = sectionTotals[sectionKey] && MOCK_TIME_PERIODS.some(p => sectionTotals[sectionKey][p] > 0 || sectionTotals[sectionKey][p] < 0);
-                            
-//                             if (!hasCostData) return null;
-
-//                             const totalRow = renderTotalRow(sectionKey, sectionTotals[sectionKey]);
-                            
-//                             const rollupRows = isSectionExpanded ? sectionRollupParents.map(rollupItem => {
-//                                 const parentRow = (
-//                                     <tr 
-//                                         key={rollupItem.id} 
-//                                         className="rollup-parent-row"
-//                                         onClick={() => toggleProject(rollupItem.project)}
-//                                         style={{ cursor: 'pointer' }}
-//                                     >
-//                                         {renderBreakdownStickyCells(rollupItem, false, null, true)}
-//                                         {MOCK_TIME_PERIODS.map(period => (
-//                                             <td 
-//                                                 key={period} 
-//                                                 className={`px-6 py-2 whitespace-nowrap text-sm text-right month-cell font-extrabold ${period === 'FY-Total' ? 'fy-total-col' : ''}`}
-//                                             >
-//                                                 {formatCurrency(rollupItem[period] || 0)}
-//                                             </td>
-//                                         ))}
-//                                     </tr>
-//                                 );
-
-//                                 const projectDetailRows = expandedProjects[rollupItem.project] ? rollupItem.children
-//                                     .filter(child => child.section === sectionKey)
-//                                     .map(projectItem => (
-//                                         <tr key={projectItem.id} className="hover:bg-gray-50 transition-colors">
-//                                             {renderBreakdownStickyCells(projectItem, false, null, false)}
-//                                             {MOCK_TIME_PERIODS.map(period => (
-//                                                 <td 
-//                                                     key={period} 
-//                                                     className={`px-6 py-2 whitespace-nowrap text-sm text-gray-700 month-cell ${period === 'FY-Total' ? 'font-semibold fy-total-col' : 'text-gray-700'}`}
-//                                                 >
-//                                                     {formatCurrency(projectItem[period] || 0)}
-//                                                 </td>
-//                                             ))}
-//                                         </tr>
-//                                     )) : null;
-
-//                                 return (
-//                                     <React.Fragment key={rollupItem.id}>
-//                                         {parentRow}
-//                                         {projectDetailRows}
-//                                     </React.Fragment>
-//                                 );
-
-//                             }) : null;
-
+//                             if (!(sectionTotals[sectionKey] && MOCK_TIME_PERIODS.some(p => sectionTotals[sectionKey][p] !== 0))) return null;
 //                             return (
 //                                 <React.Fragment key={sectionKey}>
-//                                     {totalRow}
-//                                     {rollupRows}
+//                                     {renderTotalRow(sectionKey, sectionTotals[sectionKey])}
+//                                     {expandedSections[sectionKey] && sectionRollupParents.map(rollupItem => (
+//                                         <React.Fragment key={rollupItem.id}>
+//                                             <tr className="rollup-parent-row" onClick={() => toggleProject(rollupItem.project)} style={{ cursor: 'pointer' }}>
+//                                                 {renderBreakdownStickyCells(rollupItem, false, null, true)}
+//                                                 {MOCK_TIME_PERIODS.map(period => (<td key={period} className={`px-6 py-2 whitespace-nowrap text-sm text-right month-cell font-extrabold ${period === 'FY-Total' ? 'fy-total-col' : ''}`}>{formatCurrency(rollupItem[period] || 0)}</td>))}
+//                                             </tr>
+//                                             {expandedProjects[rollupItem.project] && rollupItem.children.filter(child => child.section === sectionKey).map(projectItem => (
+//                                                 <tr key={projectItem.id} className="hover:bg-gray-50 transition-colors">
+//                                                     {renderBreakdownStickyCells(projectItem, false, null, false)}
+//                                                     {MOCK_TIME_PERIODS.map(period => (<td key={period} className={`px-6 py-2 whitespace-nowrap text-sm text-gray-700 month-cell ${period === 'FY-Total' ? 'font-semibold fy-total-col' : ''}`}>{formatCurrency(projectItem[period] || 0)}</td>))}
+//                                                 </tr>
+//                                             ))}
+//                                         </React.Fragment>
+//                                     ))}
 //                                 </React.Fragment>
 //                             );
 //                         })}
-
-//                         {allRows.length === 0 && (
-//                             <tr>
-//                                 <td colSpan={MOCK_TIME_PERIODS.length + dimensionHeaders.length} className="px-6 py-12 text-center text-gray-500">
-//                                     No forecast or actual data found matching the current filters.
-//                                 </td>
-//                             </tr>
-//                         )}
 //                     </tbody>
 
-//                     {/* TFOOT: Indirect + Grand total */}
 //                     <tfoot>
 //                         {renderTotalRow('INDIRECT_SECTION', grandIndirectTotal, false, true)}
 //                         {expandedSections.INDIRECT_SECTION && finalIndirectKeys.map(key => (
 //                             <tr key={`indirect-breakdown-${key}`} className="revenue-breakdown-row">
 //                                 {renderBreakdownStickyCells(null, false, key, false)}
-//                                 {MOCK_TIME_PERIODS.map(period => (
-//                                     <td 
-//                                         key={period} 
-//                                         className="px-6 py-2 whitespace-nowrap text-sm text-right month-cell"
-//                                         style={{ backgroundColor: '#e0f2f1' }}
-//                                     >
-//                                         {formatCurrency(grandIndirectComponents[key][period] || 0)}
-//                                     </td>
-//                                 ))}
+//                                 {MOCK_TIME_PERIODS.map(period => (<td key={period} className="px-6 py-2 whitespace-nowrap text-sm text-right month-cell" style={{ backgroundColor: '#e0f2f1' }}>{formatCurrency(grandIndirectComponents[key][period] || 0)}</td>))}
 //                             </tr>
 //                         ))}
+//                         {renderTotalRow('GRAND_TOTAL_KEY', grandCostTotal, true)}
 //                     </tfoot>
 //                 </table>
 //             </div>
@@ -1051,6 +600,7 @@
 // };
 
 // export default ForecastReport;
+
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { FaSearch, FaChevronDown, FaChevronUp, FaCaretRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -1076,7 +626,6 @@ const MOCK_TIME_PERIODS = [...MONTHLY_PERIODS, 'FY-Total'];
 // HELPER: Identify if a period is in the "Yellow Zone" (Nov-25 onwards)
 const isYellowZone = (period) => {
     const index = MOCK_TIME_PERIODS.indexOf(period);
-    // Nov-25 is index 10 in the MOCK_TIME_PERIODS array
     return index >= 10; 
 };
 
@@ -1099,6 +648,7 @@ const SECTION_LABELS = {
     'NON-LABOR-TRAVEL': 'Sumaria Travel (NON-LABOR)',
     'NON-LABOR-SUBCON': 'Subcontractors (LABOR)',
     'UNALLOW-SUBCON': 'Subcontractors (NON-Billable)',
+    TOTAL_FEE: 'Total Fee', // Added label
     [GENERAL_COSTS]: '7 - Other Unclassified Direct Costs (Hidden)', 
 };
 
@@ -1392,8 +942,9 @@ const ForecastReport = () => {
     const totalContentWidth = useMemo(() => dimensionHeaders.reduce((sum, h) => sum + parseInt(h.width), 0) + (MOCK_TIME_PERIODS.length * monthlyColWidth), [dimensionHeaders]); 
     const lastStickyKey = dimensionHeaders[dimensionHeaders.length - 1].key;
     
-    const { sectionTotals, grandCostTotal, grandRevenueTotal, grandIndirectComponents, grandIndirectTotal, finalIndirectKeys } = useMemo(() => {
-        const sectionTotals = {}; const grandCostTotal = {}; const grandRevenueTotal = {}; const grandIndirectComponents = {};
+    // UPDATED: Added grandTotalFee logic
+    const { sectionTotals, grandCostTotal, grandRevenueTotal, grandIndirectComponents, grandIndirectTotal, finalIndirectKeys, grandTotalFee } = useMemo(() => {
+        const sectionTotals = {}; const grandCostTotal = {}; const grandRevenueTotal = {}; const grandIndirectComponents = {}; const grandTotalFee = {};
         const PERIODS = MOCK_TIME_PERIODS; 
 
         DISPLAYED_SECTION_KEYS.forEach(key => {
@@ -1427,30 +978,36 @@ const ForecastReport = () => {
             const indirectTotal = INDIRECT_KEYS.reduce((sum, key) => sum + (grandIndirectComponents[key]?.[period] || 0), 0);
             if (indirectTotal !== 0) { grandIndirectTotal[period] = indirectTotal; grandCostTotal[period] = (grandCostTotal[period] || 0) + indirectTotal; }
         });
+
+        // CALCULATE TOTAL FEE: Revenue - Cost
+        PERIODS.forEach(period => {
+            grandTotalFee[period] = (grandRevenueTotal[period] || 0) - (grandCostTotal[period] || 0);
+        });
         
         const finalIndirectKeys = Object.keys(grandIndirectComponents).filter(key => PERIODS.some(p => grandIndirectComponents[key][p] > 0));
-        return { sectionTotals, grandCostTotal, grandRevenueTotal, grandIndirectComponents, grandIndirectTotal, finalIndirectKeys };
+        return { sectionTotals, grandCostTotal, grandRevenueTotal, grandIndirectComponents, grandIndirectTotal, finalIndirectKeys, grandTotalFee };
     }, [allRows]); 
 
     const totalRollupPages = Math.ceil(uniqueProjectKeys.length / ROWS_PER_PAGE); 
     const handlePageChange = (newPage) => { if (newPage >= 1 && newPage <= totalRollupPages) setCurrentPage(newPage); };
 
-    // UPDATED: Dynamic Background Logic for Summary Rows
     const renderTotalRow = (sectionKey, totalData, isGrandTotal = false, isRevenueOrIndirect = false) => {
         const totalLabel = SECTION_LABELS[sectionKey];
-        const rowClass = isGrandTotal ? 'grand-total-row' : (isRevenueOrIndirect ? 'revenue-indirect-row' : 'section-total-row');
-        const zIndex = isGrandTotal ? 40 : (isRevenueOrIndirect ? 35 : 25); 
+        // Special row class for the Fee to make it look distinct
+        const isFee = sectionKey === 'TOTAL_FEE';
+        const rowClass = isFee ? 'total-fee-row' : (isGrandTotal ? 'grand-total-row' : (isRevenueOrIndirect ? 'revenue-indirect-row' : 'section-total-row'));
+        const zIndex = isGrandTotal || isFee ? 40 : (isRevenueOrIndirect ? 35 : 25); 
         const dataKeySuffix = sectionKey === 'REVENUE_SECTION' ? '_Revenue' : (INDIRECT_KEYS.includes(sectionKey) ? `_${sectionKey}` : '');
 
         return (
-            <tr key={sectionKey} className={rowClass} onClick={!isGrandTotal ? () => toggleSection(sectionKey) : undefined} style={{ cursor: !isGrandTotal ? 'pointer' : 'default' }}>
+            <tr key={sectionKey} className={rowClass} onClick={!isGrandTotal && !isFee ? () => toggleSection(sectionKey) : undefined} style={{ cursor: isGrandTotal || isFee ? 'default' : 'pointer' }}>
                 {dimensionHeaders.map((header) => (
                     <th 
                         key={header.key}
                         className={`px-3 py-2 text-left text-sm font-extrabold sticky left-0 ${rowClass}-sticky ${header.key === lastStickyKey ? 'last-sticky-col-border' : ''}`}
                         style={{ left: `${stickyPositions[header.key].left}px`, width: header.width, zIndex: zIndex }}
                     >
-                        {header.key === 'project' ? (isGrandTotal ? 'GRAND TOTAL' : <FaCaretRight className={`w-3 h-3 transition-transform ${expandedSections[sectionKey] ? 'rotate-90' : ''}`} />) : (header.key === 'projectName' ? totalLabel : '')}
+                        {header.key === 'project' ? (isGrandTotal || isFee ? 'SUMMARY' : <FaCaretRight className={`w-3 h-3 transition-transform ${expandedSections[sectionKey] ? 'rotate-90' : ''}`} />) : (header.key === 'projectName' ? totalLabel : '')}
                     </th>
                 ))}
                 {MOCK_TIME_PERIODS.map(period => {
@@ -1542,15 +1099,22 @@ const ForecastReport = () => {
                     .sticky-table thead th.sticky-left { position: sticky; top: 0; z-index: 40 !important; background-color: #e5e7eb !important; }
                     .sticky-table th.last-sticky-col-border, .sticky-table td.last-sticky-col-border { border-right: 2px solid #9ca3af !important; box-shadow: 2px 0 3px -2px rgba(0,0,0,0.4); }
                     .fy-total-col { background-color: #fffbe7; font-weight: 600; }
-                    .section-total-row, .revenue-indirect-row, .grand-total-row { color: white; font-weight: bold; border-top: 2px solid #065f46; }
+                    .section-total-row, .revenue-indirect-row, .grand-total-row, .total-fee-row { color: white; font-weight: bold; border-top: 2px solid #065f46; }
                     .section-total-row { background-color: #34d399; }
                     .revenue-indirect-row { background-color: #10b988; }
                     .grand-total-row { background-color: #065f46; } 
+                    // .total-fee-row { background-color: #1e3a8a; border-top: 2px solid #172554; } /* Blue color for Fee */
+                    .total-fee-row { 
+    background-color: #60a5fa; /* Light Blue */
+    border-top: 2px solid #2563eb; 
+}
                     
-                    /* Ensure Sticky headers in Green rows stay green */
+                    /* Ensure Sticky headers in special rows stay correct color */
                     .section-total-row-sticky { background-color: #34d399 !important; color: white !important; }
                     .revenue-indirect-row-sticky { background-color: #10b988 !important; color: white !important; }
                     .grand-total-row-sticky { background-color: #065f46 !important; color: white !important; }
+                    // .total-fee-row-sticky { background-color: #1e3a8a !important; color: white !important; }
+                    .total-fee-row-sticky { background-color: #60a5fa !important;  color: white !important; }
 
                     .rollup-parent-row { background-color: #e5e7eb; font-weight: bold; border-bottom: 2px solid #9ca3af; color: #1f2937; }
                     .rollup-parent-row-sticky { background-color: #e5e7eb !important; color: #1f2937 !important; }
@@ -1645,6 +1209,8 @@ const ForecastReport = () => {
                             </tr>
                         ))}
                         {renderTotalRow('GRAND_TOTAL_KEY', grandCostTotal, true)}
+                        {/* TOTAL FEE ROW ADDED HERE */}
+                        {renderTotalRow('TOTAL_FEE', grandTotalFee, false, false)}
                     </tfoot>
                 </table>
             </div>
