@@ -391,7 +391,92 @@ const TemplateManager = () => {
     setError(null);
   };
 
-  const handleSave = async (e) => {
+//   const handleSave = async (e) => {
+//   e.preventDefault();
+  
+//   if (!newTemplate.templateCode || !newTemplate.description) {
+//     setError("Please fill all fields");
+//     return;
+//   }
+
+//   setIsSubmitting(true);
+//   setError(null);
+
+//   try {
+//     // Save template first
+//     let templateId;
+//     if (editingTemplate) {
+//       // Update existing template
+//       const response = await fetch(
+//         `${backendUrl}/Orgnization/UpdateTemplate?updatedBy=${encodeURIComponent(updatedBy)}`,
+//         {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({
+//             id: editingTemplate.id,
+//             ...newTemplate
+//           })
+//         }
+//       );
+//       if (!response.ok) throw new Error("Failed to update template");
+//       templateId = editingTemplate.id;
+//     } else {
+//       // Add new template
+//       const response = await fetch(
+//         `${backendUrl}/Orgnization/AddTemplate?updatedBy=${encodeURIComponent(updatedBy)}`,
+//         {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify(newTemplate)
+//         }
+//       );
+      
+//       if (!response.ok) throw new Error("Failed to create template");
+      
+//       // Parse response to get actual template ID
+//       const responseData = await response.json();
+//       if (!responseData.success || !responseData.data?.id) {
+//         throw new Error("Invalid response from server");
+//       }
+//       templateId = responseData.data.id;
+//     }
+
+//     // Save pool mappings with correct template ID
+//     const payload = [
+//       {
+//         templateId: parseInt(templateId),
+//         ...poolMappings
+//       }
+//     ];
+    
+//     const mappingResponse = await fetch(
+//       `${backendUrl}/Orgnization/BulkUpSertTemplatePoolMapping`,
+//       {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(payload)
+//       }
+//     );
+
+//     if (!mappingResponse.ok) {
+//       throw new Error("Failed to save pool mappings");
+//     }
+
+//     // Refresh data
+//     await fetchTemplates();
+//     closeForm();
+//     toast.success("Template and pool mappings saved successfully!");
+    
+//   } catch (err) {
+//     console.error("Save error:", err);
+//     setError(err.message || "Failed to save template");
+//     toast.error(err.message || "Failed to save template");
+//   } finally {
+//     setIsSubmitting(false);
+//   }
+// };
+
+const handleSave = async (e) => {
   e.preventDefault();
   
   if (!newTemplate.templateCode || !newTemplate.description) {
@@ -403,25 +488,31 @@ const TemplateManager = () => {
   setError(null);
 
   try {
-    // Save template first
     let templateId;
+
     if (editingTemplate) {
-      // Update existing template
-      const response = await fetch(
-        `${backendUrl}/Orgnization/UpdateTemplate?updatedBy=${encodeURIComponent(updatedBy)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: editingTemplate.id,
-            ...newTemplate
-          })
-        }
-      );
-      if (!response.ok) throw new Error("Failed to update template");
+      // **EDIT MODE: Only update pool mappings, NO template update**
       templateId = editingTemplate.id;
+      
+      // Validate and prepare pool mappings
+      const validPoolMappings = Object.entries(poolMappings)
+        .filter(([poolId, isSelected]) => {
+          const poolExists = pools.some(pool => pool.poolId === poolId);
+          return poolExists && isSelected;
+        })
+        .reduce((acc, [poolId]) => {
+          acc[poolId] = true; // All selected pools get true
+          return acc;
+        }, {});
+
+      if (Object.keys(validPoolMappings).length === 0) {
+        throw new Error("Please select at least one pool");
+      }
+
+      console.log("Updating pool mappings for template:", templateId, validPoolMappings);
+      
     } else {
-      // Add new template
+      // **CREATE MODE: Create template first, then pool mappings**
       const response = await fetch(
         `${backendUrl}/Orgnization/AddTemplate?updatedBy=${encodeURIComponent(updatedBy)}`,
         {
@@ -433,19 +524,29 @@ const TemplateManager = () => {
       
       if (!response.ok) throw new Error("Failed to create template");
       
-      // Parse response to get actual template ID
       const responseData = await response.json();
       if (!responseData.success || !responseData.data?.id) {
         throw new Error("Invalid response from server");
       }
       templateId = responseData.data.id;
+
+      // Prepare pool mappings for new template
+      const validPoolMappings = Object.entries(poolMappings)
+        .filter(([poolId, isSelected]) => {
+          const poolExists = pools.some(pool => pool.poolId === poolId);
+          return poolExists && isSelected;
+        })
+        .reduce((acc, [poolId]) => {
+          acc[poolId] = true;
+          return acc;
+        }, {});
     }
 
-    // Save pool mappings with correct template ID
+    // **Save pool mappings (both create & edit)**
     const payload = [
       {
         templateId: parseInt(templateId),
-        ...poolMappings
+        ...poolMappings // Use validated mappings from above
       }
     ];
     
@@ -459,18 +560,23 @@ const TemplateManager = () => {
     );
 
     if (!mappingResponse.ok) {
-      throw new Error("Failed to save pool mappings");
+      const errorText = await mappingResponse.text();
+      throw new Error(`Failed to save pool mappings: ${mappingResponse.status}`);
     }
 
     // Refresh data
     await fetchTemplates();
     closeForm();
-    toast.success("Template and pool mappings saved successfully!");
+    toast.success(
+      editingTemplate 
+        ? "Pool mappings updated successfully!" 
+        : "Template and pool mappings created successfully!"
+    );
     
   } catch (err) {
     console.error("Save error:", err);
-    setError(err.message || "Failed to save template");
-    toast.error(err.message || "Failed to save template");
+    setError(err.message || "Failed to save");
+    toast.error(err.message || "Failed to save");
   } finally {
     setIsSubmitting(false);
   }
@@ -489,7 +595,7 @@ const TemplateManager = () => {
           body: JSON.stringify(template)
         }
       );
-      toast.error("Deleted Successfully!!")
+      toast.success("Deleted Successfully!!")
       await fetchTemplates();
     } catch (err) {
       setError("Failed to delete template");

@@ -179,7 +179,7 @@ const MaintainFiscalYearPeriods = () => {
             <button
               onClick={() => handleYearChange(-1)}
               disabled={currentYear === 2020}
-              className=" bg-[#17414d] text-white font-bold py-1.5 px-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className=" bg-[#17414d] btn1 btn-blue disabled:opacity-50 disabled:cursor-not-allowed"
             >
               &lt; Previous Year
             </button>
@@ -197,7 +197,7 @@ const MaintainFiscalYearPeriods = () => {
             <button
               onClick={() => handleYearChange(1)}
               disabled={currentYear === 2035}
-              className="bg-[#17414d] text-white font-bold py-1.5 px-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#17414d] btn1 btn-blue disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Year &gt;
             </button>
@@ -205,7 +205,7 @@ const MaintainFiscalYearPeriods = () => {
           <div className="">
             <button
               onClick={handleSaveSettings}
-              className="bg-[#17414d] text-white group-hover:text-gray  font-semibold py-2 px-4  rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mr-4 transition-colors duration-200"
+              className="bg-[#17414d] btn1 btn-blue focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mr-4 transition-colors duration-200"
             >
               Save
             </button>

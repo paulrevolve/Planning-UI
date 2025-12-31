@@ -258,7 +258,7 @@ const parseDate = (dateStr) => {
         <div className="p-4 border-b rounded-sm border-gray-100 flex items-center justify-between bg-white">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <CableCar size={20} className="text-blue-500" />
-            Manage holidays
+            Manage Holidays
           </h2>
         </div>
         {/* <div className="bg-gray-50 p-4  grid grid-cols-1 md:grid-cols-4 gap-4 items-center border-line">
@@ -311,7 +311,7 @@ const parseDate = (dateStr) => {
               <button
                 onClick={handleAddNewRow}
                 disabled={isLoading}
-                className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm whitespace-nowrap"
+                className="bg-[#17414d] btn1 btn-blue focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm whitespace-nowrap"
               >
                 New
               </button>

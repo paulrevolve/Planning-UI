@@ -1074,7 +1074,7 @@ const renderManageUsersTab = () => {
             <button
               type="button"
               onClick={resetUserForm}
-              className="px-4 py-2 text-sm rounded border border-gray-300 text-gray-700 bg-white"
+              className="btn1 btn-blue"
               disabled={userFormLoading}
             >
               Cancel
@@ -1083,7 +1083,7 @@ const renderManageUsersTab = () => {
           <button
             type="button"
             onClick={handleCreateOrUpdateUser}
-            className="px-5 py-2 text-sm rounded bg-[#17414d] text-white group-hover:text-gray  font-semibold disabled:opacity-60"
+            className="btn1 btn-blue disabled:opacity-60"
             disabled={userFormLoading}
           >
             {userFormLoading
@@ -1111,7 +1111,7 @@ const renderManageUsersTab = () => {
             <button
               type="button"
               onClick={handleBulkDeleteUsers}
-              className="px-4 py-2 text-xs rounded  disabled:opacity-50 bg-red-600 text-white"
+              className="btn1 btn-red disabled:opacity-50"
               disabled={
                 userFormLoading || selectedUserIdsForDelete.length === 0
               }

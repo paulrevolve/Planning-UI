@@ -1072,7 +1072,7 @@ const ProspectiveIDSetup = () => {
                   <div className="flex">
                     <button
                       onClick={handleAddEmployee}
-                      className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                      className="bg-[#17414d] btn1 btn-blue focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
                     >
                       Add Employee
                     </button>
@@ -1331,7 +1331,7 @@ const ProspectiveIDSetup = () => {
                   <div>
                     <button
                       onClick={handleAddVendor}
-                      className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                      className="bg-[#17414d] btn1 btn-blue focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
                     >
                       Add Vendor
                     </button>
@@ -1489,7 +1489,7 @@ const ProspectiveIDSetup = () => {
                   <div className="flex justify-end">
                     <button
                       onClick={handleAddPLC}
-                      className="bg-[#17414d] text-white group-hover:text-gray font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                      className="bg-[#17414d] btn1 btn-blue focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
                     >
                       Add PLC
                     </button>

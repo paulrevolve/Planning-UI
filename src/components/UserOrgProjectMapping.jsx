@@ -2369,7 +2369,7 @@ const renderManageUsersTab = () => {
         <button
           onClick={saveProjectUsers}
           disabled={!selectedProjectId || loading}
-          className="bg-[#17414d] text-white group-hover:text-gray px-6 py-2 rounded text-sm font-semibold disabled:opacity-60"
+          className="bg-[#17414d] btn1 btn-blue disabled:opacity-60"
         >
           {loading ? "Saving..." : "Update Project ↔ Users"}
         </button>
@@ -2501,7 +2501,7 @@ const renderManageUsersTab = () => {
         <button
           onClick={saveUserGroups}
           disabled={!selectedUserIdForGroups || loading}
-          className="bg-[#17414d] text-white group-hover:text-gray px-6 py-2 rounded text-sm font-semibold disabled:opacity-60"
+          className="bg-[#17414d] btn1 btn-blue disabled:opacity-60"
         >
           {loading ? "Saving..." : "Update User ↔ Groups"}
         </button>
@@ -2631,7 +2631,7 @@ const renderManageUsersTab = () => {
         <button
           onClick={saveGroupOrgs}
           disabled={!selectedGroupIdForOrgs || loading}
-          className="bg-[#17414d] text-white group-hover:text-gray px-6 py-2 rounded text-sm font-semibold disabled:opacity-60"
+          className="bg-[#17414d] btn1 btn-blue disabled:opacity-60"
         >
           {loading ? "Saving..." : "Update Group ↔ Orgs"}
         </button>
@@ -2761,7 +2761,7 @@ const renderManageUsersTab = () => {
         <button
           onClick={saveUserOrgs}
           disabled={!selectedUserIdForOrgs || loading}
-          className="bg-[#17414d] text-white group-hover:text-gray px-6 py-2 rounded text-sm font-semibold disabled:opacity-60"
+          className="bg-[#17414d] btn1 btn-blue disabled:opacity-60"
         >
           {loading ? "Saving..." : "Update User ↔ Orgs"}
         </button>

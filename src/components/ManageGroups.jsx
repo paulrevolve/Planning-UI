@@ -851,7 +851,7 @@ const renderManageGroupsTab = () => {
             <button
               type="button"
               onClick={resetGroupForm}
-              className="px-4 py-2 text-sm rounded border border-gray-300 text-gray-700 bg-white"
+              className="btn1 btn-blue"
               disabled={groupFormLoading}
             >
               Cancel
@@ -860,7 +860,7 @@ const renderManageGroupsTab = () => {
           <button
             type="button"
             onClick={handleCreateOrUpdateGroup}
-            className="px-5 py-2 text-sm rounded bg-[#17414d] text-white group-hover:text-gray font-semibold disabled:opacity-60"
+            className="btn1 btn-blue disabled:opacity-60"
             disabled={groupFormLoading}
           >
             {groupFormLoading
@@ -888,7 +888,7 @@ const renderManageGroupsTab = () => {
             <button
               type="button"
               onClick={handleBulkDeleteGroups}
-              className="px-4 py-2 text-xs rounded  disabled:opacity-50 bg-red-600 text-white"
+              className=" btn1 btn-red disabled:opacity-50 "
               disabled={groupFormLoading || selectedGroupIdsForDelete.length === 0}
             >
               Delete ({selectedGroupIdsForDelete.length})

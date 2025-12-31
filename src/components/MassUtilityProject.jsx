@@ -2208,7 +2208,8 @@ const isAllSelected =
     <button
       onClick={fetchAllPlans}
       disabled={loading}
-      className="inline-flex items-center justify-center px-4 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+      // className="inline-flex items-center justify-center px-4 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+      className="btn1 btn-blue hover:btn-blue disabled:btn-blue "
     >
       {loading ? "Loading..." : "Fetch Plans"}
     </button>

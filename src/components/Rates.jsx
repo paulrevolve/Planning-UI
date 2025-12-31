@@ -460,6 +460,7 @@ const calculateRate = async (yearArg) => {
         </div>
       </div>
 
+
       {/* Rates table – one table, Actual vs ETC in month header, sticky like Fringe */}
       <div className="space-y-2">
         {/* <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
@@ -472,7 +473,15 @@ const calculateRate = async (yearArg) => {
 >
   Calculate Rate
 </button> */}
-
+     {/* Notice positioned above table */}
+       <div className="flex justify-end">
+    <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-md px-2.5 py-1.5 shadow-sm text-xs">
+      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
+      <span className="text-blue-800 font-medium tracking-tight">
+        All rates are in %
+      </span>
+    </div>
+  </div>
 
         <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm max-h-[400px] bg-white">
           <table className="table w-full min-w-[900px]">

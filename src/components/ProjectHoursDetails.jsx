@@ -13,7 +13,9 @@ const EMPLOYEE_COLUMNS = [
   { key: "name", label: "Name" },
   { key: "acctId", label: "Account" },
   { key: "acctName", label: "Account Name" },
-  { key: "orgId", label: "Organization" },
+  // { key: "orgId", label: "Organization" },
+  { key: "orgId", label: "OrgId" },
+  { key: "orgName", label: "Org Name" },
   { key: "glcPlc", label: "PLC" },
   { key: "isRev", label: "Rev" },
   { key: "isBrd", label: "Brd" },
@@ -25,30 +27,30 @@ const EMPLOYEE_COLUMNS = [
 const ID_TYPE_OPTIONS = [
   { value: "", label: "Select ID Type" },
   { value: "Employee", label: "Employee" },
-  { value: "Vendor", label: "Vendor Employee" },
+  { value: "Vendor", label: "Vendor" },
+  // { value: "Vendor", label: "Vendor Employee" },
+  { value: "VendorEmployee", label: "Vendor Employee" },
   { value: "PLC", label: "PLC" },
   { value: "Other", label: "Other" },
 ];
 
- export const HOURS_EMPLOYEE_COLUMNS = [
-  { key: "idType",      label: "ID Type" },
-  { key: "emplId",      label: "ID" },
-  { key: "warning",     label: "Warning" },
-  { key: "name",        label: "Name" },
-  { key: "acctId",      label: "Account" },
-  { key: "acctName",    label: "Account Name" },
-  { key: "orgId",       label: "Organization" },
-  { key: "glcPlc",      label: "PLC" },
-  { key: "isRev",       label: "Rev" },
-  { key: "isBrd",       label: "Brd" },
-  { key: "status",      label: "Status" },
+export const HOURS_EMPLOYEE_COLUMNS = [
+  { key: "idType", label: "ID Type" },
+  { key: "emplId", label: "ID" },
+  { key: "warning", label: "Warning" },
+  { key: "name", label: "Name" },
+  { key: "acctId", label: "Account" },
+  { key: "acctName", label: "Account Name" },
+  { key: "orgId", label: "Organization" },
+  { key: "glcPlc", label: "PLC" },
+  { key: "isRev", label: "Rev" },
+  { key: "isBrd", label: "Brd" },
+  { key: "status", label: "Status" },
   { key: "perHourRate", label: "Hour Rate" },
-  { key: "total",       label: "Total" },
+  { key: "total", label: "Total" },
 ];
 
 // in ConfigureField parent:
-
-
 
 const ROW_HEIGHT_DEFAULT = 48;
 
@@ -68,33 +70,24 @@ function isMonthEditable(duration, closedPeriod, planType) {
   );
 }
 
-  const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
+const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
 
 const hoursFormatDateDisplay = (value) => {
-    if (!value) return "N/A";
-    
-    // 1. Check for YYYY-MM-DD format (like from date picker)
-    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        const [year, month, day] = value.split('-');
-        // Output MM/DD/YYYY directly from the string parts
-        return `${month}/${day}/${year}`;
-    }
-    
-    // 2. Fallback for ISO/other formats, try to format as UTC date string to avoid timezone shift
-    try {
-        const date = new Date(value);
-        if (isNaN(date.getTime())) return "N/A";
-        
-        // Use UTC getter methods to prevent local timezone shift
-        const y = date.getUTCFullYear();
-        const m = date.getUTCMonth() + 1; // Month is 0-indexed
-        const d = date.getUTCDate();
-        
-        // Format as MM/DD/YYYY
-        return `${m < 10 ? '0' + m : m}/${d < 10 ? '0' + d : d}/${y}`;
-    } catch (e) {
-        return "N/A";
-    }
+  if (!value) return "N/A"; // 1. Check for YYYY-MM-DD format (like from date picker)
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-"); // Output MM/DD/YYYY directly from the string parts
+    return `${month}/${day}/${year}`;
+  } // 2. Fallback for ISO/other formats, try to format as UTC date string to avoid timezone shift
+  try {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return "N/A"; // Use UTC getter methods to prevent local timezone shift
+    const y = date.getUTCFullYear();
+    const m = date.getUTCMonth() + 1; // Month is 0-indexed
+    const d = date.getUTCDate(); // Format as MM/DD/YYYY
+    return `${m < 10 ? "0" + m : m}/${d < 10 ? "0" + d : d}/${y}`;
+  } catch (e) {
+    return "N/A";
+  }
 };
 
 // const hoursFormatDateDisplay = (value) => {
@@ -115,7 +108,6 @@ const hoursFormatDateDisplay = (value) => {
 //     }
 // };
 
-
 const ProjectHoursDetails = ({
   planId,
   projectId,
@@ -127,7 +119,7 @@ const ProjectHoursDetails = ({
   templateId,
   fiscalYear,
   onSaveSuccess,
-   onColumnTotalsChange,
+  onColumnTotalsChange,
 }) => {
   // ADD THIS RIGHT HERE - Normalize fiscal year
   const normalizedFiscalYear =
@@ -136,10 +128,8 @@ const ProjectHoursDetails = ({
 
   // console.log("FISCAL YEAR DEBUG:", fiscalYear, "Normalized:", normalizedFiscalYear);
 
-  
-const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-const isAdmin = currentUser.role?.toLowerCase() === "admin";
-
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const isAdmin = currentUser.role?.toLowerCase() === "admin";
 
   const [durations, setDurations] = useState([]);
   const [isDurationLoading, setIsDurationLoading] = useState(false);
@@ -224,28 +214,29 @@ const isAdmin = currentUser.role?.toLowerCase() === "admin";
 
   const [cachedProjectData, setCachedProjectData] = useState(null);
   const [cachedOrgData, setCachedOrgData] = useState(null);
-const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-
-  
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const [showEmployeeSchedule, setShowEmployeeSchedule] = useState(false);
 
+  const [selectedSourceIdx, setSelectedSourceIdx] = useState("");
+
+  // const [selectedSourceId, setSelectedSourceId] = useState("");
+
   const [checkedRows, setCheckedRows] = useState(new Set());
-// const [showCopyButton, setShowCopyButton] = useState(false);
-const [checkedColumns, setCheckedColumns] = useState(new Set());
+  // const [showCopyButton, setShowCopyButton] = useState(false);
+  const [checkedColumns, setCheckedColumns] = useState(new Set());
 
-//   useEffect(() => {
-//     setFillStartDate(startDate);
-//     setFillEndDate(endDate);
-// }, [startDate, endDate]);
+  //   useEffect(() => {
+  //     setFillStartDate(startDate);
+  //     setFillEndDate(endDate);
+  // }, [startDate, endDate]);
 
-useEffect(() => {
-    // This ensures that when a new plan is selected, or manual dates are entered, 
-    // the local state used by the fill tool correctly reflects the latest props.
-    setFillStartDate(startDate);
-    setFillEndDate(endDate);
-}, [startDate, endDate]);
-
+  useEffect(() => {
+    // This ensures that when a new plan is selected, or manual dates are entered,
+    // the local state used by the fill tool correctly reflects the latest props.
+    setFillStartDate(startDate);
+    setFillEndDate(endDate);
+  }, [startDate, endDate]);
 
   const sortedEmployees = useMemo(() => {
     if (!sortConfig.key) return localEmployees;
@@ -266,27 +257,25 @@ useEffect(() => {
   }, [localEmployees, sortConfig]);
 
   const handleSort = (key) => {
-    setSortConfig(prev => {
+    setSortConfig((prev) => {
       if (prev.key === key) {
-        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
       }
-      return { key, direction: 'asc' };
+      return { key, direction: "asc" };
     });
   };
-
 
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return "↕";
     return sortConfig.direction === "asc" ? "↑" : "↓";
   };
 
-
-// useEffect(() => {
-//     // This ensures that when a new plan is selected, or manual dates are entered, 
-//     // the local state used by the fill tool correctly reflects the latest props.
-//     setFillStartDate(startDate);
-//     setFillEndDate(endDate);
-// }, [startDate, endDate]);
+  // useEffect(() => {
+  //     // This ensures that when a new plan is selected, or manual dates are entered,
+  //     // the local state used by the fill tool correctly reflects the latest props.
+  //     setFillStartDate(startDate);
+  //     setFillEndDate(endDate);
+  // }, [startDate, endDate]);
 
   const sortedDurations = useMemo(() => {
     return [...durations]
@@ -299,7 +288,6 @@ useEffect(() => {
         return a.monthNo - b.monthNo;
       });
   }, [durations, normalizedFiscalYear]);
-  
 
   const firstTableRef = useRef(null);
   const secondTableRef = useRef(null);
@@ -680,28 +668,71 @@ useEffect(() => {
   }, [startDate, endDate]);
 
   // ADD THIS useEffect after your existing useEffects
-  useEffect(() => {
-    const loadOrganizationOptions = async () => {
-      if (!showNewForm) return;
+  // useEffect(() => {
+  //   const loadOrganizationOptions = async () => {
+  //     if (!showNewForm) return;
 
+  //     try {
+  //       const response = await axios.get(
+  //         `${backendUrl}/Orgnization/GetAllOrgs`
+  //       );
+  //       const orgOptions = Array.isArray(response.data)
+  //         ? response.data.map((org) => ({
+  //             value: org.orgId,
+  //             // label: org.orgId,
+  //             // orgName: org.orgName,
+  //             label: `${org.orgId} - ${org.orgName}`,
+  //     orgName: org.orgName,
+  //           }))
+  //         : [];
+  //       setOrganizationOptions(orgOptions);
+  //     } catch (err) {
+  //       // console.error("Failed to fetch organizations:", err);
+  //     }
+  //   };
+
+  //   loadOrganizationOptions();
+  // }, [showNewForm]);
+
+  // PRE-LOAD organizations when component mounts (NOT just showNewForm)
+  // useEffect(() => {
+  //   const loadOrganizationOptions = async () => {
+  //     try {
+  //       const response = await axios.get(backendUrlOrgnizationGetAllOrgs);
+  //       const orgOptions = Array.isArray(response.data)
+  //         ? response.data.map(org => ({
+  //             value: org.orgId,
+  //             label: `${org.orgId} - ${org.orgName}`,
+  //             orgName: org.orgName,
+  //           }))
+  //         : [];
+  //       setOrganizationOptions(orgOptions);
+  //     } catch (err) {
+  //       console.error('Failed to fetch organizations', err);
+  //     }
+  //   };
+
+  //   loadOrganizationOptions();
+  // }, []); // Empty deps = run once on mount
+
+  useEffect(() => {
+    const loadOrganizations = async () => {
       try {
-        const response = await axios.get(
-          `${backendUrl}/Orgnization/GetAllOrgs`
-        );
+        const response = await axios.get(backendUrlOrgnizationGetAllOrgs);
         const orgOptions = Array.isArray(response.data)
           ? response.data.map((org) => ({
               value: org.orgId,
-              label: org.orgId,
+              label: `${org.orgId} - ${org.orgName}`,
+              orgName: org.orgName,
             }))
           : [];
         setOrganizationOptions(orgOptions);
       } catch (err) {
-        // console.error("Failed to fetch organizations:", err);
+        console.error("Failed to preload organizations", err);
       }
     };
-
-    loadOrganizationOptions();
-  }, [showNewForm]);
+    loadOrganizations();
+  }, []); // Empty deps = run once on mount
 
   useEffect(() => {
     const initializeUpdateOptions = async () => {
@@ -715,7 +746,9 @@ useEffect(() => {
         const orgOptions = Array.isArray(orgResponse.data)
           ? orgResponse.data.map((org) => ({
               value: org.orgId,
-              label: org.orgId,
+              // label: org.orgId,
+              label: `${org.orgId} - ${org.orgName}`,
+              orgName: org.orgName,
             }))
           : [];
 
@@ -881,34 +914,145 @@ useEffect(() => {
   }, [localEmployees.length, projectId]);
 
   useEffect(() => {
-    const fetchEmployeesSuggestions = async () => {
-      // Skip fetching suggestions for NBBUD
-      // if (planType === "NBBUD") {
-      //   setEmployeeSuggestions([]);
-      //   return;
-      // }
+    // const fetchEmployeesSuggestions = async () => {
+    //   // Skip fetching suggestions for NBBUD
+    //   // if (planType === "NBBUD") {
+    //   //   setEmployeeSuggestions([]);
+    //   //   return;
+    //   // }
 
-      if (
-        !projectId ||
-        !showNewForm ||
-        !newEntry.idType ||
-        newEntry.idType === ""
-      ) {
-        setEmployeeSuggestions([]);
-        // return;
-      }
+    //   if (
+    //     !projectId ||
+    //     !showNewForm ||
+    //     !newEntry.idType ||
+    //     newEntry.idType === ""
+    //   ) {
+    //     setEmployeeSuggestions([]);
+    //     // return;
+    //   }
+
+    //   try {
+    //     const endpoint =
+    //       newEntry.idType === "Vendor"
+    //         ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}`
+    //         : `${backendUrl}/Project/GetEmployeesByProject/${projectId}`;
+    //     const response = await axios.get(endpoint);
+    //     const suggestions = Array.isArray(response.data)
+    //       ? response.data.map((emp) => {
+    //           if (newEntry.idType === "Vendor") {
+    //             return {
+    //               emplId: String(emp.vendId),
+    //               firstName: "",
+    //               lastName: emp.employeeName || "",
+    //               perHourRate: emp.perHourRate || emp.hrRate || "",
+    //               plc: emp.plc || "",
+    //               orgId: emp.orgId || "",
+    //             };
+    //           } else {
+    //             const [lastName, firstName] = (emp.employeeName || "")
+    //               .split(", ")
+    //               .map((str) => str.trim());
+    //             return {
+    //               emplId: emp.empId,
+    //               firstName: firstName || "",
+    //               lastName: lastName || "",
+    //               perHourRate: emp.perHourRate || emp.hrRate || "",
+    //               plc: emp.plc || "",
+    //               orgId: emp.orgId || "",
+    //             };
+    //           }
+    //         })
+    //       : [];
+    //     setEmployeeSuggestions(suggestions);
+    //   } catch (err) {
+    //     setEmployeeSuggestions([]);
+    //     toast.error(`Failed to fetch employee suggestions`, {
+    //       toastId: "employee-fetch-error",
+    //       autoClose: 3000,
+    //     });
+    //   }
+    // };
+    //     const fetchEmployeesSuggestions = async () => {
+    //   if (!projectId || !showNewForm || !newEntry.idType) return;
+
+    //   try {
+    //     // Both 'Vendor' and 'Vendor Employee' use the same endpoint
+    //     const isVendorRelated = newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee";
+
+    //     const endpoint = isVendorRelated
+    //       ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}`
+    //       : `${backendUrl}/Project/GetEmployeesByProject/${projectId}`;
+
+    //     const response = await axios.get(endpoint);
+
+    //     const suggestions = Array.isArray(response.data)
+    //       ? response.data.map((emp) => {
+    //           if (newEntry.idType === "Vendor") {
+    //             return {
+    //               emplId: String(emp.vendId), // Show vendId for Vendor
+    //               firstName: "",
+    //               lastName: emp.employeeName || "",
+    //               perHourRate: emp.perHourRate || emp.hrRate || "",
+    //               plc: emp.plc || "",
+    //               orgId: emp.orgId || "",
+    //             };
+    //           } else if (newEntry.idType === "Vendor Employee") {
+    //             return {
+    //               emplId: String(emp.empId), // Show empId for Vendor Employee
+    //               firstName: "",
+    //               lastName: emp.employeeName || "",
+    //               perHourRate: emp.perHourRate || emp.hrRate || "",
+    //               plc: emp.plc || "",
+    //               orgId: emp.orgId || "",
+    //             };
+    //           } else {
+    //             // Standard Employee Logic
+    //             const [lastName, firstName] = (emp.employeeName || "").split(", ").map((str) => str.trim());
+    //             return {
+    //               emplId: emp.empId,
+    //               firstName: firstName || "",
+    //               lastName: lastName || "",
+    //               perHourRate: emp.perHourRate || emp.hrRate || "",
+    //               plc: emp.plc || "",
+    //               orgId: emp.orgId || "",
+    //             };
+    //           }
+    //         })
+    //       : [];
+    //     setEmployeeSuggestions(suggestions);
+    //   } catch (err) {
+    //     setEmployeeSuggestions([]);
+    //   }
+    // };
+
+    const fetchEmployeesSuggestions = async () => {
+      if (!projectId || !showNewForm || !newEntry.idType) return;
 
       try {
-        const endpoint =
-          newEntry.idType === "Vendor"
-            ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}`
-            : `${backendUrl}/Project/GetEmployeesByProject/${projectId}`;
+        // Both types use the same vendor endpoint
+        const isVendorRelated =
+          newEntry.idType === "Vendor" || newEntry.idType === "VendorEmployee";
+
+        const endpoint = isVendorRelated
+          ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}`
+          : `${backendUrl}/Project/GetEmployeesByProject/${projectId}`;
+
         const response = await axios.get(endpoint);
+
         const suggestions = Array.isArray(response.data)
           ? response.data.map((emp) => {
               if (newEntry.idType === "Vendor") {
                 return {
-                  emplId: String(emp.vendId),
+                  emplId: String(emp.vendId), // Use vendId for Vendor
+                  firstName: "",
+                  lastName: emp.employeeName || "",
+                  perHourRate: emp.perHourRate || emp.hrRate || "",
+                  plc: emp.plc || "",
+                  orgId: emp.orgId || "",
+                };
+              } else if (newEntry.idType === "VendorEmployee") {
+                return {
+                  emplId: String(emp.empId), // Use empId for Vendor Employee
                   firstName: "",
                   lastName: emp.employeeName || "",
                   perHourRate: emp.perHourRate || emp.hrRate || "",
@@ -916,6 +1060,7 @@ useEffect(() => {
                   orgId: emp.orgId || "",
                 };
               } else {
+                // Standard Employee Logic
                 const [lastName, firstName] = (emp.employeeName || "")
                   .split(", ")
                   .map((str) => str.trim());
@@ -933,13 +1078,8 @@ useEffect(() => {
         setEmployeeSuggestions(suggestions);
       } catch (err) {
         setEmployeeSuggestions([]);
-        toast.error(`Failed to fetch employee suggestions`, {
-          toastId: "employee-fetch-error",
-          autoClose: 3000,
-        });
       }
     };
-
     const fetchLaborAccounts = async () => {
       // if (planType === "NBBUD") return;
 
@@ -1046,7 +1186,9 @@ useEffect(() => {
               }))
             : [];
 
-          const otherAccountsWithNames = Array.isArray(data.otherDirectCostLaborAccounts)
+          const otherAccountsWithNames = Array.isArray(
+            data.otherDirectCostLaborAccounts
+          )
             ? data.otherDirectCostLaborAccounts.map((account) => ({
                 id: account.accountId,
                 name: account.acctName,
@@ -1059,8 +1201,10 @@ useEffect(() => {
                 id: account.accountId,
               }))
             : [];
-          
-          const employeeAccountsWithNames = Array.isArray(data.employeeLaborAccounts)
+
+          const employeeAccountsWithNames = Array.isArray(
+            data.employeeLaborAccounts
+          )
             ? data.employeeLaborAccounts.map((account) => ({
                 id: account.accountId,
                 name: account.acctName,
@@ -1074,13 +1218,14 @@ useEffect(() => {
               }))
             : [];
 
-          const vendorAccountsWithNames = Array.isArray(data.sunContractorLaborAccounts)
+          const vendorAccountsWithNames = Array.isArray(
+            data.sunContractorLaborAccounts
+          )
             ? data.sunContractorLaborAccounts.map((account) => ({
                 id: account.accountId,
                 name: account.acctName,
               }))
             : [];
-
 
           // 4. Combine all accounts (IDs only and IDs with names)
           accounts = [...otherAccounts, ...employeeAccounts, ...vendorAccounts];
@@ -1116,7 +1261,6 @@ useEffect(() => {
 
         setLaborAccounts(uniqueAccounts);
         setAccountOptionsWithNames(uniqueAccountsWithNames); // ADD THIS
-        
 
         // Rest of your existing code for PLC options and organization...
         if (data.plc && Array.isArray(data.plc)) {
@@ -1312,62 +1456,73 @@ useEffect(() => {
     }
   };
 
-  const handleOrgInputChangeForUpdate = (value, actualEmpIdx) => {
-    const numericValue = value.replace(/[^0-9.]/g, "");
+  // const handleOrgInputChangeForUpdate = (value, actualEmpIdx) => {
+  //   const numericValue = value.replace(/[^0-9.]/g, "");
 
-    // Remove real-time validation - only validate on blur
-    handleEmployeeDataChange(actualEmpIdx, "orgId", numericValue);
-    setOrgSearch(numericValue);
+  //   // Remove real-time validation - only validate on blur
+  //   handleEmployeeDataChange(actualEmpIdx, "orgId", numericValue);
 
-    // Clear previous timeout
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
+  //   // 2. Find the name from the organizationOptions list
+  //   const matchedOrg = organizationOptions.find(
+  //       (opt) => opt.value.toString() === numericValue.toString()
+  //   );
 
-    // Always fetch filtered organizations when user types
-    if (numericValue.length >= 1) {
-      debounceTimeout.current = setTimeout(async () => {
-        try {
-          const response = await axios.get(
-            `${backendUrl}/Orgnization/GetAllOrgs`
-          );
-          const filteredOptions = Array.isArray(response.data)
-            ? response.data
-                .filter((org) => org.orgId.toString().startsWith(numericValue))
-                .map((org) => ({
-                  value: org.orgId,
-                  label: org.orgId,
-                }))
-            : [];
-          setUpdateOrganizationOptions(filteredOptions); // Use correct state variable
-        } catch (err) {
-          // console.error("Failed to fetch organizations:", err);
-          setUpdateOrganizationOptions([]);
-        }
-      }, 300);
-    } else {
-      // Load all organizations when input is empty
-      debounceTimeout.current = setTimeout(async () => {
-        try {
-          const response = await axios.get(
-            `${backendUrl}/Orgnization/GetAllOrgs`
-          );
-          const orgOptions = Array.isArray(response.data)
-            ? response.data.map((org) => ({
-                value: org.orgId,
-                label: org.orgId,
-              }))
-            : [];
-          setUpdateOrganizationOptions(orgOptions);
-        } catch (err) {
-          // console.error("Failed to fetch organizations:", err);
-          setUpdateOrganizationOptions([]);
-        }
-      }, 300);
-    }
-  };
+  //   // 3. Update the orgName in state if found, otherwise clear it
+  //   if (matchedOrg) {
+  //       handleEmployeeDataChange(actualEmpIdx, "orgName", matchedOrg.orgName);
+  //   } else {
+  //       handleEmployeeDataChange(actualEmpIdx, "orgName", "");
+  //   }
 
-  
+  //   setOrgSearch(numericValue);
+
+  //   // Clear previous timeout
+  //   if (debounceTimeout.current) {
+  //     clearTimeout(debounceTimeout.current);
+  //   }
+
+  //   // Always fetch filtered organizations when user types
+  //   if (numericValue.length >= 1) {
+  //     debounceTimeout.current = setTimeout(async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           `${backendUrl}/Orgnization/GetAllOrgs`
+  //         );
+  //         const filteredOptions = Array.isArray(response.data)
+  //           ? response.data
+  //               .filter((org) => org.orgId.toString().startsWith(numericValue))
+  //               .map((org) => ({
+  //                 value: org.orgId,
+  //                 label: org.orgId,
+  //               }))
+  //           : [];
+  //         setUpdateOrganizationOptions(filteredOptions); // Use correct state variable
+  //       } catch (err) {
+  //         // console.error("Failed to fetch organizations:", err);
+  //         setUpdateOrganizationOptions([]);
+  //       }
+  //     }, 300);
+  //   } else {
+  //     // Load all organizations when input is empty
+  //     debounceTimeout.current = setTimeout(async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           `${backendUrl}/Orgnization/GetAllOrgs`
+  //         );
+  //         const orgOptions = Array.isArray(response.data)
+  //           ? response.data.map((org) => ({
+  //               value: org.orgId,
+  //               label: org.orgId,
+  //             }))
+  //           : [];
+  //         setUpdateOrganizationOptions(orgOptions);
+  //       } catch (err) {
+  //         // console.error("Failed to fetch organizations:", err);
+  //         setUpdateOrganizationOptions([]);
+  //       }
+  //     }, 300);
+  //   }
+  // };
 
   // const handlePlcInputChangeForUpdate = (value, actualEmpIdx) => {
   //   if (planType === "NBBUD") {
@@ -1407,7 +1562,7 @@ useEffect(() => {
   //     setUpdatePlcOptions(plcOptions);
   //   }
   // };
-  
+
   // const handlePlcInputChangeForUpdate = (value, actualEmpIdx) => {
   //   if (planType === "NBBUD") {
   //     handleEmployeeDataChange(actualEmpIdx, "glcPlc", value);
@@ -1416,7 +1571,7 @@ useEffect(() => {
   //   }
 
   //   // FIX: Removed the strict isValidInput check here.
-  //   // This allows backspacing and typing freely. 
+  //   // This allows backspacing and typing freely.
   //   // The existing onBlur logic on the input field handles the final validation.
 
   //   handleEmployeeDataChange(actualEmpIdx, "glcPlc", value);
@@ -1435,7 +1590,7 @@ useEffect(() => {
   //     setUpdatePlcOptions(plcOptions);
   //   }
   // };
-  
+
   // const handlePlcInputChangeForUpdate = (value, actualEmpIdx) => {
   //   // 1. Update the PLC code
   //   handleEmployeeDataChange(actualEmpIdx, "glcPlc", value);
@@ -1473,7 +1628,98 @@ useEffect(() => {
   //     setUpdatePlcOptions(plcOptions);
   //   }
   // };
-  
+
+  //   const handleOrgInputChangeForUpdate = (value, actualEmpIdx) => {
+  //   const numericValue = value.replace(/[^0-9]/g, '');  // Clean numeric only
+
+  //   // 1. ALWAYS update orgId first
+  //   handleEmployeeDataChange(actualEmpIdx, 'orgId', numericValue);
+
+  //   // 2. Find orgName from BOTH lists (same logic as getEmployeeRow)
+  //   let matchedOrg = null;
+  //   if (organizationOptions?.length > 0) {
+  //     matchedOrg = organizationOptions.find(
+  //       opt => opt.value?.toString() === numericValue.toString()
+  //     );
+  //   }
+  //   if (!matchedOrg && updateOrganizationOptions?.length > 0) {
+  //     matchedOrg = updateOrganizationOptions.find(
+  //       opt => opt.value?.toString() === numericValue.toString()
+  //     );
+  //   }
+
+  //   // 3. Update orgName - blank if no match
+  //   if (matchedOrg && (matchedOrg.orgName || matchedOrg.label)) {
+  //     handleEmployeeDataChange(actualEmpIdx, 'orgName', matchedOrg.orgName || matchedOrg.label);
+  //   } else {
+  //     handleEmployeeDataChange(actualEmpIdx, 'orgName', '');
+  //   }
+
+  //   setOrgSearch(numericValue);
+  // };
+
+  // const handleOrgInputChangeForUpdate = (value, actualEmpIdx) => {
+  //   // FIXED: Allow digits AND decimal points - NO stripping!
+  //   const cleanValue = value.replace(/[^0-9.]/g, '');  // Keep dots!
+
+  //   // 1. Update orgId with raw input (preserve decimals)
+  //   handleEmployeeDataChange(actualEmpIdx, 'orgId', cleanValue);
+
+  //   // 2. Find matching org from BOTH lists
+  //   let matchedOrg = null;
+  //   if (organizationOptions?.length > 0) {
+  //     matchedOrg = organizationOptions.find(
+  //       opt => opt.value?.toString() === cleanValue
+  //     );
+  //   }
+  //   if (!matchedOrg && updateOrganizationOptions?.length > 0) {
+  //     matchedOrg = updateOrganizationOptions.find(
+  //       opt => opt.value?.toString() === cleanValue
+  //     );
+  //   }
+
+  //   // 3. Update orgName display
+  //   if (matchedOrg && (matchedOrg.orgName || matchedOrg.label)) {
+  //     handleEmployeeDataChange(actualEmpIdx, 'orgName', matchedOrg.orgName || matchedOrg.label);
+  //   } else {
+  //     handleEmployeeDataChange(actualEmpIdx, 'orgName', '');
+  //   }
+
+  //   setOrgSearch(cleanValue);
+  // };
+
+  const handleOrgInputChangeForUpdate = (value, actualEmpIdx) => {
+    const cleanValue = value.replace(/[^0-9.]/g, "");
+    handleEmployeeDataChange(actualEmpIdx, "orgId", cleanValue);
+
+    // Search in both global and filtered options
+    // let matchedOrg = organizationOptions?.find(opt => opt.value?.toString() === cleanValue) ||
+    //                  updateOrganizationOptions?.find(opt => opt.value?.toString() === cleanValue);
+
+    // if (matchedOrg) {
+    //     handleEmployeeDataChange(actualEmpIdx, 'orgName', matchedOrg.orgName || matchedOrg.label);
+    // } else {
+    //     handleEmployeeDataChange(actualEmpIdx, 'orgName', '');
+    // }
+    // setOrgSearch(cleanValue);
+    const matchedOrg =
+      organizationOptions.find((opt) => opt.value?.toString() === cleanValue) ||
+      updateOrganizationOptions.find(
+        (opt) => opt.value?.toString() === cleanValue
+      );
+    if (matchedOrg) {
+      handleEmployeeDataChange(
+        actualEmpIdx,
+        "orgName",
+        matchedOrg.orgName || matchedOrg.label.split(" - ")[1]
+      );
+    } else {
+      handleEmployeeDataChange(actualEmpIdx, "orgName", "");
+    }
+
+    setOrgSearch(cleanValue);
+  };
+
   const handlePlcInputChangeForUpdate = (value, actualEmpIdx) => {
     // 1. Update the PLC code in state
     handleEmployeeDataChange(actualEmpIdx, "glcPlc", value);
@@ -1488,12 +1734,19 @@ useEffect(() => {
     // 3. Check if the row is a PLC type and update the name if a match is found
     const emp = localEmployees[actualEmpIdx];
     // Check strict type (API data might be "PLC" or "PLC Employee" depending on backend)
-    const isPlcType = emp && emp.emple && (emp.emple.type === "PLC" || emp.emple.idType === "PLC");
+    const isPlcType =
+      emp &&
+      emp.emple &&
+      (emp.emple.type === "PLC" || emp.emple.idType === "PLC");
 
     if (isPlcType) {
       if (selectedOption) {
         // Update the Name (stored in firstName for display) with the PLC Description
-        handleEmployeeDataChange(actualEmpIdx, "firstName", selectedOption.label);
+        handleEmployeeDataChange(
+          actualEmpIdx,
+          "firstName",
+          selectedOption.label
+        );
       } else if (value === "") {
         // Clear name if PLC is cleared
         handleEmployeeDataChange(actualEmpIdx, "firstName", "");
@@ -1512,7 +1765,6 @@ useEffect(() => {
       setUpdatePlcOptions(plcOptions);
     }
   };
-
 
   const handleOrgInputChange = (value) => {
     const numericValue = value.replace(/[^0-9.]/g, "");
@@ -1589,59 +1841,62 @@ useEffect(() => {
   };
 
   const handlePlcInputChange = (value) => {
-  // Search for the option regardless of plan type to get the name/label
-  const selectedOption = plcOptions.find(
-    (opt) => opt.value.toLowerCase() === value.toLowerCase()
-  );
+    // Search for the option regardless of plan type to get the name/label
+    const selectedOption = plcOptions.find(
+      (opt) => opt.value.toLowerCase() === value.toLowerCase()
+    );
 
-  if (planType === "NBBUD") {
+    if (planType === "NBBUD") {
+      setPlcSearch(value);
+      setNewEntry((prev) => ({
+        ...prev,
+        plcGlcCode: value,
+        // FIX: Update name for PLC type in NBBUD
+        firstName:
+          prev.idType === "PLC" && selectedOption
+            ? selectedOption.label
+            : prev.firstName,
+      }));
+      return;
+    }
+
+    const isValidInput =
+      value === "" ||
+      plcOptions.some((option) =>
+        option.value.toLowerCase().startsWith(value.toLowerCase())
+      );
+
+    if (!isValidInput) {
+      toast.warning("Only values from the PLC suggestions are allowed", {
+        autoClose: 2000,
+      });
+      return;
+    }
+
     setPlcSearch(value);
-    setNewEntry((prev) => ({ 
-      ...prev, 
+
+    setNewEntry((prev) => ({
+      ...prev,
       plcGlcCode: value,
-      // FIX: Update name for PLC type in NBBUD
-      firstName: prev.idType === "PLC" && selectedOption ? selectedOption.label : prev.firstName
+      firstName:
+        prev.idType === "PLC" && selectedOption
+          ? selectedOption.label
+          : prev.firstName,
     }));
-    return;
-  }
 
-  const isValidInput =
-    value === "" ||
-    plcOptions.some((option) =>
-      option.value.toLowerCase().startsWith(value.toLowerCase())
-    );
+    if (value.length >= 1) {
+      const filtered = plcOptions.filter((option) =>
+        option.value.toLowerCase().startsWith(value.toLowerCase())
+      );
+      setFilteredPlcOptions(filtered);
+    } else {
+      setFilteredPlcOptions(plcOptions);
+    }
 
-  if (!isValidInput) {
-    toast.warning("Only values from the PLC suggestions are allowed", {
-      autoClose: 2000,
-    });
-    return;
-  }
-
-  setPlcSearch(value);
-
-  setNewEntry((prev) => ({
-    ...prev,
-    plcGlcCode: value,
-    firstName:
-      prev.idType === "PLC" && selectedOption
-        ? selectedOption.label
-        : prev.firstName,
-  }));
-
-  if (value.length >= 1) {
-    const filtered = plcOptions.filter((option) =>
-      option.value.toLowerCase().startsWith(value.toLowerCase())
-    );
-    setFilteredPlcOptions(filtered);
-  } else {
-    setFilteredPlcOptions(plcOptions);
-  }
-
-  if (autoPopulatedPLC && value !== newEntry.plcGlcCode) {
-    setAutoPopulatedPLC(false);
-  }
-};
+    if (autoPopulatedPLC && value !== newEntry.plcGlcCode) {
+      setAutoPopulatedPLC(false);
+    }
+  };
 
   // const handlePlcInputChange = (value) => {
   //   // Remove real-time validation - only validate on blur
@@ -1701,59 +1956,59 @@ useEffect(() => {
   //   }
   // };
 
-//   const handlePlcInputChange = (value) => {
-//   if (planType === "NBBUD") {
-//     setPlcSearch(value);
-//     setNewEntry((prev) => ({ ...prev, plcGlcCode: value }));
-//     return;
-//   }
+  //   const handlePlcInputChange = (value) => {
+  //   if (planType === "NBBUD") {
+  //     setPlcSearch(value);
+  //     setNewEntry((prev) => ({ ...prev, plcGlcCode: value }));
+  //     return;
+  //   }
 
-//   // Only allow empty value or values that start with available PLC options
-//   const isValidInput =
-//     value === "" ||
-//     plcOptions.some((option) =>
-//       option.value.toLowerCase().startsWith(value.toLowerCase())
-//     );
+  //   // Only allow empty value or values that start with available PLC options
+  //   const isValidInput =
+  //     value === "" ||
+  //     plcOptions.some((option) =>
+  //       option.value.toLowerCase().startsWith(value.toLowerCase())
+  //     );
 
-//   if (!isValidInput) {
-//     toast.warning("Only values from the PLC suggestions are allowed", {
-//       autoClose: 2000,
-//     });
-//     return;
-//   }
+  //   if (!isValidInput) {
+  //     toast.warning("Only values from the PLC suggestions are allowed", {
+  //       autoClose: 2000,
+  //     });
+  //     return;
+  //   }
 
-//   setPlcSearch(value);
+  //   setPlcSearch(value);
 
-//   // --- FIX START: Only update Name if ID Type is PLC ---
-//   const selectedOption = plcOptions.find(
-//     (opt) => opt.value.toLowerCase() === value.toLowerCase()
-//   );
+  //   // --- FIX START: Only update Name if ID Type is PLC ---
+  //   const selectedOption = plcOptions.find(
+  //     (opt) => opt.value.toLowerCase() === value.toLowerCase()
+  //   );
 
-//   setNewEntry((prev) => ({
-//     ...prev,
-//     plcGlcCode: value,
-//     // Only overwrite firstName if the specific ID Type is PLC
-//     firstName:
-//       prev.idType === "PLC" && selectedOption
-//         ? selectedOption.label
-//         : prev.firstName,
-//   }));
-//   // --- FIX END ---
+  //   setNewEntry((prev) => ({
+  //     ...prev,
+  //     plcGlcCode: value,
+  //     // Only overwrite firstName if the specific ID Type is PLC
+  //     firstName:
+  //       prev.idType === "PLC" && selectedOption
+  //         ? selectedOption.label
+  //         : prev.firstName,
+  //   }));
+  //   // --- FIX END ---
 
-//   // Filter PLC options
-//   if (value.length >= 1) {
-//     const filtered = plcOptions.filter((option) =>
-//       option.value.toLowerCase().startsWith(value.toLowerCase())
-//     );
-//     setFilteredPlcOptions(filtered);
-//   } else {
-//     setFilteredPlcOptions(plcOptions);
-//   }
+  //   // Filter PLC options
+  //   if (value.length >= 1) {
+  //     const filtered = plcOptions.filter((option) =>
+  //       option.value.toLowerCase().startsWith(value.toLowerCase())
+  //     );
+  //     setFilteredPlcOptions(filtered);
+  //   } else {
+  //     setFilteredPlcOptions(plcOptions);
+  //   }
 
-//   if (autoPopulatedPLC && value !== newEntry.plcGlcCode) {
-//     setAutoPopulatedPLC(false);
-//   }
-// };
+  //   if (autoPopulatedPLC && value !== newEntry.plcGlcCode) {
+  //     setAutoPopulatedPLC(false);
+  //   }
+  // };
 
   // const handlePlcInputChange = (value) => {
   //   if (planType === "NBBUD") {
@@ -1780,8 +2035,8 @@ useEffect(() => {
   //   setPlcSearch(value);
   //   const selectedOption = plcOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
 
-  //   setNewEntry((prev) => ({ 
-  //     ...prev, 
+  //   setNewEntry((prev) => ({
+  //     ...prev,
   //     plcGlcCode: value,
   //     // If we found a match, update the name. If newEntry.idType is PLC, this field is read-only in UI
   //     firstName: selectedOption ? selectedOption.label : prev.firstName
@@ -1804,8 +2059,6 @@ useEffect(() => {
   //     setAutoPopulatedPLC(false);
   //   }
   // };
-
-
 
   const handleAccountBlur = (val) => {
     if (planType === "NBBUD") return; // Add this line
@@ -1978,124 +2231,282 @@ useEffect(() => {
 
   // Function to handle row selection
 
-  const handleIdChange = (value) => {
-  // FIX: Remove emojis immediately before processing
-  const valueWithoutEmojis = value.replace(
-    /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-    ""
-  );
+  //   const handleIdChange = (value) => {
+  //   // FIX: Remove emojis immediately before processing
+  //   const valueWithoutEmojis = value.replace(
+  //     /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+  //     ""
+  //   );
 
-  // Use the sanitized value
-  const trimmedValue = valueWithoutEmojis.trim();
+  //   // Use the sanitized value
+  //   const trimmedValue = valueWithoutEmojis.trim();
 
-  if (planType === "NBBUD") {
-    if (
-      (newEntry.idType === "Employee" || newEntry.idType === "Vendor") &&
-      employeeSuggestions.length > 0 &&
-      trimmedValue
-    ) {
-      const selectedEmployee = employeeSuggestions.find(
-        (emp) => emp.emplId === trimmedValue
-      );
+  //   if (planType === "NBBUD") {
+  //     if (
+  //       (newEntry.idType === "Employee" || newEntry.idType === "Vendor") &&
+  //       employeeSuggestions.length > 0 &&
+  //       trimmedValue
+  //     ) {
+  //       const selectedEmployee = employeeSuggestions.find(
+  //         (emp) => emp.emplId === trimmedValue
+  //       );
 
-      if (selectedEmployee) {
-        setNewEntry((prev) => ({
-          ...prev,
-          id: valueWithoutEmojis, // Use sanitized value
-          firstName: selectedEmployee.firstName || "",
-          lastName: selectedEmployee.lastName || "",
-          perHourRate: selectedEmployee.perHourRate || "",
-          orgId: selectedEmployee.orgId || prev.orgId,
-          plcGlcCode: selectedEmployee.plc || "",
-        }));
-        setPlcSearch(selectedEmployee.plc || "");
-        return;
-      }
-    }
-    
-    setNewEntry((prev) => ({ ...prev, id: valueWithoutEmojis }));
-    return;
-  }
+  //       if (selectedEmployee) {
+  //         setNewEntry((prev) => ({
+  //           ...prev,
+  //           id: valueWithoutEmojis, // Use sanitized value
+  //           firstName: selectedEmployee.firstName || "",
+  //           lastName: selectedEmployee.lastName || "",
+  //           perHourRate: selectedEmployee.perHourRate || "",
+  //           orgId: selectedEmployee.orgId || prev.orgId,
+  //           plcGlcCode: selectedEmployee.plc || "",
+  //         }));
+  //         setPlcSearch(selectedEmployee.plc || "");
+  //         return;
+  //       }
+  //     }
 
-  if (newEntry.idType === "PLC") {
-    setNewEntry((prev) => ({ ...prev, id: "PLC" }));
-    return;
-  }
+  //     setNewEntry((prev) => ({ ...prev, id: valueWithoutEmojis }));
+  //     return;
+  //   }
 
-  // Persist sanitized value
-  setNewEntry((prev) => ({ ...prev, id: valueWithoutEmojis }));
+  //   if (newEntry.idType === "PLC") {
+  //     setNewEntry((prev) => ({ ...prev, id: "PLC" }));
+  //     return;
+  //   }
 
-  if (!trimmedValue) {
-    setNewEntry((prev) => ({
-      ...prev,
-      id: "",
-      firstName: "",
-      lastName: "",
-      perHourRate: "",
-      orgId: newEntry.idType === "Vendor" ? prev.orgId : "",
-      plcGlcCode: "",
-      acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
-    }));
-    setPlcSearch("");
-    setAutoPopulatedPLC(false);
-    return;
-  }
+  //   // Persist sanitized value
+  //   setNewEntry((prev) => ({ ...prev, id: valueWithoutEmojis }));
 
-  if (newEntry.idType === "Other") return;
+  //   if (!trimmedValue) {
+  //     setNewEntry((prev) => ({
+  //       ...prev,
+  //       id: "",
+  //       firstName: "",
+  //       lastName: "",
+  //       perHourRate: "",
+  //       orgId: newEntry.idType === "Vendor" ? prev.orgId : "",
+  //       plcGlcCode: "",
+  //       acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
+  //     }));
+  //     setPlcSearch("");
+  //     setAutoPopulatedPLC(false);
+  //     return;
+  //   }
 
-  if (
-    (newEntry.idType === "Employee" || newEntry.idType === "Vendor") &&
-    employeeSuggestions.length > 0
-  ) {
-    const selectedEmployee = employeeSuggestions.find(
-      (emp) => emp.emplId === trimmedValue
-    );
+  //   if (newEntry.idType === "Other") return;
 
-    if (selectedEmployee) {
-      setNewEntry((prev) => ({
-        ...prev,
-        firstName: selectedEmployee.firstName || "",
-        lastName: selectedEmployee.lastName || "",
-        perHourRate: selectedEmployee.perHourRate || "",
-        orgId: selectedEmployee.orgId || prev.orgId,
-        plcGlcCode: selectedEmployee.plc || "",
-        acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
-      }));
-      setPlcSearch(selectedEmployee.plc || "");
-    } else {
-      if (trimmedValue.length >= 3) {
-        const partialMatch = employeeSuggestions.some((emp) =>
-          emp.emplId.startsWith(trimmedValue)
-        );
-        if (!partialMatch) {
-          toast.error("Invalid ID, please select a valid one!", {
-            toastId: "invalid-id",
-            autoClose: 3000,
-          });
-        }
-      }
+  //   if (
+  //     (newEntry.idType === "Employee" || newEntry.idType === "Vendor") &&
+  //     employeeSuggestions.length > 0
+  //   ) {
+  //     const selectedEmployee = employeeSuggestions.find(
+  //       (emp) => emp.emplId === trimmedValue
+  //     );
 
-      setNewEntry((prev) => ({
-        ...prev,
-        firstName: "",
-        lastName: "",
-        perHourRate: "",
-        orgId: newEntry.idType === "Vendor" ? prev.orgId : "",
-        plcGlcCode:
-          newEntry.idType === "Vendor" && autoPopulatedPLC
-            ? prev.plcGlcCode
-            : "",
-        acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
-      }));
+  //     if (selectedEmployee) {
+  //       setNewEntry((prev) => ({
+  //         ...prev,
+  //         firstName: selectedEmployee.firstName || "",
+  //         lastName: selectedEmployee.lastName || "",
+  //         perHourRate: selectedEmployee.perHourRate || "",
+  //         orgId: selectedEmployee.orgId || prev.orgId,
+  //         plcGlcCode: selectedEmployee.plc || "",
+  //         acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
+  //       }));
+  //       setPlcSearch(selectedEmployee.plc || "");
+  //     } else {
+  //       if (trimmedValue.length >= 3) {
+  //         const partialMatch = employeeSuggestions.some((emp) =>
+  //           emp.emplId.startsWith(trimmedValue)
+  //         );
+  //         if (!partialMatch) {
+  //           toast.error("Invalid ID, please select a valid one!", {
+  //             toastId: "invalid-id",
+  //             autoClose: 3000,
+  //           });
+  //         }
+  //       }
 
-      if (!(newEntry.idType === "Vendor" && autoPopulatedPLC)) {
-        setPlcSearch("");
-        setAutoPopulatedPLC(false);
-      }
-    }
-  }
-};
-  
+  //       setNewEntry((prev) => ({
+  //         ...prev,
+  //         firstName: "",
+  //         lastName: "",
+  //         perHourRate: "",
+  //         orgId: newEntry.idType === "Vendor" ? prev.orgId : "",
+  //         plcGlcCode:
+  //           newEntry.idType === "Vendor" && autoPopulatedPLC
+  //             ? prev.plcGlcCode
+  //             : "",
+  //         acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
+  //       }));
+
+  //       if (!(newEntry.idType === "Vendor" && autoPopulatedPLC)) {
+  //         setPlcSearch("");
+  //         setAutoPopulatedPLC(false);
+  //       }
+  //     }
+  //   }
+  // };
+
+  // const handleIdChange = (value) => {
+  //   // FIX: Remove emojis immediately before processing
+  //   const valueWithoutEmojis = value.replace(
+  //     /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+  //     ""
+  //   );
+
+  //   // Use the sanitized value
+  //   const trimmedValue = valueWithoutEmojis.trim();
+
+  //   if (planType === "NBBUD") {
+  //     if (
+  //       (newEntry.idType === "Employee" || newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") &&
+  //       employeeSuggestions.length > 0 &&
+  //       trimmedValue
+  //     ) {
+  //       const selectedEmployee = employeeSuggestions.find(
+  //         (emp) => emp.emplId === trimmedValue
+  //       );
+
+  //       if (selectedEmployee) {
+  //         setNewEntry((prev) => ({
+  //           ...prev,
+  //           id: valueWithoutEmojis, // Use sanitized value
+  //           firstName: selectedEmployee.firstName || "",
+  //           lastName: selectedEmployee.lastName || "",
+  //           perHourRate: selectedEmployee.perHourRate || "",
+  //           orgId: selectedEmployee.orgId || prev.orgId,
+  //           plcGlcCode: selectedEmployee.plc || "",
+  //         }));
+  //         setPlcSearch(selectedEmployee.plc || "");
+  //         return;
+  //       }
+  //     }
+
+  //     setNewEntry((prev) => ({ ...prev, id: valueWithoutEmojis }));
+  //     return;
+  //   }
+
+  //   if (newEntry.idType === "PLC") {
+  //     setNewEntry((prev) => ({ ...prev, id: "PLC" }));
+  //     return;
+  //   }
+
+  //   // Persist sanitized value
+  //   setNewEntry((prev) => ({ ...prev, id: valueWithoutEmojis }));
+
+  //   if (!trimmedValue) {
+  //     setNewEntry((prev) => ({
+  //       ...prev,
+  //       id: "",
+  //       firstName: "",
+  //       lastName: "",
+  //       perHourRate: "",
+  //       orgId: (newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") ? prev.orgId : "",
+  //       plcGlcCode: "",
+  //       acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
+  //     }));
+  //     setPlcSearch("");
+  //     setAutoPopulatedPLC(false);
+  //     return;
+  //   }
+
+  //   if (newEntry.idType === "Other") return;
+
+  //   if (
+  //     (newEntry.idType === "Employee" || newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") &&
+  //     employeeSuggestions.length > 0
+  //   ) {
+  //     const selectedEmployee = employeeSuggestions.find(
+  //       (emp) => emp.emplId === trimmedValue
+  //     );
+
+  //     if (selectedEmployee) {
+  //       setNewEntry((prev) => ({
+  //         ...prev,
+  //         firstName: selectedEmployee.firstName || "",
+  //         lastName: selectedEmployee.lastName || "",
+  //         perHourRate: selectedEmployee.perHourRate || "",
+  //         orgId: selectedEmployee.orgId || prev.orgId,
+  //         plcGlcCode: selectedEmployee.plc || "",
+  //         acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
+  //       }));
+  //       setPlcSearch(selectedEmployee.plc || "");
+  //     } else {
+  //       if (trimmedValue.length >= 3) {
+  //         const partialMatch = employeeSuggestions.some((emp) =>
+  //           emp.emplId.startsWith(trimmedValue)
+  //         );
+  //         if (!partialMatch) {
+  //           toast.error("Invalid ID, please select a valid one!", {
+  //             toastId: "invalid-id",
+  //             autoClose: 3000,
+  //           });
+  //         }
+  //       }
+
+  //       const isVendorType = newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee";
+
+  //       setNewEntry((prev) => ({
+  //         ...prev,
+  //         firstName: "",
+  //         lastName: "",
+  //         perHourRate: "",
+  //         orgId: isVendorType ? prev.orgId : "",
+  //         plcGlcCode:
+  //           isVendorType && autoPopulatedPLC
+  //             ? prev.plcGlcCode
+  //             : "",
+  //         acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
+  //       }));
+
+  //       if (!(isVendorType && autoPopulatedPLC)) {
+  //         setPlcSearch("");
+  //         setAutoPopulatedPLC(false);
+  //       }
+  //     }
+  //   }
+  // };
+
+  // const handleIdChange = (value) => {
+  //   const valueWithoutEmojis = value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+  //   const trimmedValue = valueWithoutEmojis.trim();
+
+  //   // 1. Allow PLC type to remain as is
+  //   if (newEntry.idType === "PLC") {
+  //     setNewEntry((prev) => ({ ...prev, id: "PLC" }));
+  //     return;
+  //   }
+
+  //   // 2. Strict Search: Find the match in suggestions
+  //   const suggestions = employeeSuggestions || [];
+  //   const matchedEmp = suggestions.find(emp => emp.emplId === trimmedValue);
+
+  //   if (matchedEmp) {
+  //     // Found valid suggestion - Auto populate everything
+  //     setNewEntry((prev) => ({
+  //       ...prev,
+  //       id: trimmedValue,
+  //       firstName: matchedEmp.firstName || "",
+  //       lastName: matchedEmp.lastName || "",
+  //       perHourRate: matchedEmp.perHourRate || "",
+  //       orgId: matchedEmp.orgId || prev.orgId,
+  //       plcGlcCode: matchedEmp.plc || "",
+  //     }));
+  //     setPlcSearch(matchedEmp.plc || "");
+  //   } else {
+  //     // No exact match found yet (user is typing or entered invalid ID)
+  //     setNewEntry((prev) => ({ ...prev, id: valueWithoutEmojis }));
+
+  //     // Only throw toast and clear if user finished typing (length > 3 and no match)
+  //     if (trimmedValue.length >= 5 && newEntry.idType !== "Other") {
+  //        toast.error("Invalid ID. Please select from the suggestion list.", { toastId: "id-val" });
+  //        // Optional: clear fields if strictly not allowing
+  //     }
+  //   }
+  // };
+
   // const handleIdChange = (value) => {
   //   // KEY CHANGE 1: Keep 'value' raw for the UI, create 'trimmedValue' for lookups
   //   const trimmedValue = value.trim();
@@ -2125,7 +2536,7 @@ useEffect(() => {
   //         return; // Added return to prevent double state update
   //       }
   //     }
-      
+
   //     // If no match found in NBBUD, just update the ID text
   //     setNewEntry((prev) => ({ ...prev, id: value }));
   //     return;
@@ -2220,7 +2631,7 @@ useEffect(() => {
   //     }
   //   }
   // };
-  
+
   const handleRowSelection = (rowIndex, isSelected) => {
     setSelectedRows((prev) => {
       const newSelection = new Set(prev);
@@ -2375,186 +2786,371 @@ useEffect(() => {
   //     });
   // };
 
+  // const handleCopySelectedRows = () => {
+  //     // FIX: Check checkedRows.size instead of selectedRows.size
+  //     if (checkedRows.size === 0) {
+  //         toast.info("No rows selected to copy.", { autoClose: 2000 });
+  //         return;
+  //     }
 
-// const handleCopySelectedRows = () => {
-//     // FIX: Check checkedRows.size instead of selectedRows.size
-//     if (checkedRows.size === 0) {
-//         toast.info("No rows selected to copy.", { autoClose: 2000 });
-//         return;
-//     }
+  //     const headers = [
+  //         "ID Type", "ID", "Name", "Account", "Account Name",
+  //         "Organization", "PLC", "Rev", "Brd", "Status", "Hour Rate", "Total"
+  //     ];
 
-//     const headers = [
-//         "ID Type", "ID", "Name", "Account", "Account Name", 
-//         "Organization", "PLC", "Rev", "Brd", "Status", "Hour Rate", "Total"
-//     ];
+  //     const monthMetadata = [];
+  //     sortedDurations.forEach((duration) => {
+  //         const monthName = new Date(duration.year, duration.monthNo - 1)
+  //             .toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+  //         headers.push(monthName);
+  //         monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+  //     });
 
-//     const monthMetadata = [];
-//     sortedDurations.forEach((duration) => {
-//         const monthName = new Date(duration.year, duration.monthNo - 1)
-//             .toLocaleDateString("en-US", { month: "short", year: "2-digit" });
-//         headers.push(monthName);
-//         monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
-//     });
+  //     const copyData = [headers];
+  //     const structuredData = [];
 
-//     const copyData = [headers];
-//     const structuredData = [];
+  //     // FIX: Iterate over checkedRows
+  //     checkedRows.forEach((rowIndex) => {
+  //         const emp = localEmployees[rowIndex];
+  //         if (emp && emp.emple && !hiddenRows[rowIndex]) {
+  //             const employeeRow = getEmployeeRow(emp, rowIndex);
+  //             const rowData = [
+  //                 employeeRow.idType,
+  //                 employeeRow.emplId,
+  //                 employeeRow.name,
+  //                 employeeRow.acctId,
+  //                 employeeRow.acctName,
+  //                 employeeRow.orgId,
+  //                 employeeRow.glcPlc,
+  //                 typeof employeeRow.isRev === "object" ? "✓" : employeeRow.isRev,
+  //                 typeof employeeRow.isBrd === "object" ? "✓" : employeeRow.isBrd,
+  //                 employeeRow.status,
+  //                 employeeRow.perHourRate,
+  //             ];
 
-//     // FIX: Iterate over checkedRows
-//     checkedRows.forEach((rowIndex) => {
-//         const emp = localEmployees[rowIndex];
-//         if (emp && emp.emple && !hiddenRows[rowIndex]) {
-//             const employeeRow = getEmployeeRow(emp, rowIndex);
-//             const rowData = [
-//                 employeeRow.idType,
-//                 employeeRow.emplId,
-//                 employeeRow.name,
-//                 employeeRow.acctId,
-//                 employeeRow.acctName,
-//                 employeeRow.orgId,
-//                 employeeRow.glcPlc,
-//                 typeof employeeRow.isRev === "object" ? "✓" : employeeRow.isRev,
-//                 typeof employeeRow.isBrd === "object" ? "✓" : employeeRow.isBrd,
-//                 employeeRow.status,
-//                 employeeRow.perHourRate,
-//             ];
+  //             // Calculate total and months
+  //             let totalHours = 0;
+  //             const monthValues = [];
+  //             sortedDurations.forEach((duration) => {
+  //                 const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //                 const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
+  //                 const monthHours = getMonthHours(emp);
+  //                 const forecastValue = monthHours[uniqueKey]?.value;
+  //                 const value = inputValue !== undefined && inputValue !== "" ? inputValue : forecastValue || "0.00";
 
-//             // Calculate total and months
-//             let totalHours = 0;
-//             const monthValues = [];
-//             sortedDurations.forEach((duration) => {
-//                 const uniqueKey = `${duration.monthNo}_${duration.year}`;
-//                 const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
-//                 const monthHours = getMonthHours(emp);
-//                 const forecastValue = monthHours[uniqueKey]?.value;
-//                 const value = inputValue !== undefined && inputValue !== "" ? inputValue : forecastValue || "0.00";
+  //                 totalHours += value && !isNaN(value) ? Number(value) : 0;
+  //                 monthValues.push(value);
+  //             });
 
-//                 totalHours += value && !isNaN(value) ? Number(value) : 0;
-//                 monthValues.push(value);
-//             });
+  //             rowData.push(totalHours.toFixed(2)); // Push Total to column 12
+  //             rowData.push(...monthValues);       // Add monthly data
 
-//             rowData.push(totalHours.toFixed(2)); // Push Total to column 12
-//             rowData.push(...monthValues);       // Add monthly data
+  //             copyData.push(rowData);
+  //             structuredData.push(rowData);
+  //         }
+  //     });
 
-//             copyData.push(rowData);
-//             structuredData.push(rowData);
-//         }
-//     });
+  //     const tsvContent = copyData.map((row) => row.join("\t")).join("\n");
 
-//     const tsvContent = copyData.map((row) => row.join("\t")).join("\n");
+  //     navigator.clipboard.writeText(tsvContent)
+  //         .then(() => {
+  //             setCopiedRowsData(structuredData);
+  //             setCopiedMonthMetadata(monthMetadata);
+  //             setHasClipboardData(true);
+  //             toast.success(`Copied ${structuredData.length} rows!`, { autoClose: 3000 });
 
-//     navigator.clipboard.writeText(tsvContent)
-//         .then(() => {
-//             setCopiedRowsData(structuredData);
-//             setCopiedMonthMetadata(monthMetadata);
-//             setHasClipboardData(true);
-//             toast.success(`Copied ${structuredData.length} rows!`, { autoClose: 3000 });
-            
-//             // Optional: Uncheck all after copying
-//             // setCheckedRows(new Set()); 
-//         })
-//         .catch((err) => {
-//             toast.error("Failed to copy data.");
-//         });
-// };  
+  //             // Optional: Uncheck all after copying
+  //             // setCheckedRows(new Set());
+  //         })
+  //         .catch((err) => {
+  //             toast.error("Failed to copy data.");
+  //         });
+  // };
 
+  // const handleCopySelectedRows = () => {
+  //     if (checkedRows.size === 0) {
+  //         toast.info("No rows selected to copy.", { autoClose: 2000 });
+  //         return;
+  //     }
 
-const handleCopySelectedRows = () => {
+  //     // Use the full durations array (sorted by date) to ensure we capture all fiscal years
+  //     const allAvailableDurations = [...durations].sort((a, b) => {
+  //         if (a.year !== b.year) return a.year - b.year;
+  //         return a.monthNo - b.monthNo;
+  //     });
+
+  //     const headers = [
+  //         "ID Type", "ID", "Name", "Account", "Account Name",
+  //         "Organization", "PLC", "Rev", "Brd", "Status", "Hour Rate", "Total"
+  //     ];
+
+  //     const monthMetadata = [];
+  //     allAvailableDurations.forEach((duration) => {
+  //         const monthName = new Date(duration.year, duration.monthNo - 1)
+  //             .toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+  //         headers.push(monthName);
+  //         monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+  //     });
+
+  //     const copyData = [headers];
+  //     const structuredData = [];
+
+  //     checkedRows.forEach((rowIndex) => {
+  //         const emp = localEmployees[rowIndex];
+  //         if (emp && emp.emple && !hiddenRows[rowIndex]) {
+  //             const employeeRow = getEmployeeRow(emp, rowIndex);
+
+  //             // Extract core data
+  //             const rowData = [
+  //                 employeeRow.idType,
+  //                 employeeRow.emplId,
+  //                 employeeRow.name,
+  //                 employeeRow.acctId,
+  //                 employeeRow.acctName,
+  //                 employeeRow.orgId,
+  //                 employeeRow.glcPlc,
+  //                 // Check if it's a React element (checkmark) or raw value
+  //                 typeof employeeRow.isRev === "object" ? "✓" : employeeRow.isRev,
+  //                 typeof employeeRow.isBrd === "object" ? "✓" : employeeRow.isBrd,
+  //                 employeeRow.status,
+  //                 employeeRow.perHourRate,
+  //             ];
+
+  //             // Calculate totals and collect hours for ALL years
+  //             let totalHoursSum = 0;
+  //             const monthValues = [];
+  //             const empMonthHours = getMonthHours(emp);
+
+  //             allAvailableDurations.forEach((duration) => {
+  //                 const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //                 const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
+  //                 const forecastValue = empMonthHours[uniqueKey]?.value;
+  //                 const value = inputValue !== undefined && inputValue !== "" ? inputValue : forecastValue || "0.00";
+
+  //                 totalHoursSum += value && !isNaN(value) ? Number(value) : 0;
+  //                 monthValues.push(value);
+  //             });
+
+  //             rowData.push(totalHoursSum.toFixed(2)); // Total Column
+  //             rowData.push(...monthValues);         // All individual months
+
+  //             copyData.push(rowData);
+  //             structuredData.push(rowData);
+  //         }
+  //     });
+
+  //     const tsvContent = copyData.map((row) => row.join("\t")).join("\n");
+
+  //     navigator.clipboard.writeText(tsvContent)
+  //         .then(() => {
+  //             setCopiedRowsData(structuredData);
+  //             setCopiedMonthMetadata(monthMetadata);
+  //             setHasClipboardData(true);
+
+  //             // Updated Toast Message
+  //             // toast.success(`Success! ${structuredData.length} records (including all fiscal years) copied to clipboard.`, {
+  //             //     autoClose: 3000,
+  //             //     icon: "📋"
+  //             // });
+  //              toast.success(
+  //                       `Copied ${structuredData.length} rows with all fiscal year data!`,
+  //                       {
+  //                         autoClose: 3000,
+  //                       }
+  //                     );
+  //         })
+  //        .catch((err) => {
+  //         console.error("Copy failed:", err);
+  //         toast.error("Failed to copy data.", { autoClose: 3000 });
+  //       });
+  // };
+
+  // const handleCopySelectedRows = async () => {
+  //   if (checkedRows.size === 0) {
+  //     toast.info("No rows selected to copy.", { autoClose: 2000 });
+  //     return;
+  //   }
+
+  //   // Use full durations for all fiscal years
+  //   const allAvailableDurations = [...durations].sort((a, b) => {
+  //     if (a.year !== b.year) return a.year - b.year;
+  //     return a.monthNo - b.monthNo;
+  //   });
+
+  //   // ✅ FIXED HEADERS - Include Org Name column
+  //   const headers = [
+  //     "ID Type", "ID", "Name", "Account", "Account Name",
+  //     "OrgId", "Org Name", "PLC", "Rev", "Brd", "Status", "Hour Rate", "Total"
+  //   ];
+
+  //   // Add month headers
+  //   const monthMetadata = [];
+  //   allAvailableDurations.forEach(duration => {
+  //     const monthName = new Date(duration.year, duration.monthNo - 1)
+  //       .toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  //     headers.push(monthName);
+  //     monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+  //   });
+
+  //   const copyData = [headers];
+  //   const structuredData = [];
+
+  //   checkedRows.forEach(rowIndex => {
+  //     const emp = localEmployees[rowIndex];
+  //     if (emp && emp.emple && !hiddenRows[rowIndex]) {
+  //       const employeeRow = getEmployeeRow(emp, rowIndex);
+
+  //       // ✅ FIXED: Copy BOTH orgId AND orgName
+  //       const rowData = [
+  //         employeeRow.idType,
+  //         employeeRow.emplId,
+  //         employeeRow.name,
+  //         employeeRow.acctId,
+  //         employeeRow.acctName,
+  //         employeeRow.orgId,
+  //         employeeRow.orgName || '-',
+  //         employeeRow.glcPlc,
+  //         typeof employeeRow.isRev === 'object' ? employeeRow.isRev : (employeeRow.isRev ? '✓' : '-'),
+  //         typeof employeeRow.isBrd === 'object' ? employeeRow.isBrd : (employeeRow.isBrd ? '✓' : '-'),
+  //         employeeRow.status,
+  //         employeeRow.perHourRate,
+  //       ];
+
+  //       // Calculate total
+  //       let totalHoursSum = 0;
+  //       const monthValues = [];
+  //       const empMonthHours = getMonthHours(emp);
+
+  //       allAvailableDurations.forEach(duration => {
+  //         const uniqueKey = `${duration.monthNo}${duration.year}`;
+  //         const inputValue = inputValues[rowIndex]?.[uniqueKey];
+  //         const forecastValue = empMonthHours[uniqueKey]?.value;
+  //         const value = inputValue !== undefined ? inputValue : forecastValue;
+  //         totalHoursSum += value && !isNaN(value) ? Number(value) : 0;
+  //         monthValues.push(value || '0.00');
+  //       });
+
+  //       rowData.push(totalHoursSum.toFixed(2));  // Total column
+  //       rowData.push(...monthValues);            // All month columns
+
+  //       copyData.push(rowData);
+  //       structuredData.push(rowData);
+  //     }
+  //   });
+
+  //   // Create TSV for Excel
+  //   const tsvContent = copyData.map(row => row.join('\t')).join('\n');
+
+  //   navigator.clipboard.writeText(tsvContent).then(() => {
+  //     setCopiedRowsData(structuredData);
+  //     setCopiedMonthMetadata(monthMetadata);
+  //     setHasClipboardData(true);
+  //     toast.success(`Copied ${structuredData.length} rows!`, { autoClose: 3000 });
+  //     setCheckedRows(new Set());  // Clear selection
+  //     setShowCopyButton(false);
+  //   }).catch(err => {
+  //     console.error("Copy failed", err);
+  //     toast.error("Failed to copy data.", { autoClose: 3000 });
+  //   });
+  // };
+
+  const handleCopySelectedRows = async () => {
     if (checkedRows.size === 0) {
-        toast.info("No rows selected to copy.", { autoClose: 2000 });
-        return;
+      toast.info("No rows selected to copy.", { autoClose: 2000 });
+      return;
     }
 
-    // Use the full durations array (sorted by date) to ensure we capture all fiscal years
+    // Use all durations to ensure all fiscal years are captured
     const allAvailableDurations = [...durations].sort((a, b) => {
-        if (a.year !== b.year) return a.year - b.year;
-        return a.monthNo - b.monthNo;
+      if (a.year !== b.year) return a.year - b.year;
+      return a.monthNo - b.monthNo;
     });
 
+    // Headers must match the Order used in the Paste function
     const headers = [
-        "ID Type", "ID", "Name", "Account", "Account Name", 
-        "Organization", "PLC", "Rev", "Brd", "Status", "Hour Rate", "Total"
+      "ID Type",
+      "ID",
+      "Name",
+      "Account",
+      "Account Name",
+      "OrgId",
+      "Org Name",
+      "PLC",
+      "Rev",
+      "Brd",
+      "Status",
+      "Hour Rate",
+      "Total",
     ];
 
     const monthMetadata = [];
     allAvailableDurations.forEach((duration) => {
-        const monthName = new Date(duration.year, duration.monthNo - 1)
-            .toLocaleDateString("en-US", { month: "short", year: "2-digit" });
-        headers.push(monthName);
-        monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+      const monthName = new Date(
+        duration.year,
+        duration.monthNo - 1
+      ).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+      headers.push(monthName);
+      monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
     });
 
     const copyData = [headers];
     const structuredData = [];
 
     checkedRows.forEach((rowIndex) => {
-        const emp = localEmployees[rowIndex];
-        if (emp && emp.emple && !hiddenRows[rowIndex]) {
-            const employeeRow = getEmployeeRow(emp, rowIndex);
-            
-            // Extract core data
-            const rowData = [
-                employeeRow.idType,
-                employeeRow.emplId,
-                employeeRow.name,
-                employeeRow.acctId,
-                employeeRow.acctName,
-                employeeRow.orgId,
-                employeeRow.glcPlc,
-                // Check if it's a React element (checkmark) or raw value
-                typeof employeeRow.isRev === "object" ? "✓" : employeeRow.isRev,
-                typeof employeeRow.isBrd === "object" ? "✓" : employeeRow.isBrd,
-                employeeRow.status,
-                employeeRow.perHourRate,
-            ];
+      const emp = localEmployees[rowIndex];
+      if (emp && emp.emple && !hiddenRows[rowIndex]) {
+        const employeeRow = getEmployeeRow(emp, rowIndex);
 
-            // Calculate totals and collect hours for ALL years
-            let totalHoursSum = 0;
-            const monthValues = [];
-            const empMonthHours = getMonthHours(emp);
+        const rowData = [
+          employeeRow.idType,
+          employeeRow.emplId,
+          employeeRow.name,
+          employeeRow.acctId,
+          employeeRow.acctName,
+          employeeRow.orgId,
+          employeeRow.orgName || "-",
+          employeeRow.glcPlc,
+          emp.emple.isRev ? "✓" : "-",
+          emp.emple.isBrd ? "✓" : "-",
+          employeeRow.status,
+          employeeRow.perHourRate,
+          employeeRow.total,
+        ];
 
-            allAvailableDurations.forEach((duration) => {
-                const uniqueKey = `${duration.monthNo}_${duration.year}`;
-                const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
-                const forecastValue = empMonthHours[uniqueKey]?.value;
-                const value = inputValue !== undefined && inputValue !== "" ? inputValue : forecastValue || "0.00";
+        // Add monthly hours
+        const empMonthHours = getMonthHours(emp);
+        allAvailableDurations.forEach((duration) => {
+          const uniqueKey = `${duration.monthNo}_${duration.year}`; // Standardized key
+          const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
+          const forecastValue = empMonthHours[uniqueKey]?.value;
+          const value =
+            inputValue !== undefined && inputValue !== ""
+              ? inputValue
+              : forecastValue || "0.00";
+          rowData.push(value);
+        });
 
-                totalHoursSum += value && !isNaN(value) ? Number(value) : 0;
-                monthValues.push(value);
-            });
-
-            rowData.push(totalHoursSum.toFixed(2)); // Total Column
-            rowData.push(...monthValues);         // All individual months
-
-            copyData.push(rowData);
-            structuredData.push(rowData);
-        }
+        copyData.push(rowData);
+        structuredData.push(rowData);
+      }
     });
 
     const tsvContent = copyData.map((row) => row.join("\t")).join("\n");
 
-    navigator.clipboard.writeText(tsvContent)
-        .then(() => {
-            setCopiedRowsData(structuredData);
-            setCopiedMonthMetadata(monthMetadata);
-            setHasClipboardData(true);
-            
-            // Updated Toast Message
-            // toast.success(`Success! ${structuredData.length} records (including all fiscal years) copied to clipboard.`, { 
-            //     autoClose: 3000,
-            //     icon: "📋" 
-            // });
-             toast.success(
-                      `Copied ${structuredData.length} rows with all fiscal year data!`,
-                      {
-                        autoClose: 3000,
-                      }
-                    );
-        })
-       .catch((err) => {
-        console.error("Copy failed:", err);
-        toast.error("Failed to copy data.", { autoClose: 3000 });
+    navigator.clipboard
+      .writeText(tsvContent)
+      .then(() => {
+        setCopiedRowsData(structuredData);
+        setCopiedMonthMetadata(monthMetadata);
+        setHasClipboardData(true);
+        toast.success(`Copied ${structuredData.length} rows!`);
+        setCheckedRows(new Set());
+        setShowCopyButton(false);
+      })
+      .catch((err) => {
+        toast.error("Failed to copy data.");
       });
-};
+  };
 
   // const handlePasteMultipleRows = () => {
   //   if (copiedRowsData.length === 0) {
@@ -2810,15 +3406,13 @@ const handleCopySelectedRows = () => {
           }
           // 2. Handle Vendor Type
           else if (entry.idType === "Vendor") {
-            const match = vendorSuggestions.find(
-              (v) => v.emplId === entry.id
-            );
+            const match = vendorSuggestions.find((v) => v.emplId === entry.id);
             if (match) {
               return {
                 ...entry,
                 // Vendor names usually come as a single string in lastName or firstName based on your existing logic
-                lastName: match.lastName || match.employeeName || "", 
-                firstName: "", 
+                lastName: match.lastName || match.employeeName || "",
+                firstName: "",
                 perHourRate: entry.perHourRate || match.perHourRate || "",
                 orgId: entry.orgId || match.orgId || "",
                 plcGlcCode: entry.plcGlcCode || match.plc || "",
@@ -2882,8 +3476,6 @@ const handleCopySelectedRows = () => {
               }))
             : [];
         } else if (entry.idType === "Other") {
-
-          
           accountsWithNames = Array.isArray(
             projectData.otherDirectCostLaborAccounts
           )
@@ -2892,28 +3484,36 @@ const handleCopySelectedRows = () => {
                 name: account.acctName,
               }))
             : [];
-          const otherAccounts = Array.isArray(projectData.otherDirectCostLaborAccounts)
-    ? projectData.otherDirectCostLaborAccounts.map((account) => ({
-        id: account.accountId,
-        name: account.acctName,
-      }))
-    : [];
+          const otherAccounts = Array.isArray(
+            projectData.otherDirectCostLaborAccounts
+          )
+            ? projectData.otherDirectCostLaborAccounts.map((account) => ({
+                id: account.accountId,
+                name: account.acctName,
+              }))
+            : [];
 
-  const empAccounts = Array.isArray(projectData.employeeLaborAccounts)
-    ? projectData.employeeLaborAccounts.map((account) => ({
-        id: account.accountId,
-        name: account.acctName,
-      }))
-    : [];
-    
-    const vendorAccounts = Array.isArray(projectData.sunContractorLaborAccounts)
-    ? projectData.sunContractorLaborAccounts.map(account => ({
-        id: account.accountId,
-        name: account.acctName,
-      }))
-    : [];
+          const empAccounts = Array.isArray(projectData.employeeLaborAccounts)
+            ? projectData.employeeLaborAccounts.map((account) => ({
+                id: account.accountId,
+                name: account.acctName,
+              }))
+            : [];
 
-  accountsWithNames = [...otherAccounts, ...empAccounts, ...vendorAccounts];
+          const vendorAccounts = Array.isArray(
+            projectData.sunContractorLaborAccounts
+          )
+            ? projectData.sunContractorLaborAccounts.map((account) => ({
+                id: account.accountId,
+                name: account.acctName,
+              }))
+            : [];
+
+          accountsWithNames = [
+            ...otherAccounts,
+            ...empAccounts,
+            ...vendorAccounts,
+          ];
         }
 
         setPastedEntryAccounts((prev) => ({
@@ -2945,113 +3545,220 @@ const handleCopySelectedRows = () => {
     }
   };
 
+  // const handlePasteMultipleRows = async () => {
+  //   if (copiedRowsData.length === 0) {
+  //     toast.error("No copied data available to paste", { autoClose: 2000 });
+  //     return;
+  //   }
+
+  //   // Close single new form if open
+  //   if (showNewForm) {
+  //     setShowNewForm(false);
+  //   }
+
+  //   // Filter durations by selected fiscal year
+  //   // const sortedDurations = [...durations]
+  //   //   .filter((d) => {
+  //   //     if (fiscalYear === "All") return true;
+  //   //     return d.year === parseInt(fiscalYear);
+  //   //   })
+  //   //   .sort((a, b) => {
+  //   //     if (a.year !== b.year) return a.year - b.year;
+  //   //     return a.monthNo - b.monthNo;
+  //   //   });
+
+  //   const processedEntries = [];
+  //   const processedHoursArray = [];
+
+  //   copiedRowsData.forEach((rowData, rowIndex) => {
+  //     // Extract employee data (first 11 columns + skip Total column at position 11)
+  //     const [
+  //       idTypeLabel,
+  //       id,
+  //       name,
+  //       acctId,
+  //       acctName,
+  //       orgId,
+  //       plcGlcCode,
+  //       isRev,
+  //       isBrd,
+  //       status,
+  //       perHourRate,
+  //       total, // Position 11 - capture but don't use
+  //       ...monthValues // Position 12+ - actual month values
+  //     ] = rowData;
+
+  //     // Map ID Type
+  //     // const idType =
+  //     //   ID_TYPE_OPTIONS.find((opt) => opt.label === idTypeLabel)?.value ||
+  //     //   idTypeLabel;
+
+  //     const idType = ID_TYPE_OPTIONS.find(
+  //           (opt) => opt.label.toLowerCase() === idTypeLabel.toLowerCase()
+  //       )?.value || idTypeLabel;
+
+  //       // AUTO-POPULATE Account Name from ID during paste
+  //       const matchedAccount = accountOptionsWithNames.find(acc => acc.id === acctId);
+
+  //     // Parse name based on ID type
+  //     let firstName = "";
+  //     let lastName = "";
+
+  //     if (idType === "PLC") {
+  //       firstName = name;
+  //     } else if (idType === "Vendor") {
+  //       if (name.includes(", ")) {
+  //         const nameParts = name.split(", ");
+  //         lastName = nameParts[0];
+  //         firstName = nameParts[1];
+  //       } else {
+  //         lastName = name;
+  //       }
+  //     } else if (idType === "Employee") {
+  //       const nameParts = name.split(" ");
+  //       firstName = nameParts[0];
+  //       lastName = nameParts.slice(1).join(" ");
+  //     } else {
+  //       firstName = name;
+  //     }
+
+  //     const entry = {
+  //       id: id,
+  //       firstName: firstName,
+  //       lastName: lastName,
+  //       idType: idType,
+  //       acctId: acctId,
+  //       orgId: orgId,
+  //       plcGlcCode: plcGlcCode,
+  //       perHourRate: perHourRate,
+  //       status: status || "ACT",
+  //       isRev: isRev === "✓",
+  //       isBrd: isBrd === "✓",
+  //     };
+
+  //     // CRITICAL FIX: Match hours by month/year from copiedMonthMetadata
+  //     const periodHours = {};
+
+  //     // Build a lookup map from copiedMonthMetadata to monthValues
+  //     const copiedHoursMap = {};
+  //     copiedMonthMetadata.forEach((meta, index) => {
+  //       const key = `${meta.monthNo}_${meta.year}`;
+  //       copiedHoursMap[key] = monthValues[index];
+  //     });
+
+  //     // Now map to current fiscal year durations
+  //     sortedDurations.forEach((duration) => {
+  //       const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //       const value = copiedHoursMap[uniqueKey];
+
+  //       // Only add non-zero values that exist in copied data
+  //       if (value && value !== "0.00" && value !== "0" && value !== "") {
+  //         periodHours[uniqueKey] = value;
+  //       }
+  //     });
+
+  //     processedEntries.push(entry);
+  //     processedHoursArray.push(periodHours);
+  //   });
+
+  //   // Set state with all processed data
+  //   setNewEntries(processedEntries);
+  //   setNewEntryPeriodHoursArray(processedHoursArray);
+
+  //    // Disable paste button
+  //   setHasClipboardData(false);
+  //   setCopiedRowsData([]);
+  //   setCopiedMonthMetadata([]);
+
+  //   toast.success(
+  //     `Pasted ${processedEntries.length} entries for fiscal year ${fiscalYear}!`,
+  //     { autoClose: 3000 }
+  //   );
+
+  //   fetchAllSuggestionsOptimized(processedEntries);
+
+  // };
+
   const handlePasteMultipleRows = async () => {
     if (copiedRowsData.length === 0) {
       toast.error("No copied data available to paste", { autoClose: 2000 });
       return;
     }
 
-    // Close single new form if open
-    if (showNewForm) {
-      setShowNewForm(false);
-    }
+    if (showNewForm) setShowNewForm(false);
 
-    // Filter durations by selected fiscal year
-    // const sortedDurations = [...durations]
-    //   .filter((d) => {
-    //     if (fiscalYear === "All") return true;
-    //     return d.year === parseInt(fiscalYear);
-    //   })
-    //   .sort((a, b) => {
-    //     if (a.year !== b.year) return a.year - b.year;
-    //     return a.monthNo - b.monthNo;
-    //   });
+    // Use all durations for mapping
+    const allDurations = [...durations].sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.monthNo - b.monthNo;
+    });
 
     const processedEntries = [];
     const processedHoursArray = [];
 
-    copiedRowsData.forEach((rowData, rowIndex) => {
-      // Extract employee data (first 11 columns + skip Total column at position 11)
+    copiedRowsData.forEach((rowData) => {
+      // Column Mapping based on the handleCopySelectedRows structure
       const [
         idTypeLabel,
-        id,
+        rawId,
         name,
         acctId,
         acctName,
-        orgId,
-        plcGlcCode,
-        isRev,
-        isBrd,
-        status,
-        perHourRate,
-        total, // Position 11 - capture but don't use
-        ...monthValues // Position 12+ - actual month values
+        orgId, // Position 5
+        orgName, // Position 6
+        plc, // Position 7
+        isRev, // Position 8
+        isBrd, // Position 9
+        status, // Position 10
+        hourRate, // Position 11
+        total, // Position 12
+        ...monthValues
       ] = rowData;
 
-      // Map ID Type
-      // const idType =
-      //   ID_TYPE_OPTIONS.find((opt) => opt.label === idTypeLabel)?.value ||
-      //   idTypeLabel;
-
-      const idType = ID_TYPE_OPTIONS.find(
-            (opt) => opt.label.toLowerCase() === idTypeLabel.toLowerCase()
+      const idType =
+        ID_TYPE_OPTIONS.find(
+          (opt) => opt.label.toLowerCase() === idTypeLabel.toLowerCase()
         )?.value || idTypeLabel;
 
-        // AUTO-POPULATE Account Name from ID during paste
-        const matchedAccount = accountOptionsWithNames.find(acc => acc.id === acctId);
+      // Sanitize ID
+      const id = (rawId || "").replace(
+        /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+        ""
+      );
 
-      // Parse name based on ID type
       let firstName = "";
       let lastName = "";
-
       if (idType === "PLC") {
         firstName = name;
       } else if (idType === "Vendor") {
-        if (name.includes(", ")) {
-          const nameParts = name.split(", ");
-          lastName = nameParts[0];
-          firstName = nameParts[1];
-        } else {
-          lastName = name;
-        }
-      } else if (idType === "Employee") {
-        const nameParts = name.split(" ");
-        firstName = nameParts[0];
-        lastName = nameParts.slice(1).join(" ");
+        lastName = name;
       } else {
-        firstName = name;
+        const nameParts = (name || "").split(" ");
+        firstName = nameParts[0] || "";
+        lastName = nameParts.slice(1).join(" ") || "";
       }
 
       const entry = {
-        id: id,
-        firstName: firstName,
-        lastName: lastName,
-        idType: idType,
-        acctId: acctId,
-        orgId: orgId,
-        plcGlcCode: plcGlcCode,
-        perHourRate: perHourRate,
+        id: id.trim(),
+        firstName,
+        lastName,
+        idType,
+        acctId,
+        acctName,
+        orgId,
+        orgName: orgName || "",
+        plcGlcCode: plc,
+        perHourRate: hourRate,
         status: status || "ACT",
         isRev: isRev === "✓",
         isBrd: isBrd === "✓",
       };
 
-      // CRITICAL FIX: Match hours by month/year from copiedMonthMetadata
       const periodHours = {};
-
-      // Build a lookup map from copiedMonthMetadata to monthValues
-      const copiedHoursMap = {};
+      // Map pasted values to the correct month_year key using metadata
       copiedMonthMetadata.forEach((meta, index) => {
-        const key = `${meta.monthNo}_${meta.year}`;
-        copiedHoursMap[key] = monthValues[index];
-      });
-
-      // Now map to current fiscal year durations
-      sortedDurations.forEach((duration) => {
-        const uniqueKey = `${duration.monthNo}_${duration.year}`;
-        const value = copiedHoursMap[uniqueKey];
-
-        // Only add non-zero values that exist in copied data
+        const uniqueKey = `${meta.monthNo}_${meta.year}`;
+        const value = monthValues[index];
         if (value && value !== "0.00" && value !== "0" && value !== "") {
           periodHours[uniqueKey] = value;
         }
@@ -3061,28 +3768,16 @@ const handleCopySelectedRows = () => {
       processedHoursArray.push(periodHours);
     });
 
-    // Set state with all processed data
     setNewEntries(processedEntries);
     setNewEntryPeriodHoursArray(processedHoursArray);
-
-     // Disable paste button
     setHasClipboardData(false);
     setCopiedRowsData([]);
     setCopiedMonthMetadata([]);
 
-    toast.success(
-      `Pasted ${processedEntries.length} entries for fiscal year ${fiscalYear}!`,
-      { autoClose: 3000 }
-    );
+    toast.success(`Pasted ${processedEntries.length} rows!`);
 
-    
+    // Trigger optimized suggestion fetch
     fetchAllSuggestionsOptimized(processedEntries);
-
-    
-
-   
-
-    
   };
 
   useEffect(() => {
@@ -3503,36 +4198,43 @@ const handleCopySelectedRows = () => {
             }))
           : [];
       } else if (entry.idType === "Other") {
+        const otherAccounts = Array.isArray(
+          projectData.otherDirectCostLaborAccounts
+        )
+          ? projectData.otherDirectCostLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
 
-  const otherAccounts = Array.isArray(projectData.otherDirectCostLaborAccounts)
-    ? projectData.otherDirectCostLaborAccounts.map(account => ({
-        id: account.accountId,
-        name: account.acctName,
-      }))
-    : [];
+        const employeeAccounts = Array.isArray(
+          projectData.employeeLaborAccounts
+        )
+          ? projectData.employeeLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
 
-  const employeeAccounts = Array.isArray(projectData.employeeLaborAccounts)
-    ? projectData.employeeLaborAccounts.map(account => ({
-        id: account.accountId,
-        name: account.acctName,
-      }))
-    : [];
+        const vendorAccounts = Array.isArray(
+          projectData.sunContractorLaborAccounts
+        )
+          ? projectData.sunContractorLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
 
-  const vendorAccounts = Array.isArray(projectData.sunContractorLaborAccounts)
-    ? projectData.sunContractorLaborAccounts.map(account => ({
-        id: account.accountId,
-        name: account.acctName,
-      }))
-    : [];
-    
-
-  accountsWithNames = [
-    ...otherAccounts,
-    ...employeeAccounts,
-    ...vendorAccounts,
-  ];
-}
-setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
+        accountsWithNames = [
+          ...otherAccounts,
+          ...employeeAccounts,
+          ...vendorAccounts,
+        ];
+      }
+      setPastedEntryAccounts((prev) => ({
+        ...prev,
+        [entryIndex]: accountsWithNames,
+      }));
 
       //   accountsWithNames = Array.isArray(
       //     projectData.otherDirectCostLaborAccounts
@@ -3589,8 +4291,7 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
       }
 
       const text = await navigator.clipboard.readText();
-
-      if (!text || text.trim() === "") {
+      if (!text || !text.trim()) {
         toast.error("No data found in clipboard. Please copy data first.", {
           autoClose: 3000,
         });
@@ -3598,26 +4299,22 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
         return;
       }
 
-      // Process the paste
+      // ✅ Process the paste
       processPastedText(text);
-
       setTimeout(() => {
         isPastingRef.current = false;
       }, 300);
     } catch (err) {
       isPastingRef.current = false;
       toast.error(
-        "Please use Ctrl+V to paste or grant clipboard permissions.",
-        {
-          autoClose: 3000,
-        }
+        "Clipboard access failed. Please use Ctrl+V to paste or grant clipboard permissions.",
+        { autoClose: 3000 }
       );
     }
   };
 
   const processPastedText = (text) => {
     const lines = text.split("\n").filter((line) => line.trim() !== "");
-
     if (lines.length === 0) {
       toast.error("No valid data found in clipboard.", { autoClose: 3000 });
       return;
@@ -3626,7 +4323,6 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
     const isFirstLineHeaders =
       lines[0].toLowerCase().includes("id type") ||
       lines[0].toLowerCase().includes("account");
-
     const dataLines = isFirstLineHeaders ? lines.slice(1) : lines;
 
     if (dataLines.length === 0) {
@@ -3649,7 +4345,6 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
       // Update clipboard with remaining rows
       const remainingLines = [lines[0], ...dataLines.slice(1)];
       const remainingText = remainingLines.join("\n");
-
       navigator.clipboard
         .writeText(remainingText)
         .then(() => {
@@ -3659,7 +4354,7 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
           setCopiedRowsData((prev) => prev.slice(1));
         })
         .catch((err) => {
-          console.error("Failed to update clipboard:", err);
+          console.error("Failed to update clipboard", err);
           // Even if clipboard update fails, keep states
           setHasClipboardData(true);
           setCopiedRowsData((prev) => prev.slice(1));
@@ -3671,6 +4366,194 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
       toast.success("Data pasted successfully!", { autoClose: 2000 });
     }
   };
+
+  const pasteRowData = (row) => {
+    if (row.length < 11) {
+      toast.error("Invalid data format. Please copy complete row data.", {
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const [
+      idTypeLabel,
+      id,
+      name,
+      acctId,
+      acctName,
+      orgId,
+      plc,
+      rev,
+      brd,
+      status,
+      hourRate,
+      total,
+      ...monthValues
+    ] = row;
+
+    const idType =
+      IDTYPEOPTIONS.find((opt) =>
+        opt.label.toLowerCase().includes(idTypeLabel?.toLowerCase())
+      )?.value || "Employee";
+
+    let firstName = "",
+      lastName = "";
+    if (idType === "PLC") {
+      firstName = name;
+    } else if (idType === "Vendor") {
+      lastName = name;
+    } else {
+      const nameParts = name.split(" ");
+      firstName = nameParts[0];
+      lastName = nameParts.slice(1).join(" ");
+    }
+
+    // ✅ RESOLVE orgName FROM orgId
+    const matchedOrg = organizationOptions.find(
+      (org) => org.value.toString() === orgId?.toString()
+    );
+    const orgName = matchedOrg
+      ? matchedOrg.orgName || matchedOrg.label.split(" - ")[1] || ""
+      : "";
+
+    const completeNewEntryData = {
+      id,
+      firstName,
+      lastName,
+      isRev: rev === "true" || rev === true,
+      isBrd: brd === "true" || brd === true,
+      idType,
+      acctId,
+      orgId,
+      orgName, // ✅ NEW: Include orgName
+      plcGlcCode: plc,
+      perHourRate: hourRate,
+      status: status || "ACT",
+    };
+
+    setNewEntry(completeNewEntryData);
+    setPlcSearch(plc);
+    setOrgSearch(orgId);
+
+    // Handle month values
+    if (monthValues.length > 0 && durations.length > 0) {
+      const newPeriodHours = {};
+      const sortedDurations = [...durations].sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.monthNo - b.monthNo;
+      });
+
+      monthValues.forEach((value, index) => {
+        if (
+          index < sortedDurations.length &&
+          value !== "0.00" &&
+          value !== "0"
+        ) {
+          const duration = sortedDurations[index];
+          const uniqueKey = `${duration.monthNo}${duration.year}`;
+          newPeriodHours[uniqueKey] = value;
+        }
+      });
+      setNewEntryPeriodHours(newPeriodHours);
+    }
+  };
+
+  // const handlePasteToNewEntry = async () => {
+  //   try {
+  //     isPastingRef.current = true;
+
+  //     // Check if there's an unsaved entry
+  //     if (showNewForm && newEntry.id) {
+  //       toast.warning("Please save the current entry before pasting again.", {
+  //         autoClose: 3000,
+  //       });
+  //       isPastingRef.current = false;
+  //       return;
+  //     }
+
+  //     const text = await navigator.clipboard.readText();
+
+  //     if (!text || text.trim() === "") {
+  //       toast.error("No data found in clipboard. Please copy data first.", {
+  //         autoClose: 3000,
+  //       });
+  //       isPastingRef.current = false;
+  //       return;
+  //     }
+
+  //     // Process the paste
+  //     processPastedText(text);
+
+  //     setTimeout(() => {
+  //       isPastingRef.current = false;
+  //     }, 300);
+  //   } catch (err) {
+  //     isPastingRef.current = false;
+  //     toast.error(
+  //       "Please use Ctrl+V to paste or grant clipboard permissions.",
+  //       {
+  //         autoClose: 3000,
+  //       }
+  //     );
+  //   }
+  // };
+
+  // const processPastedText = (text) => {
+  //   const lines = text.split("\n").filter((line) => line.trim() !== "");
+
+  //   if (lines.length === 0) {
+  //     toast.error("No valid data found in clipboard.", { autoClose: 3000 });
+  //     return;
+  //   }
+
+  //   const isFirstLineHeaders =
+  //     lines[0].toLowerCase().includes("id type") ||
+  //     lines[0].toLowerCase().includes("account");
+
+  //   const dataLines = isFirstLineHeaders ? lines.slice(1) : lines;
+
+  //   if (dataLines.length === 0) {
+  //     toast.error("No data rows found in clipboard.", { autoClose: 3000 });
+  //     return;
+  //   }
+
+  //   // Process first row
+  //   const firstRow = dataLines[0].split("\t");
+  //   pasteRowData(firstRow);
+
+  //   // Handle remaining rows
+  //   if (dataLines.length > 1) {
+  //     // If there are more rows, save current form and show next paste option
+  //     toast.info(
+  //       `Pasted 1 of ${dataLines.length} rows. Save this entry, then click Paste again for next row.`,
+  //       { autoClose: 4000 }
+  //     );
+
+  //     // Update clipboard with remaining rows
+  //     const remainingLines = [lines[0], ...dataLines.slice(1)];
+  //     const remainingText = remainingLines.join("\n");
+
+  //     navigator.clipboard
+  //       .writeText(remainingText)
+  //       .then(() => {
+  //         // Keep hasClipboardData true for next paste
+  //         setHasClipboardData(true);
+  //         // Update copiedRowsData to remove first row
+  //         setCopiedRowsData((prev) => prev.slice(1));
+  //       })
+  //       .catch((err) => {
+  //         console.error("Failed to update clipboard:", err);
+  //         // Even if clipboard update fails, keep states
+  //         setHasClipboardData(true);
+  //         setCopiedRowsData((prev) => prev.slice(1));
+  //       });
+  //   } else {
+  //     // Last row - clear everything
+  //     setHasClipboardData(false);
+  //     setCopiedRowsData([]);
+  //     toast.success("Data pasted successfully!", { autoClose: 2000 });
+  //   }
+  // };
 
   // const pasteRowData = (row) => {
   //   if (row.length < 11) {
@@ -3758,90 +4641,89 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
   //   }
   // };
   // Update this function to handle the Total column correctly
-  const pasteRowData = (row) => {
-    if (row.length < 11) {
-      toast.error("Invalid data format. Please copy complete row data.", {
-        autoClose: 3000,
-      });
-      return;
-    }
+  // const pasteRowData = (row) => {
+  //   if (row.length < 11) {
+  //     toast.error("Invalid data format. Please copy complete row data.", {
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
 
-    const [
-      idTypeLabel,
-      id,
-      name,
-      acctId,
-      acctName,
-      orgId,
-      plc,
-      rev,
-      brd,
-      status,
-      hourRate,
-      total, // <--- ADD THIS: Capture 'Total' so it is excluded from ...monthValues
-      ...monthValues
-    ] = row;
+  //   const [
+  //     idTypeLabel,
+  //     id,
+  //     name,
+  //     acctId,
+  //     acctName,
+  //     orgId,
+  //     plc,
+  //     rev,
+  //     brd,
+  //     status,
+  //     hourRate,
+  //     total, // <--- ADD THIS: Capture 'Total' so it is excluded from ...monthValues
+  //     ...monthValues
+  //   ] = row;
 
-    const idType =
-      ID_TYPE_OPTIONS.find(
-        (opt) => opt.label.toLowerCase() === idTypeLabel.toLowerCase()
-      )?.value || "Employee";
+  //   const idType =
+  //     ID_TYPE_OPTIONS.find(
+  //       (opt) => opt.label.toLowerCase() === idTypeLabel.toLowerCase()
+  //     )?.value || "Employee";
 
-    let firstName = "";
-    let lastName = "";
+  //   let firstName = "";
+  //   let lastName = "";
 
-    if (idType === "PLC") {
-      firstName = name || "";
-    } else if (idType === "Vendor") {
-      lastName = name || "";
-    } else {
-      const nameParts = (name || "").split(" ");
-      firstName = nameParts[0] || "";
-      lastName = nameParts.slice(1).join(" ") || "";
-    }
+  //   if (idType === "PLC") {
+  //     firstName = name || "";
+  //   } else if (idType === "Vendor") {
+  //     lastName = name || "";
+  //   } else {
+  //     const nameParts = (name || "").split(" ");
+  //     firstName = nameParts[0] || "";
+  //     lastName = nameParts.slice(1).join(" ") || "";
+  //   }
 
-    const completeNewEntryData = {
-      id: id || "",
-      firstName,
-      lastName,
-      isRev: rev === "✓",
-      isBrd: brd === "✓",
-      idType,
-      acctId: acctId || "",
-      orgId: orgId || "",
-      plcGlcCode: plc || "",
-      perHourRate: hourRate || "",
-      status: status || "ACT",
-    };
+  //   const completeNewEntryData = {
+  //     id: id || "",
+  //     firstName,
+  //     lastName,
+  //     isRev: rev === "✓",
+  //     isBrd: brd === "✓",
+  //     idType,
+  //     acctId: acctId || "",
+  //     orgId: orgId || "",
+  //     plcGlcCode: plc || "",
+  //     perHourRate: hourRate || "",
+  //     status: status || "ACT",
+  //   };
 
-    setNewEntry(completeNewEntryData);
-    setPlcSearch(plc || "");
-    setOrgSearch(orgId || "");
+  //   setNewEntry(completeNewEntryData);
+  //   setPlcSearch(plc || "");
+  //   setOrgSearch(orgId || "");
 
-    if (monthValues.length > 0 && durations.length > 0) {
-      const newPeriodHours = {};
-      const sortedDurations = [...durations].sort((a, b) => {
-        if (a.year !== b.year) return a.year - b.year;
-        return a.monthNo - b.monthNo;
-      });
+  //   if (monthValues.length > 0 && durations.length > 0) {
+  //     const newPeriodHours = {};
+  //     const sortedDurations = [...durations].sort((a, b) => {
+  //       if (a.year !== b.year) return a.year - b.year;
+  //       return a.monthNo - b.monthNo;
+  //     });
 
-      monthValues.forEach((value, index) => {
-        if (
-          index < sortedDurations.length &&
-          value &&
-          value !== "0.00" &&
-          value !== "0"
-        ) {
-          const duration = sortedDurations[index];
-          const uniqueKey = `${duration.monthNo}_${duration.year}`;
-          newPeriodHours[uniqueKey] = value;
-        }
-      });
+  //     monthValues.forEach((value, index) => {
+  //       if (
+  //         index < sortedDurations.length &&
+  //         value &&
+  //         value !== "0.00" &&
+  //         value !== "0"
+  //       ) {
+  //         const duration = sortedDurations[index];
+  //         const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //         newPeriodHours[uniqueKey] = value;
+  //       }
+  //     });
 
-      setNewEntryPeriodHours(newPeriodHours);
-    }
-  };
-
+  //     setNewEntryPeriodHours(newPeriodHours);
+  //   }
+  // };
 
   useEffect(() => {
     const handleKeyDown = async (e) => {
@@ -3879,7 +4761,152 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
     setAutoPopulatedPLC(false);
   };
 
+  // const getEmployeeRow = (emp, idx) => {
+  //   if (!emp || !emp.emple) {
+  //     return {
+  //       idType: "-",
+  //       emplId: "-",
+  //       warning: false,
+  //       name: "-",
+  //       acctId: "-",
+  //       acctName: "-", // ADD THIS LINE
+  //       // orgId: "-",
+  //       orgId: emp.emple.orgId || "-",
+  //       orgName: (() => {
+  //           const organizationId = emp.emple.orgId;
+  //           if (!organizationId) return "-";
+
+  //           // Search through the cached organizationOptions
+  //           const matchedOrg = organizationOptions.find(
+  //               (opt) => opt.value.toString() === organizationId.toString()
+  //           );
+
+  //           // If we have it in our list, return the Name, otherwise return the ID
+  //           return matchedOrg ? matchedOrg.orgName : organizationId;
+  //       })(),
+  //       glcPlc: "-",
+  //       isRev: "-",
+  //       isBrd: "-",
+  //       status: "-",
+  //       perHourRate: "0",
+  //       total: "0",
+  //     };
+  //   }
+
+  //   const formatIdType = (str) => {
+  //   if (!str || str === "-") return "-";
+  //   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  // };
+
+  // const rawType = emp.emple.type || "-";
+
+  // const typeLabel = ID_TYPE_OPTIONS.find((opt) => opt.value === rawType)?.label || rawType;
+
+  //   const monthHours = getMonthHours(emp);
+  //   const totalHours = sortedDurations.reduce((sum, duration) => {
+  //     const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //     const inputValue = inputValues[`${idx}_${uniqueKey}`];
+  //     const forecastValue = monthHours[uniqueKey]?.value;
+  //     const value =
+  //       inputValue !== undefined && inputValue !== ""
+  //         ? inputValue
+  //         : forecastValue;
+  //     return sum + (value && !isNaN(value) ? Number(value) : 0);
+  //   }, 0);
+
+  //   // CHECK FOR ANY LOCAL WARNINGS FOR THIS SPECIFIC EMPLOYEE
+  //   const emplId = emp.emple.emplId;
+  //   const plcCode = emp.emple.plcGlcCode || "";
+
+  //   // Check hours warnings (existing logic)
+  //   const hasHoursWarning = sortedDurations.some((duration) => {
+  //     const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //     const warningKey = generateWarningKey(emplId, plcCode, uniqueKey);
+  //     return localWarnings[warningKey];
+  //   });
+
+  //   // CHECK FOR ACCOUNT/ORG FIELD WARNINGS
+  //   const accountWarningKey = generateFieldWarningKey(
+  //     emplId,
+  //     "account",
+  //     emp.emple.accId
+  //   );
+  //   const orgWarningKey = generateFieldWarningKey(
+  //     emplId,
+  //     "organization",
+  //     emp.emple.orgId
+  //   );
+  //   const hasAccountWarning = localWarnings[accountWarningKey];
+  //   const hasOrgWarning = localWarnings[orgWarningKey];
+
+  //   // Combine all warning types
+  //   const warningValue =
+  //     emp.isWarning ||
+  //     emp.emple?.isWarning ||
+  //     hasHoursWarning ||
+  //     hasAccountWarning ||
+  //     hasOrgWarning ||
+  //     false;
+
+  //   return {
+  //     // idType:
+  //     //   ID_TYPE_OPTIONS.find(
+  //     //     (opt) => opt.value === (emp.emple.type || "-")
+  //     //   )?.label ||
+  //     //   emp.emple.type ||
+  //     //   "-",
+  //     idType: formatIdType(typeLabel),
+  //     emplId: emp.emple.emplId,
+  //     warning: Boolean(warningValue),
+  //     name:
+  //       emp.emple.idType === "Vendor"
+  //         ? emp.emple.lastName || emp.emple.firstName || "-"
+  //         : `${emp.emple.firstName || ""} ${emp.emple.lastName || ""}`.trim() ||
+  //           "-",
+  //     acctId:
+  //       emp.emple.accId ||
+  //       (laborAccounts.length > 0 ? laborAccounts[0].id : "-"),
+  //     acctName: (() => {
+  //       const accountId =
+  //         emp.emple.accId ||
+  //         (laborAccounts.length > 0 ? laborAccounts[0].id : "-");
+  //       const accountWithName = accountOptionsWithNames.find(
+  //         (acc) => acc.id === accountId
+  //       );
+  //       return accountWithName ? accountWithName.name : "-";
+  //     })(),
+  //     orgId: emp.emple.orgId || "-",
+  //     glcPlc: (() => {
+  //       const plcCode = emp.emple.plcGlcCode || "";
+  //       if (!plcCode) return "-";
+
+  //       const plcOption =
+  //         plcOptions.find((option) => option.value === plcCode) ||
+  //         updatePlcOptions.find((option) => option.value === plcCode);
+
+  //       return plcOption ? plcOption.label : plcCode;
+  //     })(),
+  //     isRev: emp.emple.isRev ? (
+  //       <span className="text-green-600 font-sm text-lg">✓</span>
+  //     ) : (
+  //       "-"
+  //     ),
+  //     isBrd: emp.emple.isBrd ? (
+  //       <span className="text-green-600 font-sm text-lg">✓</span>
+  //     ) : (
+  //       "-"
+  //     ),
+  //     status: emp.emple.status || "Act",
+  //     perHourRate:
+  //       emp.emple.perHourRate !== undefined && emp.emple.perHourRate !== null
+  //         ? Number(emp.emple.perHourRate).toFixed(2)
+  //         : "0",
+  //     total: totalHours.toFixed(2) || "-",
+  //   };
+  // };
+
   const getEmployeeRow = (emp, idx) => {
+    // Keep the same safe default row when emp/emple is missing
     if (!emp || !emp.emple) {
       return {
         idType: "-",
@@ -3887,8 +4914,9 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
         warning: false,
         name: "-",
         acctId: "-",
-        acctName: "-", // ADD THIS LINE
+        acctName: "-",
         orgId: "-",
+        orgName: "-", // just "-"
         glcPlc: "-",
         isRev: "-",
         isBrd: "-",
@@ -3898,15 +4926,30 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
       };
     }
 
-    const formatIdType = (str) => {
-    if (!str || str === "-") return "-";
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
+    // const formatIdType = (str) => {
+    //   if (!str || str === "-") return "-";
+    //   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    // };
 
-  const rawType = emp.emple.type || "-";
-  
-  
-  const typeLabel = ID_TYPE_OPTIONS.find((opt) => opt.value === rawType)?.label || rawType;
+    const formatIdType = (str) => {
+      if (!str || str === "-") return "-";
+
+      const trimmedStr = str.trim();
+
+      // Convert to uppercase once to handle any variation (plc, Plc, pLc)
+      if (trimmedStr.toUpperCase() === "PLC") {
+        return "PLC";
+      }
+
+      // For everything else: First letter Capital, rest lowercase
+      return (
+        trimmedStr.charAt(0).toUpperCase() + trimmedStr.slice(1).toLowerCase()
+      );
+    };
+
+    const rawType = emp.emple.type || "-";
+    const typeLabel =
+      ID_TYPE_OPTIONS.find((opt) => opt.value === rawType)?.label || rawType;
 
     const monthHours = getMonthHours(emp);
     const totalHours = sortedDurations.reduce((sum, duration) => {
@@ -3954,13 +4997,86 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
       hasOrgWarning ||
       false;
 
+    // NEW: resolve orgName from orgId using organizationOptions / updateOrganizationOptions
+    const organizationId = emp.emple.orgId;
+    let resolvedOrgName = "";
+
+    if (organizationId) {
+      const matchedOrg =
+        (organizationOptions || []).find(
+          (opt) => opt.value?.toString() === organizationId.toString()
+        ) ||
+        (updateOrganizationOptions || []).find(
+          (opt) => opt.value?.toString() === organizationId.toString()
+        );
+
+      if (matchedOrg) {
+        // prefer explicit orgName, then label, then fall back to the id
+        resolvedOrgName =
+          matchedOrg.orgName || matchedOrg.label || organizationId;
+      } else {
+        resolvedOrgName = "";
+      }
+    }
+
+    // return {
+    //   // idType:
+    //   //   ID_TYPE_OPTIONS.find(
+    //   //     (opt) => opt.value === (emp.emple.type || "-")
+    //   //   )?.label ||
+    //   //   emp.emple.type ||
+    //   //   "-",
+    //   idType: formatIdType(typeLabel),
+    //   emplId: emp.emple.emplId,
+    //   warning: Boolean(warningValue),
+    //   name:
+    //     emp.emple.idType === "Vendor"
+    //       ? emp.emple.lastName || emp.emple.firstName || "-"
+    //       : `${emp.emple.firstName || ""} ${emp.emple.lastName || ""}`.trim() ||
+    //         "-",
+    //   acctId:
+    //     emp.emple.accId ||
+    //     (laborAccounts.length > 0 ? laborAccounts[0].id : "-"),
+    //   acctName: (() => {
+    //     const accountId =
+    //       emp.emple.accId ||
+    //       (laborAccounts.length > 0 ? laborAccounts[0].id : "-");
+    //     const accountWithName = accountOptionsWithNames.find(
+    //       (acc) => acc.id === accountId
+    //     );
+    //     return accountWithName ? accountWithName.name : "-";
+    //   })(),
+    //   orgId: emp.emple.orgId || "-",
+    //   orgName: resolvedOrgName, // <-- only addition to main return
+    //   glcPlc: (() => {
+    //     const plcCode = emp.emple.plcGlcCode || "";
+    //     if (!plcCode) return "-";
+
+    //     const plcOption =
+    //       plcOptions.find((option) => option.value === plcCode) ||
+    //       updatePlcOptions.find((option) => option.value === plcCode);
+
+    //     return plcOption ? plcOption.label : plcCode;
+    //   })(),
+    //   isRev: emp.emple.isRev ? (
+    //     <span className="text-green-600 font-sm text-lg">✓</span>
+    //   ) : (
+    //     "-"
+    //   ),
+    //   isBrd: emp.emple.isBrd ? (
+    //     <span className="text-green-600 font-sm text-lg">✓</span>
+    //   ) : (
+    //     "-"
+    //   ),
+    //   status: emp.emple.status || "Act",
+    //   perHourRate:
+    //     emp.emple.perHourRate !== undefined && emp.emple.perHourRate !== null
+    //       ? Number(emp.emple.perHourRate).toFixed(2)
+    //       : "0",
+    //   total: totalHours.toFixed(2) || "-",
+    // };
+
     return {
-      // idType:
-      //   ID_TYPE_OPTIONS.find(
-      //     (opt) => opt.value === (emp.emple.type || "-")
-      //   )?.label ||
-      //   emp.emple.type ||
-      //   "-",
       idType: formatIdType(typeLabel),
       emplId: emp.emple.emplId,
       warning: Boolean(warningValue),
@@ -3975,21 +5091,29 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
       acctName: (() => {
         const accountId =
           emp.emple.accId ||
-          (laborAccounts.length > 0 ? laborAccounts[0].id : "-");
-        const accountWithName = accountOptionsWithNames.find(
-          (acc) => acc.id === accountId
-        );
-        return accountWithName ? accountWithName.name : "-";
+          (laborAccounts.length > 0 ? laborAccounts[0].id : null);
+        if (!accountId) return "-";
+
+        const accountWithName =
+          accountOptionsWithNames.find((acc) => acc.id === accountId) ||
+          updateAccountOptions.find((acc) => acc.id === accountId) ||
+          laborAccounts.find((acc) => acc.id === accountId);
+
+        return accountWithName
+          ? accountWithName.name ||
+              accountWithName.acctName ||
+              accountWithName.label ||
+              accountId
+          : accountId;
       })(),
       orgId: emp.emple.orgId || "-",
+      orgName: resolvedOrgName || "-", // Your orgName logic is already correct
       glcPlc: (() => {
         const plcCode = emp.emple.plcGlcCode || "";
         if (!plcCode) return "-";
-
         const plcOption =
           plcOptions.find((option) => option.value === plcCode) ||
           updatePlcOptions.find((option) => option.value === plcCode);
-
         return plcOption ? plcOption.label : plcCode;
       })(),
       isRev: emp.emple.isRev ? (
@@ -4019,7 +5143,7 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
         const value =
           planType === "EAC" && forecast.actualhours !== undefined
             ? forecast.actualhours
-            : forecast.forecastedhours ?? 0;
+            : (forecast.forecastedhours ?? 0);
         monthHours[uniqueKey] = { value, ...forecast };
       });
     }
@@ -4356,61 +5480,79 @@ setPastedEntryAccounts(prev => ({ ...prev, [entryIndex]: accountsWithNames }));
   // ]);
 
   // REPLACE your current columnTotals useMemo with this updated version:
-const columnTotals = useMemo(() => {
-  const totals = {};
-  const currentFiscalYear = normalizedFiscalYear !== "All" ? parseInt(normalizedFiscalYear) : null;
-  const startYear = parseInt(startDate.split("-")[0]);
+  const columnTotals = useMemo(() => {
+    const totals = {};
+    const currentFiscalYear =
+      normalizedFiscalYear !== "All" ? parseInt(normalizedFiscalYear) : null;
+    const startYear = parseInt(startDate.split("-")[0]);
 
-  // Use durations if year is All, otherwise use all available durations to calculate CTD/Prior correctly
-  const calcDurations = currentFiscalYear === null ? sortedDurations : durations;
+    // Use durations if year is All, otherwise use all available durations to calculate CTD/Prior correctly
+    const calcDurations =
+      currentFiscalYear === null ? sortedDurations : durations;
 
-  calcDurations.forEach((duration) => {
-    const uniqueKey = `${duration.monthNo}_${duration.year}`;
-    let monthlyHoursTotal = 0;
-    let monthlyCostTotal = 0; // New accumulator for cost
+    calcDurations.forEach((duration) => {
+      const uniqueKey = `${duration.monthNo}_${duration.year}`;
+      let monthlyHoursTotal = 0;
+      let monthlyCostTotal = 0; // New accumulator for cost
 
-    localEmployees.forEach((emp, idx) => {
-      if (hiddenRows[idx]) return;
-      
-      const monthHoursMap = getMonthHours(emp);
-      const forecast = monthHoursMap[uniqueKey];
-      
-      // Hours logic (existing)
-      const inputValue = inputValues[`${idx}_${uniqueKey}`];
-      const hoursValue = inputValue !== undefined && inputValue !== "" ? inputValue : (forecast?.value || 0);
-      monthlyHoursTotal += (hoursValue && !isNaN(hoursValue) ? Number(hoursValue) : 0);
+      localEmployees.forEach((emp, idx) => {
+        if (hiddenRows[idx]) return;
 
-      // Cost logic (NEW)
-      // Note: We use forecast.forecastedCost from the API response
-      monthlyCostTotal += (forecast?.forecastedCost || 0);
+        const monthHoursMap = getMonthHours(emp);
+        const forecast = monthHoursMap[uniqueKey];
+
+        // Hours logic (existing)
+        const inputValue = inputValues[`${idx}_${uniqueKey}`];
+        const hoursValue =
+          inputValue !== undefined && inputValue !== ""
+            ? inputValue
+            : forecast?.value || 0;
+        monthlyHoursTotal +=
+          hoursValue && !isNaN(hoursValue) ? Number(hoursValue) : 0;
+
+        // Cost logic (NEW)
+        // Note: We use forecast.forecastedCost from the API response
+        monthlyCostTotal += forecast?.forecastedCost || 0;
+      });
+
+      // Store hours
+      totals[uniqueKey] = monthlyHoursTotal;
+      // Store cost with a specific suffix to distinguish it
+      totals[`${uniqueKey}_cost`] = monthlyCostTotal;
+
+      // CTD / Prior Year logic for Cost
+      if (currentFiscalYear !== null) {
+        if (duration.year === currentFiscalYear - 1) {
+          totals["priorYear"] = (totals["priorYear"] || 0) + monthlyHoursTotal;
+          totals["priorYear_cost"] =
+            (totals["priorYear_cost"] || 0) + monthlyCostTotal;
+        }
+        if (
+          duration.year >= startYear &&
+          duration.year <= currentFiscalYear - 2
+        ) {
+          totals["ctd"] = (totals["ctd"] || 0) + monthlyHoursTotal;
+          totals["ctd_cost"] = (totals["ctd_cost"] || 0) + monthlyCostTotal;
+        }
+      }
     });
 
-    // Store hours
-    totals[uniqueKey] = monthlyHoursTotal;
-    // Store cost with a specific suffix to distinguish it
-    totals[`${uniqueKey}_cost`] = monthlyCostTotal;
+    return totals;
+  }, [
+    durations,
+    localEmployees,
+    hiddenRows,
+    inputValues,
+    sortedDurations,
+    normalizedFiscalYear,
+    startDate,
+  ]);
 
-    // CTD / Prior Year logic for Cost
-    if (currentFiscalYear !== null) {
-      if (duration.year === currentFiscalYear - 1) {
-        totals["priorYear"] = (totals["priorYear"] || 0) + monthlyHoursTotal;
-        totals["priorYear_cost"] = (totals["priorYear_cost"] || 0) + monthlyCostTotal;
-      }
-      if (duration.year >= startYear && duration.year <= currentFiscalYear - 2) {
-        totals["ctd"] = (totals["ctd"] || 0) + monthlyHoursTotal;
-        totals["ctd_cost"] = (totals["ctd_cost"] || 0) + monthlyCostTotal;
-      }
+  useEffect(() => {
+    if (typeof onColumnTotalsChange === "function") {
+      onColumnTotalsChange(columnTotals);
     }
-  });
-
-  return totals;
-}, [durations, localEmployees, hiddenRows, inputValues, sortedDurations, normalizedFiscalYear, startDate]);
-
-useEffect(() => {
-  if (typeof onColumnTotalsChange === "function") {
-    onColumnTotalsChange(columnTotals);
-  }
-}, [columnTotals, onColumnTotalsChange]);
+  }, [columnTotals, onColumnTotalsChange]);
 
   // ADD THIS NEW MEMOIZED VALUE:
   const employeeYearTotals = useMemo(() => {
@@ -4551,7 +5693,10 @@ useEffect(() => {
       id: emp.emple.id || 0,
       emplId: emp.emple.emplId,
       // firstName: emp.emple.firstName || "",
-      firstName: editedData.firstName !== undefined ? editedData.firstName : (emp.emple.firstName || ""),
+      firstName:
+        editedData.firstName !== undefined
+          ? editedData.firstName
+          : emp.emple.firstName || "",
       lastName: emp.emple.lastName || "",
       type: emp.emple.type || " ",
       isRev:
@@ -4561,7 +5706,10 @@ useEffect(() => {
       // plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "")
       //   .split("-")[0]
       //   .substring(0, 20),
-      plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "").split("-")[0].trim().substring(0, 20),
+      plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "")
+        .split("-")[0]
+        .trim()
+        .substring(0, 20),
       perHourRate: Number(editedData.perHourRate || emp.emple.perHourRate || 0),
       status: emp.emple.status || "Act",
       accId:
@@ -4603,13 +5751,780 @@ useEffect(() => {
     }
   };
 
+  // const handleSaveAll = async () => {
+  //   const hasHoursChanges = Object.keys(modifiedHours).length > 0;
+  //   const hasEmployeeChanges = Object.keys(editedEmployeeData).length > 0;
+
+  //   if (!hasHoursChanges && !hasEmployeeChanges) {
+  //     toast.info("No changes to save.", { autoClose: 2000 });
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   let successCount = 0;
+  //   let errorCount = 0;
+
+  //   try {
+  //     // Save employee data changes first
+  //     if (hasEmployeeChanges) {
+  //       for (const empIdx in editedEmployeeData) {
+  //         const emp = localEmployees[empIdx];
+  //         const editedData = editedEmployeeData[empIdx];
+
+  //         if (!emp || !emp.emple) {
+  //           errorCount++;
+  //           continue;
+  //         }
+
+  //         const payload = {
+  //           id: emp.emple.id || 0,
+  //           emplId: emp.emple.emplId,
+  //           // firstName: emp.emple.firstName || "",
+  //           firstName: editedData.firstName !== undefined ? editedData.firstName : (emp.emple.firstName || ""),
+  //           lastName: emp.emple.lastName || "",
+  //           type: emp.emple.type || " ",
+  //           isRev:
+  //             editedData.isRev !== undefined
+  //               ? editedData.isRev
+  //               : emp.emple.isRev,
+  //           isBrd:
+  //             editedData.isBrd !== undefined
+  //               ? editedData.isBrd
+  //               : emp.emple.isBrd,
+  //           plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "")
+  //             .split("-")[0]
+  //             .substring(0, 20),
+  //           perHourRate: Number(
+  //             editedData.perHourRate || emp.emple.perHourRate || 0
+  //           ),
+  //           status: emp.emple.status || "Act",
+  //           accId: editedData.acctId || emp.emple.accId || "",
+  //           orgId: editedData.orgId || emp.emple.orgId || "",
+  //           plId: planId,
+  //           plForecasts: emp.emple.plForecasts || [],
+  //         };
+
+  //         try {
+  //           await axios.put(`${backendUrl}/Employee/UpdateEmployee`, payload, {
+  //             headers: { "Content-Type": "application/json" },
+  //           });
+
+  //           // Update local state
+  //           setLocalEmployees((prev) => {
+  //             const updated = [...prev];
+  //             updated[empIdx] = {
+  //               ...updated[empIdx],
+  //               emple: {
+  //                 ...updated[empIdx].emple,
+  //                 ...payload,
+  //               },
+  //             };
+  //             return updated;
+  //           });
+
+  //           successCount++;
+  //         } catch (err) {
+  //           errorCount++;
+  //         }
+  //       }
+  //     }
+
+  //     // Save hours changes
+  //     if (hasHoursChanges) {
+  //       const bulkPayload = [];
+
+  //       for (const key in modifiedHours) {
+  //         const { empIdx, uniqueKey, newValue, employee } = modifiedHours[key];
+
+  //         const newNumericValue = newValue === "" ? 0 : Number(newValue);
+  //         const emp = employee;
+  //         const monthHours = getMonthHours(emp);
+  //         const forecast = monthHours[uniqueKey];
+
+  //         if (!forecast || !forecast.forecastid) {
+  //           errorCount++;
+  //           continue;
+  //         }
+
+  //         const currentDuration = sortedDurations.find(
+  //           (d) => `${d.monthNo}_${d.year}` === uniqueKey
+  //         );
+
+  //         if (!isMonthEditable(currentDuration, closedPeriod, planType)) {
+  //           errorCount++;
+  //           continue;
+  //         }
+
+  //         const payload = {
+  //           forecastedamt: forecast?.forecastedamt ?? 0,
+  //           actualamt: forecast?.actualamt ?? 0,
+  //           forecastid: Number(forecast?.forecastid ?? 0),
+  //           projId: forecast?.projId ?? projectId ?? "",
+  //           plId: forecast?.plId ?? planId ?? 0,
+  //           emplId: forecast?.emplId ?? emp?.emple?.emplId ?? "",
+  //           dctId: forecast?.dctId ?? 0,
+  //           month: forecast?.month ?? currentDuration?.monthNo ?? 0,
+  //           year: forecast?.year ?? currentDuration?.year ?? 0,
+  //           totalBurdenCost: forecast?.totalBurdenCost ?? 0,
+  //           fees: forecast?.fees ?? 0,
+  //           burden: forecast?.burden ?? 0,
+  //           ccffRevenue: forecast?.ccffRevenue ?? 0,
+  //           tnmRevenue: forecast?.tnmRevenue ?? 0,
+  //           revenue: forecast?.revenue ?? 0,
+  //           cost: forecast?.cost ?? 0,
+  //           forecastedCost: forecast?.forecastedCost ?? 0,
+  //           fringe: forecast?.fringe ?? 0,
+  //           overhead: forecast?.overhead ?? 0,
+  //           gna: forecast?.gna ?? 0,
+  //           materials: forecast?.materials ?? 0,
+  //           ...(planType === "EAC"
+  //             ? {
+  //                 actualhours: Number(newNumericValue) || 0,
+  //                 forecastedhours: forecast?.forecastedhours ?? 0,
+  //               }
+  //             : {
+  //                 forecastedhours: Number(newNumericValue) || 0,
+  //                 actualhours: forecast?.actualhours ?? 0,
+  //               }),
+  //           createdat: forecast?.createdat ?? new Date().toISOString(),
+  //           updatedat: new Date().toISOString(),
+  //           displayText: forecast?.displayText ?? "",
+  //           acctId: emp?.emple?.accId ?? "",
+  //           orgId: emp?.emple?.orgId ?? "",
+  //           plc: emp?.emple?.plcGlcCode ?? "",
+  //           empleId: emp?.emple?.id ?? 0,
+  //           hrlyRate: emp?.emple?.perHourRate ?? 0,
+  //           effectDt: new Date().toISOString().split("T")[0],
+  //           emple: emp?.emple
+  //             ? {
+  //                 id: emp.emple.id ?? 0,
+  //                 emplId: emp.emple.emplId ?? "",
+  //                 orgId: emp.emple.orgId ?? "",
+  //                 firstName: emp.emple.firstName ?? "",
+  //                 lastName: emp.emple.lastName ?? "",
+  //                 plcGlcCode: emp.emple.plcGlcCode ?? "",
+  //                 perHourRate: emp.emple.perHourRate ?? 0,
+  //                 salary: emp.emple.salary ?? 0,
+  //                 accId: emp.emple.accId ?? "",
+  //                 hireDate:
+  //                   emp.emple.hireDate ??
+  //                   new Date().toISOString().split("T")[0],
+  //                 isRev: emp.emple.isRev ?? false,
+  //                 isBrd: emp.emple.isBrd ?? false,
+  //                 createdAt: emp.emple.createdAt ?? new Date().toISOString(),
+  //                 type: emp.emple.type ?? "",
+  //                 status: emp.emple.status ?? "",
+  //                 plId: planId ?? 0,
+  //                 isWarning: emp.emple.isWarning ?? false,
+  //                 plForecasts: [],
+  //                 organization: emp.emple.organization ?? null,
+  //                 plProjectPlan: emp.emple.plProjectPlan ?? null,
+  //               }
+  //             : null,
+  //         };
+
+  //         bulkPayload.push(payload);
+  //       }
+
+  //       if (bulkPayload.length > 0) {
+  //         const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
+
+  //         await axios.put(
+  //           `${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiPlanType}?plid=${planId}&templateid=${templateId}`,
+  //           bulkPayload,
+  //           { headers: { "Content-Type": "application/json" } }
+  //         );
+
+  //         // Update local state for hours
+  //         setLocalEmployees((prev) => {
+  //           const updated = [...prev];
+  //           for (const key in modifiedHours) {
+  //             const { empIdx, uniqueKey, newValue } = modifiedHours[key];
+  //             const newNumericValue = newValue === "" ? 0 : Number(newValue);
+
+  //             if (
+  //               updated[empIdx] &&
+  //               updated[empIdx].emple &&
+  //               updated[empIdx].emple.plForecasts
+  //             ) {
+  //               const currentDuration = sortedDurations.find(
+  //                 (d) => `${d.monthNo}_${d.year}` === uniqueKey
+  //               );
+  //               const forecastIndex = updated[
+  //                 empIdx
+  //               ].emple.plForecasts.findIndex(
+  //                 (f) =>
+  //                   f.month === currentDuration?.monthNo &&
+  //                   f.year === currentDuration?.year
+  //               );
+  //               if (forecastIndex !== -1) {
+  //                 if (planType === "EAC") {
+  //                   updated[empIdx].emple.plForecasts[
+  //                     forecastIndex
+  //                   ].actualhours = newNumericValue;
+  //                 } else {
+  //                   updated[empIdx].emple.plForecasts[
+  //                     forecastIndex
+  //                   ].forecastedhours = newNumericValue;
+  //                 }
+  //               }
+  //             }
+  //           }
+  //           return updated;
+  //         });
+
+  //         successCount += bulkPayload.length;
+  //       }
+  //     }
+
+  //     try {
+  //       await axios.post(
+  //         `https://test-api-3tmq.onrender.com/Forecast/ValidateForecast?planid=${planId}`
+  //       );
+  //       // console.log("Forecast validation completed successfully");
+  //     } catch (validationErr) {
+  //       console.error("Forecast validation failed:", validationErr);
+  //       toast.warning("Hours saved but validation encountered an issue.", {
+  //         autoClose: 4000,
+  //       });
+  //     }
+
+  //     // Clear all modified data and reset flags
+  //     setModifiedHours({});
+  //     setHasUnsavedHoursChanges(false);
+  //     setEditedEmployeeData({});
+  //     setHasUnsavedEmployeeChanges(false);
+
+  //     // if (successCount > 0) {
+  //     //   const message =
+  //     //     hasHoursChanges && hasEmployeeChanges
+  //     //       ? `Successfully saved ${successCount} entries and employee updates!`
+  //     //       : hasHoursChanges
+  //     //       ? `Successfully saved hour entries!`
+  //     //       : `Successfully updated employees!`;
+
+  //     //   toast.success(message, { autoClose: 3000 });
+  //     // }
+
+  //     if (errorCount > 0) {
+  //       toast.warning(`${errorCount} entries could not be saved.`, {
+  //         autoClose: 3000,
+  //       });
+  //     }
+  //   } catch (err) {
+  //     toast.error(
+  //       "Failed to save changes: " +
+  //         (err.response?.data?.message || err.message),
+  //       {
+  //         toastId: "save-all-error",
+  //         autoClose: 3000,
+  //       }
+  //     );
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  //  const handleMasterSave = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const savePromises = [];
+
+  //     // 1. Save New/Pasted Entries
+  //     if (newEntries.length > 0) {
+  //       savePromises.push(handleSaveMultipleEntry());
+  //     }
+
+  //     // 2. Save Existing Grid Hours/Employee Edits
+  //     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+  //       savePromises.push(handleSaveAll());
+  //     }
+
+  //     await Promise.all(savePromises);
+
+  //     // --- CRITICAL: CLEAR ALL STATES TO HIDE BUTTONS ---
+  //     setNewEntries([]);
+  //     setNewEntryPeriodHoursArray([]);
+  //     setShowNewForm(false);
+  //     setHasUnsavedHoursChanges(false);
+  //     setHasUnsavedEmployeeChanges(false);
+  //     setModifiedHours({});
+  //     setEditedEmployeeData({});
+  //     setInputValues({});
+  //     setCheckedRows(new Set());
+  //     setShowCopyButton(false);
+
+  //     toast.success("All changes saved successfully!");
+  //   } catch (err) {
+  //     console.error("Master Save Error:", err);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // const handleMasterSave = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const savePromises = [];
+  //     const savedTypes = [];
+
+  //     // 1. Save New/Pasted Entries
+  //     if (newEntries.length > 0) {
+  //       savePromises.push(handleSaveMultipleEntry());
+  //       savedTypes.push(`${newEntries.length} new entry`);
+  //     }
+
+  //     // 2. Save Existing Grid Hours/Employee Edits
+  //     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+  //       savePromises.push(handleSaveAll());
+  //       if (hasUnsavedHoursChanges && hasUnsavedEmployeeChanges) savedTypes.push("hour changes and employee updates");
+  //       else if (hasUnsavedHoursChanges) savedTypes.push("hour changes");
+  //       else savedTypes.push("employee updates");
+  //     }
+
+  //     if (savePromises.length === 0) {
+  //       toast.info("No changes to save.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     await Promise.all(savePromises);
+
+  //     // --- RESET ALL STATES ---
+  //     setNewEntries([]);
+  //     setNewEntryPeriodHoursArray([]);
+  //     setShowNewForm(false);
+  //     setHasUnsavedHoursChanges(false);
+  //     setHasUnsavedEmployeeChanges(false);
+  //     setModifiedHours({});
+  //     setEditedEmployeeData({});
+  //     setInputValues({});
+  //     setCheckedRows(new Set());
+  //     setShowCopyButton(false);
+
+  //     // --- FIRE ONLY ONE COMBINED TOAST ---
+  //     toast.success(`Successfully saved ${savedTypes.join(" and ")}!`, {
+  //       autoClose: 3000,
+  //     });
+
+  //   } catch (err) {
+  //     console.error("ave Error:", err);
+  //     // Error toasts are handled within the individual functions or here as fallback
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // const handleMasterSave = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     // 1. Attempt to save new entries
+  //     const newEntriesSuccess = await handleSaveMultipleEntry();
+
+  //     // IF NEW ENTRIES FAILED VALIDATION, STOP HERE.
+  //     // This keeps the data in the table so the user can fix it.
+  //     if (!newEntriesSuccess) {
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // 2. If new entries saved, attempt to save grid edits
+  //     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+  //       await handleSaveAll();
+  //     }
+
+  //     // 3. ONLY CLEAR AND NOTIFY ON TOTAL SUCCESS
+  //     setNewEntries([]);
+  //     setNewEntryPeriodHoursArray([]);
+  //     setShowNewForm(false);
+  //     setHasUnsavedHoursChanges(false);
+  //     setHasUnsavedEmployeeChanges(false);
+  //     setModifiedHours({});
+  //     setEditedEmployeeData({});
+  //     setInputValues({});
+
+  //     toast.success("All changes saved successfully!");
+
+  //   } catch (err) {
+  //     console.error("Save Error:", err);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // const handleMasterSave = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     // 1. Run validation and bulk save for new entries
+  //     const success = await handleSaveMultipleEntry();
+
+  //     // 2. Critical Gate: If validation failed, exit here so data stays in the table
+  //     if (!success) {
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // 3. Save existing grid edits if new entries were successful
+  //     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+  //       await handleSaveAll();
+  //     }
+
+  //     // 4. Reset all states only after total success
+  //     setNewEntries([]);
+  //     setNewEntryPeriodHoursArray([]);
+  //     setShowNewForm(false);
+  //     setHasUnsavedHoursChanges(false);
+  //     setHasUnsavedEmployeeChanges(false);
+  //     setModifiedHours({});
+  //     setEditedEmployeeData({});
+  //     setInputValues({});
+
+  //     toast.success("All changes saved successfully!");
+
+  //   } catch (err) {
+  //     console.error("Save Error:", err);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // const handleMasterSave = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     // 1. Save new entries first
+  //     const saveSuccess = await handleSaveMultipleEntry();
+
+  //     // 2. If validation failed, exit immediately to keep data visible for fixing
+  //     if (!saveSuccess) {
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // 3. Save existing grid edits if any
+  //     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+  //       await handleSaveAll();
+  //     }
+
+  //     // 4. CRITICAL: Clear states FIRST
+  //     setNewEntries([]);
+  //     setNewEntryPeriodHoursArray([]);
+  //     setShowNewForm(false);
+  //     setModifiedHours({});
+  //     setEditedEmployeeData({});
+  //     setInputValues({});
+  //     setHasUnsavedHoursChanges(false);
+  //     setHasUnsavedEmployeeChanges(false);
+
+  //     // 5. CRITICAL: Trigger the data re-fetch IMMEDIATELY to update the page
+  //     await fetchEmployees();
+
+  //     if (onSaveSuccess) onSaveSuccess();
+
+  //     toast.success("All changes saved and updated!");
+
+  //   } catch (err) {
+  //     // console.error("Save Error:", err);
+  //     toast.error("An error occurred during save. Please try again.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // const handleMasterSave = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     // 1. Validate New Entries first
+  //     if (newEntries.length > 0) {
+  //         for (let i = 0; i < newEntries.length; i++) {
+  //             const entry = newEntries[i];
+  //             if (entry.idType !== "Other" && !isValidEmployeeId(entry.id)) {
+  //                 toast.error(`Row ${i+1}: Invalid ID. Must pick from suggestions.`);
+  //                 setIsLoading(false);
+  //                 return; // STOP COMPLETELY
+  //             }
+  //             if (!isValidAccount(entry.acctId) || !isValidOrg(entry.orgId)) {
+  //                 toast.error(`Row ${i+1}: Please select valid Account/Organization.`);
+  //                 setIsLoading(false);
+  //                 return; // STOP COMPLETELY
+  //             }
+  //         }
+  //     }
+
+  //     // 2. Perform Save
+  //     const saveSuccess = await handleSaveMultipleEntry();
+
+  //     if (!saveSuccess) {
+  //       // If handleSaveMultipleEntry returned false, it already threw a toast error.
+  //       // We do NOT show a success message here.
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+  //       await handleSaveAll();
+  //     }
+
+  //     // 3. Clear states only if everything above worked
+  //     setNewEntries([]);
+  //     setNewEntryPeriodHoursArray([]);
+  //     setShowNewForm(false);
+  //     setModifiedHours({});
+  //     setEditedEmployeeData({});
+  //     setHasUnsavedHoursChanges(false);
+  //     setHasUnsavedEmployeeChanges(false);
+
+  //     await fetchEmployees();
+  //     if (onSaveSuccess) onSaveSuccess();
+
+  //     // ONLY SHOW SUCCESS IF NO ERRORS OCCURRED
+  //     toast.success("All changes saved successfully!");
+
+  //   } catch (err) {
+  //     console.error("Master Save Error:", err);
+  //     // Do NOT show success toast here
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  // const handleSaveAll = async () => {
+  //   const hasHoursChanges = Object.keys(modifiedHours).length > 0;
+  //   const hasEmployeeChanges = Object.keys(editedEmployeeData).length > 0;
+
+  //   if (!hasHoursChanges && !hasEmployeeChanges) {
+  //     toast.info("No changes to save.", { autoClose: 2000 });
+  //     return true; // Technically success since nothing to do
+  //   }
+
+  //   // --- STRICT VALIDATION FOR EDITED GRID DATA ---
+  //   if (hasEmployeeChanges && planType !== "NBBUD") {
+  //     for (const empIdx in editedEmployeeData) {
+  //       const edit = editedEmployeeData[empIdx];
+  //       const emp = localEmployees[empIdx];
+  //       const emplId = emp?.emple?.emplId || "Unknown";
+
+  //       // 1. Validate Account (acctId)
+  //       if (edit.acctId !== undefined && edit.acctId !== "") {
+  //         const isAccValid = updateAccountOptions.some(opt => opt.id === edit.acctId.trim());
+  //         if (!isAccValid) {
+  //           toast.error(`ID ${emplId}: Account "${edit.acctId}" is invalid. Please select from suggestions.`);
+  //           return false; // BLOCK SAVE
+  //         }
+  //       }
+
+  //       // 2. Validate Organization (orgId)
+  //       if (edit.orgId !== undefined && edit.orgId !== "") {
+  //         const isOrgValid = updateOrganizationOptions.some(opt => opt.value.toString() === edit.orgId.toString().trim());
+  //         if (!isOrgValid) {
+  //           toast.error(`ID ${emplId}: Organization "${edit.orgId}" is invalid. Please select from suggestions.`);
+  //           return false; // BLOCK SAVE
+  //         }
+  //       }
+
+  //       // 3. Validate PLC (glcPlc)
+  //       if (edit.glcPlc !== undefined && edit.glcPlc !== "" && emp.emple.type !== "Other") {
+  //         // Strip description if user selected from list "PLCCODE - Description"
+  //         const cleanPlcValue = edit.glcPlc.split("-")[0].trim();
+  //         const isPlcValid = updatePlcOptions.some(opt => opt.value.toLowerCase() === cleanPlcValue.toLowerCase());
+
+  //         if (!isPlcValid) {
+  //           toast.error(`ID ${emplId}: PLC "${cleanPlcValue}" is invalid. Please select from suggestions.`);
+  //           return false; // BLOCK SAVE
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   setIsLoading(true);
+  //   let successCount = 0;
+  //   let errorCount = 0;
+
+  //   try {
+  //     // Save employee data changes first
+  //     if (hasEmployeeChanges) {
+  //       for (const empIdx in editedEmployeeData) {
+  //         const emp = localEmployees[empIdx];
+  //         const editedData = editedEmployeeData[empIdx];
+
+  //         if (!emp || !emp.emple) {
+  //           errorCount++;
+  //           continue;
+  //         }
+
+  //         const payload = {
+  //           id: emp.emple.id || 0,
+  //           emplId: emp.emple.emplId,
+  //           firstName: editedData.firstName !== undefined ? editedData.firstName : (emp.emple.firstName || ""),
+  //           lastName: emp.emple.lastName || "",
+  //           type: emp.emple.type || " ",
+  //           isRev: editedData.isRev !== undefined ? editedData.isRev : emp.emple.isRev,
+  //           isBrd: editedData.isBrd !== undefined ? editedData.isBrd : emp.emple.isBrd,
+  //           // Extract only the code for PLC
+  //           plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "").split("-")[0].trim().substring(0, 20),
+  //           perHourRate: Number(editedData.perHourRate || emp.emple.perHourRate || 0),
+  //           status: emp.emple.status || "Act",
+  //           accId: editedData.acctId || emp.emple.accId || "",
+  //           orgId: editedData.orgId || emp.emple.orgId || "",
+  //           plId: planId,
+  //           plForecasts: emp.emple.plForecasts || [],
+  //         };
+
+  //         try {
+  //           await axios.put(`${backendUrl}/Employee/UpdateEmployee`, payload, {
+  //             headers: { "Content-Type": "application/json" },
+  //           });
+
+  //           setLocalEmployees((prev) => {
+  //             const updated = [...prev];
+  //             updated[empIdx] = {
+  //               ...updated[empIdx],
+  //               emple: { ...updated[empIdx].emple, ...payload },
+  //             };
+  //             return updated;
+  //           });
+  //           successCount++;
+  //         } catch (err) {
+  //           errorCount++;
+  //         }
+  //       }
+  //     }
+
+  //     // Save hours changes
+  //     if (hasHoursChanges) {
+  //       const bulkPayload = [];
+  //       for (const key in modifiedHours) {
+  //         const { empIdx, uniqueKey, newValue, employee } = modifiedHours[key];
+  //         const newNumericValue = newValue === "" ? 0 : Number(newValue);
+  //         const emp = employee;
+  //         const forecast = getMonthHours(emp)[uniqueKey];
+
+  //         if (!forecast || !forecast.forecastid) continue;
+
+  //         const currentDuration = sortedDurations.find(d => `${d.monthNo}_${d.year}` === uniqueKey);
+  //         if (!isMonthEditable(currentDuration, closedPeriod, planType)) continue;
+
+  //         bulkPayload.push({
+  //           ...forecast,
+  //           forecastid: Number(forecast.forecastid),
+  //           projId: forecast.projId || projectId,
+  //           plId: planId,
+  //           emplId: emp.emple.emplId,
+  //           ...(planType === "EAC"
+  //             ? { actualhours: Number(newNumericValue), forecastedhours: forecast.forecastedhours }
+  //             : { forecastedhours: Number(newNumericValue), actualhours: forecast.actualhours }),
+  //           updatedat: new Date().toISOString(),
+  //           acctId: emp.emple.accId,
+  //           orgId: emp.emple.orgId,
+  //           plc: emp.emple.plcGlcCode.split("-")[0].trim(),
+  //           hrlyRate: emp.perHourRate || 0
+  //         });
+  //       }
+
+  //       if (bulkPayload.length > 0) {
+  //         const apiType = planType === "NBBUD" ? "BUD" : planType;
+  //         await axios.put(`${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiType}?plid=${planId}&templateid=${templateId}`, bulkPayload);
+  //       }
+  //     }
+
+  //     // Trigger Final Validation API
+  //     try {
+  //       await axios.post(`${backendUrl}/Forecast/ValidateForecast?planid=${planId}`);
+  //     } catch (vErr) {
+  //       console.warn("Validation cleanup failed", vErr);
+  //     }
+
+  //     // Reset states
+  //     setModifiedHours({});
+  //     setHasUnsavedHoursChanges(false);
+  //     setEditedEmployeeData({});
+  //     setHasUnsavedEmployeeChanges(false);
+
+  //     if (errorCount > 0) {
+  //       toast.warning(`${errorCount} entries could not be saved.`);
+  //     }
+
+  //     return true; // SIGNAL SUCCESS TO MASTER SAVE
+
+  //   } catch (err) {
+  //     toast.error("Failed to save changes: " + (err.response?.data?.message || err.message));
+  //     return false; // SIGNAL FAILURE
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleSaveAll = async () => {
     const hasHoursChanges = Object.keys(modifiedHours).length > 0;
     const hasEmployeeChanges = Object.keys(editedEmployeeData).length > 0;
 
     if (!hasHoursChanges && !hasEmployeeChanges) {
-      toast.info("No changes to save.", { autoClose: 2000 });
-      return;
+      return true;
+    }
+
+    // --- STRICT VALIDATION FOR EDITED GRID DATA ---
+    if (hasEmployeeChanges && planType !== "NBBUD") {
+      for (const empIdx in editedEmployeeData) {
+        const edit = editedEmployeeData[empIdx];
+        const emp = localEmployees[empIdx];
+        const emplId = emp?.emple?.emplId || "Unknown";
+
+        let errorFound = false;
+        let errorMsg = "";
+
+        // 1. Validate Account (acctId)
+        if (edit.acctId !== undefined && edit.acctId !== "") {
+          const isAccValid = updateAccountOptions.some(
+            (opt) => opt.id === edit.acctId.trim()
+          );
+          if (!isAccValid) {
+            errorMsg = `ID ${emplId}: Account "${edit.acctId}" is invalid. Please select from suggestions.`;
+            errorFound = true;
+          }
+        }
+
+        // 2. Validate Organization (orgId)
+        if (!errorFound && edit.orgId !== undefined && edit.orgId !== "") {
+          const isOrgValid = updateOrganizationOptions.some(
+            (opt) => opt.value.toString() === edit.orgId.toString().trim()
+          );
+          if (!isOrgValid) {
+            errorMsg = `ID ${emplId}: Organization "${edit.orgId}" is invalid. Please select from suggestions.`;
+            errorFound = true;
+          }
+        }
+
+        // 3. Validate PLC (glcPlc)
+        if (
+          !errorFound &&
+          edit.glcPlc !== undefined &&
+          edit.glcPlc !== "" &&
+          emp.emple.type !== "Other"
+        ) {
+          const cleanPlcValue = edit.glcPlc.split("-")[0].trim();
+          const isPlcValid = updatePlcOptions.some(
+            (opt) => opt.value.toLowerCase() === cleanPlcValue.toLowerCase()
+          );
+          if (!isPlcValid) {
+            errorMsg = `ID ${emplId}: PLC "${cleanPlcValue}" is invalid. Please select from suggestions.`;
+            errorFound = true;
+          }
+        }
+
+        // If any validation failed for this specific row:
+        if (errorFound) {
+          toast.error(errorMsg);
+
+          // AUTO-SELECT THE ROW via checkbox
+          handleCheckboxSelection(parseInt(empIdx), true);
+
+          // SCROLL TO THE ROW
+          const rowElement = document.getElementById(`emp-row-${empIdx}`);
+          if (rowElement) {
+            rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+
+          return false; // BLOCK SAVE COMPLETELY
+        }
+      }
     }
 
     setIsLoading(true);
@@ -4617,7 +6532,7 @@ useEffect(() => {
     let errorCount = 0;
 
     try {
-      // Save employee data changes first
+      // 1. Save employee field changes (Account, Org, PLC, etc.)
       if (hasEmployeeChanges) {
         for (const empIdx in editedEmployeeData) {
           const emp = localEmployees[empIdx];
@@ -4631,8 +6546,10 @@ useEffect(() => {
           const payload = {
             id: emp.emple.id || 0,
             emplId: emp.emple.emplId,
-            // firstName: emp.emple.firstName || "",
-            firstName: editedData.firstName !== undefined ? editedData.firstName : (emp.emple.firstName || ""),
+            firstName:
+              editedData.firstName !== undefined
+                ? editedData.firstName
+                : emp.emple.firstName || "",
             lastName: emp.emple.lastName || "",
             type: emp.emple.type || " ",
             isRev:
@@ -4645,6 +6562,7 @@ useEffect(() => {
                 : emp.emple.isBrd,
             plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "")
               .split("-")[0]
+              .trim()
               .substring(0, 20),
             perHourRate: Number(
               editedData.perHourRate || emp.emple.perHourRate || 0
@@ -4656,432 +6574,143 @@ useEffect(() => {
             plForecasts: emp.emple.plForecasts || [],
           };
 
-          try {
-            await axios.put(`${backendUrl}/Employee/UpdateEmployee`, payload, {
-              headers: { "Content-Type": "application/json" },
-            });
+          await axios.put(`${backendUrl}/Employee/UpdateEmployee`, payload, {
+            headers: { "Content-Type": "application/json" },
+          });
 
-            // Update local state
-            setLocalEmployees((prev) => {
-              const updated = [...prev];
-              updated[empIdx] = {
-                ...updated[empIdx],
-                emple: {
-                  ...updated[empIdx].emple,
-                  ...payload,
-                },
-              };
-              return updated;
-            });
-
-            successCount++;
-          } catch (err) {
-            errorCount++;
-          }
+          // Update local state for fields
+          setLocalEmployees((prev) => {
+            const updated = [...prev];
+            updated[empIdx] = {
+              ...updated[empIdx],
+              emple: { ...updated[empIdx].emple, ...payload },
+            };
+            return updated;
+          });
+          successCount++;
         }
       }
 
-      // Save hours changes
+      // 2. Save hours changes (the grid monthly inputs)
       if (hasHoursChanges) {
         const bulkPayload = [];
-
         for (const key in modifiedHours) {
           const { empIdx, uniqueKey, newValue, employee } = modifiedHours[key];
-
           const newNumericValue = newValue === "" ? 0 : Number(newValue);
           const emp = employee;
-          const monthHours = getMonthHours(emp);
-          const forecast = monthHours[uniqueKey];
+          const forecast = getMonthHours(emp)[uniqueKey];
 
-          if (!forecast || !forecast.forecastid) {
-            errorCount++;
-            continue;
-          }
+          if (!forecast || !forecast.forecastid) continue;
 
           const currentDuration = sortedDurations.find(
             (d) => `${d.monthNo}_${d.year}` === uniqueKey
           );
-
-          if (!isMonthEditable(currentDuration, closedPeriod, planType)) {
-            errorCount++;
+          if (!isMonthEditable(currentDuration, closedPeriod, planType))
             continue;
-          }
 
-          const payload = {
-            forecastedamt: forecast?.forecastedamt ?? 0,
-            actualamt: forecast?.actualamt ?? 0,
-            forecastid: Number(forecast?.forecastid ?? 0),
-            projId: forecast?.projId ?? projectId ?? "",
-            plId: forecast?.plId ?? planId ?? 0,
-            emplId: forecast?.emplId ?? emp?.emple?.emplId ?? "",
-            dctId: forecast?.dctId ?? 0,
-            month: forecast?.month ?? currentDuration?.monthNo ?? 0,
-            year: forecast?.year ?? currentDuration?.year ?? 0,
-            totalBurdenCost: forecast?.totalBurdenCost ?? 0,
-            fees: forecast?.fees ?? 0,
-            burden: forecast?.burden ?? 0,
-            ccffRevenue: forecast?.ccffRevenue ?? 0,
-            tnmRevenue: forecast?.tnmRevenue ?? 0,
-            revenue: forecast?.revenue ?? 0,
-            cost: forecast?.cost ?? 0,
-            forecastedCost: forecast?.forecastedCost ?? 0,
-            fringe: forecast?.fringe ?? 0,
-            overhead: forecast?.overhead ?? 0,
-            gna: forecast?.gna ?? 0,
-            materials: forecast?.materials ?? 0,
+          bulkPayload.push({
+            ...forecast,
+            forecastid: Number(forecast.forecastid),
+            projId: forecast.projId || projectId,
+            plId: planId,
+            emplId: emp.emple.emplId,
             ...(planType === "EAC"
               ? {
-                  actualhours: Number(newNumericValue) || 0,
-                  forecastedhours: forecast?.forecastedhours ?? 0,
+                  actualhours: Number(newNumericValue),
+                  forecastedhours: forecast.forecastedhours,
                 }
               : {
-                  forecastedhours: Number(newNumericValue) || 0,
-                  actualhours: forecast?.actualhours ?? 0,
+                  forecastedhours: Number(newNumericValue),
+                  actualhours: forecast.actualhours,
                 }),
-            createdat: forecast?.createdat ?? new Date().toISOString(),
             updatedat: new Date().toISOString(),
-            displayText: forecast?.displayText ?? "",
-            acctId: emp?.emple?.accId ?? "",
-            orgId: emp?.emple?.orgId ?? "",
-            plc: emp?.emple?.plcGlcCode ?? "",
-            empleId: emp?.emple?.id ?? 0,
-            hrlyRate: emp?.emple?.perHourRate ?? 0,
-            effectDt: new Date().toISOString().split("T")[0],
-            emple: emp?.emple
-              ? {
-                  id: emp.emple.id ?? 0,
-                  emplId: emp.emple.emplId ?? "",
-                  orgId: emp.emple.orgId ?? "",
-                  firstName: emp.emple.firstName ?? "",
-                  lastName: emp.emple.lastName ?? "",
-                  plcGlcCode: emp.emple.plcGlcCode ?? "",
-                  perHourRate: emp.emple.perHourRate ?? 0,
-                  salary: emp.emple.salary ?? 0,
-                  accId: emp.emple.accId ?? "",
-                  hireDate:
-                    emp.emple.hireDate ??
-                    new Date().toISOString().split("T")[0],
-                  isRev: emp.emple.isRev ?? false,
-                  isBrd: emp.emple.isBrd ?? false,
-                  createdAt: emp.emple.createdAt ?? new Date().toISOString(),
-                  type: emp.emple.type ?? "",
-                  status: emp.emple.status ?? "",
-                  plId: planId ?? 0,
-                  isWarning: emp.emple.isWarning ?? false,
-                  plForecasts: [],
-                  organization: emp.emple.organization ?? null,
-                  plProjectPlan: emp.emple.plProjectPlan ?? null,
-                }
-              : null,
-          };
-
-          bulkPayload.push(payload);
+            acctId: emp.emple.accId,
+            orgId: emp.emple.orgId,
+            plc: emp.emple.plcGlcCode.split("-")[0].trim(),
+            hrlyRate: emp.perHourRate || 0,
+          });
         }
 
         if (bulkPayload.length > 0) {
-          const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
-
+          const apiType = planType === "NBBUD" ? "BUD" : planType;
           await axios.put(
-            `${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiPlanType}?plid=${planId}&templateid=${templateId}`,
-            bulkPayload,
-            { headers: { "Content-Type": "application/json" } }
+            `${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiType}?plid=${planId}&templateid=${templateId}`,
+            bulkPayload
           );
-
-          // Update local state for hours
-          setLocalEmployees((prev) => {
-            const updated = [...prev];
-            for (const key in modifiedHours) {
-              const { empIdx, uniqueKey, newValue } = modifiedHours[key];
-              const newNumericValue = newValue === "" ? 0 : Number(newValue);
-
-              if (
-                updated[empIdx] &&
-                updated[empIdx].emple &&
-                updated[empIdx].emple.plForecasts
-              ) {
-                const currentDuration = sortedDurations.find(
-                  (d) => `${d.monthNo}_${d.year}` === uniqueKey
-                );
-                const forecastIndex = updated[
-                  empIdx
-                ].emple.plForecasts.findIndex(
-                  (f) =>
-                    f.month === currentDuration?.monthNo &&
-                    f.year === currentDuration?.year
-                );
-                if (forecastIndex !== -1) {
-                  if (planType === "EAC") {
-                    updated[empIdx].emple.plForecasts[
-                      forecastIndex
-                    ].actualhours = newNumericValue;
-                  } else {
-                    updated[empIdx].emple.plForecasts[
-                      forecastIndex
-                    ].forecastedhours = newNumericValue;
-                  }
-                }
-              }
-            }
-            return updated;
-          });
-
-          successCount += bulkPayload.length;
         }
       }
 
+      // Trigger Final Validation API
       try {
         await axios.post(
-          `https://test-api-3tmq.onrender.com/Forecast/ValidateForecast?planid=${planId}`
+          `${backendUrl}/Forecast/ValidateForecast?planid=${planId}`
         );
-        // console.log("Forecast validation completed successfully");
-      } catch (validationErr) {
-        console.error("Forecast validation failed:", validationErr);
-        toast.warning("Hours saved but validation encountered an issue.", {
-          autoClose: 4000,
-        });
+      } catch (vErr) {
+        console.warn("Validation cleanup failed", vErr);
       }
 
-      // Clear all modified data and reset flags
+      // Reset states
       setModifiedHours({});
       setHasUnsavedHoursChanges(false);
       setEditedEmployeeData({});
       setHasUnsavedEmployeeChanges(false);
 
-      // if (successCount > 0) {
-      //   const message =
-      //     hasHoursChanges && hasEmployeeChanges
-      //       ? `Successfully saved ${successCount} entries and employee updates!`
-      //       : hasHoursChanges
-      //       ? `Successfully saved hour entries!`
-      //       : `Successfully updated employees!`;
-
-      //   toast.success(message, { autoClose: 3000 });
-      // }
-
       if (errorCount > 0) {
-        toast.warning(`${errorCount} entries could not be saved.`, {
-          autoClose: 3000,
-        });
+        toast.warning(`${errorCount} entries could not be saved.`);
       }
+
+      return true; // Successfully saved all data
     } catch (err) {
       toast.error(
         "Failed to save changes: " +
-          (err.response?.data?.message || err.message),
-        {
-          toastId: "save-all-error",
-          autoClose: 3000,
-        }
+          (err.response?.data?.message || err.message)
       );
+      return false; // Error occurred
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleMasterSave = async () => {
+    setIsLoading(true);
+    try {
+      // Step 1: Save New Entries. Captures 'false' if validation fails inside.
+      const newSaveSuccess = await handleSaveMultipleEntry();
+      if (!newSaveSuccess) {
+        setIsLoading(false);
+        return; // Stops here, NO "Saved Successfully" toast will show
+      }
 
-//  const handleMasterSave = async () => {
-//   setIsLoading(true);
-//   try {
-//     const savePromises = [];
+      // Step 2: Save Existing Grid Changes
+      if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
+        const gridSaveSuccess = await handleSaveAll();
+        if (gridSaveSuccess === false) {
+          setIsLoading(false);
+          return;
+        }
+      }
 
-//     // 1. Save New/Pasted Entries
-//     if (newEntries.length > 0) {
-//       savePromises.push(handleSaveMultipleEntry());
-//     }
+      // ONLY IF BOTH ABOVE PASSED:
+      setNewEntries([]);
+      setNewEntryPeriodHoursArray([]);
+      setShowNewForm(false);
+      setModifiedHours({});
+      setEditedEmployeeData({});
+      setHasUnsavedHoursChanges(false);
+      setHasUnsavedEmployeeChanges(false);
 
-//     // 2. Save Existing Grid Hours/Employee Edits
-//     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
-//       savePromises.push(handleSaveAll());
-//     }
-
-//     await Promise.all(savePromises);
-
-//     // --- CRITICAL: CLEAR ALL STATES TO HIDE BUTTONS ---
-//     setNewEntries([]);
-//     setNewEntryPeriodHoursArray([]);
-//     setShowNewForm(false);
-//     setHasUnsavedHoursChanges(false);
-//     setHasUnsavedEmployeeChanges(false);
-//     setModifiedHours({});
-//     setEditedEmployeeData({});
-//     setInputValues({});
-//     setCheckedRows(new Set());
-//     setShowCopyButton(false);
-
-//     toast.success("All changes saved successfully!");
-//   } catch (err) {
-//     console.error("Master Save Error:", err);
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
-
-// const handleMasterSave = async () => {
-//   setIsLoading(true);
-//   try {
-//     const savePromises = [];
-//     const savedTypes = [];
-
-//     // 1. Save New/Pasted Entries
-//     if (newEntries.length > 0) {
-//       savePromises.push(handleSaveMultipleEntry());
-//       savedTypes.push(`${newEntries.length} new entry`);
-//     }
-
-//     // 2. Save Existing Grid Hours/Employee Edits
-//     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
-//       savePromises.push(handleSaveAll());
-//       if (hasUnsavedHoursChanges && hasUnsavedEmployeeChanges) savedTypes.push("hour changes and employee updates");
-//       else if (hasUnsavedHoursChanges) savedTypes.push("hour changes");
-//       else savedTypes.push("employee updates");
-//     }
-
-//     if (savePromises.length === 0) {
-//       toast.info("No changes to save.");
-//       setIsLoading(false);
-//       return;
-//     }
-
-//     await Promise.all(savePromises);
-
-//     // --- RESET ALL STATES ---
-//     setNewEntries([]);
-//     setNewEntryPeriodHoursArray([]);
-//     setShowNewForm(false);
-//     setHasUnsavedHoursChanges(false);
-//     setHasUnsavedEmployeeChanges(false);
-//     setModifiedHours({});
-//     setEditedEmployeeData({});
-//     setInputValues({});
-//     setCheckedRows(new Set());
-//     setShowCopyButton(false);
-
-//     // --- FIRE ONLY ONE COMBINED TOAST ---
-//     toast.success(`Successfully saved ${savedTypes.join(" and ")}!`, {
-//       autoClose: 3000,
-//     });
-
-//   } catch (err) {
-//     console.error("ave Error:", err);
-//     // Error toasts are handled within the individual functions or here as fallback
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
-
-// const handleMasterSave = async () => {
-//   setIsLoading(true);
-//   try {
-//     // 1. Attempt to save new entries
-//     const newEntriesSuccess = await handleSaveMultipleEntry();
-    
-//     // IF NEW ENTRIES FAILED VALIDATION, STOP HERE. 
-//     // This keeps the data in the table so the user can fix it.
-//     if (!newEntriesSuccess) {
-//       setIsLoading(false);
-//       return; 
-//     }
-
-//     // 2. If new entries saved, attempt to save grid edits
-//     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
-//       await handleSaveAll();
-//     }
-
-//     // 3. ONLY CLEAR AND NOTIFY ON TOTAL SUCCESS
-//     setNewEntries([]);
-//     setNewEntryPeriodHoursArray([]);
-//     setShowNewForm(false);
-//     setHasUnsavedHoursChanges(false);
-//     setHasUnsavedEmployeeChanges(false);
-//     setModifiedHours({});
-//     setEditedEmployeeData({});
-//     setInputValues({});
-
-//     toast.success("All changes saved successfully!");
-
-//   } catch (err) {
-//     console.error("Save Error:", err);
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
-
-// const handleMasterSave = async () => {
-//   setIsLoading(true);
-//   try {
-//     // 1. Run validation and bulk save for new entries
-//     const success = await handleSaveMultipleEntry();
-    
-//     // 2. Critical Gate: If validation failed, exit here so data stays in the table
-//     if (!success) {
-//       setIsLoading(false);
-//       return; 
-//     }
-
-//     // 3. Save existing grid edits if new entries were successful
-//     if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
-//       await handleSaveAll();
-//     }
-
-//     // 4. Reset all states only after total success
-//     setNewEntries([]);
-//     setNewEntryPeriodHoursArray([]);
-//     setShowNewForm(false);
-//     setHasUnsavedHoursChanges(false);
-//     setHasUnsavedEmployeeChanges(false);
-//     setModifiedHours({});
-//     setEditedEmployeeData({});
-//     setInputValues({});
-
-//     toast.success("All changes saved successfully!");
-
-//   } catch (err) {
-//     console.error("Save Error:", err);
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
-
-const handleMasterSave = async () => {
-  setIsLoading(true);
-  try {
-    // 1. Save new entries first
-    const saveSuccess = await handleSaveMultipleEntry();
-    
-    // 2. If validation failed, exit immediately to keep data visible for fixing
-    if (!saveSuccess) {
+      await fetchEmployees();
+      toast.success("All changes saved and updated successfully!");
+    } catch (err) {
+      console.error("Master Save Error", err);
+      toast.error(
+        "Failed to save changes: " +
+          (err.response?.data?.message || err.message)
+      );
+    } finally {
       setIsLoading(false);
-      return; 
     }
-
-    // 3. Save existing grid edits if any
-    if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
-      await handleSaveAll();
-    }
-
-    // 4. CRITICAL: Clear states FIRST
-    setNewEntries([]);
-    setNewEntryPeriodHoursArray([]);
-    setShowNewForm(false);
-    setModifiedHours({});
-    setEditedEmployeeData({});
-    setInputValues({});
-    setHasUnsavedHoursChanges(false);
-    setHasUnsavedEmployeeChanges(false);
-
-    // 5. CRITICAL: Trigger the data re-fetch IMMEDIATELY to update the page
-    await fetchEmployees(); 
-    
-    if (onSaveSuccess) onSaveSuccess();
-
-    toast.success("All changes saved and updated!");
-
-  } catch (err) {
-    // console.error("Save Error:", err);
-    toast.error("An error occurred during save. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   // const handleAccountInputChangeForUpdate = (value, actualEmpIdx) => {
   //   handleEmployeeDataChange(actualEmpIdx, "acctId", value);
@@ -5103,1539 +6732,631 @@ const handleMasterSave = async () => {
   //   }
   // };
 
+  const handleAccountInputChangeForUpdate = (value, actualEmpIdx) => {
+    // 1. Update the ID in state
+    handleEmployeeDataChange(actualEmpIdx, "acctId", value);
 
-  
+    // 2. Lookup and Update Name automatically in state
+    // const matchedAccount = accountOptionsWithNames.find(acc => acc.id === value);
+    const matchedAccount =
+      accountOptionsWithNames.find((acc) => acc.id === value) ||
+      updateAccountOptions.find((acc) => acc.id === value);
+    if (matchedAccount) {
+      handleEmployeeDataChange(
+        actualEmpIdx,
+        "acctName",
+        matchedAccount.name || matchedAccount.acctName
+      );
+    } else {
+      handleEmployeeDataChange(actualEmpIdx, "acctName", "");
+    }
+  };
 
-  // const handleFillValues = async () => {
-  //   if (!showNewForm || !isEditable) return;
+  const handleFillValues = () => {
+    if (!isEditable) return;
 
-  //   if (new Date(fillEndDate) < new Date(fillStartDate)) {
-  //     toast.error("End Period cannot be before Start Period.");
-  //     return;
-  //   }
-
-  //   const startDateObj = new Date(fillStartDate);
-  //   const endDateObj = new Date(fillEndDate);
-
-  //   const newHours = {};
-
-  //   const isDurationInRange = (duration) => {
-  //     const durationValue = duration.year * 100 + duration.monthNo;
-  //     const startYear = startDateObj.getFullYear();
-  //     const startMonth = startDateObj.getMonth() + 1;
-  //     const startValue = startYear * 100 + startMonth;
-  //     const endYear = endDateObj.getFullYear();
-  //     const endMonth = endDateObj.getMonth() + 1;
-  //     const endValue = endYear * 100 + endMonth;
-  //     return durationValue >= startValue && durationValue <= endValue;
-  //   };
-
-  //   if (fillMethod === "Copy From Source Record" && sourceRowIndex !== null) {
-  //     const sourceEmp = localEmployees[sourceRowIndex];
-  //     const sourceMonthHours = getMonthHours(sourceEmp);
-  //     sortedDurations.forEach((duration) => {
-  //       if (!isDurationInRange(duration)) return;
-  //       const uniqueKey = `${duration.monthNo}_${duration.year}`;
-  //       if (
-  //         planType === "EAC" &&
-  //         !isMonthEditable(duration, closedPeriod, planType)
-  //       ) {
-  //         newHours[uniqueKey] = newEntryPeriodHours[uniqueKey] || "0";
-  //       } else {
-  //         newHours[uniqueKey] = sourceMonthHours[uniqueKey]?.value || "0";
-  //       }
-  //     });
-  //   } else if (fillMethod === "Specify Hours") {
-  //     sortedDurations.forEach((duration) => {
-  //       if (!isDurationInRange(duration)) return;
-  //       const uniqueKey = `${duration.monthNo}_${duration.year}`;
-  //       if (
-  //         planType === "EAC" &&
-  //         !isMonthEditable(duration, closedPeriod, planType)
-  //       ) {
-  //         newHours[uniqueKey] = newEntryPeriodHours[uniqueKey] || "0";
-  //       } else if (isMonthEditable(duration, closedPeriod, planType)) {
-  //         newHours[uniqueKey] = fillHours.toString();
-  //       }
-  //     });
-  //   } else if (fillMethod === "Use Available Hours") {
-  //     try {
-  //       const response = await axios.get(
-  //         `${backendUrl}/Orgnization/GetWorkingDaysForDuration/${startDate}/${endDate}`
-  //       );
-  //       const availableHours = response.data.reduce((acc, d) => {
-  //         const uniqueKey = `${d.monthNo}_${d.year}`;
-  //         acc[uniqueKey] = d.workingHours || 0;
-  //         return acc;
-  //       }, {});
-  //       sortedDurations.forEach((duration) => {
-  //         if (!isDurationInRange(duration)) return;
-  //         const uniqueKey = `${duration.monthNo}_${duration.year}`;
-  //         if (
-  //           planType === "EAC" &&
-  //           !isMonthEditable(duration, closedPeriod, planType)
-  //         ) {
-  //           newHours[uniqueKey] = newEntryPeriodHours[uniqueKey] || "0";
-  //         } else if (isMonthEditable(duration, closedPeriod, planType)) {
-  //           newHours[uniqueKey] = availableHours[uniqueKey] || "0";
-  //         }
-  //       });
-  //     } catch (err) {
-  //       toast.error("Failed to fetch available hours.", {
-  //         toastId: "available-hours-error",
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     }
-  //   } else if (
-  //     fillMethod === "Use Start Period Hours" &&
-  //     sortedDurations.length > 0
-  //   ) {
-  //     const firstDuration = sortedDurations[0];
-  //     if (!isDurationInRange(firstDuration)) {
-  //       toast.error(
-  //         "Start Period hours are outside the selected duration range."
-  //       );
-  //       return;
-  //     }
-  //     const firstUniqueKey = `${firstDuration.monthNo}_${firstDuration.year}`;
-  //     const firstValue = newEntryPeriodHours[firstUniqueKey] || "0";
-  //     sortedDurations.forEach((duration) => {
-  //       if (!isDurationInRange(duration)) return;
-  //       const uniqueKey = `${duration.monthNo}_${duration.year}`;
-  //       if (
-  //         planType === "EAC" &&
-  //         !isMonthEditable(duration, closedPeriod, planType)
-  //       ) {
-  //         newHours[uniqueKey] = newEntryPeriodHours[uniqueKey] || "0";
-  //       } else if (isMonthEditable(duration, closedPeriod, planType)) {
-  //         newHours[uniqueKey] = firstValue;
-  //       }
-  //     });
-  //   }
-
-  //   setNewEntryPeriodHours((prev) => ({ ...prev, ...newHours }));
-  //   setShowFillValues(false);
-  //   setFillMethod("None");
-  //   setFillHours(0.0);
-  //   setSourceRowIndex(null);
-  // };
-
-
-
-//   const handleFillValues = () => {
-//     if (!isEditable) return;
-
-//     // FIX: Check checkedRows.size instead of selectedRows.size
-//     if (newEntries.length === 0 && checkedRows.size === 0) {
-//         toast.error(
-//             "Please add new entries or check existing rows to apply Fill Values.",
-//             { autoClose: 3000 }
-//         );
-//         return;
-//     }
-      
-//     if (!fillStartDate || !fillEndDate) {
-//         toast.error("Start Period and End Period are required.", { autoClose: 3000 });
-//         return;
-//     }
-
-//     const startDateObj = new Date(fillStartDate);
-//     const endDateObj = new Date(fillEndDate);
-//     if (endDateObj < startDateObj) {
-//         toast.error("End Period cannot be before Start Period.", { autoClose: 3000 });
-//         return;
-//     }
-
-//     const amountToUse = (fillHours !== null && fillHours !== undefined) ? String(fillHours) : "";
-//     const toKeyNum = (y, m) => y * 100 + m;
-//     const rangeEndKey = toKeyNum(endDateObj.getFullYear(), endDateObj.getMonth() + 1);
-//     const rangeStartKey = toKeyNum(startDateObj.getFullYear(), startDateObj.getMonth() + 1);
-
-//     const isInRange = (duration) => {
-//         const k = toKeyNum(duration.year, duration.monthNo);
-//         return k >= rangeStartKey && k <= rangeEndKey;
-//     };
-    
-//     // --- 1. Apply to NEW Entries ---
-//     if (newEntries.length > 0) {
-//         setNewEntryPeriodHoursArray(prevArray => 
-//             prevArray.map((amounts, entryIndex) => {
-//                 const updatedAmounts = { ...amounts };
-                
-//                 sortedDurations.forEach(duration => {
-//                     const uniqueKey = `${duration.monthNo}_${duration.year}`;
-//                     if (!isInRange(duration)) return;
-//                     if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-//                     if (fillMethod === "Specify Hours") {
-//                         updatedAmounts[uniqueKey] = amountToUse;
-//                     } else if (fillMethod === "Use Available Hours") {
-//                         updatedAmounts[uniqueKey] = String(duration.workingHours || 0);
-//                     }
-//                 });
-//                 return updatedAmounts;
-//             })
-//         );
-//     }
-    
-//     // --- 2. Apply to CHECKED Existing Rows ---
-//     // FIX: Use checkedRows here
-//     const checkedIndices = Array.from(checkedRows);
-
-//     if (checkedIndices.length > 0) {
-//         let newInputs = { ...inputValues };
-//         let newModifiedHours = { ...modifiedHours };
-
-//         checkedIndices.forEach(actualEmpIdx => {
-//             const emp = localEmployees[actualEmpIdx];
-//             if (!emp) return;
-
-//             sortedDurations.forEach(duration => {
-//                 const uniqueKey = `${duration.monthNo}_${duration.year}`;
-//                 const inputKey = `${actualEmpIdx}_${uniqueKey}`;
-                
-//                 if (!isInRange(duration)) return;
-//                 if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-//                 let newValue = "";
-//                 if (fillMethod === "Specify Hours") {
-//                     newValue = amountToUse;
-//                 } else if (fillMethod === "Use Available Hours") {
-//                     newValue = String(duration.workingHours || 0);
-//                 } else {
-//                     return;
-//                 }
-                
-//                 newInputs[inputKey] = newValue;
-//                 newModifiedHours[inputKey] = {
-//                     empIdx: actualEmpIdx,
-//                     uniqueKey,
-//                     newValue,
-//                     employee: emp,
-//                 };
-//             });
-//         });
-        
-//         setInputValues(newInputs);
-//         setModifiedHours(newModifiedHours);
-//         setHasUnsavedHoursChanges(true);
-//     }
-
-//     toast.success("Values applied to selected rows.", { autoClose: 2000 });
-//     setShowFillValues(false);
-//     setFillMethod("None");
-//     setFillHours(0.0);
-// };
-
-
-// const handleFillValues = () => {
-//   if (!isEditable) return;
-
-//   const checkedIndices = Array.from(checkedRows);
-//   // Check both new entries and checked rows
-//   if (newEntries.length === 0 && checkedIndices.length === 0) {
-//     toast.error("Please add new entries or check existing rows first.");
-//     return;
-//   }
-
-//   const startDateObj = new Date(fillStartDate);
-//   const endDateObj = new Date(fillEndDate);
-//   const toKeyNum = (y, m) => y * 100 + m;
-//   const rangeStartKey = toKeyNum(startDateObj.getFullYear(), startDateObj.getMonth() + 1);
-//   const rangeEndKey = toKeyNum(endDateObj.getFullYear(), endDateObj.getMonth() + 1);
-
-//   const isInRange = (duration) => {
-//     const k = toKeyNum(duration.year, duration.monthNo);
-//     return k >= rangeStartKey && k <= rangeEndKey;
-//   };
-
-//   // --- Logic for New Entries ---
-//   if (newEntries.length > 0) {
-//     setNewEntryPeriodHoursArray(prevArray => 
-//       prevArray.map((amounts, entryIndex) => {
-//         const updatedAmounts = { ...amounts };
-        
-//         // Sourcing Logic: cycle through checkedRows if Copy method is selected
-//         let sourceEmp = null;
-//         if (fillMethod === "Copy From Checked Rows" && checkedIndices.length > 0) {
-//           const sourceIdx = checkedIndices[entryIndex % checkedIndices.length];
-//           sourceEmp = localEmployees[sourceIdx];
-//         }
-
-//         sortedDurations.forEach(duration => {
-//           if (!isInRange(duration)) return;
-//           const key = `${duration.monthNo}_${duration.year}`;
-//           if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-//           if (fillMethod === "Specify Hours") {
-//             updatedAmounts[key] = String(fillHours);
-//           } else if (fillMethod === "Use Available Hours") {
-//             updatedAmounts[key] = String(duration.workingHours || 0);
-//           } else if (sourceEmp) {
-//             const srcHours = getMonthHours(sourceEmp);
-//             // Check inputValues first (local unsaved changes), then original forecast
-//             const localVal = inputValues[`${checkedIndices[entryIndex % checkedIndices.length]}_${key}`];
-//             updatedAmounts[key] = localVal !== undefined ? localVal : String(srcHours[key]?.value || 0);
-//           }
-//         });
-//         return updatedAmounts;
-//       })
-//     );
-//   }
-
-//   // --- Logic for Existing Checked Rows ---
-//   if (checkedIndices.length > 0 && fillMethod !== "Copy From Checked Rows") {
-//     let newInputs = { ...inputValues };
-//     checkedIndices.forEach(empIdx => {
-//       sortedDurations.forEach(duration => {
-//         if (!isInRange(duration)) return;
-//         const key = `${duration.monthNo}_${duration.year}`;
-//         if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-//         if (fillMethod === "Specify Hours") {
-//           newInputs[`${empIdx}_${key}`] = String(fillHours);
-//         } else if (fillMethod === "Use Available Hours") {
-//           newInputs[`${empIdx}_${key}`] = String(duration.workingHours || 0);
-//         }
-//       });
-//     });
-//     setInputValues(newInputs);
-//     setHasUnsavedHoursChanges(true);
-//   }
-
-//   setShowFillValues(false);
-//   toast.success("Values applied successfully");
-// };
-
-// const handleFillValues = () => {
-//   if (!isEditable) return;
-
-//   const startDateObj = new Date(fillStartDate);
-//   const endDateObj = new Date(fillEndDate);
-//   const toKeyNum = (y, m) => y * 100 + m;
-//   const rangeStartKey = toKeyNum(startDateObj.getFullYear(), startDateObj.getMonth() + 1);
-//   const rangeEndKey = toKeyNum(endDateObj.getFullYear(), endDateObj.getMonth() + 1);
-
-//   // Logic to determine which month to start copying from
-//   let startMonthKey = selectedColumnKey; // If user clicked a header, use that
-//   if (!startMonthKey) {
-//     // Otherwise use the first visible month in range
-//     const firstVis = sortedDurations.find(d => {
-//        const k = toKeyNum(d.year, d.monthNo);
-//        return k >= rangeStartKey;
-//     });
-//     if (firstVis) startMonthKey = `${firstVis.monthNo}_${firstVis.year}`;
-//   }
-
-//   const [startM, startY] = startMonthKey ? startMonthKey.split('_').map(Number) : [0, 0];
-//   const startMonthSortVal = toKeyNum(startY, startM);
-
-//   // --- 1. Apply to NEW Entries ---
-//   if (newEntries.length > 0) {
-//     setNewEntryPeriodHoursArray(prevArray => 
-//       prevArray.map((amounts, entryIndex) => {
-//         const updatedAmounts = { ...amounts };
-//         const fillValueForThisRow = updatedAmounts[startMonthKey] || "0";
-
-//         sortedDurations.forEach(duration => {
-//           const k = toKeyNum(duration.year, duration.monthNo);
-//           if (k < rangeStartKey || k > rangeEndKey) return;
-//           if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-//           const key = `${duration.monthNo}_${duration.year}`;
-          
-//           if (fillMethod === "Specify Hours") {
-//             updatedAmounts[key] = String(fillHours);
-//           } else if (fillMethod === "Use Available Hours") {
-//             updatedAmounts[key] = String(duration.workingHours || 0);
-//           } else if (fillMethod === "Use Start Period Hours") {
-//             // Fill forward only if current month is >= selected start month
-//             if (k >= startMonthSortVal) {
-//               updatedAmounts[key] = fillValueForThisRow;
-//             }
-//           }
-//         });
-//         return updatedAmounts;
-//       })
-//     );
-//   }
-
-//   // --- 2. Apply to CHECKED Existing Rows ---
-//   const checkedIndices = Array.from(checkedRows);
-//   if (checkedIndices.length > 0) {
-//     let newInputs = { ...inputValues };
-//     checkedIndices.forEach(empIdx => {
-//       const emp = localEmployees[empIdx];
-//       const mHours = getMonthHours(emp);
-//       const fillValueForThisRow = newInputs[`${empIdx}_${startMonthKey}`] ?? String(mHours[startMonthKey]?.value || "0");
-
-//       sortedDurations.forEach(duration => {
-//         const k = toKeyNum(duration.year, duration.monthNo);
-//         if (k < rangeStartKey || k > rangeEndKey) return;
-//         if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-//         const key = `${duration.monthNo}_${duration.year}`;
-//         const inputKey = `${empIdx}_${key}`;
-
-//         if (fillMethod === "Specify Hours") {
-//           newInputs[inputKey] = String(fillHours);
-//         } else if (fillMethod === "Use Available Hours") {
-//           newInputs[inputKey] = String(duration.workingHours || 0);
-//         } else if (fillMethod === "Use Start Period Hours") {
-//           if (k >= startMonthSortVal) {
-//             newInputs[inputKey] = fillValueForThisRow;
-//           }
-//         }
-//       });
-//     });
-//     setInputValues(newInputs);
-//     setHasUnsavedHoursChanges(true);
-//   }
-
-//   setShowFillValues(false);
-//   toast.success("Values applied successfully");
-// };
-
-const handleAccountInputChangeForUpdate = (value, actualEmpIdx) => {
-  // 1. Update the ID
-  handleEmployeeDataChange(actualEmpIdx, "acctId", value);
-
-  // 2. Lookup and Update Name automatically
-  const matchedAccount = accountOptionsWithNames.find(acc => acc.id === value);
-  if (matchedAccount) {
-    handleEmployeeDataChange(actualEmpIdx, "acctName", matchedAccount.name);
-  } else {
-    handleEmployeeDataChange(actualEmpIdx, "acctName", "");
-  }
-};
-
-const handleFillValues = () => {
-  if (!isEditable) return;
-
-  const toKeyNum = (y, m) => y * 100 + m;
-  const rangeStartKey = toKeyNum(new Date(fillStartDate).getFullYear(), new Date(fillStartDate).getMonth() + 1);
-  const rangeEndKey = toKeyNum(new Date(fillEndDate).getFullYear(), new Date(fillEndDate).getMonth() + 1);
-
-  // 1. Identify Anchor Month for "Use Start Period Hours"
-  let anchorMonthKey = selectedColumnKey; 
-  if (!anchorMonthKey) {
-    const firstVis = sortedDurations.find(d => toKeyNum(d.year, d.monthNo) >= rangeStartKey);
-    if (firstVis) anchorMonthKey = `${firstVis.monthNo}_${firstVis.year}`;
-  }
-  const [aM, aY] = anchorMonthKey ? anchorMonthKey.split('_').map(Number) : [0, 0];
-  const anchorSortVal = toKeyNum(aY, aM);
-
-  // 2. Logic for New Entry Rows
-  if (newEntries.length > 0) {
-    const sourceIndices = Array.from(checkedRows).sort((a, b) => a - b);
-
-    setNewEntryPeriodHoursArray(prevArray => 
-      prevArray.map((amounts, entryIndex) => {
-        const updatedAmounts = { ...amounts };
-        
-        // SOURCE RECORD LOGIC: If copying from grid, pick a source row based on index
-        let sourceEmp = null;
-        let sourceIdx = -1;
-        if (fillMethod === "Copy From Checked Rows" && sourceIndices.length > 0) {
-          sourceIdx = sourceIndices[entryIndex % sourceIndices.length];
-          sourceEmp = localEmployees[sourceIdx];
-        }
-
-        const valueToCopy = updatedAmounts[anchorMonthKey] || "0";
-
-        sortedDurations.forEach(duration => {
-          const currentK = toKeyNum(duration.year, duration.monthNo);
-          if (currentK < rangeStartKey || currentK > rangeEndKey) return;
-          if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-          const key = `${duration.monthNo}_${duration.year}`;
-          
-          if (fillMethod === "Specify Hours") {
-            updatedAmounts[key] = String(fillHours);
-          } else if (fillMethod === "Use Available Hours") {
-            updatedAmounts[key] = String(duration.workingHours || 0);
-          } else if (fillMethod === "Use Start Period Hours") {
-            if (currentK >= anchorSortVal) updatedAmounts[key] = valueToCopy;
-          } else if (sourceEmp) {
-            // APPLY DATA FROM SOURCE RECORD
-            const mHours = getMonthHours(sourceEmp);
-            const inputVal = inputValues[`${sourceIdx}_${key}`];
-            updatedAmounts[key] = inputVal !== undefined ? inputVal : String(mHours[key]?.value || "0");
-          }
-        });
-        return updatedAmounts;
-      })
+    const toKeyNum = (y, m) => y * 100 + m;
+    const rangeStartKey = toKeyNum(
+      new Date(fillStartDate).getFullYear(),
+      new Date(fillStartDate).getMonth() + 1
     );
-  }
+    const rangeEndKey = toKeyNum(
+      new Date(fillEndDate).getFullYear(),
+      new Date(fillEndDate).getMonth() + 1
+    );
 
-  // 3. Logic for Existing Rows in Grid
-  if (checkedRows.size > 0 && fillMethod !== "Copy From Checked Rows") {
+    let anchorMonthKey = selectedColumnKey;
+    if (!anchorMonthKey) {
+      const firstVis = sortedDurations.find(
+        (d) => toKeyNum(d.year, d.monthNo) >= rangeStartKey
+      );
+      if (firstVis) anchorMonthKey = `${firstVis.monthNo}_${firstVis.year}`;
+    }
+    const [aM, aY] = anchorMonthKey
+      ? anchorMonthKey.split("_").map(Number)
+      : [0, 0];
+    const anchorSortVal = toKeyNum(aY, aM);
+
     let newInputs = { ...inputValues };
-    checkedRows.forEach(empIdx => {
-      const emp = localEmployees[empIdx];
-      const valToCopy = newInputs[`${empIdx}_${anchorMonthKey}`] ?? String(getMonthHours(emp)[anchorMonthKey]?.value || "0");
-      sortedDurations.forEach(d => {
-        const currentK = toKeyNum(d.year, d.monthNo);
-        if (currentK < rangeStartKey || currentK > rangeEndKey) return;
-        if (currentK >= anchorSortVal) {
-          if (fillMethod === "Specify Hours") newInputs[`${empIdx}_${d.monthNo}_${d.year}`] = String(fillHours);
-          else if (fillMethod === "Use Available Hours") newInputs[`${empIdx}_${d.monthNo}_${d.year}`] = String(d.workingHours || 0);
-          else if (fillMethod === "Use Start Period Hours") newInputs[`${empIdx}_${d.monthNo}_${d.year}`] = valToCopy;
-        }
+    let newModifiedHours = { ...modifiedHours };
+    let targetRowIdxForScroll = null;
+
+    // --- PRIORITY: APPLY TO NEW ENTRIES FIRST ---
+    if (newEntries.length > 0) {
+      const sourceIdx =
+        checkedRows.size > 0 ? Array.from(checkedRows)[0] : null;
+      const sourceEmp = sourceIdx !== null ? localEmployees[sourceIdx] : null;
+      const sourceMonthHours = sourceEmp ? getMonthHours(sourceEmp) : {};
+
+      setNewEntryPeriodHoursArray((prevArray) =>
+        prevArray.map((amounts) => {
+          const updatedAmounts = { ...amounts };
+          const valToCopyFromSelf = updatedAmounts[anchorMonthKey] || "0";
+
+          sortedDurations.forEach((duration) => {
+            const currentK = toKeyNum(duration.year, duration.monthNo);
+            if (currentK < rangeStartKey || currentK > rangeEndKey) return;
+
+            const key = `${duration.monthNo}_${duration.year}`;
+
+            if (fillMethod === "Copy From Checked Rows" && sourceEmp) {
+              // Logic for "New Entry" getting data from a "Checked Row"
+              updatedAmounts[key] =
+                newInputs[`${sourceIdx}_${key}`] ??
+                String(sourceMonthHours[key]?.value || "0");
+            } else if (fillMethod === "Specify Hours") {
+              updatedAmounts[key] = String(fillHours);
+            } else if (fillMethod === "Use Available Hours") {
+              updatedAmounts[key] = String(duration.workingHours || 0);
+            } else if (fillMethod === "Use Start Period Hours") {
+              if (currentK >= anchorSortVal)
+                updatedAmounts[key] = valToCopyFromSelf;
+            }
+          });
+          return updatedAmounts;
+        })
+      );
+    }
+    // --- SECONDARY: APPLY TO EXISTING DATA (Only if no New Entries or specifically targeted) ---
+    else if (checkedRows.size > 0) {
+      // Check if we are doing a specific Dropdown fill for existing rows
+      const isDropdownCopy =
+        fillMethod === "Copy From Checked Rows" && selectedSourceIdx !== "";
+      const targetIndices = isDropdownCopy
+        ? [parseInt(selectedSourceIdx)]
+        : Array.from(checkedRows);
+
+      // Only scroll/highlight for EXISTING rows
+      targetRowIdxForScroll = targetIndices[0];
+
+      targetIndices.forEach((empIdx) => {
+        const emp = localEmployees[empIdx];
+        if (!emp) return;
+        const sourceIdx = Array.from(checkedRows)[0];
+        const sourceEmp = localEmployees[sourceIdx];
+        const sourceMonthHours = sourceEmp ? getMonthHours(sourceEmp) : {};
+
+        const valToCopyFromSelf =
+          newInputs[`${empIdx}_${anchorMonthKey}`] ??
+          String(getMonthHours(emp)[anchorMonthKey]?.value || "0");
+
+        sortedDurations.forEach((d) => {
+          const currentK = toKeyNum(d.year, d.monthNo);
+          if (currentK < rangeStartKey || currentK > rangeEndKey) return;
+          if (planType === "EAC" && !isMonthEditable(d, closedPeriod, planType))
+            return;
+
+          const key = `${d.monthNo}_${d.year}`;
+          const inputKey = `${empIdx}_${key}`;
+          let val;
+
+          if (isDropdownCopy && sourceEmp) {
+            val =
+              newInputs[`${sourceIdx}_${key}`] ??
+              String(sourceMonthHours[key]?.value || "0");
+          } else if (fillMethod === "Specify Hours") {
+            val = String(fillHours);
+          } else if (fillMethod === "Use Available Hours") {
+            val = String(d.workingHours || 0);
+          } else if (fillMethod === "Use Start Period Hours") {
+            if (currentK >= anchorSortVal) val = valToCopyFromSelf;
+            else return;
+          } else return;
+
+          newInputs[inputKey] = val;
+          newModifiedHours[inputKey] = {
+            empIdx,
+            uniqueKey: key,
+            newValue: val,
+            employee: emp,
+          };
+        });
       });
-    });
+    }
+
     setInputValues(newInputs);
+    setModifiedHours(newModifiedHours);
     setHasUnsavedHoursChanges(true);
-  }
-  setShowFillValues(false);
-};
+    setShowFillValues(false);
 
-// const handleFillValues = () => {
-//     if (!isEditable) return;
+    // Highlighting and Scrolling ONLY triggers for existing rows
+    if (targetRowIdxForScroll !== null && newEntries.length === 0) {
+      setFindMatches([
+        { empIdx: targetRowIdxForScroll, isFillHighlight: true },
+      ]);
+      setTimeout(() => {
+        const rowElement = document.getElementById(
+          `emp-row-${targetRowIdxForScroll}`
+        );
+        if (rowElement)
+          rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+      setTimeout(() => {
+        setFindMatches([]);
+      }, 4000);
+    }
 
-//     const checkedIndices = Array.from(checkedRows);
-//     if (newEntries.length === 0 && checkedIndices.length === 0) {
-//         toast.error("Please add new entries or check rows to apply Fill Values.");
-//         return;
-//     }
-
-//     const startDateObj = new Date(fillStartDate);
-//     const endDateObj = new Date(fillEndDate);
-//     const toKeyNum = (y, m) => y * 100 + m;
-//     const rangeStartKey = toKeyNum(startDateObj.getFullYear(), startDateObj.getMonth() + 1);
-//     const rangeEndKey = toKeyNum(endDateObj.getFullYear(), endDateObj.getMonth() + 1);
-
-//     const isInRange = (duration) => {
-//         const k = toKeyNum(duration.year, duration.monthNo);
-//         return k >= rangeStartKey && k <= rangeEndKey;
-//     };
-
-//     // --- Logic for New Entries ---
-//     if (newEntries.length > 0) {
-//         setNewEntryPeriodHoursArray(prevArray => 
-//             prevArray.map((amounts, entryIndex) => {
-//                 const updatedAmounts = { ...amounts };
-                
-//                 // If Copy From Source, use the checked rows as a pool
-//                 let sourceEmp = null;
-//                 if (fillMethod.includes("Source") && checkedIndices.length > 0) {
-//                     const sourceIdx = checkedIndices[entryIndex % checkedIndices.length];
-//                     sourceEmp = localEmployees[sourceIdx];
-//                 }
-
-//                 sortedDurations.forEach(duration => {
-//                     if (!isInRange(duration)) return;
-//                     const key = `${duration.monthNo}_${duration.year}`;
-                    
-//                     if (fillMethod === "Specify Hours") {
-//                         updatedAmounts[key] = String(fillHours);
-//                     } else if (fillMethod === "Use Available Hours") {
-//                         updatedAmounts[key] = String(duration.workingHours || 0);
-//                     } else if (sourceEmp) {
-//                         const srcHours = getMonthHours(sourceEmp);
-//                         updatedAmounts[key] = String(srcHours[key]?.value || 0);
-//                     }
-//                 });
-//                 return updatedAmounts;
-//             })
-//         );
-//     }
-
-//     // --- Logic for Existing Checked Rows ---
-//     if (checkedIndices.length > 0 && fillMethod !== "Copy From Source Record") {
-//         let newInputs = { ...inputValues };
-//         checkedIndices.forEach(empIdx => {
-//             sortedDurations.forEach(duration => {
-//                 if (!isInRange(duration)) return;
-//                 const key = `${duration.monthNo}_${duration.year}`;
-//                 const inputKey = `${empIdx}_${key}`;
-                
-//                 if (fillMethod === "Specify Hours") {
-//                     newInputs[inputKey] = String(fillHours);
-//                 } else if (fillMethod === "Use Available Hours") {
-//                     newInputs[inputKey] = String(duration.workingHours || 0);
-//                 }
-//             });
-//         });
-//         setInputValues(newInputs);
-//         setHasUnsavedHoursChanges(true);
-//     }
-
-//     setShowFillValues(false);
-//     toast.success("Values applied successfully");
-// };
-  
-//   const handleFillValues = () => {
-//     if (!isEditable) return;
-
-//     if (newEntries.length === 0 && selectedRows.size === 0) {
-//         toast.error(
-//             "Please add new entries or select existing rows to apply Fill Values.",
-//             { autoClose: 3000 }
-//         );
-//         return;
-//     }
-//      
-//     // --- 1. Validation and Range Setup ---
-//     if (!fillStartDate || !fillEndDate) {
-//         toast.error("Start Period and End Period are required.", { autoClose: 3000 });
-//         return;
-//     }
-
-//     const startDateObj = new Date(fillStartDate);
-//     const endDateObj = new Date(fillEndDate);
-//     if (endDateObj < startDateObj) {
-//         toast.error("End Period cannot be before Start Period.", { autoClose: 3000 });
-//         return;
-//     }
-
-//     const amountToUse = (fillHours !== null && fillHours !== undefined) ? String(fillHours) : "";
-
-//     if (fillMethod === "Specify Hours" && amountToUse.trim() === "") {
-//         toast.error("Please specify an amount to fill.", { autoClose: 3000 });
-//         return;
-//     }
-
-//     const toKeyNum = (y, m) => y * 100 + m;
-//     const rangeEndKey = toKeyNum(endDateObj.getFullYear(), endDateObj.getMonth() + 1);
-//     const isInRange = (duration) => {
-//         const k = toKeyNum(duration.year, duration.monthNo);
-//         return k >= toKeyNum(startDateObj.getFullYear(), startDateObj.getMonth() + 1) && k <= rangeEndKey;
-//     };
-    
-//     let totalSuccessCount = 0;
-    
-//     // --- Determine Effective Start Period (For Use Start Period Hours) ---
-//     let effectiveStartPeriodKey = null;
-//     let effectiveStartNum = Infinity;
-    
-//     // We only need a fixed start value if the method is Specify Hours
-//     let globalStartValue = (fillMethod === "Specify Hours") ? amountToUse : undefined;
-
-
-//     if (fillMethod === "Use Start Period Hours") {
-//         let startDuration = null;
-        
-//         // 1. Check for selected column key (Month/Year from the header - FIX for column select)
-//         if (selectedColumnKey) {
-//             const [selMonthStr, selYearStr] = selectedColumnKey.split("_");
-//             const selMonth = parseInt(selMonthStr, 10);
-//             const selYear = parseInt(selYearStr, 10);
-//             startDuration = sortedDurations.find(
-//                 (d) => d.monthNo === selMonth && d.year === selYear
-//             );
-//         }
-
-//         // 2. Fallback: first month in the selected date range
-//         if (!startDuration) {
-//             startDuration = sortedDurations.find((d) => isInRange(d));
-//         }
-        
-//         if (!startDuration) {
-//             toast.error("Could not find a valid start period within the selected scope/date range.", { autoClose: 3000 });
-//             return;
-//         }
-
-//         effectiveStartPeriodKey = `${startDuration.monthNo}_${startDuration.year}`;
-//         effectiveStartNum = toKeyNum(startDuration.year, startDuration.monthNo);
-        
-//     } else if (fillMethod === "Copy From Source Record") { 
-//          // This logic remains bulk sequential copy, requiring pre-selection.
-//         const sourceIndices = Array.from(selectedRows).sort((a, b) => a - b);
-//         if (sourceIndices.length === 0) {
-//              toast.error("Please select existing row(s) in the main grid to use as the source.", { autoClose: 5000 });
-//              return;
-//         }
-//     }
-
-
-//     // --- 2. Apply to NEW Entries (newEntryPeriodHoursArray) ---
-//     if (newEntries.length > 0) {
-        
-//         const sourceIndices = Array.from(selectedRows).sort((a, b) => a - b);
-
-//         setNewEntryPeriodHoursArray(prevArray => 
-//             prevArray.map((amounts, entryIndex) => {
-//                 const updatedAmounts = { ...amounts };
-                
-//                 // Determine the value to fill with for THIS specific NEW ENTRY row
-//                 let fillValue;
-                
-//                 if (fillMethod === "Use Start Period Hours" && effectiveStartPeriodKey) {
-//                     // Pull the starting value from this new entry's existing data (amounts)
-//                     fillValue = updatedAmounts[effectiveStartPeriodKey] ?? "";
-                    
-//                 }
-
-//                 // Determine the source row index for 'Copy From Source Record'
-//                 let sourceRowIdx = -1;
-//                 if (fillMethod === "Copy From Source Record") { 
-//                     const sourceRowIdx = sourceIndices[entryIndex % sourceIndices.length];
-//                     if (sourceRowIdx === undefined) return amounts; 
-//                     // No need to set sourceRowIdx here, just use it inside the loop
-//                 }
-                
-//                 // Apply period values
-//                 sortedDurations.forEach(duration => {
-//                     const uniqueKey = `${duration.monthNo}_${duration.year}`;
-//                     const currentNum = toKeyNum(duration.year, duration.monthNo);
-                    
-//                     if (!isInRange(duration)) return;
-//                     if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-//                     let newValue;
-
-//                     if (fillMethod === "Specify Hours" || fillMethod === "Use Available Hours") {
-//                         newValue = (fillMethod === "Use Available Hours") ? String(duration.workingHours || 0) : amountToUse;
-//                     } else if (fillMethod === "Use Start Period Hours" && effectiveStartPeriodKey) {
-//                          // FIX: Only fill if the current period is the start month or later.
-//                         if (currentNum >= effectiveStartNum) {
-//                             newValue = fillValue;
-//                         } else {
-//                             return; 
-//                         }
-//                     } else if (fillMethod === "Copy From Source Record") {
-//                         // RE-IMPLEMENT MONTH-BY-MONTH LOOKUP FOR COPY METHOD
-//                         const sourceRowIdx = sourceIndices[entryIndex % sourceIndices.length];
-//                         const sourceEmp = localEmployees[sourceRowIdx];
-//                         const sourceMonthHours = getMonthHours(sourceEmp);
-
-//                         const inputValue = inputValues[`${sourceRowIdx}_${uniqueKey}`];
-//                         const forecastValue = sourceMonthHours[uniqueKey]?.value;
-                        
-//                         newValue = (inputValue !== undefined && inputValue !== "")
-//                             ? inputValue
-//                             : (forecastValue !== undefined && forecastValue !== null) 
-//                                 ? String(forecastValue)
-//                                 : ""; 
-//                     } else {
-//                         return;
-//                     }
-                    
-//                     updatedAmounts[uniqueKey] = String(newValue);
-//                 });
-
-//                 totalSuccessCount++;
-//                 return updatedAmounts;
-//             })
-//         );
-//     }
-    
-//     // --- 3. Apply to EXISTING Selected Rows (inputValues) ---
-//     const existingSelectedIndices = Array.from(selectedRows).filter(idx => idx !== -1).sort((a, b) => a - b);
-
-//     // Apply to ALL existing selected rows for Specify Hours or Use Start Period Hours
-//     if (existingSelectedIndices.length > 0 && fillMethod !== "Copy From Source Record") {
-        
-//         let newInputs = { ...inputValues };
-//         let newModifiedHours = {};
-
-//         existingSelectedIndices.forEach(actualEmpIdx => {
-//             const emp = localEmployees[actualEmpIdx];
-//             const monthHours = getMonthHours(emp);
-            
-//             let currentStartValue = (fillMethod === "Specify Hours") ? amountToUse : undefined;
-            
-//             if (fillMethod === "Use Start Period Hours" && effectiveStartPeriodKey) {
-//                 // Read the initial value from the grid (inputValues or saved value)
-//                 const currentInputKey = `${actualEmpIdx}_${effectiveStartPeriodKey}`;
-//                 const inputValue = inputValues[currentInputKey];
-//                 const forecastValue = monthHours[effectiveStartPeriodKey]?.value;
-
-//                 currentStartValue = (inputValue !== undefined && inputValue !== null && inputValue !== "")
-//                     ? inputValue
-//                     : (forecastValue !== undefined && forecastValue !== null) 
-//                         ? String(forecastValue)
-//                         : "";
-//             }
-
-//             sortedDurations.forEach(duration => {
-//                 const uniqueKey = `${duration.monthNo}_${duration.year}`;
-//                 const inputKey = `${actualEmpIdx}_${uniqueKey}`;
-//                 const currentNum = toKeyNum(duration.year, duration.monthNo);
-                
-//                 if (!isInRange(duration)) return;
-//                 if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
-
-//                 let newValue = currentStartValue;
-
-//                 if (fillMethod === "Specify Hours") {
-//                     newValue = amountToUse;
-//                 } else if (fillMethod === "Use Available Hours") {
-//                      newValue = String(duration.workingHours || 0);
-//                 } else if (fillMethod === "Use Start Period Hours") {
-//                     // FIX: Check if we are past the effective start month
-//                     if (currentNum < effectiveStartNum) return;
-//                     newValue = currentStartValue;
-//                 } else {
-//                     return;
-//                 }
-                
-//                 // Stage the update if the value has changed
-//                 if (String(newInputs[inputKey]) !== String(newValue) && (newInputs[inputKey] !== undefined || String(newValue) !== "")) {
-//                     newInputs[inputKey] = String(newValue);
-                    
-//                     newModifiedHours[inputKey] = {
-//                         empIdx: actualEmpIdx,
-//                         uniqueKey,
-//                         newValue: String(newValue),
-//                         employee: emp,
-//                     };
-//                 }
-//             });
-//             totalSuccessCount++;
-//         });
-        
-//         // Apply staged changes
-//         if (Object.keys(newModifiedHours).length > 0) {
-//             setInputValues(prev => ({ ...prev, ...newInputs }));
-//             setModifiedHours(prev => ({ ...prev, ...newModifiedHours }));
-//             setHasUnsavedHoursChanges(true);
-//         }
-//     }
-
-
-//     // --- 4. Final Cleanup and Notification ---
-//     // if (totalSuccessCount > 0) {
-//     //     const action = (fillMethod === "Copy From Source Record") ? "copied" : "applied";
-//     //     toast.success(`Successfully ${action} fill operation to ${totalSuccessCount} row(s).`, { autoClose: 3000 });
-//     // } else {
-//     //     toast.info("No editable cells found within the selected scope and date range.", { autoClose: 3000 });
-//     // }
-
-//     setShowFillValues(false);
-//     setFillMethod("None");
-//     setFillHours(0.0);
-//     setSelectedRowIndex(null); 
-//     setSelectedColumnKey(null);
-//     setSelectedRows(new Set());
-// };
-
-
-
-
-
-  // const handleSaveNewEntry = async () => {
-  //   if (!planId) {
-  //     toast.error("Plan ID is required to save a new entry.", {
-  //       autoClose: 3000,
-  //     });
-  //     return;
-  //   }
-
-  //   // Skip all validations if planType is NBBUD
-  //   if (planType !== "NBBUD") {
-  //     // Check for duplicate employee ID before validating anything else
-  //     const isDuplicate = localEmployees.some((emp) => {
-  //       if (!emp.emple) return false;
-
-  //       // For "Other" type, only check emplId (like KBD001)
-  //       if (newEntry.idType === "Other") {
-  //         return emp.emple.emplId === newEntry.id.trim();
-  //       }
-
-  //       // For other types, check both emplId and plcGlcCode
-  //       return (
-  //         emp.emple.emplId === newEntry.id.trim() &&
-  //         emp.emple.plcGlcCode === newEntry.plcGlcCode.trim()
-  //       );
-  //     });
-
-  //     if (isDuplicate) {
-  //       toast.error(
-  //         "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
-  //         {
-  //           toastId: "duplicate-save-error",
-  //           autoClose: 3000,
-  //         }
-  //       );
-  //       return;
-  //     }
-
-  //     // UPDATED VALIDATION LOGIC - Apply to ALL ID types except "Other"
-  //     if (newEntry.idType === "PLC") {
-  //       if (!newEntry.id || newEntry.id !== "PLC") {
-  //         toast.error("ID must be automatically set to 'PLC' for PLC type.", {
-  //           autoClose: 3000,
-  //         });
-  //         return;
-  //       }
-  //     } else if (newEntry.idType === "Other") {
-  //       // For Other type, just check that it's not empty (no further validation)
-  //       if (!newEntry.id.trim()) {
-  //         toast.error("ID is required.", { autoClose: 3000 });
-  //         return;
-  //       }
-  //     } else {
-  //       // For ALL other ID types (Employee, Vendor), validate against suggestions
-  //       if (!newEntry.id.trim()) {
-  //         toast.error("ID is required.", { autoClose: 3000 });
-  //         return;
-  //       }
-
-  //       // MANDATORY validation against suggestions for Employee and Vendor types
-  //       if (employeeSuggestions.length > 0) {
-  //         const validEmployee = employeeSuggestions.find(
-  //           (emp) => emp.emplId === newEntry.id.trim()
-  //         );
-  //         if (!validEmployee) {
-  //           toast.error("Please enter a valid ID from the available list.", {
-  //             autoClose: 3000,
-  //           });
-  //           return;
-  //         }
-  //       } else {
-  //         // If no suggestions are loaded, don't allow saving for Employee/Vendor
-  //         toast.error("Employee suggestions not loaded. Please try again.", {
-  //           autoClose: 3000,
-  //         });
-  //         return;
-  //       }
-  //     }
-
-  //     if (!isValidAccount(newEntry.acctId)) {
-  //       toast.error("Please enter a valid Account from the available list.", {
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     }
-  //     if (!isValidOrg(newEntry.orgId)) {
-  //       toast.error("Organization is required.", { autoClose: 3000 });
-  //       return;
-  //     }
-
-  //     if (!newEntry.plcGlcCode || !newEntry.plcGlcCode.trim()) {
-  //       toast.error("PLC is required and cannot be empty.", {
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     }
-  //     // Enhanced PLC validation - must match exactly from suggestions
-  //     if (newEntry.plcGlcCode && newEntry.plcGlcCode.trim() !== "") {
-  //       const exactPlcMatch = plcOptions.find(
-  //         (option) =>
-  //           option.value.toLowerCase() ===
-  //           newEntry.plcGlcCode.toLowerCase().trim()
-  //       );
-
-  //       if (!exactPlcMatch) {
-  //         toast.error(
-  //           "PLC must be selected from the available suggestions. Custom values are not allowed.",
-  //           {
-  //             autoClose: 4000,
-  //           }
-  //         );
-  //         return;
-  //       }
-  //     }
-  //   }
-
-  //   setIsDurationLoading(true);
-  //   const payloadForecasts = durations.map((duration) => ({
-  //     ...(planType === "EAC"
-  //       ? {
-  //           actualhours:
-  //             Number(
-  //               newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
-  //             ) || 0,
-  //         }
-  //       : {
-  //           forecastedhours:
-  //             Number(
-  //               newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
-  //             ) || 0,
-  //         }),
-  //     projId: projectId,
-  //     plId: planId,
-  //     emplId: newEntry.id,
-  //     month: duration.monthNo,
-  //     year: duration.year,
-  //     acctId: newEntry.acctId,
-  //     orgId: newEntry.orgId,
-  //     plc: newEntry.plcGlcCode || "",
-  //     hrlyRate: Number(newEntry.perHourRate) || 0,
-  //     effectDt: null,
-  //     plEmployee: null,
-  //   }));
-
-  //   const payload = {
-  //     id: 0,
-  //     emplId: newEntry.id,
-  //     firstName: newEntry.firstName,
-  //     lastName: newEntry.lastName,
-  //     type: newEntry.idType,
-  //     isRev: newEntry.isRev,
-  //     isBrd: newEntry.isBrd,
-  //     plcGlcCode: (newEntry.plcGlcCode || "").substring(0, 20),
-  //     perHourRate: Number(newEntry.perHourRate) || 0,
-  //     status: newEntry.status || "-",
-  //     accId: newEntry.acctId,
-  //     orgId: newEntry.orgId || "",
-  //     plId: planId,
-  //     plForecasts: payloadForecasts,
-  //   };
-
-  //   try {
-  //     await axios.post(`${backendUrl}/Employee/AddNewEmployee`, payload);
-  //     setSuccessMessageText("Entry saved successfully!");
-  //     setShowSuccessMessage(true);
-  //     setShowNewForm(false);
-  //     setNewEntry({
-  //       id: "",
-  //       firstName: "",
-  //       lastName: "",
-  //       isRev: false,
-  //       isBrd: false,
-  //       idType: "",
-  //       acctId: "",
-  //       orgId: "",
-  //       plcGlcCode: "",
-  //       perHourRate: "",
-  //       status: "Act",
-  //     });
-  //     setNewEntryPeriodHours({});
-  //     setEmployeeSuggestions([]);
-  //     setLaborAccounts([]);
-  //     setPlcOptions([]);
-  //     setPlcSearch("");
-  //     setAutoPopulatedPLC(false);
-  //     if (onSaveSuccess) {
-  //       onSaveSuccess();
-  //     }
-  //     fetchEmployees();
-  //   } catch (err) {
-  //     setSuccessMessageText("Failed to save entry.");
-  //     setShowSuccessMessage(true);
-
-  //     // Enhanced error message extraction
-  //     let detailedErrorMessage = "Failed to save new entry. ";
-
-  //     if (err?.response?.data) {
-  //       const errorData = err.response.data;
-
-  //       // Handle validation errors specifically
-  //       if (errorData.errors) {
-  //         const fieldErrors = [];
-  //         Object.keys(errorData.errors).forEach((field) => {
-  //           const errors = errorData.errors[field];
-  //           if (Array.isArray(errors) && errors.length > 0) {
-  //             fieldErrors.push(`${field}: ${errors[0]}`);
-  //           }
-  //         });
-  //         if (fieldErrors.length > 0) {
-  //           detailedErrorMessage += `Validation errors - ${fieldErrors.join(
-  //             ", "
-  //           )}`;
-  //         }
-  //       } else if (errorData.error) {
-  //         detailedErrorMessage += `Reason: ${errorData.error}`;
-  //       } else if (errorData.message) {
-  //         detailedErrorMessage += `Reason: ${errorData.message}`;
-  //       } else if (typeof errorData === "string") {
-  //         detailedErrorMessage += `Reason: ${errorData}`;
-  //       } else {
-  //         // Check for specific field validation messages
-  //         const errorMessages = [];
-  //         if (errorData.ID) errorMessages.push(`ID: ${errorData.ID}`);
-  //         if (errorData.Account)
-  //           errorMessages.push(`Account: ${errorData.Account}`);
-  //         if (errorData.Organization)
-  //           errorMessages.push(`Organization: ${errorData.Organization}`);
-  //         if (errorData.PLC) errorMessages.push(`PLC: ${errorData.PLC}`);
-
-  //         if (errorMessages.length > 0) {
-  //           detailedErrorMessage += `Please check - ${errorMessages.join(
-  //             ", "
-  //           )}`;
-  //         } else {
-  //           detailedErrorMessage += `Server response: ${JSON.stringify(
-  //             errorData
-  //           )}`;
-  //         }
-  //       }
-  //     } else if (err?.message) {
-  //       detailedErrorMessage += `Reason: ${err.message}`;
-  //     } else {
-  //       detailedErrorMessage +=
-  //         "Unknown error occurred. Please check your input and try again.";
-  //     }
-
-  //     // Show detailed error in toast
-  //     toast.error(detailedErrorMessage, {
-  //       toastId: "save-entry-error",
-  //       autoClose: 7000, // Longer time for detailed messages
-  //     });
-
-  //     // Log for debugging
-  //     console.error("Save new entry error:", {
-  //       error: err,
-  //       response: err?.response?.data,
-  //       status: err?.response?.status,
-  //     });
-  //   } finally {
-  //     setIsDurationLoading(false);
-  //     setTimeout(() => setShowSuccessMessage(false), 2000);
-  //   }
-  // };
+    setSelectedSourceIdx("");
+    toast.success("Values applied successfully");
+  };
 
   const handleSaveNewEntry = async () => {
-  if (!planId) {
-    toast.error("Plan ID is required to save a new entry.", {
-      autoClose: 3000,
-    });
-    return;
-  }
-
-  // Skip all validations if planType is NBBUD
-  if (planType !== "NBBUD") {
-    // Check for duplicate employee ID before validating anything else
-    const isDuplicate = localEmployees.some((emp) => {
-      if (!emp.emple) return false;
-
-      // For "Other" type, only check emplId (like KBD001)
-      if (newEntry.idType === "Other") {
-        return emp.emple.emplId === newEntry.id.trim();
-      }
-
-      // For other types, check both emplId and plcGlcCode
-      return (
-        emp.emple.emplId === newEntry.id.trim() &&
-        emp.emple.plcGlcCode === newEntry.plcGlcCode.trim()
-      );
-    });
-
-    if (isDuplicate) {
-      toast.error(
-        "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
-        {
-          toastId: "duplicate-save-error",
-          autoClose: 3000,
-        }
-      );
+    if (!planId) {
+      toast.error("Plan ID is required to save a new entry.", {
+        autoClose: 3000,
+      });
       return;
     }
 
-    // UPDATED VALIDATION LOGIC - Apply to ALL ID types except "Other"
-    if (newEntry.idType === "PLC") {
-      if (!newEntry.id || newEntry.id !== "PLC") {
-        toast.error("ID must be automatically set to 'PLC' for PLC type.", {
-          autoClose: 3000,
-        });
-        return;
-      }
-    } else if (newEntry.idType === "Other") {
-      // For Other type, just check that it's not empty (no further validation)
-      if (!newEntry.id.trim()) {
-        toast.error("ID is required.", { autoClose: 3000 });
-        return;
-      }
-    } else {
-      // For ALL other ID types (Employee, Vendor), validate against suggestions
-      if (!newEntry.id.trim()) {
-        toast.error("ID is required.", { autoClose: 3000 });
+    // Skip all validations if planType is NBBUD
+    if (planType !== "NBBUD") {
+      // Check for duplicate employee ID before validating anything else
+      const isDuplicate = localEmployees.some((emp) => {
+        if (!emp.emple) return false;
+
+        // For "Other" type, only check emplId (like KBD001)
+        if (newEntry.idType === "Other") {
+          return emp.emple.emplId === newEntry.id.trim();
+        }
+
+        // For other types, check both emplId and plcGlcCode
+        return (
+          emp.emple.emplId === newEntry.id.trim() &&
+          emp.emple.plcGlcCode === newEntry.plcGlcCode.trim()
+        );
+      });
+
+      if (isDuplicate) {
+        toast.error(
+          "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
+          {
+            toastId: "duplicate-save-error",
+            autoClose: 3000,
+          }
+        );
         return;
       }
 
-      // MANDATORY validation against suggestions for Employee and Vendor types
-      if (employeeSuggestions.length > 0) {
-        const validEmployee = employeeSuggestions.find(
-          (emp) => emp.emplId === newEntry.id.trim()
-        );
-        if (!validEmployee) {
-          toast.error("Please enter a valid ID from the available list.", {
+      // UPDATED VALIDATION LOGIC - Apply to ALL ID types except "Other"
+      if (newEntry.idType === "PLC") {
+        if (!newEntry.id || newEntry.id !== "PLC") {
+          toast.error("ID must be automatically set to 'PLC' for PLC type.", {
             autoClose: 3000,
           });
           return;
         }
+      } else if (newEntry.idType === "Other") {
+        // For Other type, just check that it's not empty (no further validation)
+        if (!newEntry.id.trim()) {
+          toast.error("ID is required.", { autoClose: 3000 });
+          return;
+        }
       } else {
-        // If no suggestions are loaded, don't allow saving for Employee/Vendor
-        toast.error("Employee suggestions not loaded. Please try again.", {
+        // For ALL other ID types (Employee, Vendor), validate against suggestions
+        if (!newEntry.id.trim()) {
+          toast.error("ID is required.", { autoClose: 3000 });
+          return;
+        }
+
+        // MANDATORY validation against suggestions for Employee and Vendor types
+        if (employeeSuggestions.length > 0) {
+          const validEmployee = employeeSuggestions.find(
+            (emp) => emp.emplId === newEntry.id.trim()
+          );
+          if (!validEmployee) {
+            toast.error("Please enter a valid ID from the available list.", {
+              autoClose: 3000,
+            });
+            return;
+          }
+        } else {
+          // If no suggestions are loaded, don't allow saving for Employee/Vendor
+          toast.error("Employee suggestions not loaded. Please try again.", {
+            autoClose: 3000,
+          });
+          return;
+        }
+      }
+
+      if (!isValidAccount(newEntry.acctId)) {
+        toast.error("Please enter a valid Account from the available list.", {
           autoClose: 3000,
         });
         return;
       }
-    }
-
-    if (!isValidAccount(newEntry.acctId)) {
-      toast.error("Please enter a valid Account from the available list.", {
-        autoClose: 3000,
-      });
-      return;
-    }
-    if (!isValidOrg(newEntry.orgId)) {
-      toast.error("Organization is required.", { autoClose: 3000 });
-      return;
-    }
-
-    if (!newEntry.plcGlcCode || !newEntry.plcGlcCode.trim()) {
-      toast.error("PLC is required and cannot be empty.", {
-        autoClose: 3000,
-      });
-      return;
-    }
-    // Enhanced PLC validation - must match exactly from suggestions
-    if (newEntry.plcGlcCode && newEntry.plcGlcCode.trim() !== "") {
-      const exactPlcMatch = plcOptions.find(
-        (option) =>
-          option.value.toLowerCase() ===
-          newEntry.plcGlcCode.toLowerCase().trim()
-      );
-
-      if (!exactPlcMatch) {
-        toast.error(
-          "PLC must be selected from the available suggestions. Custom values are not allowed.",
-          {
-            autoClose: 4000,
-          }
-        );
+      if (!isValidOrg(newEntry.orgId)) {
+        toast.error("Organization is required.", { autoClose: 3000 });
         return;
       }
-    }
-  }
 
-  setIsDurationLoading(true);
-  const payloadForecasts = durations.map((duration) => ({
-    ...(planType === "EAC"
-      ? {
-          actualhours:
-            Number(
-              newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
-            ) || 0,
-        }
-      : {
-          forecastedhours:
-            Number(
-              newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
-            ) || 0,
-        }),
-    projId: projectId,
-    plId: planId,
-    emplId: newEntry.id,
-    month: duration.monthNo,
-    year: duration.year,
-    acctId: newEntry.acctId,
-    orgId: newEntry.orgId,
-    plc: newEntry.plcGlcCode || "",
-    hrlyRate: Number(newEntry.perHourRate) || 0,
-    effectDt: null,
-    plEmployee: null,
-  }));
-
-  const payload = {
-    id: 0,
-    emplId: newEntry.id,
-    firstName: newEntry.firstName,
-    lastName: newEntry.lastName,
-    type: newEntry.idType,
-    isRev: newEntry.isRev,
-    isBrd: newEntry.isBrd,
-    plcGlcCode: (newEntry.plcGlcCode || "").substring(0, 20),
-    perHourRate: Number(newEntry.perHourRate) || 0,
-    status: newEntry.status || "-",
-    accId: newEntry.acctId,
-    orgId: newEntry.orgId || "",
-    plId: planId,
-    plForecasts: payloadForecasts,
-  };
-
-  try {
-    // REPLACED: Call AddNewEmployees bulk API with array payload and dynamic params
-    await axios.post(
-      `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
-      [payload]
-    );
-
-    setSuccessMessageText("Entry saved successfully!");
-    setShowSuccessMessage(true);
-    setShowNewForm(false);
-    setNewEntry({
-      id: "",
-      firstName: "",
-      lastName: "",
-      isRev: false,
-      isBrd: false,
-      idType: "",
-      acctId: "",
-      orgId: "",
-      plcGlcCode: "",
-      perHourRate: "",
-      status: "Act",
-    });
-    setNewEntryPeriodHours({});
-    setEmployeeSuggestions([]);
-    setLaborAccounts([]);
-    setPlcOptions([]);
-    setPlcSearch("");
-    setAutoPopulatedPLC(false);
-    if (onSaveSuccess) {
-      onSaveSuccess();
-    }
-    fetchEmployees();
-  } catch (err) {
-    setSuccessMessageText("Failed to save entry.");
-    setShowSuccessMessage(true);
-
-    // Enhanced error message extraction
-    let detailedErrorMessage = "Failed to save new entry. ";
-
-    if (err?.response?.data) {
-      const errorData = err.response.data;
-
-      // Handle validation errors specifically
-      if (errorData.errors) {
-        const fieldErrors = [];
-        Object.keys(errorData.errors).forEach((field) => {
-          const errors = errorData.errors[field];
-          if (Array.isArray(errors) && errors.length > 0) {
-            fieldErrors.push(`${field}: ${errors[0]}`);
-          }
+      if (!newEntry.plcGlcCode || !newEntry.plcGlcCode.trim()) {
+        toast.error("PLC is required and cannot be empty.", {
+          autoClose: 3000,
         });
-        if (fieldErrors.length > 0) {
-          detailedErrorMessage += `Validation errors - ${fieldErrors.join(
-            ", "
-          )}`;
-        }
-      } else if (errorData.error) {
-        detailedErrorMessage += `Reason: ${errorData.error}`;
-      } else if (errorData.message) {
-        detailedErrorMessage += `Reason: ${errorData.message}`;
-      } else if (typeof errorData === "string") {
-        detailedErrorMessage += `Reason: ${errorData}`;
-      } else {
-        // Check for specific field validation messages
-        const errorMessages = [];
-        if (errorData.ID) errorMessages.push(`ID: ${errorData.ID}`);
-        if (errorData.Account)
-          errorMessages.push(`Account: ${errorData.Account}`);
-        if (errorData.Organization)
-          errorMessages.push(`Organization: ${errorData.Organization}`);
-        if (errorData.PLC) errorMessages.push(`PLC: ${errorData.PLC}`);
+        return;
+      }
+      // Enhanced PLC validation - must match exactly from suggestions
+      if (newEntry.plcGlcCode && newEntry.plcGlcCode.trim() !== "") {
+        const exactPlcMatch = plcOptions.find(
+          (option) =>
+            option.value.toLowerCase() ===
+            newEntry.plcGlcCode.toLowerCase().trim()
+        );
 
-        if (errorMessages.length > 0) {
-          detailedErrorMessage += `Please check - ${errorMessages.join(
-            ", "
-          )}`;
-        } else {
-          detailedErrorMessage += `Server response: ${JSON.stringify(
-            errorData
-          )}`;
+        if (!exactPlcMatch) {
+          toast.error(
+            "PLC must be selected from the available suggestions. Custom values are not allowed.",
+            {
+              autoClose: 4000,
+            }
+          );
+          return;
         }
       }
-    } else if (err?.message) {
-      detailedErrorMessage += `Reason: ${err.message}`;
-    } else {
-      detailedErrorMessage +=
-        "Unknown error occurred. Please check your input and try again.";
     }
 
-    // Show detailed error in toast
-    toast.error(detailedErrorMessage, {
-      toastId: "save-entry-error",
-      autoClose: 7000, // Longer time for detailed messages
-    });
+    setIsDurationLoading(true);
+    const payloadForecasts = durations.map((duration) => ({
+      ...(planType === "EAC"
+        ? {
+            actualhours:
+              Number(
+                newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
+              ) || 0,
+          }
+        : {
+            forecastedhours:
+              Number(
+                newEntryPeriodHours[`${duration.monthNo}_${duration.year}`]
+              ) || 0,
+          }),
+      projId: projectId,
+      plId: planId,
+      emplId: newEntry.id,
+      month: duration.monthNo,
+      year: duration.year,
+      acctId: newEntry.acctId,
+      orgId: newEntry.orgId,
+      plc: newEntry.plcGlcCode || "",
+      hrlyRate: Number(newEntry.perHourRate) || 0,
+      effectDt: null,
+      plEmployee: null,
+    }));
 
-    // Log for debugging
-    console.error("Save new entry error:", {
-      error: err,
-      response: err?.response?.data,
-      status: err?.response?.status,
-    });
-  } finally {
-    setIsDurationLoading(false);
-    setTimeout(() => setShowSuccessMessage(false), 2000);
-  }
-};
+    const payload = {
+      id: 0,
+      emplId: newEntry.id,
+      firstName: newEntry.firstName,
+      lastName: newEntry.lastName,
+      type: newEntry.idType,
+      isRev: newEntry.isRev,
+      isBrd: newEntry.isBrd,
+      plcGlcCode: (newEntry.plcGlcCode || "").substring(0, 20),
+      perHourRate: Number(newEntry.perHourRate) || 0,
+      status: newEntry.status || "-",
+      accId: newEntry.acctId,
+      orgId: newEntry.orgId || "",
+      plId: planId,
+      plForecasts: payloadForecasts,
+    };
 
-// const handleSaveMultipleEntry = async () => {
-//   if (newEntries.length === 0) {
-//     toast.info("No entries to save.", { autoClose: 2000 });
-//     return;
-//   }
+    try {
+      // REPLACED: Call AddNewEmployees bulk API with array payload and dynamic params
+      await axios.post(
+        `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+        [payload]
+      );
 
-//   setIsDurationLoading(true);
-//   let failCount = 0;
-//   const failedIndices = [];
+      setSuccessMessageText("Entry saved successfully!");
+      setShowSuccessMessage(true);
+      setShowNewForm(false);
+      setNewEntry({
+        id: "",
+        firstName: "",
+        lastName: "",
+        isRev: false,
+        isBrd: false,
+        idType: "",
+        acctId: "",
+        orgId: "",
+        plcGlcCode: "",
+        perHourRate: "",
+        status: "Act",
+      });
+      setNewEntryPeriodHours({});
+      setEmployeeSuggestions([]);
+      setLaborAccounts([]);
+      setPlcOptions([]);
+      setPlcSearch("");
+      setAutoPopulatedPLC(false);
+      if (onSaveSuccess) {
+        onSaveSuccess();
+      }
+      fetchEmployees();
+    } catch (err) {
+      setSuccessMessageText("Failed to save entry.");
+      setShowSuccessMessage(true);
 
-//   try {
-//     const bulkPayload = [];
+      // Enhanced error message extraction
+      let detailedErrorMessage = "Failed to save new entry. ";
 
-//     for (let i = 0; i < newEntries.length; i++) {
-//       const entry = newEntries[i];
-//       const periodHours = newEntryPeriodHoursArray[i];
+      if (err?.response?.data) {
+        const errorData = err.response.data;
 
-//       // Keep existing validation logic
-//       if (planType !== "NBBUD") {
-//         const isDuplicate = localEmployees.some((emp) => {
-//           if (!emp.emple) return false;
-//           if (entry.idType === "Other") {
-//             return emp.emple.emplId === entry.id.trim();
-//           }
-//           return (
-//             emp.emple.emplId === entry.id.trim() &&
-//             emp.emple.plcGlcCode === entry.plcGlcCode.trim()
-//           );
-//         });
+        // Handle validation errors specifically
+        if (errorData.errors) {
+          const fieldErrors = [];
+          Object.keys(errorData.errors).forEach((field) => {
+            const errors = errorData.errors[field];
+            if (Array.isArray(errors) && errors.length > 0) {
+              fieldErrors.push(`${field}: ${errors[0]}`);
+            }
+          });
+          if (fieldErrors.length > 0) {
+            detailedErrorMessage += `Validation errors - ${fieldErrors.join(
+              ", "
+            )}`;
+          }
+        } else if (errorData.error) {
+          detailedErrorMessage += `Reason: ${errorData.error}`;
+        } else if (errorData.message) {
+          detailedErrorMessage += `Reason: ${errorData.message}`;
+        } else if (typeof errorData === "string") {
+          detailedErrorMessage += `Reason: ${errorData}`;
+        } else {
+          // Check for specific field validation messages
+          const errorMessages = [];
+          if (errorData.ID) errorMessages.push(`ID: ${errorData.ID}`);
+          if (errorData.Account)
+            errorMessages.push(`Account: ${errorData.Account}`);
+          if (errorData.Organization)
+            errorMessages.push(`Organization: ${errorData.Organization}`);
+          if (errorData.PLC) errorMessages.push(`PLC: ${errorData.PLC}`);
 
-//         if (isDuplicate) {
-//           toast.error(
-//             "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
-//             { toastId: "duplicate-save-error", autoClose: 3000 }
-//           );
-//           failCount++;
-//           failedIndices.push(i);
-//           continue;
-//         }
+          if (errorMessages.length > 0) {
+            detailedErrorMessage += `Please check - ${errorMessages.join(
+              ", "
+            )}`;
+          } else {
+            detailedErrorMessage += `Server response: ${JSON.stringify(
+              errorData
+            )}`;
+          }
+        }
+      } else if (err?.message) {
+        detailedErrorMessage += `Reason: ${err.message}`;
+      } else {
+        detailedErrorMessage +=
+          "Unknown error occurred. Please check your input and try again.";
+      }
 
-//         if (entry.idType === "PLC") {
-//           if (!entry.id || entry.id !== "PLC") {
-//             toast.error("ID must be automatically set to 'PLC' for PLC type.", { autoClose: 3000 });
-//             failCount++;
-//             failedIndices.push(i);
-//             continue;
-//           }
-//         } else if (entry.idType === "Other") {
-//           if (!entry.id.trim()) {
-//             toast.error("ID is required.", { autoClose: 3000 });
-//             failCount++;
-//             failedIndices.push(i);
-//             continue;
-//           }
-//         } else {
-//           if (!entry.id.trim()) {
-//             toast.error("ID is required.", { autoClose: 3000 });
-//             failCount++;
-//             failedIndices.push(i);
-//             continue;
-//           }
-//           const suggestions = pastedEntrySuggestions[i] || [];
-//           if (suggestions.length > 0) {
-//             const validEmployee = suggestions.find((emp) => emp.emplId === entry.id.trim());
-//             if (!validEmployee) {
-//               toast.error("Please enter a valid ID from the available list.", { autoClose: 3000 });
-//               failCount++;
-//               failedIndices.push(i);
-//               continue;
-//             }
-//           } else {
-//             toast.error("Employee suggestions not loaded. Please try again.", { autoClose: 3000 });
-//             failCount++;
-//             failedIndices.push(i);
-//             continue;
-//           }
-//         }
+      // Show detailed error in toast
+      toast.error(detailedErrorMessage, {
+        toastId: "save-entry-error",
+        autoClose: 7000, // Longer time for detailed messages
+      });
 
-//         const entryAccounts = pastedEntryAccounts[i] || [];
-//         const isValidAcc = entryAccounts.some((acc) => acc.id === entry.acctId);
-//         if (!isValidAcc) {
-//           toast.error("Please enter a valid Account from the available list.", { autoClose: 3000 });
-//           failCount++;
-//           failedIndices.push(i);
-//           continue;
-//         }
+      // Log for debugging
+      console.error("Save new entry error:", {
+        error: err,
+        response: err?.response?.data,
+        status: err?.response?.status,
+      });
+    } finally {
+      setIsDurationLoading(false);
+      setTimeout(() => setShowSuccessMessage(false), 2000);
+    }
+  };
 
-//         const entryOrgs = pastedEntryOrgs[i] || [];
-//         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
-//         const isValidOrganization = entryOrgs.length > 0 
-//           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
-//           : hasOrgValue;
+  // const handleSaveMultipleEntry = async () => {
+  //   if (newEntries.length === 0) {
+  //     toast.info("No entries to save.", { autoClose: 2000 });
+  //     return;
+  //   }
 
-//         if (!isValidOrganization) {
-//           toast.error("Organization is required.", { autoClose: 3000 });
-//           failCount++;
-//           failedIndices.push(i);
-//           continue;
-//         }
+  //   setIsDurationLoading(true);
+  //   let failCount = 0;
+  //   const failedIndices = [];
 
-//         if (!entry.plcGlcCode || !entry.plcGlcCode.trim()) {
-//           toast.error("PLC is required and cannot be empty.", { autoClose: 3000 });
-//           failCount++;
-//           failedIndices.push(i);
-//           continue;
-//         }
+  //   try {
+  //     const bulkPayload = [];
 
-//         const entryPlcs = pastedEntryPlcs[i] || [];
-//         if (entry.plcGlcCode && entry.plcGlcCode.trim() !== "") {
-//           const exactPlcMatch = entryPlcs.find(
-//             (option) => option.value.toLowerCase() === entry.plcGlcCode.toLowerCase().trim()
-//           );
-//           if (!exactPlcMatch) {
-//             toast.error("PLC must be selected from the available suggestions.", { autoClose: 4000 });
-//             failCount++;
-//             failedIndices.push(i);
-//             continue;
-//           }
-//         }
-//       }
+  //     for (let i = 0; i < newEntries.length; i++) {
+  //       const entry = newEntries[i];
+  //       const periodHours = newEntryPeriodHoursArray[i];
 
-//       // Build individual payload
-//       const payloadForecasts = durations.map((duration) => ({
-//         ...(planType === "EAC"
-//           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
-//           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
-//         projId: projectId,
-//         plId: planId,
-//         emplId: entry.id,
-//         month: duration.monthNo,
-//         year: duration.year,
-//         acctId: entry.acctId,
-//         orgId: entry.orgId,
-//         plc: entry.plcGlcCode || "",
-//         hrlyRate: Number(entry.perHourRate || 0),
-//         effectDt: null,
-//         plEmployee: null,
-//       }));
+  //       // Keep existing validation logic
+  //       if (planType !== "NBBUD") {
+  //         const isDuplicate = localEmployees.some((emp) => {
+  //           if (!emp.emple) return false;
+  //           if (entry.idType === "Other") {
+  //             return emp.emple.emplId === entry.id.trim();
+  //           }
+  //           return (
+  //             emp.emple.emplId === entry.id.trim() &&
+  //             emp.emple.plcGlcCode === entry.plcGlcCode.trim()
+  //           );
+  //         });
 
-//       bulkPayload.push({
-//         id: 0,
-//         emplId: entry.id,
-//         firstName: entry.firstName,
-//         lastName: entry.lastName,
-//         type: entry.idType,
-//         isRev: entry.isRev,
-//         isBrd: entry.isBrd,
-//         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
-//         perHourRate: Number(entry.perHourRate || 0),
-//         status: entry.status || "ACT",
-//         accId: entry.acctId,
-//         orgId: entry.orgId || "",
-//         plId: planId,
-//         plForecasts: payloadForecasts,
-//       });
-//     }
+  //         if (isDuplicate) {
+  //           toast.error(
+  //             "Can't save entry with existing ID and PLC combination. Please use a different ID or PLC.",
+  //             { toastId: "duplicate-save-error", autoClose: 3000 }
+  //           );
+  //           failCount++;
+  //           failedIndices.push(i);
+  //           continue;
+  //         }
 
-//     // Call API only if there are valid items in the payload
-//     if (bulkPayload.length > 0) {
-//       await axios.post(
-//         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
-//         bulkPayload
-//       );
-      
-//       // If we made it here, bulk API call was successful
-//       if (failedIndices.length === 0) {
-//         setNewEntries([]);
-//         setNewEntryPeriodHoursArray([]);
-//       } else {
-//         // Keep only failed entries (those that failed local validation)
-//         setNewEntries(newEntries.filter((_, idx) => failedIndices.includes(idx)));
-//         setNewEntryPeriodHoursArray(newEntryPeriodHoursArray.filter((_, idx) => failedIndices.includes(idx)));
-//       }
+  //         if (entry.idType === "PLC") {
+  //           if (!entry.id || entry.id !== "PLC") {
+  //             toast.error("ID must be automatically set to 'PLC' for PLC type.", { autoClose: 3000 });
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //         } else if (entry.idType === "Other") {
+  //           if (!entry.id.trim()) {
+  //             toast.error("ID is required.", { autoClose: 3000 });
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //         } else {
+  //           if (!entry.id.trim()) {
+  //             toast.error("ID is required.", { autoClose: 3000 });
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //           const suggestions = pastedEntrySuggestions[i] || [];
+  //           if (suggestions.length > 0) {
+  //             const validEmployee = suggestions.find((emp) => emp.emplId === entry.id.trim());
+  //             if (!validEmployee) {
+  //               toast.error("Please enter a valid ID from the available list.", { autoClose: 3000 });
+  //               failCount++;
+  //               failedIndices.push(i);
+  //               continue;
+  //             }
+  //           } else {
+  //             toast.error("Employee suggestions not loaded. Please try again.", { autoClose: 3000 });
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //         }
 
-//       fetchEmployees();
-//       if (onSaveSuccess) onSaveSuccess();
-//     } else if (failCount > 0) {
-//        // All entries failed local validation
-//        setNewEntries(newEntries.filter((_, idx) => failedIndices.includes(idx)));
-//        setNewEntryPeriodHoursArray(newEntryPeriodHoursArray.filter((_, idx) => failedIndices.includes(idx)));
-//     }
+  //         const entryAccounts = pastedEntryAccounts[i] || [];
+  //         const isValidAcc = entryAccounts.some((acc) => acc.id === entry.acctId);
+  //         if (!isValidAcc) {
+  //           toast.error("Please enter a valid Account from the available list.", { autoClose: 3000 });
+  //           failCount++;
+  //           failedIndices.push(i);
+  //           continue;
+  //         }
 
-//   } catch (err) {
-//     console.error("Save multiple entries error:", err);
-//     toast.error("Failed to save entries: " + (err.response?.data?.message || err.message), { autoClose: 3000 });
-//   } finally {
-//     setIsDurationLoading(false);
-//   }
-// };
+  //         const entryOrgs = pastedEntryOrgs[i] || [];
+  //         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+  //         const isValidOrganization = entryOrgs.length > 0
+  //           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+  //           : hasOrgValue;
+
+  //         if (!isValidOrganization) {
+  //           toast.error("Organization is required.", { autoClose: 3000 });
+  //           failCount++;
+  //           failedIndices.push(i);
+  //           continue;
+  //         }
+
+  //         if (!entry.plcGlcCode || !entry.plcGlcCode.trim()) {
+  //           toast.error("PLC is required and cannot be empty.", { autoClose: 3000 });
+  //           failCount++;
+  //           failedIndices.push(i);
+  //           continue;
+  //         }
+
+  //         const entryPlcs = pastedEntryPlcs[i] || [];
+  //         if (entry.plcGlcCode && entry.plcGlcCode.trim() !== "") {
+  //           const exactPlcMatch = entryPlcs.find(
+  //             (option) => option.value.toLowerCase() === entry.plcGlcCode.toLowerCase().trim()
+  //           );
+  //           if (!exactPlcMatch) {
+  //             toast.error("PLC must be selected from the available suggestions.", { autoClose: 4000 });
+  //             failCount++;
+  //             failedIndices.push(i);
+  //             continue;
+  //           }
+  //         }
+  //       }
+
+  //       // Build individual payload
+  //       const payloadForecasts = durations.map((duration) => ({
+  //         ...(planType === "EAC"
+  //           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+  //           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+  //         projId: projectId,
+  //         plId: planId,
+  //         emplId: entry.id,
+  //         month: duration.monthNo,
+  //         year: duration.year,
+  //         acctId: entry.acctId,
+  //         orgId: entry.orgId,
+  //         plc: entry.plcGlcCode || "",
+  //         hrlyRate: Number(entry.perHourRate || 0),
+  //         effectDt: null,
+  //         plEmployee: null,
+  //       }));
+
+  //       bulkPayload.push({
+  //         id: 0,
+  //         emplId: entry.id,
+  //         firstName: entry.firstName,
+  //         lastName: entry.lastName,
+  //         type: entry.idType,
+  //         isRev: entry.isRev,
+  //         isBrd: entry.isBrd,
+  //         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+  //         perHourRate: Number(entry.perHourRate || 0),
+  //         status: entry.status || "ACT",
+  //         accId: entry.acctId,
+  //         orgId: entry.orgId || "",
+  //         plId: planId,
+  //         plForecasts: payloadForecasts,
+  //       });
+  //     }
+
+  //     // Call API only if there are valid items in the payload
+  //     if (bulkPayload.length > 0) {
+  //       await axios.post(
+  //         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+  //         bulkPayload
+  //       );
+
+  //       // If we made it here, bulk API call was successful
+  //       if (failedIndices.length === 0) {
+  //         setNewEntries([]);
+  //         setNewEntryPeriodHoursArray([]);
+  //       } else {
+  //         // Keep only failed entries (those that failed local validation)
+  //         setNewEntries(newEntries.filter((_, idx) => failedIndices.includes(idx)));
+  //         setNewEntryPeriodHoursArray(newEntryPeriodHoursArray.filter((_, idx) => failedIndices.includes(idx)));
+  //       }
+
+  //       fetchEmployees();
+  //       if (onSaveSuccess) onSaveSuccess();
+  //     } else if (failCount > 0) {
+  //        // All entries failed local validation
+  //        setNewEntries(newEntries.filter((_, idx) => failedIndices.includes(idx)));
+  //        setNewEntryPeriodHoursArray(newEntryPeriodHoursArray.filter((_, idx) => failedIndices.includes(idx)));
+  //     }
+
+  //   } catch (err) {
+  //     console.error("Save multiple entries error:", err);
+  //     toast.error("Failed to save entries: " + (err.response?.data?.message || err.message), { autoClose: 3000 });
+  //   } finally {
+  //     setIsDurationLoading(false);
+  //   }
+  // };
 
   // const handleSaveMultipleEntry = async () => {
   //   if (newEntries.length === 0) {
@@ -6766,11 +7487,10 @@ const handleFillValues = () => {
   //         const entryOrgs = pastedEntryOrgs[i] || [];
 
   //         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
-          
-  //         const isValidOrganization = entryOrgs.length > 0 
+
+  //         const isValidOrganization = entryOrgs.length > 0
   //           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
   //           : hasOrgValue;
-
 
   //         // const isValidOrganization = entryOrgs.some(
   //         //   (org) => org.value.toString() === entry.orgId.toString()
@@ -6960,307 +7680,515 @@ const handleFillValues = () => {
   //   }
   // };
 
-//   const handleSaveMultipleEntry = async () => {
-//   if (newEntries.length === 0) return true; // Nothing to do, so technically "success"
+  //   const handleSaveMultipleEntry = async () => {
+  //   if (newEntries.length === 0) return true; // Nothing to do, so technically "success"
 
-//   setIsDurationLoading(true);
-//   let validationFailed = false;
-//   const bulkPayload = [];
+  //   setIsDurationLoading(true);
+  //   let validationFailed = false;
+  //   const bulkPayload = [];
 
-//   try {
-//     for (let i = 0; i < newEntries.length; i++) {
-//       const entry = newEntries[i];
-//       const periodHours = newEntryPeriodHoursArray[i];
+  //   try {
+  //     for (let i = 0; i < newEntries.length; i++) {
+  //       const entry = newEntries[i];
+  //       const periodHours = newEntryPeriodHoursArray[i];
 
-//       if (planType !== "NBBUD") {
-//         // 1. Duplicate ID/PLC Check
-//         const isDuplicate = localEmployees.some((emp) => {
-//           if (!emp.emple) return false;
-//           if (entry.idType === "Other") return emp.emple.emplId === entry.id.trim();
-//           return emp.emple.emplId === entry.id.trim() && emp.emple.plcGlcCode === entry.plcGlcCode.trim();
-//         });
+  //       if (planType !== "NBBUD") {
+  //         // 1. Duplicate ID/PLC Check
+  //         const isDuplicate = localEmployees.some((emp) => {
+  //           if (!emp.emple) return false;
+  //           if (entry.idType === "Other") return emp.emple.emplId === entry.id.trim();
+  //           return emp.emple.emplId === entry.id.trim() && emp.emple.plcGlcCode === entry.plcGlcCode.trim();
+  //         });
 
-//         if (isDuplicate) {
-//           toast.error(`Row ${i + 1}: Duplicate ID and PLC combination found.`);
-//           validationFailed = true;
-//           break; 
-//         }
+  //         if (isDuplicate) {
+  //           toast.error(`Row ${i + 1}: Duplicate ID and PLC combination found.`);
+  //           validationFailed = true;
+  //           break;
+  //         }
 
-//         // 2. Account Validation (Added detailed message as requested)
-//         const entryAccounts = pastedEntryAccounts[i] || [];
-//         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
-//           toast.error(`Row ${i + 1}: Account ${entry.acctId} is not valid for this project.`);
-//           validationFailed = true;
-//           break;
-//         }
+  //         // 2. Account Validation (Added detailed message as requested)
+  //         const entryAccounts = pastedEntryAccounts[i] || [];
+  //         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
+  //           toast.error(`Row ${i + 1}: Account ${entry.acctId} is not valid for this project.`);
+  //           validationFailed = true;
+  //           break;
+  //         }
 
-//         // 3. Organization Validation
-//         const entryOrgs = pastedEntryOrgs[i] || [];
-//         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
-//         const isValidOrg = entryOrgs.length > 0 
-//           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
-//           : hasOrgValue;
+  //         // 3. Organization Validation
+  //         const entryOrgs = pastedEntryOrgs[i] || [];
+  //         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+  //         const isValidOrg = entryOrgs.length > 0
+  //           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+  //           : hasOrgValue;
 
-//         if (!isValidOrg) {
-//           toast.error(`Row ${i + 1}: Valid Organization is required.`);
-//           validationFailed = true;
-//           break;
-//         }
-//       }
+  //         if (!isValidOrg) {
+  //           toast.error(`Row ${i + 1}: Valid Organization is required.`);
+  //           validationFailed = true;
+  //           break;
+  //         }
+  //       }
 
-//       // Build Forecast Data
-//       const payloadForecasts = durations.map((duration) => ({
-//         ...(planType === "EAC"
-//           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
-//           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
-//         projId: projectId,
-//         plId: planId,
-//         emplId: entry.id,
-//         month: duration.monthNo,
-//         year: duration.year,
-//         acctId: entry.acctId,
-//         orgId: entry.orgId,
-//         plc: entry.plcGlcCode || "",
-//         hrlyRate: Number(entry.perHourRate || 0),
-//       }));
+  //       // Build Forecast Data
+  //       const payloadForecasts = durations.map((duration) => ({
+  //         ...(planType === "EAC"
+  //           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+  //           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+  //         projId: projectId,
+  //         plId: planId,
+  //         emplId: entry.id,
+  //         month: duration.monthNo,
+  //         year: duration.year,
+  //         acctId: entry.acctId,
+  //         orgId: entry.orgId,
+  //         plc: entry.plcGlcCode || "",
+  //         hrlyRate: Number(entry.perHourRate || 0),
+  //       }));
 
-//       bulkPayload.push({
-//         id: 0,
-//         emplId: entry.id,
-//         firstName: entry.firstName,
-//         lastName: entry.lastName,
-//         type: entry.idType,
-//         isRev: entry.isRev,
-//         isBrd: entry.isBrd,
-//         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
-//         perHourRate: Number(entry.perHourRate || 0),
-//         status: entry.status || "ACT",
-//         accId: entry.acctId,
-//         orgId: entry.orgId || "",
-//         plId: planId,
-//         plForecasts: payloadForecasts,
-//       });
-//     }
+  //       bulkPayload.push({
+  //         id: 0,
+  //         emplId: entry.id,
+  //         firstName: entry.firstName,
+  //         lastName: entry.lastName,
+  //         type: entry.idType,
+  //         isRev: entry.isRev,
+  //         isBrd: entry.isBrd,
+  //         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+  //         perHourRate: Number(entry.perHourRate || 0),
+  //         status: entry.status || "ACT",
+  //         accId: entry.acctId,
+  //         orgId: entry.orgId || "",
+  //         plId: planId,
+  //         plForecasts: payloadForecasts,
+  //       });
+  //     }
 
-//     if (validationFailed) return false; // EXIT WITHOUT CALLING API
+  //     if (validationFailed) return false; // EXIT WITHOUT CALLING API
 
-//     if (bulkPayload.length > 0) {
-//       await axios.post(
-//         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
-//         bulkPayload
-//       );
-//       return true; // SUCCESS
-//     }
-//     return true;
+  //     if (bulkPayload.length > 0) {
+  //       await axios.post(
+  //         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+  //         bulkPayload
+  //       );
+  //       return true; // SUCCESS
+  //     }
+  //     return true;
 
-//   } catch (err) {
-//     toast.error("API Error: " + (err.response?.data?.message || err.message));
-//     return false; // FAILURE
-//   } finally {
-//     setIsDurationLoading(false);
-//   }
-// };
- 
+  //   } catch (err) {
+  //     toast.error("API Error: " + (err.response?.data?.message || err.message));
+  //     return false; // FAILURE
+  //   } finally {
+  //     setIsDurationLoading(false);
+  //   }
+  // };
 
+  // const handleSaveMultipleEntry = async () => {
+  //   if (newEntries.length === 0) return true;
 
-// const handleSaveMultipleEntry = async () => {
-//   if (newEntries.length === 0) return true;
+  //   setIsDurationLoading(true);
+  //   let validationFailed = false;
+  //   const bulkPayload = [];
 
-//   setIsDurationLoading(true);
-//   let validationFailed = false;
-//   const bulkPayload = [];
+  //   try {
+  //     for (let i = 0; i < newEntries.length; i++) {
+  //       const entry = newEntries[i];
+  //       const periodHours = newEntryPeriodHoursArray[i];
 
-//   try {
-//     for (let i = 0; i < newEntries.length; i++) {
-//       const entry = newEntries[i];
-//       const periodHours = newEntryPeriodHoursArray[i];
+  //       if (planType !== "NBBUD") {
+  //         // 1. Duplicate Check
+  //         const isDuplicate = localEmployees.some((emp) => {
+  //           if (!emp.emple) return false;
+  //           if (entry.idType === "Other") return emp.emple.emplId === entry.id.trim();
+  //           return emp.emple.emplId === entry.id.trim() && emp.emple.plcGlcCode === entry.plcGlcCode.trim();
+  //         });
 
-//       if (planType !== "NBBUD") {
-//         // 1. Duplicate Check
-//         const isDuplicate = localEmployees.some((emp) => {
-//           if (!emp.emple) return false;
-//           if (entry.idType === "Other") return emp.emple.emplId === entry.id.trim();
-//           return emp.emple.emplId === entry.id.trim() && emp.emple.plcGlcCode === entry.plcGlcCode.trim();
-//         });
+  //         if (isDuplicate) {
+  //           toast.error(`Duplicate ID and PLC combination`);
+  //           validationFailed = true; break;
+  //         }
 
-//         if (isDuplicate) {
-//           toast.error(`Duplicate ID and PLC combination`);
-//           validationFailed = true; break; 
-//         }
+  //         // 2. Account Validation
+  //         const entryAccounts = pastedEntryAccounts[i] || [];
+  //         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
+  //           toast.error(`Invalid Account selected for ID ${entry.id}.`);
+  //           validationFailed = true; break;
+  //         }
 
-//         // 2. Account Validation
-//         const entryAccounts = pastedEntryAccounts[i] || [];
-//         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
-//           toast.error(`Invalid Account selected for ID ${entry.id}.`);
-//           validationFailed = true; break;
-//         }
+  //         // 3. Organization Validation
+  //         const entryOrgs = pastedEntryOrgs[i] || [];
+  //         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+  //         const isValidOrg = entryOrgs.length > 0
+  //           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+  //           : hasOrgValue;
 
-//         // 3. Organization Validation
-//         const entryOrgs = pastedEntryOrgs[i] || [];
-//         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
-//         const isValidOrg = entryOrgs.length > 0 
-//           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
-//           : hasOrgValue;
+  //         if (!isValidOrg) {
+  //           toast.error(`Organization ID ${entry.orgId} is not valid.`);
+  //           validationFailed = true; break;
+  //         }
+  //       }
 
-//         if (!isValidOrg) {
-//           toast.error(`Organization ID ${entry.orgId} is not valid.`);
-//           validationFailed = true; break;
-//         }
-//       }
+  //       // Build payload for this row
+  //       const payloadForecasts = durations.map((duration) => ({
+  //         ...(planType === "EAC"
+  //           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+  //           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+  //         projId: projectId,
+  //         plId: planId,
+  //         emplId: entry.id,
+  //         month: duration.monthNo,
+  //         year: duration.year,
+  //         acctId: entry.acctId,
+  //         orgId: entry.orgId,
+  //         // plc: entry.plcGlcCode || "",
+  //         plcGlcCode: (entry.plcGlcCode || "").split("-")[0].trim().substring(0, 20),
+  //         hrlyRate: Number(entry.perHourRate || 0),
+  //         effectDt: null,
+  //         plEmployee: null,
+  //       }));
 
-//       // Build payload for this row
-//       const payloadForecasts = durations.map((duration) => ({
-//         ...(planType === "EAC"
-//           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
-//           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
-//         projId: projectId,
-//         plId: planId,
-//         emplId: entry.id,
-//         month: duration.monthNo,
-//         year: duration.year,
-//         acctId: entry.acctId,
-//         orgId: entry.orgId,
-//         // plc: entry.plcGlcCode || "",
-//         plcGlcCode: (entry.plcGlcCode || "").split("-")[0].trim().substring(0, 20),
-//         hrlyRate: Number(entry.perHourRate || 0),
-//         effectDt: null,
-//         plEmployee: null,
-//       }));
+  //       bulkPayload.push({
+  //         id: 0,
+  //         emplId: entry.id,
+  //         firstName: entry.firstName,
+  //         lastName: entry.lastName,
+  //         type: entry.idType,
+  //         isRev: entry.isRev,
+  //         isBrd: entry.isBrd,
+  //         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
+  //         perHourRate: Number(entry.perHourRate || 0),
+  //         status: entry.status || "ACT",
+  //         accId: entry.acctId,
+  //         orgId: entry.orgId || "",
+  //         plId: planId,
+  //         plForecasts: payloadForecasts,
+  //       });
+  //     }
 
-//       bulkPayload.push({
-//         id: 0,
-//         emplId: entry.id,
-//         firstName: entry.firstName,
-//         lastName: entry.lastName,
-//         type: entry.idType,
-//         isRev: entry.isRev,
-//         isBrd: entry.isBrd,
-//         plcGlcCode: (entry.plcGlcCode || "").substring(0, 20),
-//         perHourRate: Number(entry.perHourRate || 0),
-//         status: entry.status || "ACT",
-//         accId: entry.acctId,
-//         orgId: entry.orgId || "",
-//         plId: planId,
-//         plForecasts: payloadForecasts,
-//       });
-//     }
+  //     if (validationFailed) return false;
 
-//     if (validationFailed) return false;
+  //     if (bulkPayload.length > 0) {
+  //       // Use the new bulk endpoint
+  //       await axios.post(
+  //         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+  //         bulkPayload
+  //       );
+  //       return true; // Return true to signal the UI can refresh
+  //     }
+  //     return true;
 
-//     if (bulkPayload.length > 0) {
-//       // Use the new bulk endpoint
-//       await axios.post(
-//         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
-//         bulkPayload
-//       );
-//       return true; // Return true to signal the UI can refresh
-//     }
-//     return true;
+  //   } catch (err) {
+  //     toast.error("Error: " + (err.response?.data?.error || err.message));
+  //     return false;
+  //   } finally {
+  //     setIsDurationLoading(false);
+  //   }
+  // };
 
-//   } catch (err) {
-//     toast.error("Error: " + (err.response?.data?.error || err.message));
-//     return false;
-//   } finally {
-//     setIsDurationLoading(false);
-//   }
-// };
+  // const handleSaveMultipleEntry = async () => {
+  //   if (newEntries.length === 0) return true;
 
-const handleSaveMultipleEntry = async () => {
-  if (newEntries.length === 0) return true;
+  //   setIsDurationLoading(true);
+  //   let validationFailed = false;
+  //   const bulkPayload = [];
 
-  setIsDurationLoading(true);
-  let validationFailed = false;
-  const bulkPayload = [];
+  //   try {
+  //     for (let i = 0; i < newEntries.length; i++) {
+  //       const entry = newEntries[i];
+  //       const periodHours = newEntryPeriodHoursArray[i];
+  //       const cleanPlc = (entry.plcGlcCode || "").split("-")[0].trim().substring(0, 20);
 
-  try {
-    for (let i = 0; i < newEntries.length; i++) {
-      const entry = newEntries[i];
-      const periodHours = newEntryPeriodHoursArray[i];
+  //       // --- STRICT VALIDATION FOR SUGGESTIONS ---
+  //       if (entry.idType !== "Other" && planType !== "NBBUD") {
 
-      // Robust PLC Parsing: Fixes deployment saving issues by removing trailing spaces
-      const cleanPlc = (entry.plcGlcCode || "").split("-")[0].trim().substring(0, 20);
+  //         // 1. Validate ID against suggestions
+  //         const suggestions = pastedEntrySuggestions[i] || [];
+  //         const idExists = suggestions.some(s => String(s.emplId) === String(entry.id).trim());
 
-      if (planType !== "NBBUD") {
-        // 1. Account Validation
-        const entryAccounts = pastedEntryAccounts[i] || [];
-        if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
-          toast.error(`Row ${i + 1}: Invalid Account ${entry.acctId}.`);
-          validationFailed = true; break;
+  //         if (!idExists) {
+  //           toast.error(`Row ${i + 1}: ID "${entry.id}" is not in the suggestion list. Random keywords are not allowed.`);
+  //           validationFailed = true; break;
+  //         }
+
+  //         // 2. Validate PLC against suggestions
+  //         const plcOptionsList = pastedEntryPlcs[i] || [];
+  //         const plcExists = plcOptionsList.some(p => p.value.toLowerCase() === cleanPlc.toLowerCase());
+
+  //         if (!plcExists) {
+  //           toast.error(`Row ${i + 1}: PLC "${cleanPlc}" is not in the suggestion list. Please select from the dropdown.`);
+  //           validationFailed = true; break;
+  //         }
+
+  //         // 3. Account Validation
+  //         const entryAccounts = pastedEntryAccounts[i] || [];
+  //         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
+  //           toast.error(`Row ${i + 1}: Invalid Account ${entry.acctId}.`);
+  //           validationFailed = true; break;
+  //         }
+
+  //         // 4. Organization Validation
+  //         const entryOrgs = pastedEntryOrgs[i] || [];
+  //         const isValidOrg = entryOrgs.some((org) => org.value.toString() === entry.orgId.toString());
+
+  //         if (!isValidOrg) {
+  //           toast.error(`Row ${i + 1}: Organization ID ${entry.orgId} is not valid.`);
+  //           validationFailed = true; break;
+  //         }
+  //       }
+
+  //       // Build payload for API
+  //       const payloadForecasts = durations.map((duration) => ({
+  //         ...(planType === "EAC"
+  //           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+  //           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+  //         projId: projectId,
+  //         plId: planId,
+  //         emplId: entry.id.trim(),
+  //         month: duration.monthNo,
+  //         year: duration.year,
+  //         acctId: entry.acctId,
+  //         orgId: entry.orgId,
+  //         plc: cleanPlc,
+  //         hrlyRate: Number(entry.perHourRate || 0),
+  //       }));
+
+  //       bulkPayload.push({
+  //         id: 0,
+  //         emplId: entry.id.trim(),
+  //         firstName: entry.firstName,
+  //         lastName: entry.lastName,
+  //         type: entry.idType,
+  //         isRev: entry.isRev,
+  //         isBrd: entry.isBrd,
+  //         plcGlcCode: cleanPlc,
+  //         perHourRate: Number(entry.perHourRate || 0),
+  //         status: entry.status || "ACT",
+  //         accId: entry.acctId,
+  //         orgId: entry.orgId || "",
+  //         plId: planId,
+  //         plForecasts: payloadForecasts,
+  //       });
+  //     }
+
+  //     if (validationFailed) return false; // This prevents handleMasterSave from proceeding
+
+  //     if (bulkPayload.length > 0) {
+  //       await axios.post(
+  //         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+  //         bulkPayload
+  //       );
+  //       return true;
+  //     }
+  //     return true;
+
+  //   } catch (err) {
+  //     const detailedError = err.response?.data?.error || err.response?.data?.message || err.message;
+  //     toast.error("Server Error: " + detailedError);
+  //     return false;
+  //   } finally {
+  //     setIsDurationLoading(false);
+  //   }
+  // };
+
+  const handleSaveMultipleEntry = async () => {
+    if (newEntries.length === 0) return true;
+    setIsDurationLoading(true);
+
+    try {
+      const bulkPayload = [];
+      for (let i = 0; i < newEntries.length; i++) {
+        const entry = newEntries[i];
+        const suggestions = pastedEntrySuggestions[i] || [];
+        const plcs = pastedEntryPlcs[i] || [];
+
+        // STRICT VALIDATION: Block random typing/keywords
+        if (
+          entry.idType === "Employee" ||
+          entry.idType === "Vendor" ||
+          entry.idType === "Vendor Employee" ||
+          entry.idType === "PLC"
+        ) {
+          const idValid =
+            entry.idType === "PLC"
+              ? true
+              : suggestions.some(
+                  (s) => String(s.emplId) === String(entry.id).trim()
+                );
+          const plcValid = plcs.some(
+            (p) => p.value.trim() === entry.plcGlcCode.trim()
+          );
+
+          if (!idValid) {
+            toast.error(
+              `Row ${i + 1}: ID "${entry.id}" is invalid. Please select from suggestions.`
+            );
+            setIsDurationLoading(false);
+            return false; // STOPS THE WHOLE PROCESS
+          }
+          if (!plcValid) {
+            toast.error(
+              `Row ${i + 1}: PLC "${entry.plcGlcCode}" is invalid. Please select from suggestions.`
+            );
+            setIsDurationLoading(false);
+            return false; // STOPS THE WHOLE PROCESS
+          }
         }
 
-        // 2. Organization Validation
-        const entryOrgs = pastedEntryOrgs[i] || [];
-        const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
-        const isValidOrg = entryOrgs.length > 0 
-          ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
-          : hasOrgValue;
+        // (Mapping logic for payloadForecasts remains the same as your existing code...)
+        const payloadForecasts = durations.map((duration) => ({
+          ...(planType === "EAC"
+            ? {
+                actualhours: Number(
+                  newEntryPeriodHoursArray[i][
+                    `${duration.monthNo}_${duration.year}`
+                  ] || 0
+                ),
+              }
+            : {
+                forecastedhours: Number(
+                  newEntryPeriodHoursArray[i][
+                    `${duration.monthNo}_${duration.year}`
+                  ] || 0
+                ),
+              }),
+          projId: projectId,
+          plId: planId,
+          emplId: entry.id,
+          month: duration.monthNo,
+          year: duration.year,
+          acctId: entry.acctId,
+          orgId: entry.orgId,
+          plc: entry.plcGlcCode,
+          hrlyRate: Number(entry.perHourRate || 0),
+        }));
 
-        if (!isValidOrg) {
-          toast.error(`Row ${i + 1}: Organization ID ${entry.orgId} is not valid.`);
-          validationFailed = true; break;
-        }
+        bulkPayload.push({
+          emplId: entry.id.trim(),
+          firstName: entry.firstName,
+          lastName: entry.lastName,
+          type: entry.idType,
+          isRev: entry.isRev,
+          isBrd: entry.isBrd,
+          plcGlcCode: entry.plcGlcCode.substring(0, 20),
+          perHourRate: Number(entry.perHourRate || 0),
+          status: entry.status || "ACT",
+          accId: entry.acctId,
+          orgId: entry.orgId,
+          plId: planId,
+          plForecasts: payloadForecasts,
+        });
       }
 
-      // Build individual payload forecasts
-      const payloadForecasts = durations.map((duration) => ({
-        ...(planType === "EAC"
-          ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
-          : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
-        projId: projectId,
-        plId: planId,
-        emplId: entry.id.trim(),
-        month: duration.monthNo,
-        year: duration.year,
-        acctId: entry.acctId,
-        orgId: entry.orgId,
-        plc: cleanPlc,
-        hrlyRate: Number(entry.perHourRate || 0),
-      }));
-
-      bulkPayload.push({
-        id: 0,
-        emplId: entry.id.trim(),
-        firstName: entry.firstName,
-        lastName: entry.lastName,
-        type: entry.idType,
-        isRev: entry.isRev,
-        isBrd: entry.isBrd,
-        plcGlcCode: cleanPlc,
-        perHourRate: Number(entry.perHourRate || 0),
-        status: entry.status || "ACT",
-        accId: entry.acctId,
-        orgId: entry.orgId || "",
-        plId: planId,
-        plForecasts: payloadForecasts,
-      });
-    }
-
-    if (validationFailed) return false;
-
-    if (bulkPayload.length > 0) {
       await axios.post(
         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
         bulkPayload
       );
-      return true; 
+      return true;
+    } catch (err) {
+      toast.error(
+        "Failed to save entries: " +
+          (err.response?.data?.message || err.message)
+      );
+      return false;
+    } finally {
+      setIsDurationLoading(false);
     }
-    return true;
+  };
 
-  } catch (err) {
-    console.error("Save multiple entries error:", err);
-    // NEW: Catch specific backend error (e.g., "Employee combination already exists")
-    const detailedError = err.response?.data?.error || err.response?.data?.message || err.message;
-    toast.error(detailedError, { 
-        autoClose: 6000,
-        toastId: "backend-error-toast" 
-    });
-    return false; 
-  } finally {
-    setIsDurationLoading(false);
-  }
-};
+  // const handleSaveMultipleEntry = async () => {
+  //   if (newEntries.length === 0) return true;
 
-const handleSaveMultipleEntries = async () => {
+  //   setIsDurationLoading(true);
+  //   let validationFailed = false;
+  //   const bulkPayload = [];
+
+  //   try {
+  //     for (let i = 0; i < newEntries.length; i++) {
+  //       const entry = newEntries[i];
+  //       const periodHours = newEntryPeriodHoursArray[i];
+
+  //       // Robust PLC Parsing: Fixes deployment saving issues by removing trailing spaces
+  //       const cleanPlc = (entry.plcGlcCode || "").split("-")[0].trim().substring(0, 20);
+
+  //       if (planType !== "NBBUD") {
+  //         // 1. Account Validation
+  //         const entryAccounts = pastedEntryAccounts[i] || [];
+  //         if (!entryAccounts.some((acc) => acc.id === entry.acctId)) {
+  //           toast.error(` Invalid Account ${entry.acctId}.`);
+  //           validationFailed = true; break;
+  //         }
+
+  //         // 2. Organization Validation
+  //         const entryOrgs = pastedEntryOrgs[i] || [];
+  //         const hasOrgValue = entry.orgId && entry.orgId.toString().trim() !== "";
+  //         const isValidOrg = entryOrgs.length > 0
+  //           ? entryOrgs.some((org) => org.value.toString() === entry.orgId.toString())
+  //           : hasOrgValue;
+
+  //         if (!isValidOrg) {
+  //           toast.error(`Organization ID ${entry.orgId} is not valid.`);
+  //           validationFailed = true; break;
+  //         }
+  //       }
+
+  //       // Build individual payload forecasts
+  //       const payloadForecasts = durations.map((duration) => ({
+  //         ...(planType === "EAC"
+  //           ? { actualhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }
+  //           : { forecastedhours: Number(periodHours[`${duration.monthNo}_${duration.year}`] || 0) }),
+  //         projId: projectId,
+  //         plId: planId,
+  //         emplId: entry.id.trim(),
+  //         month: duration.monthNo,
+  //         year: duration.year,
+  //         acctId: entry.acctId,
+  //         orgId: entry.orgId,
+  //         plc: cleanPlc,
+  //         hrlyRate: Number(entry.perHourRate || 0),
+  //       }));
+
+  //       bulkPayload.push({
+  //         id: 0,
+  //         emplId: entry.id.trim(),
+  //         firstName: entry.firstName,
+  //         lastName: entry.lastName,
+  //         type: entry.idType,
+  //         isRev: entry.isRev,
+  //         isBrd: entry.isBrd,
+  //         plcGlcCode: cleanPlc,
+  //         perHourRate: Number(entry.perHourRate || 0),
+  //         status: entry.status || "ACT",
+  //         accId: entry.acctId,
+  //         orgId: entry.orgId || "",
+  //         plId: planId,
+  //         plForecasts: payloadForecasts,
+  //       });
+  //     }
+
+  //     if (validationFailed) return false;
+
+  //     if (bulkPayload.length > 0) {
+  //       await axios.post(
+  //         `${backendUrl}/Employee/AddNewEmployees?plid=${planId}&TemplateId=${templateId}`,
+  //         bulkPayload
+  //       );
+  //       return true;
+  //     }
+  //     return true;
+
+  //   } catch (err) {
+  //     console.error("Save multiple entries error:", err);
+  //     // NEW: Catch specific backend error (e.g., "Employee combination already exists")
+  //     const detailedError = err.response?.data?.error || err.response?.data?.message || err.message;
+  //     toast.error(detailedError, {
+  //         autoClose: 6000,
+  //         toastId: "backend-error-toast"
+  //     });
+  //     return false;
+  //   } finally {
+  //     setIsDurationLoading(false);
+  //   }
+  // };
+
+  const handleSaveMultipleEntries = async () => {
     for (let i = 0; i < newEntries.length; i++) {
       // Temporarily set state for this entry
       setNewEntry(newEntries[i]);
@@ -7281,997 +8209,1009 @@ const handleSaveMultipleEntries = async () => {
     setNewEntryPeriodHoursArray([]);
   };
 
-
-
-//   const handleFindReplace = async () => {
-//     if (
-//       !isEditable ||
-//       findValue === "" ||
-//       (replaceScope === "row" && selectedRowIndex === null) ||
-//       (replaceScope === "column" && selectedColumnKey === null)
-//     ) {
-//       toast.warn("Please select a valid scope and enter a value to find.", {
-//         toastId: "find-replace-warning",
-//         autoClose: 3000,
-//       });
-//       return;
-//     }
-
-//     setIsLoading(true);
-//     let replacementsCount = 0;
-//     let skippedCount = 0;
-
-//     try {
-//       // Prepare bulk payload array
-//       const bulkPayload = [];
-//       const updatedInputValues = { ...inputValues };
-
-//       for (const empIdx in localEmployees) {
-//         const emp = localEmployees[empIdx];
-//         const actualEmpIdx = parseInt(empIdx, 10);
-
-//         if (replaceScope === "row" && actualEmpIdx !== selectedRowIndex) {
-//           continue;
-//         }
-
-//         for (const duration of sortedDurations) {
-//           const uniqueKey = `${duration.monthNo}_${duration.year}`;
-
-//           if (replaceScope === "column" && uniqueKey !== selectedColumnKey) {
-//             continue;
-//           }
-
-//           if (!isMonthEditable(duration, closedPeriod, planType)) {
-//             continue;
-//           }
-
-//           const currentInputKey = `${actualEmpIdx}_${uniqueKey}`;
-//           let displayedValue;
-//           if (inputValues[currentInputKey] !== undefined) {
-//             displayedValue = String(inputValues[currentInputKey]);
-//           } else {
-//             const monthHours = getMonthHours(emp);
-//             const forecast = monthHours[uniqueKey];
-//             if (forecast && forecast.value !== undefined) {
-//               displayedValue = String(forecast.value);
-//             } else {
-//               displayedValue = "0";
-//             }
-//           }
-
-//           const findValueTrimmed = findValue.trim();
-//           const displayedValueTrimmed = displayedValue.trim();
-
-//           function isZeroLike(val) {
-//             if (val === undefined || val === null) return true;
-//             if (typeof val === "number") return val === 0;
-//             if (typeof val === "string") {
-//               const trimmed = val.trim();
-//               return (
-//                 trimmed === "" ||
-//                 trimmed === "0" ||
-//                 trimmed === "0.0" ||
-//                 trimmed === "0.00" ||
-//                 (!isNaN(Number(trimmed)) && Number(trimmed) === 0)
-//               );
-//             }
-//             return false;
-//           }
-
-//           let isMatch = false;
-//           // if (
-//           //   !isNaN(Number(findValueTrimmed)) &&
-//           //   Number(findValueTrimmed) === 0
-//           // ) {
-//           //   isMatch = isZeroLike(displayedValueTrimmed);
-//           // }
-//           if (isZeroLike(findValueTrimmed)) {
-//             isMatch = isZeroLike(displayedValueTrimmed);
-//           }
-//            else {
-//             isMatch = displayedValueTrimmed === findValueTrimmed;
-//             if (!isMatch) {
-//               const findNum = parseFloat(findValueTrimmed);
-//               const displayNum = parseFloat(displayedValueTrimmed);
-//               if (!isNaN(findNum) && !isNaN(displayNum)) {
-//                 isMatch = findNum === displayNum;
-//               }
-//             }
-//           }
-
-//           if (isMatch) {
-//             const newValue = replaceValue.trim();
-//             const newNumericValue = newValue === "" ? 0 : Number(newValue);
-//             const monthHours = getMonthHours(emp);
-//             const forecast = monthHours[uniqueKey];
-
-//             if (!forecast || !forecast.forecastid) {
-//               skippedCount++;
-//               continue;
-//             }
-
-//             if (displayedValueTrimmed !== newValue) {
-//               updatedInputValues[currentInputKey] = newValue;
-//               replacementsCount++;
-
-//               // Create payload matching the bulk API structure from handleSaveAllHours
-//               const payload = {
-//                 forecastedamt: forecast?.forecastedamt ?? 0,
-//                 actualamt: forecast?.actualamt ?? 0,
-//                 forecastid: Number(forecast?.forecastid ?? 0),
-//                 projId: forecast?.projId ?? projectId ?? "",
-//                 plId: forecast?.plId ?? planId ?? 0,
-//                 emplId: forecast?.emplId ?? emp?.emple?.emplId ?? "",
-//                 dctId: forecast?.dctId ?? 0,
-//                 month: forecast?.month ?? duration?.monthNo ?? 0,
-//                 year: forecast?.year ?? duration?.year ?? 0,
-//                 totalBurdenCost: forecast?.totalBurdenCost ?? 0,
-//                 fees: forecast?.fees ?? 0,
-//                 burden: forecast?.burden ?? 0,
-//                 ccffRevenue: forecast?.ccffRevenue ?? 0,
-//                 tnmRevenue: forecast?.tnmRevenue ?? 0,
-//                 revenue: forecast?.revenue ?? 0,
-//                 cost: forecast?.cost ?? 0,
-//                 forecastedCost: forecast?.forecastedCost ?? 0,
-//                 fringe: forecast?.fringe ?? 0,
-//                 overhead: forecast?.overhead ?? 0,
-//                 gna: forecast?.gna ?? 0,
-//                 materials: forecast?.materials ?? 0,
-//                 // Update hours based on plan type
-//                 ...(planType === "EAC"
-//                   ? {
-//                       actualhours: Number(newNumericValue) || 0,
-//                       forecastedhours: forecast?.forecastedhours ?? 0,
-//                     }
-//                   : {
-//                       forecastedhours: Number(newNumericValue) || 0,
-//                       actualhours: forecast?.actualhours ?? 0,
-//                     }),
-//                 createdat: forecast?.createdat ?? new Date().toISOString(),
-//                 updatedat: new Date().toISOString(),
-//                 displayText: forecast?.displayText ?? "",
-//                 acctId: emp?.emple?.accId ?? "",
-//                 orgId: emp?.emple?.orgId ?? "",
-//                 plc: emp?.emple?.plcGlcCode ?? "",
-//                 empleId: emp?.emple?.id ?? 0,
-//                 hrlyRate: emp?.emple?.perHourRate ?? 0,
-//                 effectDt: new Date().toISOString().split("T")[0],
-//                 emple: emp?.emple
-//                   ? {
-//                       id: emp.emple.id ?? 0,
-//                       emplId: emp.emple.emplId ?? "",
-//                       orgId: emp.emple.orgId ?? "",
-//                       firstName: emp.emple.firstName ?? "",
-//                       lastName: emp.emple.lastName ?? "",
-//                       plcGlcCode: emp.emple.plcGlcCode ?? "",
-//                       perHourRate: emp.emple.perHourRate ?? 0,
-//                       salary: emp.emple.salary ?? 0,
-//                       accId: emp.emple.accId ?? "",
-//                       hireDate:
-//                         emp.emple.hireDate ??
-//                         new Date().toISOString().split("T")[0],
-//                       isRev: emp.emple.isRev ?? false,
-//                       isBrd: emp.emple.isBrd ?? false,
-//                       createdAt:
-//                         emp.emple.createdAt ?? new Date().toISOString(),
-//                       type: emp.emple.type ?? "",
-//                       status: emp.emple.status ?? "",
-//                       plId: planId ?? 0,
-//                       isWarning: emp.emple.isWarning ?? false,
-//                       plForecasts: [],
-//                       organization: emp.emple.organization ?? null,
-//                       plProjectPlan: emp.emple.plProjectPlan ?? null,
-//                     }
-//                   : null,
-//               };
-
-//               bulkPayload.push(payload);
-//             }
-//           }
-//         }
-//       }
-
-//       if (bulkPayload.length === 0) {
-//         if (replacementsCount === 0 && skippedCount === 0) {
-//           toast.info("No cells replaced.", { autoClose: 2000 });
-//         }
-//         return;
-//       }
-
-//       // Update input values for UI consistency
-//       setInputValues(updatedInputValues);
-
-//       // Use correct bulk API endpoint matching handleSaveAllHours
-//       const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
-
-//       const response = await axios.put(
-//         `${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`,
-//         bulkPayload,
-//         { headers: { "Content-Type": "application/json" } }
-//       );
-
-//       // Update local state for all successful updates matching handleSaveAllHours pattern
-//       setLocalEmployees((prev) => {
-//         const updated = [...prev];
-
-//         for (const empIdx in updated) {
-//           const emp = updated[empIdx];
-//           for (const duration of sortedDurations) {
-//             const uniqueKey = `${duration.monthNo}_${duration.year}`;
-//             const currentInputKey = `${empIdx}_${uniqueKey}`;
-//             if (updatedInputValues[currentInputKey] !== undefined) {
-//               if (emp.emple && Array.isArray(emp.emple.plForecasts)) {
-//                 const forecastIndex = emp.emple.plForecasts.findIndex(
-//                   (f) =>
-//                     f.month === duration.monthNo && f.year === duration.year
-//                 );
-
-//                 if (forecastIndex !== -1) {
-//                   const newValue =
-//                     parseFloat(updatedInputValues[currentInputKey]) || 0;
-//                   if (planType === "EAC") {
-//                     updated[empIdx].emple.plForecasts[
-//                       forecastIndex
-//                     ].actualhours = newValue;
-//                   } else {
-//                     updated[empIdx].emple.plForecasts[
-//                       forecastIndex
-//                     ].forecastedhours = newValue;
-//                   }
-//                 }
-//               }
-//             }
-//           }
-//         }
-
-//         return updated;
-//       });
-
-//       if (replacementsCount > 0) {
-//         toast.success(`Successfully replaced ${replacementsCount} cells.`, {
-//           autoClose: 2000,
-//         });
-//       }
-
-//       if (skippedCount > 0) {
-//         toast.warning(`${skippedCount} entries could not be processed.`, {
-//           autoClose: 3000,
-//         });
-//       }
-//     } catch (err) {
-//       console.error("Bulk find/replace error:", err);
-//       toast.error(
-//         "Failed to replace values: " +
-//           (err.response?.data?.message || err.message),
-//         {
-//           toastId: "replace-error",
-//           autoClose: 3000,
-//         }
-//       );
-//     } finally {
-//       setIsLoading(false);
-//       setShowFindReplace(false);
-//       setFindValue("");
-//       setReplaceValue("");
-//       setSelectedRowIndex(null);
-//       setSelectedColumnKey(null);
-//       setReplaceScope("all");
-//     }
-//   };
-
-
-
-
-
-//   const handleFindReplace = async () => {
-//     if (
-//       !isEditable ||
-//       findValue === "" ||
-//       (replaceScope === "row" && selectedRowIndex === null) ||
-//       (replaceScope === "column" && selectedColumnKey === null)
-//     ) {
-//       toast.warn("Please select a valid scope and enter a value to find.", {
-//         toastId: "find-replace-warning",
-//         autoClose: 3000,
-//       });
-//       return;
-//     }
-
-//     setIsLoading(true);
-//     let replacementsCount = 0;
-//     let skippedCount = 0;
-
-//     try {
-//       // Prepare bulk payload array
-//       const bulkPayload = [];
-//       const updatedInputValues = { ...inputValues };
-
-//       for (const empIdx in localEmployees) {
-//         const emp = localEmployees[empIdx];
-//         const actualEmpIdx = parseInt(empIdx, 10);
-
-//         if (replaceScope === "row" && actualEmpIdx !== selectedRowIndex) {
-//           continue;
-//         }
-
-//         for (const duration of sortedDurations) {
-//           const uniqueKey = `${duration.monthNo}_${duration.year}`;
-
-//           if (replaceScope === "column" && uniqueKey !== selectedColumnKey) {
-//             continue;
-//           }
-
-//           if (!isMonthEditable(duration, closedPeriod, planType)) {
-//             continue;
-//           }
-
-//           const currentInputKey = `${actualEmpIdx}_${uniqueKey}`;
-//           let displayedValue;
-//           const monthHours = getMonthHours(emp);
-//           let forecast = monthHours[uniqueKey]; // Check for existing forecast
-
-//           // Determine the current displayed value (from input or from forecast)
-//           if (inputValues[currentInputKey] !== undefined) {
-//             displayedValue = String(inputValues[currentInputKey]);
-//           } else if (forecast && forecast.value !== undefined) {
-//             displayedValue = String(forecast.value);
-//           } else {
-//             displayedValue = "0"; // Default to 0 if no input and no forecast
-//           }
-//           
-//           const findValueTrimmed = findValue.trim();
-//           const displayedValueTrimmed = displayedValue.trim();
-
-//           function isZeroLike(val) {
-//             if (val === undefined || val === null) return true;
-//             if (typeof val === "number") return val === 0;
-//             if (typeof val === "string") {
-//               const trimmed = val.trim();
-//               return (
-//                 trimmed === "" ||
-//                 trimmed === "0" ||
-//                 trimmed === "0.0" ||
-//                 trimmed === "0.00" ||
-//                 (!isNaN(Number(trimmed)) && Number(trimmed) === 0)
-//               );
-//             }
-//             return false;
-//           }
-
-//           let isMatch = false;
-//           if (isZeroLike(findValueTrimmed)) {
-//             isMatch = isZeroLike(displayedValueTrimmed);
-//           }
-//         	else {
-//             isMatch = displayedValueTrimmed === findValueTrimmed;
-//             if (!isMatch) {
-//               const findNum = parseFloat(findValueTrimmed);
-//               const displayNum = parseFloat(displayedValueTrimmed);
-//               if (!isNaN(findNum) && !isNaN(displayNum)) {
-//                 isMatch = findNum === displayNum;
-//               }
-//             }
-//           }
-
-//           if (isMatch) {
-//             const newValue = replaceValue.trim();
-//             const newNumericValue = newValue === "" ? 0 : Number(newValue);
-//             
-//             // --- START FIX: Handle Missing Forecast for BUD/NBBUD Plans ---
-//             if (isBudPlan && !forecast) {
-//               // Create a mock forecast object for the payload when one doesn't exist.
-//               // Set forecastid to 0 for a new record (INSERT).
-//               forecast = {
-//                 forecastid: 0, 
-//                 projId: projectId,
-//                 plId: planId,
-//                 emplId: emp?.emple?.emplId ?? "",
-//                 month: duration.monthNo,
-//                 year: duration.year,
-//                 acctId: emp?.emple?.accId ?? "",
-//                 orgId: emp?.emple?.orgId ?? "",
-//                 plc: emp?.emple?.plcGlcCode ?? "",
-//                 empleId: emp?.emple?.id ?? 0,
-//                 hrlyRate: emp?.emple?.perHourRate ?? 0,
-//                 // Set defaults to 0 as per the required payload structure
-//                 totalBurdenCost: 0, fees: 0, burden: 0, ccffRevenue: 0, tnmRevenue: 0, revenue: 0, 
-//                 cost: 0, forecastedCost: 0, fringe: 0, overhead: 0, gna: 0, materials: 0,
-//                 // Default dates/text
-//                 createdat: new Date().toISOString(),
-//                 updatedat: new Date().toISOString(),
-//                 displayText: `${duration.monthNo}/1 - ${duration.monthDays}/${duration.monthNo}()`,
-//               };
-//             } 
-//             // If not a BUD/NBBUD plan OR if forecast still has no ID after creation attempt, skip.
-//             else if (!forecast || !forecast.forecastid) {
-//               skippedCount++;
-//               continue;
-//             }
-//             // --- END FIX: Handle Missing Forecast for BUD/NBBUD Plans ---
-
-//             if (displayedValueTrimmed !== newValue) {
-//               updatedInputValues[currentInputKey] = newValue;
-//               replacementsCount++;
-
-//               // Create payload matching the bulk API structure. The 'forecast' object is now guaranteed to exist and have a valid (or 0) forecastid.
-//               const payload = {
-//                 forecastedamt: forecast?.forecastedamt ?? 0,
-//                 actualamt: forecast?.actualamt ?? 0,
-//                 forecastid: Number(forecast?.forecastid ?? 0),
-//                 projId: forecast?.projId ?? projectId ?? "",
-//                 plId: forecast?.plId ?? planId ?? 0,
-//                 emplId: forecast?.emplId ?? emp?.emple?.emplId ?? "",
-//                 dctId: forecast?.dctId ?? 0,
-//                 month: forecast?.month ?? duration?.monthNo ?? 0,
-//                 year: forecast?.year ?? duration?.year ?? 0,
-//                 totalBurdenCost: forecast?.totalBurdenCost ?? 0,
-//                 fees: forecast?.fees ?? 0,
-//                 burden: forecast?.burden ?? 0,
-//                 ccffRevenue: forecast?.ccffRevenue ?? 0,
-//                 tnmRevenue: forecast?.tnmRevenue ?? 0,
-//                 revenue: forecast?.revenue ?? 0,
-//                 cost: forecast?.cost ?? 0,
-//                 forecastedCost: forecast?.forecastedCost ?? 0,
-//                 fringe: forecast?.fringe ?? 0,
-//                 overhead: forecast?.overhead ?? 0,
-//                 gna: forecast?.gna ?? 0,
-//                 materials: forecast?.materials ?? 0,
-//                 // Update hours based on plan type
-//                 ...(planType === "EAC"
-//                   ? {
-//                       actualhours: Number(newNumericValue) || 0,
-//                       forecastedhours: forecast?.forecastedhours ?? 0,
-//                     }
-//                   : {
-//                       forecastedhours: Number(newNumericValue) || 0,
-//                       actualhours: forecast?.actualhours ?? 0,
-//                     }),
-//                 createdat: forecast?.createdat ?? new Date().toISOString(),
-//                 updatedat: new Date().toISOString(),
-//                 displayText: forecast?.displayText ?? "",
-//                 acctId: emp?.emple?.accId ?? "",
-//                 orgId: emp?.emple?.orgId ?? "",
-//                 plc: emp?.emple?.plcGlcCode ?? "",
-//                 empleId: emp?.emple?.id ?? 0,
-//                 hrlyRate: emp?.emple?.perHourRate ?? 0,
-//                 effectDt: new Date().toISOString().split("T")[0],
-//                 emple: emp?.emple
-//                   ? {
-//                       id: emp.emple.id ?? 0,
-//                       emplId: emp.emple.emplId ?? "",
-//                       orgId: emp.emple.orgId ?? "",
-//                       firstName: emp.emple.firstName ?? "",
-//                       lastName: emp.emple.lastName ?? "",
-//                       plcGlcCode: emp.emple.plcGlcCode ?? "",
-//                       perHourRate: emp.emple.perHourRate ?? 0,
-//                       salary: emp.emple.salary ?? 0,
-//                       accId: emp.emple.accId ?? "",
-//                       hireDate:
-//                         emp.emple.hireDate ??
-//                         new Date().toISOString().split("T")[0],
-//                       isRev: emp.emple.isRev ?? false,
-//                       isBrd: emp.emple.isBrd ?? false,
-//                       createdAt:
-//                         emp.emple.createdAt ?? new Date().toISOString(),
-//                       type: emp.emple.type ?? "",
-//                       status: emp.emple.status ?? "",
-//                       plId: planId ?? 0,
-//                       isWarning: emp.emple.isWarning ?? false,
-//                       plForecasts: [],
-//                       organization: emp.emple.organization ?? null,
-//                       plProjectPlan: emp.emple.plProjectPlan ?? null,
-//                     }
-//                   : null,
-//               };
-
-//               bulkPayload.push(payload);
-//             }
-//           }
-//         }
-//       }
-
-//       if (bulkPayload.length === 0) {
-//         if (replacementsCount === 0 && skippedCount === 0) {
-//           toast.info("No cells replaced.", { autoClose: 2000 });
-//         }
-//         return;
-//       }
-
-//       // Update input values for UI consistency
-//       setInputValues(updatedInputValues);
-
-//       // Use correct bulk API endpoint matching handleSaveAllHours
-//       const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
-
-//       const response = await axios.put(
-//         `${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`,
-//         bulkPayload,
-//         { headers: { "Content-Type": "application/json" } }
-//       );
-
-//       // Update local state for all successful updates matching handleSaveAllHours pattern
-//       setLocalEmployees((prev) => {
-//         const updated = [...prev];
-
-//         for (const empIdx in updated) {
-//           const emp = updated[empIdx];
-//           for (const duration of sortedDurations) {
-//             const uniqueKey = `${duration.monthNo}_${duration.year}`;
-//             const currentInputKey = `${empIdx}_${uniqueKey}`;
-//             if (updatedInputValues[currentInputKey] !== undefined) {
-//               if (emp.emple && Array.isArray(emp.emple.plForecasts)) {
-//                 let forecastIndex = emp.emple.plForecasts.findIndex(
-//                   (f) =>
-//                     f.month === duration.monthNo && f.year === duration.year
-//                 );
-
-//                 const newValue =
-//                   parseFloat(updatedInputValues[currentInputKey]) || 0;
-
-//                 // If not found, and we are adding a record (for BUD), we need to insert a new forecast entry into the local state array.
-//                 if (forecastIndex === -1 && isBudPlan) {
-//                   const newForecastEntry = {
-//                     // NOTE: We don't get the real forecast ID back instantly, but this ensures the local UI stays consistent and assumes creation worked.
-//                     forecastid: 1, // Use a placeholder ID > 0 to indicate it's now 'saved'
-//                     projId: projectId,
-//                     plId: planId,
-//                     emplId: emp.emple.emplId,
-//                     month: duration.monthNo,
-//                     year: duration.year,
-//                     // Copy relevant details
-//                     acctId: emp.emple.accId,
-//                     orgId: emp.emple.orgId,
-//                     plc: emp.emple.plcGlcCode,
-//                     hrlyRate: emp.emple.perHourRate,
-//                     
-//                     // Apply the new hours
-//                     ...(planType === "EAC"
-//                       ? { actualhours: newValue, forecastedhours: 0 }
-//                       : { forecastedhours: newValue, actualhours: 0 }),
-//                     // Set other fields to default or null as needed
-//                     totalBurdenCost: 0, fees: 0, burden: 0, ccffRevenue: 0, tnmRevenue: 0, revenue: 0, cost: 0, 
-//                   };
-
-//                   updated[empIdx].emple.plForecasts.push(newForecastEntry);
-//                   // Re-calculate index for the next step
-//                   forecastIndex = updated[empIdx].emple.plForecasts.length - 1;
-//                 }
-
-//                 if (forecastIndex !== -1) {
-//                   
-//                   if (planType === "EAC") {
-//                     updated[empIdx].emple.plForecasts[
-//                       forecastIndex
-//                     ].actualhours = newValue;
-//                   } else {
-//                     updated[empIdx].emple.plForecasts[
-//                       forecastIndex
-//                     ].forecastedhours = newValue;
-//                   }
-//                 }
-//               }
-//             }
-//           }
-//         }
-
-//         return updated;
-//       });
-
-//       if (replacementsCount > 0) {
-//         toast.success(`Successfully replaced ${replacementsCount} cells.`, {
-//           autoClose: 2000,
-//         });
-//       }
-
-//       if (skippedCount > 0) {
-//         toast.warning(`${skippedCount} entries could not be processed.`, {
-//           autoClose: 3000,
-//         });
-//       }
-//     } catch (err) {
-//       console.error("Bulk find/replace error:", err);
-//       toast.error(
-//         "Failed to replace values: " +
-//           (err.response?.data?.message || err.message),
-//         {
-//           toastId: "replace-error",
-//           autoClose: 3000,
-//         }
-//       );
-//     } finally {
-//       setIsLoading(false);
-//       setShowFindReplace(false);
-//       setFindValue("");
-//       setReplaceValue("");
-//       setSelectedRowIndex(null);
-//       setSelectedColumnKey(null);
-//       setReplaceScope("all");
-//     }
-//   };
-
-// ✅ REPLACE ENTIRE handleFindReplace function
-
-// const handleFindReplace = async () => {
-//   if (!isEditable || !findValue?.trim()) {
-//     toast.warn('Please enter a value to find.', { 
-//       toastId: 'find-replace-warning', 
-//       autoClose: 3000 
-//     });
-//     return;
-//   }
-
-//   // Ensure something is selected if scope isn't "all"
-//   if (checkedRows.size === 0 && replaceScope === 'checked-rows') {
-//     toast.warn('Please check at least one row.', {
-//       toastId: 'no-rows-selected',
-//       autoClose: 3000
-//     });
-//     return;
-//   }
-
-//   setIsLoading(true);
-//   let replacementsCount = 0;
-//   let skippedCount = 0;
-
-//   try {
-//     const bulkPayload = [];
-//     const updatedInputValues = { ...inputValues };
-
-//     // Determine which rows to process
-//     const targetRows = replaceScope === 'checked-rows' 
-//       ? Array.from(checkedRows) 
-//       : localEmployees.map((_, i) => i).filter(i => !hiddenRows[i]);
-
-//     for (const empIdx of targetRows) {
-//       const emp = localEmployees[empIdx];
-//       if (!emp || hiddenRows[empIdx]) continue;
-
-//       for (const duration of sortedDurations) {
-//         // IMPORTANT: Must match the key format used in your inputValues state (with underscore)
-//         const uniqueKey = `${duration.monthNo}_${duration.year}`;
-        
-//         // Column scope check
-//         if (replaceScope === 'column' && uniqueKey !== selectedColumnKey) continue;
-        
-//         // Date editability check
-//         if (!isMonthEditable(duration, closedPeriod, planType)) {
-//           continue;
-//         }
-
-//         // FIX: Use empIdx (defined in the loop) and the underscore separator
-//         const currentInputKey = `${empIdx}_${uniqueKey}`;
-        
-//         let displayedValue;
-//         const monthHours = getMonthHours(emp);
-//         const forecast = monthHours[uniqueKey];
-        
-//         // Get the current value from state or from the original forecast
-//         if (inputValues[currentInputKey] !== undefined) {
-//           displayedValue = String(inputValues[currentInputKey]);
-//         } else if (forecast?.value !== undefined) {
-//           displayedValue = String(forecast.value);
-//         } else {
-//           displayedValue = '0';
-//         }
-
-//         const findValueTrimmed = findValue.trim();
-//         const displayedValueTrimmed = displayedValue.trim();
-
-//         const isZeroLike = (val) => {
-//           if (val === undefined || val === null) return true;
-//           if (typeof val === 'number') return val === 0;
-//           const trimmed = val.trim();
-//           return !trimmed || trimmed === '0' || trimmed === '0.0' || trimmed === '0.00';
-//         };
-
-//         // Matching Logic
-//         let isMatch = false;
-//         if (isZeroLike(findValueTrimmed)) {
-//           isMatch = isZeroLike(displayedValueTrimmed);
-//         } else {
-//           isMatch = displayedValueTrimmed === findValueTrimmed;
-//         }
-
-//         if (!isMatch) {
-//           const findNum = parseFloat(findValueTrimmed);
-//           const displayNum = parseFloat(displayedValueTrimmed);
-//           if (!isNaN(findNum) && !isNaN(displayNum)) {
-//             isMatch = findNum === displayNum;
-//           }
-//         }
-
-//         if (isMatch) {
-//           const newValue = replaceValue?.trim() || '';
-//           const newNumericValue = newValue ? Number(newValue) : 0;
-          
-//           updatedInputValues[currentInputKey] = newValue;
-//           replacementsCount++;
-
-//           // Build API Payload
-//           const payload = {
-//             forecastedamt: forecast?.forecastedamt ?? 0,
-//             actualamt: forecast?.actualamt ?? 0,
-//             forecastid: Number(forecast?.forecastid ?? 0),
-//             projId: forecast?.projId ?? projectId ?? '',
-//             plId: forecast?.plId ?? planId ?? 0,
-//             emplId: forecast?.emplId ?? emp?.emple?.emplId ?? '',
-//             dctId: forecast?.dctId ?? 0,
-//             month: duration?.monthNo ?? 0,
-//             year: duration?.year ?? 0,
-//             totalBurdenCost: forecast?.totalBurdenCost ?? 0,
-//             fees: forecast?.fees ?? 0,
-//             burden: forecast?.burden ?? 0,
-//             ccffRevenue: forecast?.ccffRevenue ?? 0,
-//             tnmRevenue: forecast?.tnmRevenue ?? 0,
-//             revenue: forecast?.revenue ?? 0,
-//             cost: forecast?.cost ?? 0,
-//             forecastedCost: forecast?.forecastedCost ?? 0,
-//             fringe: forecast?.fringe ?? 0,
-//             overhead: forecast?.overhead ?? 0,
-//             gna: forecast?.gna ?? 0,
-//             materials: forecast?.materials ?? 0,
-//             ...(planType === 'EAC' 
-//               ? { actualhours: newNumericValue, forecastedhours: forecast?.forecastedhours ?? 0 }
-//               : { forecastedhours: newNumericValue, actualhours: forecast?.actualhours ?? 0 }
-//             ),
-//             createdat: forecast?.createdat ?? new Date().toISOString(),
-//             updatedat: new Date().toISOString(),
-//             displayText: forecast?.displayText ?? '',
-//             acctId: emp?.emple?.accId ?? '',
-//             orgId: emp?.emple?.orgId ?? '',
-//             plc: emp?.emple?.plcGlcCode ?? '',
-//             empleId: emp?.emple?.id ?? 0,
-//             hrlyRate: emp?.emple?.perHourRate ?? 0,
-//             effectDt: new Date().toISOString().split('T')[0],
-//             emple: emp?.emple ? {
-//               id: emp.emple.id ?? 0,
-//               emplId: emp.emple.emplId ?? '',
-//               orgId: emp.emple.orgId ?? '',
-//               firstName: emp.emple.firstName ?? '',
-//               lastName: emp.emple.lastName ?? '',
-//               plcGlcCode: emp.emple.plcGlcCode ?? '',
-//               perHourRate: emp.emple.perHourRate ?? 0,
-//               salary: emp.emple.salary ?? 0,
-//               accId: emp.emple.accId ?? '',
-//               hireDate: emp.emple.hireDate ?? new Date().toISOString().split('T')[0],
-//               isRev: emp.emple.isRev ?? false,
-//               isBrd: emp.emple.isBrd ?? false,
-//               createdAt: emp.emple.createdAt ?? new Date().toISOString(),
-//               type: emp.emple.type ?? '',
-//               status: emp.emple.status ?? '',
-//               plId: planId ?? 0,
-//               isWarning: emp.emple.isWarning ?? false,
-//               plForecasts: [],
-//             } : null,
-//           };
-//           bulkPayload.push(payload);
-//         }
-//       }
-//     }
-
-//     if (bulkPayload.length > 0) {
-//       const apiPlanType = planType === 'NBBUD' ? 'BUD' : planType;
-//       await axios.put(
-//         `${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`, 
-//         bulkPayload, 
-//         { headers: { 'Content-Type': 'application/json' } }
-//       );
-//       setInputValues(updatedInputValues);
-//       toast.success(`Successfully replaced ${replacementsCount} cells.`, { autoClose: 2000 });
-//     } else {
-//       toast.info('No matching cells found to replace.', { autoClose: 2000 });
-//     }
-
-//   } catch (err) {
-//     console.error('Bulk find/replace error:', err);
-//     toast.error(`Failed to replace values: ${err.response?.data?.message || err.message}`);
-//   } finally {
-//     setIsLoading(false);
-//     setShowFindReplace(false);
-//     setFindValue('');
-//     setReplaceValue('');
-//     setReplaceScope('all');
-//   }
-// };
-
-
-const handleFindReplace = async () => {
-  if (!isEditable || !findValue?.trim()) {
-    toast.warn('Please enter a find value.');
-    return;
-  }
-
-  if (replaceScope === 'column' && !selectedColumnKey) {
-    toast.warn('Please select a column by clicking its header first.');
-    return;
-  }
-
-  setIsLoading(true);
-  let replacementsCount = 0;
-
-  try {
-    const bulkPayload = [];
-    const updatedInputValues = { ...inputValues };
-    
-    // Determine target rows based on scope
-    const targetRows = replaceScope === 'checked-rows' ? Array.from(checkedRows) : localEmployees.map((_, i) => i);
-
-    for (const empIdx of targetRows) {
-      const emp = localEmployees[empIdx];
-      if (!emp || hiddenRows[empIdx]) continue;
-
-      for (const duration of sortedDurations) {
-        const uniqueKey = `${duration.monthNo}_${duration.year}`;
-        
-        // Scope Check: If column scope is selected, only process that one column
-        if (replaceScope === 'column' && uniqueKey !== selectedColumnKey) continue;
-        if (!isMonthEditable(duration, closedPeriod, planType)) continue;
-
-        const currentInputKey = `${empIdx}_${uniqueKey}`;
-        let displayedValue = inputValues[currentInputKey] !== undefined 
-          ? String(inputValues[currentInputKey]) 
-          : String(getMonthHours(emp)[uniqueKey]?.value || '0');
-
-        // Numeric and string matching
-        const match = displayedValue.trim() === findValue.trim() || 
-                    (parseFloat(displayedValue) === parseFloat(findValue) && !isNaN(parseFloat(findValue)));
-
-        if (match) {
-          const newValue = replaceValue?.trim() || '0';
-          updatedInputValues[currentInputKey] = newValue;
-          replacementsCount++;
-
-          // Build payload for API hit
-          const forecast = getMonthHours(emp)[uniqueKey];
-
-          const rawPlc = emp.emple?.plcGlcCode || "";
-
-          const parsedPlc = rawPlc.split('-')[0].trim();
-
-          bulkPayload.push({
-            ...forecast, // spread existing data
-            forecastid: Number(forecast?.forecastid || 0),
-            emplId: emp.emple.emplId,
-            month: duration.monthNo,
-            year: duration.year,
-           ProjId: emp.emple?.projId || projectId, 
-            OrgId: emp.emple?.orgId || "",
-            // Plc: emp.emple?.plcGlcCode || "",
-            Plc: parsedPlc,
-            AcctId: emp.emple?.accId || "",
-            empleId: emp.emple?.id || 0,
-            plid: emp.emple?.plId || 0,
-            ...(planType === 'EAC' ? { actualhours: Number(newValue) } : { forecastedhours: Number(newValue) })
-          });
-        }
-      }
+  //   const handleFindReplace = async () => {
+  //     if (
+  //       !isEditable ||
+  //       findValue === "" ||
+  //       (replaceScope === "row" && selectedRowIndex === null) ||
+  //       (replaceScope === "column" && selectedColumnKey === null)
+  //     ) {
+  //       toast.warn("Please select a valid scope and enter a value to find.", {
+  //         toastId: "find-replace-warning",
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     }
+
+  //     setIsLoading(true);
+  //     let replacementsCount = 0;
+  //     let skippedCount = 0;
+
+  //     try {
+  //       // Prepare bulk payload array
+  //       const bulkPayload = [];
+  //       const updatedInputValues = { ...inputValues };
+
+  //       for (const empIdx in localEmployees) {
+  //         const emp = localEmployees[empIdx];
+  //         const actualEmpIdx = parseInt(empIdx, 10);
+
+  //         if (replaceScope === "row" && actualEmpIdx !== selectedRowIndex) {
+  //           continue;
+  //         }
+
+  //         for (const duration of sortedDurations) {
+  //           const uniqueKey = `${duration.monthNo}_${duration.year}`;
+
+  //           if (replaceScope === "column" && uniqueKey !== selectedColumnKey) {
+  //             continue;
+  //           }
+
+  //           if (!isMonthEditable(duration, closedPeriod, planType)) {
+  //             continue;
+  //           }
+
+  //           const currentInputKey = `${actualEmpIdx}_${uniqueKey}`;
+  //           let displayedValue;
+  //           if (inputValues[currentInputKey] !== undefined) {
+  //             displayedValue = String(inputValues[currentInputKey]);
+  //           } else {
+  //             const monthHours = getMonthHours(emp);
+  //             const forecast = monthHours[uniqueKey];
+  //             if (forecast && forecast.value !== undefined) {
+  //               displayedValue = String(forecast.value);
+  //             } else {
+  //               displayedValue = "0";
+  //             }
+  //           }
+
+  //           const findValueTrimmed = findValue.trim();
+  //           const displayedValueTrimmed = displayedValue.trim();
+
+  //           function isZeroLike(val) {
+  //             if (val === undefined || val === null) return true;
+  //             if (typeof val === "number") return val === 0;
+  //             if (typeof val === "string") {
+  //               const trimmed = val.trim();
+  //               return (
+  //                 trimmed === "" ||
+  //                 trimmed === "0" ||
+  //                 trimmed === "0.0" ||
+  //                 trimmed === "0.00" ||
+  //                 (!isNaN(Number(trimmed)) && Number(trimmed) === 0)
+  //               );
+  //             }
+  //             return false;
+  //           }
+
+  //           let isMatch = false;
+  //           // if (
+  //           //   !isNaN(Number(findValueTrimmed)) &&
+  //           //   Number(findValueTrimmed) === 0
+  //           // ) {
+  //           //   isMatch = isZeroLike(displayedValueTrimmed);
+  //           // }
+  //           if (isZeroLike(findValueTrimmed)) {
+  //             isMatch = isZeroLike(displayedValueTrimmed);
+  //           }
+  //            else {
+  //             isMatch = displayedValueTrimmed === findValueTrimmed;
+  //             if (!isMatch) {
+  //               const findNum = parseFloat(findValueTrimmed);
+  //               const displayNum = parseFloat(displayedValueTrimmed);
+  //               if (!isNaN(findNum) && !isNaN(displayNum)) {
+  //                 isMatch = findNum === displayNum;
+  //               }
+  //             }
+  //           }
+
+  //           if (isMatch) {
+  //             const newValue = replaceValue.trim();
+  //             const newNumericValue = newValue === "" ? 0 : Number(newValue);
+  //             const monthHours = getMonthHours(emp);
+  //             const forecast = monthHours[uniqueKey];
+
+  //             if (!forecast || !forecast.forecastid) {
+  //               skippedCount++;
+  //               continue;
+  //             }
+
+  //             if (displayedValueTrimmed !== newValue) {
+  //               updatedInputValues[currentInputKey] = newValue;
+  //               replacementsCount++;
+
+  //               // Create payload matching the bulk API structure from handleSaveAllHours
+  //               const payload = {
+  //                 forecastedamt: forecast?.forecastedamt ?? 0,
+  //                 actualamt: forecast?.actualamt ?? 0,
+  //                 forecastid: Number(forecast?.forecastid ?? 0),
+  //                 projId: forecast?.projId ?? projectId ?? "",
+  //                 plId: forecast?.plId ?? planId ?? 0,
+  //                 emplId: forecast?.emplId ?? emp?.emple?.emplId ?? "",
+  //                 dctId: forecast?.dctId ?? 0,
+  //                 month: forecast?.month ?? duration?.monthNo ?? 0,
+  //                 year: forecast?.year ?? duration?.year ?? 0,
+  //                 totalBurdenCost: forecast?.totalBurdenCost ?? 0,
+  //                 fees: forecast?.fees ?? 0,
+  //                 burden: forecast?.burden ?? 0,
+  //                 ccffRevenue: forecast?.ccffRevenue ?? 0,
+  //                 tnmRevenue: forecast?.tnmRevenue ?? 0,
+  //                 revenue: forecast?.revenue ?? 0,
+  //                 cost: forecast?.cost ?? 0,
+  //                 forecastedCost: forecast?.forecastedCost ?? 0,
+  //                 fringe: forecast?.fringe ?? 0,
+  //                 overhead: forecast?.overhead ?? 0,
+  //                 gna: forecast?.gna ?? 0,
+  //                 materials: forecast?.materials ?? 0,
+  //                 // Update hours based on plan type
+  //                 ...(planType === "EAC"
+  //                   ? {
+  //                       actualhours: Number(newNumericValue) || 0,
+  //                       forecastedhours: forecast?.forecastedhours ?? 0,
+  //                     }
+  //                   : {
+  //                       forecastedhours: Number(newNumericValue) || 0,
+  //                       actualhours: forecast?.actualhours ?? 0,
+  //                     }),
+  //                 createdat: forecast?.createdat ?? new Date().toISOString(),
+  //                 updatedat: new Date().toISOString(),
+  //                 displayText: forecast?.displayText ?? "",
+  //                 acctId: emp?.emple?.accId ?? "",
+  //                 orgId: emp?.emple?.orgId ?? "",
+  //                 plc: emp?.emple?.plcGlcCode ?? "",
+  //                 empleId: emp?.emple?.id ?? 0,
+  //                 hrlyRate: emp?.emple?.perHourRate ?? 0,
+  //                 effectDt: new Date().toISOString().split("T")[0],
+  //                 emple: emp?.emple
+  //                   ? {
+  //                       id: emp.emple.id ?? 0,
+  //                       emplId: emp.emple.emplId ?? "",
+  //                       orgId: emp.emple.orgId ?? "",
+  //                       firstName: emp.emple.firstName ?? "",
+  //                       lastName: emp.emple.lastName ?? "",
+  //                       plcGlcCode: emp.emple.plcGlcCode ?? "",
+  //                       perHourRate: emp.emple.perHourRate ?? 0,
+  //                       salary: emp.emple.salary ?? 0,
+  //                       accId: emp.emple.accId ?? "",
+  //                       hireDate:
+  //                         emp.emple.hireDate ??
+  //                         new Date().toISOString().split("T")[0],
+  //                       isRev: emp.emple.isRev ?? false,
+  //                       isBrd: emp.emple.isBrd ?? false,
+  //                       createdAt:
+  //                         emp.emple.createdAt ?? new Date().toISOString(),
+  //                       type: emp.emple.type ?? "",
+  //                       status: emp.emple.status ?? "",
+  //                       plId: planId ?? 0,
+  //                       isWarning: emp.emple.isWarning ?? false,
+  //                       plForecasts: [],
+  //                       organization: emp.emple.organization ?? null,
+  //                       plProjectPlan: emp.emple.plProjectPlan ?? null,
+  //                     }
+  //                   : null,
+  //               };
+
+  //               bulkPayload.push(payload);
+  //             }
+  //           }
+  //         }
+  //       }
+
+  //       if (bulkPayload.length === 0) {
+  //         if (replacementsCount === 0 && skippedCount === 0) {
+  //           toast.info("No cells replaced.", { autoClose: 2000 });
+  //         }
+  //         return;
+  //       }
+
+  //       // Update input values for UI consistency
+  //       setInputValues(updatedInputValues);
+
+  //       // Use correct bulk API endpoint matching handleSaveAllHours
+  //       const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
+
+  //       const response = await axios.put(
+  //         `${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`,
+  //         bulkPayload,
+  //         { headers: { "Content-Type": "application/json" } }
+  //       );
+
+  //       // Update local state for all successful updates matching handleSaveAllHours pattern
+  //       setLocalEmployees((prev) => {
+  //         const updated = [...prev];
+
+  //         for (const empIdx in updated) {
+  //           const emp = updated[empIdx];
+  //           for (const duration of sortedDurations) {
+  //             const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //             const currentInputKey = `${empIdx}_${uniqueKey}`;
+  //             if (updatedInputValues[currentInputKey] !== undefined) {
+  //               if (emp.emple && Array.isArray(emp.emple.plForecasts)) {
+  //                 const forecastIndex = emp.emple.plForecasts.findIndex(
+  //                   (f) =>
+  //                     f.month === duration.monthNo && f.year === duration.year
+  //                 );
+
+  //                 if (forecastIndex !== -1) {
+  //                   const newValue =
+  //                     parseFloat(updatedInputValues[currentInputKey]) || 0;
+  //                   if (planType === "EAC") {
+  //                     updated[empIdx].emple.plForecasts[
+  //                       forecastIndex
+  //                     ].actualhours = newValue;
+  //                   } else {
+  //                     updated[empIdx].emple.plForecasts[
+  //                       forecastIndex
+  //                     ].forecastedhours = newValue;
+  //                   }
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
+
+  //         return updated;
+  //       });
+
+  //       if (replacementsCount > 0) {
+  //         toast.success(`Successfully replaced ${replacementsCount} cells.`, {
+  //           autoClose: 2000,
+  //         });
+  //       }
+
+  //       if (skippedCount > 0) {
+  //         toast.warning(`${skippedCount} entries could not be processed.`, {
+  //           autoClose: 3000,
+  //         });
+  //       }
+  //     } catch (err) {
+  //       console.error("Bulk find/replace error:", err);
+  //       toast.error(
+  //         "Failed to replace values: " +
+  //           (err.response?.data?.message || err.message),
+  //         {
+  //           toastId: "replace-error",
+  //           autoClose: 3000,
+  //         }
+  //       );
+  //     } finally {
+  //       setIsLoading(false);
+  //       setShowFindReplace(false);
+  //       setFindValue("");
+  //       setReplaceValue("");
+  //       setSelectedRowIndex(null);
+  //       setSelectedColumnKey(null);
+  //       setReplaceScope("all");
+  //     }
+  //   };
+
+  //   const handleFindReplace = async () => {
+  //     if (
+  //       !isEditable ||
+  //       findValue === "" ||
+  //       (replaceScope === "row" && selectedRowIndex === null) ||
+  //       (replaceScope === "column" && selectedColumnKey === null)
+  //     ) {
+  //       toast.warn("Please select a valid scope and enter a value to find.", {
+  //         toastId: "find-replace-warning",
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     }
+
+  //     setIsLoading(true);
+  //     let replacementsCount = 0;
+  //     let skippedCount = 0;
+
+  //     try {
+  //       // Prepare bulk payload array
+  //       const bulkPayload = [];
+  //       const updatedInputValues = { ...inputValues };
+
+  //       for (const empIdx in localEmployees) {
+  //         const emp = localEmployees[empIdx];
+  //         const actualEmpIdx = parseInt(empIdx, 10);
+
+  //         if (replaceScope === "row" && actualEmpIdx !== selectedRowIndex) {
+  //           continue;
+  //         }
+
+  //         for (const duration of sortedDurations) {
+  //           const uniqueKey = `${duration.monthNo}_${duration.year}`;
+
+  //           if (replaceScope === "column" && uniqueKey !== selectedColumnKey) {
+  //             continue;
+  //           }
+
+  //           if (!isMonthEditable(duration, closedPeriod, planType)) {
+  //             continue;
+  //           }
+
+  //           const currentInputKey = `${actualEmpIdx}_${uniqueKey}`;
+  //           let displayedValue;
+  //           const monthHours = getMonthHours(emp);
+  //           let forecast = monthHours[uniqueKey]; // Check for existing forecast
+
+  //           // Determine the current displayed value (from input or from forecast)
+  //           if (inputValues[currentInputKey] !== undefined) {
+  //             displayedValue = String(inputValues[currentInputKey]);
+  //           } else if (forecast && forecast.value !== undefined) {
+  //             displayedValue = String(forecast.value);
+  //           } else {
+  //             displayedValue = "0"; // Default to 0 if no input and no forecast
+  //           }
+  //
+  //           const findValueTrimmed = findValue.trim();
+  //           const displayedValueTrimmed = displayedValue.trim();
+
+  //           function isZeroLike(val) {
+  //             if (val === undefined || val === null) return true;
+  //             if (typeof val === "number") return val === 0;
+  //             if (typeof val === "string") {
+  //               const trimmed = val.trim();
+  //               return (
+  //                 trimmed === "" ||
+  //                 trimmed === "0" ||
+  //                 trimmed === "0.0" ||
+  //                 trimmed === "0.00" ||
+  //                 (!isNaN(Number(trimmed)) && Number(trimmed) === 0)
+  //               );
+  //             }
+  //             return false;
+  //           }
+
+  //           let isMatch = false;
+  //           if (isZeroLike(findValueTrimmed)) {
+  //             isMatch = isZeroLike(displayedValueTrimmed);
+  //           }
+  //         	else {
+  //             isMatch = displayedValueTrimmed === findValueTrimmed;
+  //             if (!isMatch) {
+  //               const findNum = parseFloat(findValueTrimmed);
+  //               const displayNum = parseFloat(displayedValueTrimmed);
+  //               if (!isNaN(findNum) && !isNaN(displayNum)) {
+  //                 isMatch = findNum === displayNum;
+  //               }
+  //             }
+  //           }
+
+  //           if (isMatch) {
+  //             const newValue = replaceValue.trim();
+  //             const newNumericValue = newValue === "" ? 0 : Number(newValue);
+  //
+  //             // --- START FIX: Handle Missing Forecast for BUD/NBBUD Plans ---
+  //             if (isBudPlan && !forecast) {
+  //               // Create a mock forecast object for the payload when one doesn't exist.
+  //               // Set forecastid to 0 for a new record (INSERT).
+  //               forecast = {
+  //                 forecastid: 0,
+  //                 projId: projectId,
+  //                 plId: planId,
+  //                 emplId: emp?.emple?.emplId ?? "",
+  //                 month: duration.monthNo,
+  //                 year: duration.year,
+  //                 acctId: emp?.emple?.accId ?? "",
+  //                 orgId: emp?.emple?.orgId ?? "",
+  //                 plc: emp?.emple?.plcGlcCode ?? "",
+  //                 empleId: emp?.emple?.id ?? 0,
+  //                 hrlyRate: emp?.emple?.perHourRate ?? 0,
+  //                 // Set defaults to 0 as per the required payload structure
+  //                 totalBurdenCost: 0, fees: 0, burden: 0, ccffRevenue: 0, tnmRevenue: 0, revenue: 0,
+  //                 cost: 0, forecastedCost: 0, fringe: 0, overhead: 0, gna: 0, materials: 0,
+  //                 // Default dates/text
+  //                 createdat: new Date().toISOString(),
+  //                 updatedat: new Date().toISOString(),
+  //                 displayText: `${duration.monthNo}/1 - ${duration.monthDays}/${duration.monthNo}()`,
+  //               };
+  //             }
+  //             // If not a BUD/NBBUD plan OR if forecast still has no ID after creation attempt, skip.
+  //             else if (!forecast || !forecast.forecastid) {
+  //               skippedCount++;
+  //               continue;
+  //             }
+  //             // --- END FIX: Handle Missing Forecast for BUD/NBBUD Plans ---
+
+  //             if (displayedValueTrimmed !== newValue) {
+  //               updatedInputValues[currentInputKey] = newValue;
+  //               replacementsCount++;
+
+  //               // Create payload matching the bulk API structure. The 'forecast' object is now guaranteed to exist and have a valid (or 0) forecastid.
+  //               const payload = {
+  //                 forecastedamt: forecast?.forecastedamt ?? 0,
+  //                 actualamt: forecast?.actualamt ?? 0,
+  //                 forecastid: Number(forecast?.forecastid ?? 0),
+  //                 projId: forecast?.projId ?? projectId ?? "",
+  //                 plId: forecast?.plId ?? planId ?? 0,
+  //                 emplId: forecast?.emplId ?? emp?.emple?.emplId ?? "",
+  //                 dctId: forecast?.dctId ?? 0,
+  //                 month: forecast?.month ?? duration?.monthNo ?? 0,
+  //                 year: forecast?.year ?? duration?.year ?? 0,
+  //                 totalBurdenCost: forecast?.totalBurdenCost ?? 0,
+  //                 fees: forecast?.fees ?? 0,
+  //                 burden: forecast?.burden ?? 0,
+  //                 ccffRevenue: forecast?.ccffRevenue ?? 0,
+  //                 tnmRevenue: forecast?.tnmRevenue ?? 0,
+  //                 revenue: forecast?.revenue ?? 0,
+  //                 cost: forecast?.cost ?? 0,
+  //                 forecastedCost: forecast?.forecastedCost ?? 0,
+  //                 fringe: forecast?.fringe ?? 0,
+  //                 overhead: forecast?.overhead ?? 0,
+  //                 gna: forecast?.gna ?? 0,
+  //                 materials: forecast?.materials ?? 0,
+  //                 // Update hours based on plan type
+  //                 ...(planType === "EAC"
+  //                   ? {
+  //                       actualhours: Number(newNumericValue) || 0,
+  //                       forecastedhours: forecast?.forecastedhours ?? 0,
+  //                     }
+  //                   : {
+  //                       forecastedhours: Number(newNumericValue) || 0,
+  //                       actualhours: forecast?.actualhours ?? 0,
+  //                     }),
+  //                 createdat: forecast?.createdat ?? new Date().toISOString(),
+  //                 updatedat: new Date().toISOString(),
+  //                 displayText: forecast?.displayText ?? "",
+  //                 acctId: emp?.emple?.accId ?? "",
+  //                 orgId: emp?.emple?.orgId ?? "",
+  //                 plc: emp?.emple?.plcGlcCode ?? "",
+  //                 empleId: emp?.emple?.id ?? 0,
+  //                 hrlyRate: emp?.emple?.perHourRate ?? 0,
+  //                 effectDt: new Date().toISOString().split("T")[0],
+  //                 emple: emp?.emple
+  //                   ? {
+  //                       id: emp.emple.id ?? 0,
+  //                       emplId: emp.emple.emplId ?? "",
+  //                       orgId: emp.emple.orgId ?? "",
+  //                       firstName: emp.emple.firstName ?? "",
+  //                       lastName: emp.emple.lastName ?? "",
+  //                       plcGlcCode: emp.emple.plcGlcCode ?? "",
+  //                       perHourRate: emp.emple.perHourRate ?? 0,
+  //                       salary: emp.emple.salary ?? 0,
+  //                       accId: emp.emple.accId ?? "",
+  //                       hireDate:
+  //                         emp.emple.hireDate ??
+  //                         new Date().toISOString().split("T")[0],
+  //                       isRev: emp.emple.isRev ?? false,
+  //                       isBrd: emp.emple.isBrd ?? false,
+  //                       createdAt:
+  //                         emp.emple.createdAt ?? new Date().toISOString(),
+  //                       type: emp.emple.type ?? "",
+  //                       status: emp.emple.status ?? "",
+  //                       plId: planId ?? 0,
+  //                       isWarning: emp.emple.isWarning ?? false,
+  //                       plForecasts: [],
+  //                       organization: emp.emple.organization ?? null,
+  //                       plProjectPlan: emp.emple.plProjectPlan ?? null,
+  //                     }
+  //                   : null,
+  //               };
+
+  //               bulkPayload.push(payload);
+  //             }
+  //           }
+  //         }
+  //       }
+
+  //       if (bulkPayload.length === 0) {
+  //         if (replacementsCount === 0 && skippedCount === 0) {
+  //           toast.info("No cells replaced.", { autoClose: 2000 });
+  //         }
+  //         return;
+  //       }
+
+  //       // Update input values for UI consistency
+  //       setInputValues(updatedInputValues);
+
+  //       // Use correct bulk API endpoint matching handleSaveAllHours
+  //       const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
+
+  //       const response = await axios.put(
+  //         `${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`,
+  //         bulkPayload,
+  //         { headers: { "Content-Type": "application/json" } }
+  //       );
+
+  //       // Update local state for all successful updates matching handleSaveAllHours pattern
+  //       setLocalEmployees((prev) => {
+  //         const updated = [...prev];
+
+  //         for (const empIdx in updated) {
+  //           const emp = updated[empIdx];
+  //           for (const duration of sortedDurations) {
+  //             const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //             const currentInputKey = `${empIdx}_${uniqueKey}`;
+  //             if (updatedInputValues[currentInputKey] !== undefined) {
+  //               if (emp.emple && Array.isArray(emp.emple.plForecasts)) {
+  //                 let forecastIndex = emp.emple.plForecasts.findIndex(
+  //                   (f) =>
+  //                     f.month === duration.monthNo && f.year === duration.year
+  //                 );
+
+  //                 const newValue =
+  //                   parseFloat(updatedInputValues[currentInputKey]) || 0;
+
+  //                 // If not found, and we are adding a record (for BUD), we need to insert a new forecast entry into the local state array.
+  //                 if (forecastIndex === -1 && isBudPlan) {
+  //                   const newForecastEntry = {
+  //                     // NOTE: We don't get the real forecast ID back instantly, but this ensures the local UI stays consistent and assumes creation worked.
+  //                     forecastid: 1, // Use a placeholder ID > 0 to indicate it's now 'saved'
+  //                     projId: projectId,
+  //                     plId: planId,
+  //                     emplId: emp.emple.emplId,
+  //                     month: duration.monthNo,
+  //                     year: duration.year,
+  //                     // Copy relevant details
+  //                     acctId: emp.emple.accId,
+  //                     orgId: emp.emple.orgId,
+  //                     plc: emp.emple.plcGlcCode,
+  //                     hrlyRate: emp.emple.perHourRate,
+  //
+  //                     // Apply the new hours
+  //                     ...(planType === "EAC"
+  //                       ? { actualhours: newValue, forecastedhours: 0 }
+  //                       : { forecastedhours: newValue, actualhours: 0 }),
+  //                     // Set other fields to default or null as needed
+  //                     totalBurdenCost: 0, fees: 0, burden: 0, ccffRevenue: 0, tnmRevenue: 0, revenue: 0, cost: 0,
+  //                   };
+
+  //                   updated[empIdx].emple.plForecasts.push(newForecastEntry);
+  //                   // Re-calculate index for the next step
+  //                   forecastIndex = updated[empIdx].emple.plForecasts.length - 1;
+  //                 }
+
+  //                 if (forecastIndex !== -1) {
+  //
+  //                   if (planType === "EAC") {
+  //                     updated[empIdx].emple.plForecasts[
+  //                       forecastIndex
+  //                     ].actualhours = newValue;
+  //                   } else {
+  //                     updated[empIdx].emple.plForecasts[
+  //                       forecastIndex
+  //                     ].forecastedhours = newValue;
+  //                   }
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
+
+  //         return updated;
+  //       });
+
+  //       if (replacementsCount > 0) {
+  //         toast.success(`Successfully replaced ${replacementsCount} cells.`, {
+  //           autoClose: 2000,
+  //         });
+  //       }
+
+  //       if (skippedCount > 0) {
+  //         toast.warning(`${skippedCount} entries could not be processed.`, {
+  //           autoClose: 3000,
+  //         });
+  //       }
+  //     } catch (err) {
+  //       console.error("Bulk find/replace error:", err);
+  //       toast.error(
+  //         "Failed to replace values: " +
+  //           (err.response?.data?.message || err.message),
+  //         {
+  //           toastId: "replace-error",
+  //           autoClose: 3000,
+  //         }
+  //       );
+  //     } finally {
+  //       setIsLoading(false);
+  //       setShowFindReplace(false);
+  //       setFindValue("");
+  //       setReplaceValue("");
+  //       setSelectedRowIndex(null);
+  //       setSelectedColumnKey(null);
+  //       setReplaceScope("all");
+  //     }
+  //   };
+
+  // ✅ REPLACE ENTIRE handleFindReplace function
+
+  // const handleFindReplace = async () => {
+  //   if (!isEditable || !findValue?.trim()) {
+  //     toast.warn('Please enter a value to find.', {
+  //       toastId: 'find-replace-warning',
+  //       autoClose: 3000
+  //     });
+  //     return;
+  //   }
+
+  //   // Ensure something is selected if scope isn't "all"
+  //   if (checkedRows.size === 0 && replaceScope === 'checked-rows') {
+  //     toast.warn('Please check at least one row.', {
+  //       toastId: 'no-rows-selected',
+  //       autoClose: 3000
+  //     });
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   let replacementsCount = 0;
+  //   let skippedCount = 0;
+
+  //   try {
+  //     const bulkPayload = [];
+  //     const updatedInputValues = { ...inputValues };
+
+  //     // Determine which rows to process
+  //     const targetRows = replaceScope === 'checked-rows'
+  //       ? Array.from(checkedRows)
+  //       : localEmployees.map((_, i) => i).filter(i => !hiddenRows[i]);
+
+  //     for (const empIdx of targetRows) {
+  //       const emp = localEmployees[empIdx];
+  //       if (!emp || hiddenRows[empIdx]) continue;
+
+  //       for (const duration of sortedDurations) {
+  //         // IMPORTANT: Must match the key format used in your inputValues state (with underscore)
+  //         const uniqueKey = `${duration.monthNo}_${duration.year}`;
+
+  //         // Column scope check
+  //         if (replaceScope === 'column' && uniqueKey !== selectedColumnKey) continue;
+
+  //         // Date editability check
+  //         if (!isMonthEditable(duration, closedPeriod, planType)) {
+  //           continue;
+  //         }
+
+  //         // FIX: Use empIdx (defined in the loop) and the underscore separator
+  //         const currentInputKey = `${empIdx}_${uniqueKey}`;
+
+  //         let displayedValue;
+  //         const monthHours = getMonthHours(emp);
+  //         const forecast = monthHours[uniqueKey];
+
+  //         // Get the current value from state or from the original forecast
+  //         if (inputValues[currentInputKey] !== undefined) {
+  //           displayedValue = String(inputValues[currentInputKey]);
+  //         } else if (forecast?.value !== undefined) {
+  //           displayedValue = String(forecast.value);
+  //         } else {
+  //           displayedValue = '0';
+  //         }
+
+  //         const findValueTrimmed = findValue.trim();
+  //         const displayedValueTrimmed = displayedValue.trim();
+
+  //         const isZeroLike = (val) => {
+  //           if (val === undefined || val === null) return true;
+  //           if (typeof val === 'number') return val === 0;
+  //           const trimmed = val.trim();
+  //           return !trimmed || trimmed === '0' || trimmed === '0.0' || trimmed === '0.00';
+  //         };
+
+  //         // Matching Logic
+  //         let isMatch = false;
+  //         if (isZeroLike(findValueTrimmed)) {
+  //           isMatch = isZeroLike(displayedValueTrimmed);
+  //         } else {
+  //           isMatch = displayedValueTrimmed === findValueTrimmed;
+  //         }
+
+  //         if (!isMatch) {
+  //           const findNum = parseFloat(findValueTrimmed);
+  //           const displayNum = parseFloat(displayedValueTrimmed);
+  //           if (!isNaN(findNum) && !isNaN(displayNum)) {
+  //             isMatch = findNum === displayNum;
+  //           }
+  //         }
+
+  //         if (isMatch) {
+  //           const newValue = replaceValue?.trim() || '';
+  //           const newNumericValue = newValue ? Number(newValue) : 0;
+
+  //           updatedInputValues[currentInputKey] = newValue;
+  //           replacementsCount++;
+
+  //           // Build API Payload
+  //           const payload = {
+  //             forecastedamt: forecast?.forecastedamt ?? 0,
+  //             actualamt: forecast?.actualamt ?? 0,
+  //             forecastid: Number(forecast?.forecastid ?? 0),
+  //             projId: forecast?.projId ?? projectId ?? '',
+  //             plId: forecast?.plId ?? planId ?? 0,
+  //             emplId: forecast?.emplId ?? emp?.emple?.emplId ?? '',
+  //             dctId: forecast?.dctId ?? 0,
+  //             month: duration?.monthNo ?? 0,
+  //             year: duration?.year ?? 0,
+  //             totalBurdenCost: forecast?.totalBurdenCost ?? 0,
+  //             fees: forecast?.fees ?? 0,
+  //             burden: forecast?.burden ?? 0,
+  //             ccffRevenue: forecast?.ccffRevenue ?? 0,
+  //             tnmRevenue: forecast?.tnmRevenue ?? 0,
+  //             revenue: forecast?.revenue ?? 0,
+  //             cost: forecast?.cost ?? 0,
+  //             forecastedCost: forecast?.forecastedCost ?? 0,
+  //             fringe: forecast?.fringe ?? 0,
+  //             overhead: forecast?.overhead ?? 0,
+  //             gna: forecast?.gna ?? 0,
+  //             materials: forecast?.materials ?? 0,
+  //             ...(planType === 'EAC'
+  //               ? { actualhours: newNumericValue, forecastedhours: forecast?.forecastedhours ?? 0 }
+  //               : { forecastedhours: newNumericValue, actualhours: forecast?.actualhours ?? 0 }
+  //             ),
+  //             createdat: forecast?.createdat ?? new Date().toISOString(),
+  //             updatedat: new Date().toISOString(),
+  //             displayText: forecast?.displayText ?? '',
+  //             acctId: emp?.emple?.accId ?? '',
+  //             orgId: emp?.emple?.orgId ?? '',
+  //             plc: emp?.emple?.plcGlcCode ?? '',
+  //             empleId: emp?.emple?.id ?? 0,
+  //             hrlyRate: emp?.emple?.perHourRate ?? 0,
+  //             effectDt: new Date().toISOString().split('T')[0],
+  //             emple: emp?.emple ? {
+  //               id: emp.emple.id ?? 0,
+  //               emplId: emp.emple.emplId ?? '',
+  //               orgId: emp.emple.orgId ?? '',
+  //               firstName: emp.emple.firstName ?? '',
+  //               lastName: emp.emple.lastName ?? '',
+  //               plcGlcCode: emp.emple.plcGlcCode ?? '',
+  //               perHourRate: emp.emple.perHourRate ?? 0,
+  //               salary: emp.emple.salary ?? 0,
+  //               accId: emp.emple.accId ?? '',
+  //               hireDate: emp.emple.hireDate ?? new Date().toISOString().split('T')[0],
+  //               isRev: emp.emple.isRev ?? false,
+  //               isBrd: emp.emple.isBrd ?? false,
+  //               createdAt: emp.emple.createdAt ?? new Date().toISOString(),
+  //               type: emp.emple.type ?? '',
+  //               status: emp.emple.status ?? '',
+  //               plId: planId ?? 0,
+  //               isWarning: emp.emple.isWarning ?? false,
+  //               plForecasts: [],
+  //             } : null,
+  //           };
+  //           bulkPayload.push(payload);
+  //         }
+  //       }
+  //     }
+
+  //     if (bulkPayload.length > 0) {
+  //       const apiPlanType = planType === 'NBBUD' ? 'BUD' : planType;
+  //       await axios.put(
+  //         `${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`,
+  //         bulkPayload,
+  //         { headers: { 'Content-Type': 'application/json' } }
+  //       );
+  //       setInputValues(updatedInputValues);
+  //       toast.success(`Successfully replaced ${replacementsCount} cells.`, { autoClose: 2000 });
+  //     } else {
+  //       toast.info('No matching cells found to replace.', { autoClose: 2000 });
+  //     }
+
+  //   } catch (err) {
+  //     console.error('Bulk find/replace error:', err);
+  //     toast.error(`Failed to replace values: ${err.response?.data?.message || err.message}`);
+  //   } finally {
+  //     setIsLoading(false);
+  //     setShowFindReplace(false);
+  //     setFindValue('');
+  //     setReplaceValue('');
+  //     setReplaceScope('all');
+  //   }
+  // };
+
+  const handleFindReplace = async () => {
+    if (!isEditable || !findValue?.trim()) {
+      toast.warn("Please enter a find value.");
+      return;
     }
 
-    if (bulkPayload.length > 0) {
-      const apiType = planType === 'NBBUD' ? 'BUD' : planType;
-      await axios.put(`${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiPlanType}?plid=${planId}&templateid=${templateId}`, bulkPayload);
-      setInputValues(updatedInputValues);
-      toast.success(`Replaced ${replacementsCount} matches.`);
+    if (replaceScope === "column" && !selectedColumnKey) {
+      toast.warn("Please select a column by clicking its header first.");
+      return;
     }
-  } catch (err) {
-    toast.error("API Error: " + err.message);
-  } finally {
-    setIsLoading(false);
-    setShowFindReplace(false);
-  }
-};
 
+    setIsLoading(true);
+    let replacementsCount = 0;
 
+    try {
+      const bulkPayload = [];
+      const updatedInputValues = { ...inputValues };
 
+      // Determine target rows based on scope
+      const targetRows =
+        replaceScope === "checked-rows"
+          ? Array.from(checkedRows)
+          : localEmployees.map((_, i) => i);
 
-// ✅ ADD NEW FUNCTION for Replace All
-const handleFindReplaceWithReplace = async () => {
-  if (!findValue.trim() || !replaceValue.trim()) {
-    toast.warn('Please enter both find and replace values.', { autoClose: 2000 });
-    return;
-  }
+      for (const empIdx of targetRows) {
+        const emp = localEmployees[empIdx];
+        if (!emp || hiddenRows[empIdx]) continue;
 
-  setIsLoading(true);
-  let replacementsCount = 0;
-  let skippedCount = 0;
-  
-  try {
-    const bulkPayload = [];
-    const updatedInputValues = { ...inputValues };
-    
-    const targetRows = replaceScope.includes('checked-rows') && checkedRows.size > 0 
-      ? Array.from(checkedRows) 
-      : localEmployees.map((_, i) => i);
-    
-    const targetColumns = replaceScope.includes('checked-columns') && checkedColumns.size > 0
-      ? Array.from(checkedColumns)
-      : sortedDurations.map(d => `${d.monthNo}${d.year}`);
+        for (const duration of sortedDurations) {
+          const uniqueKey = `${duration.monthNo}_${duration.year}`;
 
-    for (const empIdx of targetRows) {
-      const emp = localEmployees[empIdx];
-      if (!emp || hiddenRows[empIdx]) continue;
-      
-      for (const duration of sortedDurations) {
-        const uniqueKey = `${duration.monthNo}${duration.year}`;
-        
-        if (!targetColumns.includes(uniqueKey)) continue;
-        if (!isMonthEditable(duration, closedPeriod, planType)) continue;
-        
-        const currentInputKey = `${empIdx}${uniqueKey}`;
-        let displayedValue = inputValues[currentInputKey] !== undefined 
-          ? String(inputValues[currentInputKey])
-          : getMonthHours(emp)[uniqueKey]?.value || '0';
-        
-        const findValueTrimmed = findValue.trim();
-        const displayedValueTrimmed = displayedValue.trim();
-        
-        // Same matching logic as find
-        const isZeroLike = (val) => {
-          if (val === undefined || val === null) return true;
-          if (typeof val === 'number') return val === 0;
-          const trimmed = val.trim();
-          return !trimmed || trimmed === '0' || trimmed === '0.0' || trimmed === '0.00';
-        };
+          // Scope Check: If column scope is selected, only process that one column
+          if (replaceScope === "column" && uniqueKey !== selectedColumnKey)
+            continue;
+          if (!isMonthEditable(duration, closedPeriod, planType)) continue;
 
-        let isMatch = false;
-        if (isZeroLike(findValueTrimmed)) {
-          isMatch = isZeroLike(displayedValueTrimmed);
-        } else {
-          isMatch = displayedValueTrimmed === findValueTrimmed;
-        }
-        
-        if (!isMatch) {
-          const findNum = parseFloat(findValueTrimmed);
-          const displayNum = parseFloat(displayedValueTrimmed);
-          if (!isNaN(findNum) && !isNaN(displayNum)) {
-            isMatch = findNum === displayNum;
+          const currentInputKey = `${empIdx}_${uniqueKey}`;
+          let displayedValue =
+            inputValues[currentInputKey] !== undefined
+              ? String(inputValues[currentInputKey])
+              : String(getMonthHours(emp)[uniqueKey]?.value || "0");
+
+          // Numeric and string matching
+          const match =
+            displayedValue.trim() === findValue.trim() ||
+            (parseFloat(displayedValue) === parseFloat(findValue) &&
+              !isNaN(parseFloat(findValue)));
+
+          if (match) {
+            const newValue = replaceValue?.trim() || "0";
+            updatedInputValues[currentInputKey] = newValue;
+            replacementsCount++;
+
+            // Build payload for API hit
+            const forecast = getMonthHours(emp)[uniqueKey];
+
+            const rawPlc = emp.emple?.plcGlcCode || "";
+
+            const parsedPlc = rawPlc.split("-")[0].trim();
+
+            bulkPayload.push({
+              ...forecast, // spread existing data
+              forecastid: Number(forecast?.forecastid || 0),
+              emplId: emp.emple.emplId,
+              month: duration.monthNo,
+              year: duration.year,
+              ProjId: emp.emple?.projId || projectId,
+              OrgId: emp.emple?.orgId || "",
+              // Plc: emp.emple?.plcGlcCode || "",
+              Plc: parsedPlc,
+              AcctId: emp.emple?.accId || "",
+              empleId: emp.emple?.id || 0,
+              plid: emp.emple?.plId || 0,
+              ...(planType === "EAC"
+                ? { actualhours: Number(newValue) }
+                : { forecastedhours: Number(newValue) }),
+            });
           }
         }
+      }
 
-        if (isMatch) {
-          const newValue = replaceValue.trim();
-          updatedInputValues[currentInputKey] = newValue;
-          replacementsCount++;
-          
-          // Build payload (your existing payload logic)
-          const monthHours = getMonthHours(emp);
-          const forecast = monthHours[uniqueKey];
-          const payload = {
-            // ... your existing payload structure exactly same
-            forecastedamt: forecast?.forecastedamt ?? 0,
-            actualamt: forecast?.actualamt ?? 0,
-            // ... rest exactly same
+      if (bulkPayload.length > 0) {
+        const apiType = planType === "NBBUD" ? "BUD" : planType;
+        await axios.put(
+          `${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiPlanType}?plid=${planId}&templateid=${templateId}`,
+          bulkPayload
+        );
+        setInputValues(updatedInputValues);
+        toast.success(`Replaced ${replacementsCount} matches.`);
+      }
+    } catch (err) {
+      toast.error("API Error: " + err.message);
+    } finally {
+      setIsLoading(false);
+      setShowFindReplace(false);
+    }
+  };
+
+  // ✅ ADD NEW FUNCTION for Replace All
+  const handleFindReplaceWithReplace = async () => {
+    if (!findValue.trim() || !replaceValue.trim()) {
+      toast.warn("Please enter both find and replace values.", {
+        autoClose: 2000,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    let replacementsCount = 0;
+    let skippedCount = 0;
+
+    try {
+      const bulkPayload = [];
+      const updatedInputValues = { ...inputValues };
+
+      const targetRows =
+        replaceScope.includes("checked-rows") && checkedRows.size > 0
+          ? Array.from(checkedRows)
+          : localEmployees.map((_, i) => i);
+
+      const targetColumns =
+        replaceScope.includes("checked-columns") && checkedColumns.size > 0
+          ? Array.from(checkedColumns)
+          : sortedDurations.map((d) => `${d.monthNo}${d.year}`);
+
+      for (const empIdx of targetRows) {
+        const emp = localEmployees[empIdx];
+        if (!emp || hiddenRows[empIdx]) continue;
+
+        for (const duration of sortedDurations) {
+          const uniqueKey = `${duration.monthNo}${duration.year}`;
+
+          if (!targetColumns.includes(uniqueKey)) continue;
+          if (!isMonthEditable(duration, closedPeriod, planType)) continue;
+
+          const currentInputKey = `${empIdx}${uniqueKey}`;
+          let displayedValue =
+            inputValues[currentInputKey] !== undefined
+              ? String(inputValues[currentInputKey])
+              : getMonthHours(emp)[uniqueKey]?.value || "0";
+
+          const findValueTrimmed = findValue.trim();
+          const displayedValueTrimmed = displayedValue.trim();
+
+          // Same matching logic as find
+          const isZeroLike = (val) => {
+            if (val === undefined || val === null) return true;
+            if (typeof val === "number") return val === 0;
+            const trimmed = val.trim();
+            return (
+              !trimmed ||
+              trimmed === "0" ||
+              trimmed === "0.0" ||
+              trimmed === "0.00"
+            );
           };
-          bulkPayload.push(payload);
+
+          let isMatch = false;
+          if (isZeroLike(findValueTrimmed)) {
+            isMatch = isZeroLike(displayedValueTrimmed);
+          } else {
+            isMatch = displayedValueTrimmed === findValueTrimmed;
+          }
+
+          if (!isMatch) {
+            const findNum = parseFloat(findValueTrimmed);
+            const displayNum = parseFloat(displayedValueTrimmed);
+            if (!isNaN(findNum) && !isNaN(displayNum)) {
+              isMatch = findNum === displayNum;
+            }
+          }
+
+          if (isMatch) {
+            const newValue = replaceValue.trim();
+            updatedInputValues[currentInputKey] = newValue;
+            replacementsCount++;
+
+            // Build payload (your existing payload logic)
+            const monthHours = getMonthHours(emp);
+            const forecast = monthHours[uniqueKey];
+            const payload = {
+              // ... your existing payload structure exactly same
+              forecastedamt: forecast?.forecastedamt ?? 0,
+              actualamt: forecast?.actualamt ?? 0,
+              // ... rest exactly same
+            };
+            bulkPayload.push(payload);
+          }
         }
       }
-    }
 
-    if (bulkPayload.length > 0) {
-      const apiPlanType = planType === 'NBBUD' ? 'BUD' : planType;
-      await axios.put(`${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`, bulkPayload, {
-        headers: { 'Content-Type': 'application/json' }
+      if (bulkPayload.length > 0) {
+        const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
+        await axios.put(
+          `${backendUrl}/Forecast/BulkUpdateForecastHours/${apiPlanType}`,
+          bulkPayload,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        setInputValues(updatedInputValues);
+      }
+
+      toast.success(`Successfully replaced ${replacementsCount} cells.`, {
+        autoClose: 2000,
       });
-      setInputValues(updatedInputValues);
+    } catch (err) {
+      console.error("Bulk find/replace error", err);
+      toast.error("Failed to replace values", { autoClose: 3000 });
+    } finally {
+      setIsLoading(false);
+      setShowFindReplace(false);
+      setFindValue("");
+      setReplaceValue("");
     }
-
-    toast.success(`Successfully replaced ${replacementsCount} cells.`, { autoClose: 2000 });
-  } catch (err) {
-    console.error('Bulk find/replace error', err);
-    toast.error('Failed to replace values', { autoClose: 3000 });
-  } finally {
-    setIsLoading(false);
-    setShowFindReplace(false);
-    setFindValue('');
-    setReplaceValue('');
-  }
-};
-
-
-
-
-
-  
+  };
 
   //  const handleFind = () => {
   //   if (!findValue) {
@@ -8499,7 +9439,6 @@ const handleFindReplaceWithReplace = async () => {
 
   // ✅ ADD THESE 3 FUNCTIONS
 
-
   // const handleRowClick = (actualEmpIdx) => {
   //   // Allow row selection regardless of isEditable for Employee Schedule
   //   const isSameRow = actualEmpIdx === selectedRowIndex;
@@ -8524,38 +9463,35 @@ const handleFindReplaceWithReplace = async () => {
   // };
 
   const handleRowClick = (actualEmpIdx) => {
-  // DISABLED: Row clicks no longer select rows
-  // Only checkboxes work now
-  console.log('Row click disabled - use checkboxes only');
-};
+    // DISABLED: Row clicks no longer select rows
+    // Only checkboxes work now
+    console.log("Row click disabled - use checkboxes only");
+  };
 
   // ✅ ADD THESE 2 FUNCTIONS
-const handleCheckboxSelection = (rowIndex, isChecked) => {
-  setCheckedRows(prev => {
-    const newSelection = new Set(prev);
-    if (isChecked) newSelection.add(rowIndex);
-    else newSelection.delete(rowIndex);
-    setShowCopyButton(newSelection.size > 0);
-    return newSelection;
-  });
-};
-
-const handleSelectAllCheckboxes = (isChecked) => {
-  if (isChecked) {
-    const allRowIndices = new Set();
-    localEmployees.forEach((_, index) => {
-      if (!hiddenRows[index]) allRowIndices.add(index);
+  const handleCheckboxSelection = (rowIndex, isChecked) => {
+    setCheckedRows((prev) => {
+      const newSelection = new Set(prev);
+      if (isChecked) newSelection.add(rowIndex);
+      else newSelection.delete(rowIndex);
+      setShowCopyButton(newSelection.size > 0);
+      return newSelection;
     });
-    setCheckedRows(allRowIndices);
-    setShowCopyButton(true);
-  } else {
-    setCheckedRows(new Set());
-    setShowCopyButton(false);
-  }
-};
+  };
 
-
-
+  const handleSelectAllCheckboxes = (isChecked) => {
+    if (isChecked) {
+      const allRowIndices = new Set();
+      localEmployees.forEach((_, index) => {
+        if (!hiddenRows[index]) allRowIndices.add(index);
+      });
+      setCheckedRows(allRowIndices);
+      setShowCopyButton(true);
+    } else {
+      setCheckedRows(new Set());
+      setShowCopyButton(false);
+    }
+  };
 
   const handleDeleteEmployee = async (emple_Id) => {
     if (!emple_Id) return;
@@ -8753,7 +9689,6 @@ const handleSelectAllCheckboxes = (isChecked) => {
 
   return (
     <div className="relative p-4 font-inter w-full synchronized-tables-outer">
-
       {showSuccessMessage && (
         <div
           className={`fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 ${
@@ -8768,7 +9703,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
       )}
 
       <div className="w-full flex justify-between mb-1 gap-2">
-         <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
+        <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
           <span className="font-semibold text-md sm:text-sm blue-text">
             Hours
           </span>
@@ -8778,11 +9713,11 @@ const handleSelectAllCheckboxes = (isChecked) => {
           {hasHiddenRows && (
             <button
               // className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-xs font-medium"
-               className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
+              className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+              style={{
+                ...geistSansStyle,
+                backgroundColor: "#113d46",
+              }}
               onClick={showHiddenRows}
             >
               Show Hidden Rows
@@ -8794,11 +9729,11 @@ const handleSelectAllCheckboxes = (isChecked) => {
             <button
               onClick={handleCopySelectedRows}
               // className="blue-btn-common text-white px-4 py-2 rounded text-sm font-medium transition-colors duration-200 flex items-center gap-2"
-               className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
+              className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+              style={{
+                ...geistSansStyle,
+                backgroundColor: "#113d46",
+              }}
               title="Copy selected rows to clipboard"
             >
               {/* <svg
@@ -8850,130 +9785,128 @@ const handleSelectAllCheckboxes = (isChecked) => {
               </div>
             )} */}
 
-            {/* Check for In Progress status first */}
-
-
-            
+          {/* Check for In Progress status first */}
 
           {isEditable && (
             <>
-              
+              {isEditable && (
+                <div className="flex gap-2">
+                  {/* New Entry Button: Adds one blank entry to the array every time it is clicked */}
+                  <button
+                    onClick={() => {
+                      // 1. Define the blank new entry object
+                      const defaultEntry = {
+                        id: "",
+                        firstName: "",
+                        lastName: "",
+                        isRev: false,
+                        isBrd: false,
+                        idType: "",
+                        acctId:
+                          laborAccounts.length > 0 ? laborAccounts[0].id : "",
+                        acctName: " ",
+                        orgId: "",
+                        plcGlcCode: "",
+                        perHourRate: "",
+                        status: "Act",
+                      };
 
-              
-{isEditable && (
-    <div className="flex gap-2">
-        {/* New Entry Button: Adds one blank entry to the array every time it is clicked */}
-        <button
-            onClick={() => {
-                // 1. Define the blank new entry object
-                const defaultEntry = {
-                    id: "",
-                    firstName: "",
-                    lastName: "",
-                    isRev: false,
-                    isBrd: false,
-                    idType: "",
-                    acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
-                    orgId: "",
-                    plcGlcCode: "",
-                    perHourRate: "",
-                    status: "Act",
-                };
+                      // 2. Add the new entry and its corresponding period hours object
+                      setNewEntries((prev) => [...prev, defaultEntry]);
+                      setNewEntryPeriodHoursArray((prev) => [...prev, {}]);
 
-                // 2. Add the new entry and its corresponding period hours object
-                setNewEntries(prev => [...prev, defaultEntry]);
-                setNewEntryPeriodHoursArray(prev => [...prev, {}]);
-                
-                // 3. Ensure the form display section is visible
-                setShowNewForm(true);
-            }}
-            // className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium"
-            className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
-        >
-            New
-        </button>
+                      // 3. Ensure the form display section is visible
+                      setShowNewForm(true);
+                    }}
+                    // className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium"
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                    style={{
+                      ...geistSansStyle,
+                      backgroundColor: "#113d46",
+                    }}
+                  >
+                    New
+                  </button>
 
-        {status === "In Progress" && (
-  <div className="flex gap-2">
-    {/* UNIFIED SAVE BUTTON: Visible if there are New Entries OR Grid Edits */}
-    {(newEntries.length > 0 || hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) && (
-      <button
-        onClick={handleMasterSave}
-        className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white"
-        style={{
-          ...geistSansStyle,
-          backgroundColor: "#113d46",
-        }}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          "Saving..."
-        ) : (
-          newEntries.length > 0 
-            ? `Save All (${newEntries.length})` 
-            : `Save Changes (${Object.keys(modifiedHours).length + Object.keys(editedEmployeeData).length})`
-        )}
-      </button>
-    )}
+                  {status === "In Progress" && (
+                    <div className="flex gap-2">
+                      {/* UNIFIED SAVE BUTTON: Visible if there are New Entries OR Grid Edits */}
+                      {(newEntries.length > 0 ||
+                        hasUnsavedHoursChanges ||
+                        hasUnsavedEmployeeChanges) && (
+                        <button
+                          onClick={handleMasterSave}
+                          className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white"
+                          style={{
+                            ...geistSansStyle,
+                            backgroundColor: "#113d46",
+                          }}
+                          disabled={isLoading}
+                        >
+                          {isLoading
+                            ? "Saving..."
+                            : newEntries.length > 0
+                              ? `Save All (${newEntries.length})`
+                              : `Save Changes (${Object.keys(modifiedHours).length + Object.keys(editedEmployeeData).length})`}
+                        </button>
+                      )}
 
-    {/* CONSOLIDATED CANCEL BUTTON WITH LIFO LOGIC */}
-    {(showNewForm || newEntries.length > 0 || hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) && (
-      <button
-        onClick={() => {
-          // 1. LIFO Logic: Remove the latest New Entry form first
-          if (newEntries.length > 0) {
-            const updatedEntries = newEntries.slice(0, -1);
-            const updatedHours = newEntryPeriodHoursArray.slice(0, -1);
-            setNewEntries(updatedEntries);
-            setNewEntryPeriodHoursArray(updatedHours);
-            if (updatedEntries.length === 0) setShowNewForm(false);
-            return; 
-          }
+                      {/* CONSOLIDATED CANCEL BUTTON WITH LIFO LOGIC */}
+                      {(showNewForm ||
+                        newEntries.length > 0 ||
+                        hasUnsavedHoursChanges ||
+                        hasUnsavedEmployeeChanges) && (
+                        <button
+                          onClick={() => {
+                            // 1. LIFO Logic: Remove the latest New Entry form first
+                            if (newEntries.length > 0) {
+                              const updatedEntries = newEntries.slice(0, -1);
+                              const updatedHours =
+                                newEntryPeriodHoursArray.slice(0, -1);
+                              setNewEntries(updatedEntries);
+                              setNewEntryPeriodHoursArray(updatedHours);
+                              if (updatedEntries.length === 0)
+                                setShowNewForm(false);
+                              return;
+                            }
 
-          // 2. Hide single manual form if visible
-          if (showNewForm) {
-            setShowNewForm(false);
-            resetNewEntryForm();
-          }
+                            // 2. Hide single manual form if visible
+                            if (showNewForm) {
+                              setShowNewForm(false);
+                              resetNewEntryForm();
+                            }
 
-          // 3. Revert Grid Edits (Hours & Fields)
-          if (hasUnsavedHoursChanges || hasUnsavedEmployeeChanges) {
-            setInputValues({});         
-            setModifiedHours({});      
-            setHasUnsavedHoursChanges(false);
-            setEditedEmployeeData({}); 
-            setHasUnsavedEmployeeChanges(false);
-            setFindMatches([]);        
-            setHasClipboardData(false);
-            setCopiedRowsData([]);
-            toast.info("Changes reverted", { autoClose: 1500 });
-          }
-        }}
-        className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer transition-colors text-white"
-        style={{
-          ...geistSansStyle,
-          backgroundColor: "#113d46",
-        }}
-      >
-        Cancel
-      </button>
-    )}
-  </div>
-)}
-
-
-
-     
-      
-    </div>
-)}
-
-
-
+                            // 3. Revert Grid Edits (Hours & Fields)
+                            if (
+                              hasUnsavedHoursChanges ||
+                              hasUnsavedEmployeeChanges
+                            ) {
+                              setInputValues({});
+                              setModifiedHours({});
+                              setHasUnsavedHoursChanges(false);
+                              setEditedEmployeeData({});
+                              setHasUnsavedEmployeeChanges(false);
+                              setFindMatches([]);
+                              setHasClipboardData(false);
+                              setCopiedRowsData([]);
+                              toast.info("Changes reverted", {
+                                autoClose: 1500,
+                              });
+                            }
+                          }}
+                          className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer transition-colors text-white"
+                          style={{
+                            ...geistSansStyle,
+                            backgroundColor: "#113d46",
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {hasClipboardData && status === "In Progress" && (
                 <button
@@ -8983,31 +9916,25 @@ const handleSelectAllCheckboxes = (isChecked) => {
                     setCopiedRowsData([]);
                   }}
                   // className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-medium"
-                   className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
+                  className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                  style={{
+                    ...geistSansStyle,
+                    backgroundColor: "#113d46",
+                  }}
                 >
                   Paste ({copiedRowsData.length} data)
                 </button>
               )}
 
-           
-
-           
-
-
-
               {!showNewForm && (
                 <>
                   <button
                     // className="px-4 py-2 blue-btn-common text-white rounded  transition text-xs font-medium"
-                     className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                    style={{
+                      ...geistSansStyle,
+                      backgroundColor: "#113d46",
+                    }}
                     onClick={() => isEditable && setShowFindReplace(true)}
                   >
                     Find / Replace
@@ -9059,7 +9986,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
                     Delete
                   </button> */}
 
-               {/* <button
+                  {/* <button
   className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
     ${planType === "EAC" ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
   onClick={async () => {
@@ -9101,54 +10028,68 @@ const handleSelectAllCheckboxes = (isChecked) => {
   Delete
 </button> */}
 
-<button
-  className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
+                  <button
+                    className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
     ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
-  disabled={planType === "EAC" || checkedRows.size === 0}
-  onClick={async () => {
-    // Gather all IDs from the checked rows
-    const selectedIndices = Array.from(checkedRows);
-    const idsToDelete = selectedIndices
-      .map(index => localEmployees[index]?.emple_Id)
-      .filter(id => id !== undefined);
+                    disabled={planType === "EAC" || checkedRows.size === 0}
+                    onClick={async () => {
+                      // Gather all IDs from the checked rows
+                      const selectedIndices = Array.from(checkedRows);
+                      const idsToDelete = selectedIndices
+                        .map((index) => localEmployees[index]?.emple_Id)
+                        .filter((id) => id !== undefined);
 
-    if (idsToDelete.length === 0) {
-      toast.error("No valid records selected for deletion");
-      return;
-    }
+                      if (idsToDelete.length === 0) {
+                        toast.error("No valid records selected for deletion");
+                        return;
+                      }
 
-    if (window.confirm(`Are you sure you want to delete ${idsToDelete.length} selected record(s)?`)) {
-      setIsLoading(true);
-      try {
-        // Execute all delete requests in parallel
-        await Promise.all(
-          idsToDelete.map(id => axios.delete(`${backendUrl}/Employee/DeleteEmployee/${id}`))
-        );
+                      if (
+                        window.confirm(
+                          `Are you sure you want to delete ${idsToDelete.length} selected record(s)?`
+                        )
+                      ) {
+                        setIsLoading(true);
+                        try {
+                          // Execute all delete requests in parallel
+                          await Promise.all(
+                            idsToDelete.map((id) =>
+                              axios.delete(
+                                `${backendUrl}/Employee/DeleteEmployee/${id}`
+                              )
+                            )
+                          );
 
-        toast.success("Selected record(s) deleted successfully!");
-        
-        // Reset selection states
-        setCheckedRows(new Set());
-        setShowCopyButton(false);
-        setSelectedEmployeeId(null);
-        setSelectedEmployeeScheduleId(null);
-        
-        // Refresh the data grid
-        fetchEmployees(); 
-      } catch (err) {
-        toast.error("Failed to delete some records. Please try again.");
-        console.error("Multiple delete error:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }}
->
-  {checkedRows.size > 1 ? `Delete Selected (${checkedRows.size})` : "Delete"}
-</button>
+                          toast.success(
+                            "Selected record(s) deleted successfully!"
+                          );
+
+                          // Reset selection states
+                          setCheckedRows(new Set());
+                          setShowCopyButton(false);
+                          setSelectedEmployeeId(null);
+                          setSelectedEmployeeScheduleId(null);
+
+                          // Refresh the data grid
+                          fetchEmployees();
+                        } catch (err) {
+                          toast.error(
+                            "Failed to delete some records. Please try again."
+                          );
+                          console.error("Multiple delete error:", err);
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }
+                    }}
+                  >
+                    {checkedRows.size > 1
+                      ? `Delete Selected (${checkedRows.size})`
+                      : "Delete"}
+                  </button>
                 </>
               )}
-              {showNewForm && (
+              {/* {showNewForm && (
                 <button
                   // className="px-4 py-2 blue-btn-common text-white rounded  transition text-xs font-medium"
                    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
@@ -9160,8 +10101,20 @@ const handleSelectAllCheckboxes = (isChecked) => {
                 >
                   Fill Values
                 </button>
-              )}
+              )} */}
 
+              {showNewForm || checkedRows.size > 0 ? (
+                <button
+                  className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                  style={{
+                    ...geistSansStyle,
+                    backgroundColor: "#113d46",
+                  }}
+                  onClick={() => isEditable && setShowFillValues(true)}
+                >
+                  Fill Values
+                </button>
+              ) : null}
 
               {/* <button
   onClick={() => setShowEmployeeSchedule(prev => !prev)}
@@ -9221,134 +10174,35 @@ const handleSelectAllCheckboxes = (isChecked) => {
             Employee Schedule
           </button> */}
 
-<button
-  onClick={() => {
-    if (checkedRows.size === 0) {
-      toast.error("Please check a row first");
-      return;
-    }
-    const firstIdx = Array.from(checkedRows)[0];
-    const emp = localEmployees[firstIdx];
-    setSelectedEmployeeScheduleId(emp?.emple?.emplId);
-    setShowEmployeeSchedule(true);
-  }}
-  // className={`px-4 py-2 rounded text-xs font-medium ${checkedRows.size > 0 ? "blue-btn-common text-white" : "bg-gray-300 text-gray-500"}`}
-  className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors
-    ${checkedRows.size > 0
-      ? "text-white"
-      : "text-gray-500 font-semibold bg-gray-200"
+          <button
+            onClick={() => {
+              if (checkedRows.size === 0) {
+                toast.error("Please check a row first");
+                return;
+              }
+              const firstIdx = Array.from(checkedRows)[0];
+              const emp = localEmployees[firstIdx];
+              setSelectedEmployeeScheduleId(emp?.emple?.emplId);
+              setShowEmployeeSchedule(true);
+            }}
+            // className={`px-4 py-2 rounded text-xs font-medium ${checkedRows.size > 0 ? "blue-btn-common text-white" : "bg-gray-300 text-gray-500"}`}
+            className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors
+    ${
+      checkedRows.size > 0
+        ? "text-white"
+        : "text-gray-500 font-semibold bg-gray-200"
     }`}
-  style={{
-    ...geistSansStyle,
-    backgroundColor: checkedRows.size > 0 ? "#113d46" : "#e5e7eb",
-  }} 
->
-  Employee Schedule
-</button>
+            style={{
+              ...geistSansStyle,
+              backgroundColor: checkedRows.size > 0 ? "#113d46" : "#e5e7eb",
+            }}
+          >
+            Employee Schedule
+          </button>
         </div>
       </div>
 
       {/* {showFillValues && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm">
-            <h3 className="text-lg font-semibold mb-4">
-              Fill Values to selected record/s
-            </h3>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-xs font-medium mb-1">
-                Select Fill Method
-              </label>
-              <select
-                value={fillMethod}
-                onChange={(e) => setFillMethod(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-xs"
-              >
-                <option value="None">None</option>
-                <option value="Copy From Source Record">
-                  Copy from source record
-                </option>
-                <option value="Specify Hours">Specify Hours</option>
-                <option value="Use Available Hours">Use Available Hours</option>
-                <option value="Use Start Period Hours">
-                  Use Start Period Hours
-                </option>
-              </select>
-            </div>
-            {fillMethod === "Specify Hours" && (
-              <div className="mb-4">
-                <label className="block text-gray-700 text-xs font-medium mb-1">
-                  Hours
-                </label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={fillHours}
-                  onChange={(e) =>
-                    setFillHours(parseFloat(e.target.value) || 0)
-                  }
-                  onKeyDown={(e) => {
-                    if (
-                      e.key === "Backspace" &&
-                      (e.target.value === "0" || e.target.value === "")
-                    ) {
-                      e.preventDefault();
-                      setFillHours("");
-                    }
-                  }}
-                  className="w-full border border-gray-300 rounded-md p-2 text-xs"
-                  placeholder="0.00"
-                />
-              </div>
-            )}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-xs font-medium mb-1">
-                Start Period
-              </label>
-              <input
-                type="date"
-                value={fillStartDate}
-                onChange={(e) => setFillStartDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-xs"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-xs font-medium mb-1">
-                End Period
-              </label>
-              <input
-                type="date"
-                value={fillEndDate}
-                onChange={(e) => setFillEndDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-xs"
-              />
-            </div>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowFillValues(false);
-                  setFillMethod("None");
-                  setFillHours(0.0);
-                  setSourceRowIndex(null);
-                }}
-                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs"
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                onClick={handleFillValues}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
-              >
-                Fill
-              </button>
-            </div>
-          </div>
-        </div>
-      )} */}
-
-
-{/* {showFillValues && (
    
                                    <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
     <div className="mt-20 w-full max-w-md bg-white rounded-lg shadow-xl border">
@@ -9478,7 +10332,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
     </div>
 )} */}
 
-{showFillValues && (
+      {/* {showFillValues && (
   <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
     <div className="mt-20 w-full max-w-md bg-white rounded-lg shadow-xl border">
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm">
@@ -9486,24 +10340,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
           Fill Values
         </h3>
 
-        {/* ✅ SHOW CHECKED ROWS COUNT */}
-        {/* <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-          Checked Rows: <strong>{checkedRows.size}</strong>
-        </div> */}
-        
-  {/* <p className="font-bold mb-1">Selected Data:</p> */}
-  {/* {checkedRows.size > 0 ? (
-    Array.from(checkedRows).map(idx => {
-      const emp = localEmployees[idx]?.emple;
-      return (
-        <div key={idx} className="border-b border-blue-100 pb-1 mb-1">
-          ID: {emp?.emplId} | Acc: {emp?.accId} | Org: {emp?.orgId} | PLC: {emp?.plcGlcCode}
-        </div>
-      );
-    })
-  ) : (
-    <span className="text-gray-500">No existing rows checked (applying to new entries or column only)</span>
-  )} */}
+      
   <div>
      {checkedRows.size > 0 && (
   <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs max-h-32 overflow-y-auto">
@@ -9599,15 +10436,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
           >
             Close
           </button>
-          {/* <button
-            type="button"
-            onClick={handleFillValues}
-            // disabled={checkedRows.size === 0 || fillMethod === "None"}
-            disabled={fillMethod === "None" || (checkedRows.size === 0 && newEntries.length === 0)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs disabled:bg-gray-400"
-          >
-            Fill Value
-          </button> */}
+         
           <button
   type="button"
   onClick={() => {
@@ -9630,13 +10459,366 @@ const handleSelectAllCheckboxes = (isChecked) => {
       </div>
     </div>
   </div>
-)}
+)} */}
 
+      {/* {showFillValues && (
+  <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
+    <div className="mt-20 w-full max-w-md bg-white rounded-lg shadow-xl border">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">
+          Fill Values
+        </h3>
 
+        
+        <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-[11px] text-blue-800">
+          <strong>Targets:</strong> {checkedRows.size > 0 ? `${checkedRows.size} Existing Rows ` : ""} 
+          {newEntries.length > 0 ? `${checkedRows.size > 0 ? '& ' : ''}${newEntries.length} New Entries` : ""}
+          {checkedRows.size === 0 && newEntries.length === 0 && <span className="text-red-500">No rows selected/added.</span>}
+        </div>
 
+        <div className="mb-4">
+          <label className="block text-gray-700 text-xs font-medium mb-1">
+            Select Fill Method
+          </label>
+          <select
+            value={fillMethod}
+            onChange={(e) => setFillMethod(e.target.value)}
+            className="w-full border border-gray-300 rounded-md p-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+          >
+            <option value="None">None</option>
+            <option value="Copy From Checked Rows">Copy from Source Record</option>
+            <option value="Specify Hours">Specify Hours</option>
+            <option value="Use Available Hours">Use Available Hours</option>
+            <option value="Use Start Period Hours">Use Start Period Hours</option>
+          </select>
+        </div>
 
-     
-{/* {showFillValues && (
+       
+        {fillMethod === "Copy From Checked Rows" && (
+          <div className="mb-4 animate-in fade-in slide-in-from-top-1">
+            <label className="block text-gray-700 text-xs font-medium mb-1">
+              Choose Source Record (ID - Account - Org)
+            </label>
+            <select
+              value={selectedSourceIdx}
+              onChange={(e) => setSelectedSourceIdx(e.target.value)}
+              className="w-full border border-blue-300 bg-blue-50 rounded-md p-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+            >
+              <option value="">-- Select One --</option>
+              {localEmployees.map((emp, idx) => (
+                <option key={idx} value={idx}>
+                  {emp.emple?.emplId} | {emp.emple?.accId} | {emp.emple?.orgId}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {fillMethod === "Specify Hours" && (
+          <div className="mb-4">
+            <label className="block text-gray-700 text-xs font-medium mb-1">
+              Hours
+            </label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={fillHours}
+              onChange={(e) => setFillHours(parseFloat(e.target.value.replace(/[^0-9.]/g, "")) || 0)}
+              onKeyDown={(e) => {
+                if (e.key === 'Backspace' && (e.target.value === '0' || e.target.value === '')) {
+                  e.preventDefault();
+                  setFillHours("");
+                }
+              }}
+              className="w-full border border-gray-300 rounded-md p-2 text-xs"
+              placeholder="0.00"
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-gray-700 text-xs font-medium mb-1">
+              Start Period
+            </label>
+            <input
+              type="date"
+              value={fillStartDate}
+              onChange={(e) => setFillStartDate(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 text-xs"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 text-xs font-medium mb-1">
+              End Period
+            </label>
+            <input
+              type="date"
+              value={fillEndDate}
+              onChange={(e) => setFillEndDate(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 text-xs"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              setShowFillValues(false);
+              setFillMethod("None");
+              setFillHours(0.0);
+              setSelectedSourceIdx("");
+              setSelectedColumnKey(null);
+            }}
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs transition-colors"
+          >
+            Close
+          </button>
+          
+          <button
+  type="button"
+  onClick={() => {
+    // Check if user selected "Copy From Checked Rows" but didn't pick a source from dropdown
+    if (fillMethod === "Copy From Checked Rows" && selectedSourceIdx === "") {
+      toast.error("Source row is not selected. Please select a source from the dropdown.", {
+        toastId: "source-not-selected"
+      });
+      return;
+    }
+    handleFillValues(); 
+  }}
+  // ENABLE logic: must have a method AND (at least one checked row OR at least one new entry)
+  disabled={
+    fillMethod === "None" || 
+    (checkedRows.size === 0 && newEntries.length === 0)
+  }
+  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs disabled:bg-gray-400"
+>
+  Fill Value
+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+)} */}
+
+      {showFillValues && (
+        <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/20">
+          <div className="w-full max-w-md bg-white rounded-t-xl sm:rounded-lg shadow-xl border animate-in slide-in-from-bottom-4 duration-300">
+            <div className="bg-white p-6 text-sm">
+              <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                Fill Values
+              </h3>
+
+              {/* Keeping original detail box exactly as it was */}
+              <div>
+                {checkedRows.size > 0 && (
+                  <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs max-h-32 overflow-y-auto">
+                    <p className="font-bold mb-1">Selected Source:</p>
+                    {Array.from(checkedRows).map((idx) => {
+                      const emp = localEmployees[idx]?.emple;
+                      return (
+                        <div
+                          key={idx}
+                          className="border-b border-blue-100 pb-1 mb-1 last:border-0"
+                        >
+                          ID: {emp?.emplId} | Acc: {emp?.accId} | Org:{" "}
+                          {emp?.orgId} | PLC: {emp?.plcGlcCode}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 text-[11px] font-bold uppercase tracking-wider mb-1">
+                  Select Fill Method
+                </label>
+                <select
+                  value={fillMethod}
+                  onChange={(e) => setFillMethod(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                >
+                  <option value="None">None</option>
+                  <option value="Copy From Checked Rows">
+                    Copy from Source Record
+                  </option>
+                  <option value="Specify Hours">Specify Hours</option>
+                  <option value="Use Available Hours">
+                    Use Available Hours
+                  </option>
+                  <option value="Use Start Period Hours">
+                    Use Start Period Hours
+                  </option>
+                </select>
+              </div>
+
+              {/* Updated Dropdown: Fills only the selected ID */}
+              {/* {fillMethod === "Copy From Checked Rows" && newEntries.length === 0 && (
+          <div className="mb-4 animate-in fade-in slide-in-from-top-1">
+            <label className="block text-gray-700 text-[11px] font-bold uppercase tracking-wider mb-1">
+              Select Record to Fill (ID | Account | Org)
+            </label>
+            <select
+              value={selectedSourceIdx}
+              onChange={(e) => setSelectedSourceIdx(e.target.value)}
+              className="w-full border border-blue-300 bg-blue-50 rounded-md p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="">-- Select One --</option>
+              {localEmployees.map((emp, idx) => (
+                <option key={idx} value={idx}>
+                  ID: {emp.emple?.emplId} | Acc: {emp.emple?.accId} | Org: {emp.emple?.orgId}
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-blue-600 mt-1 italic">Values will be applied only to this record.</p>
+          </div>
+        )} */}
+              {/* {fillMethod === "Copy From Checked Rows" && newEntries.length === 0 && (
+  <div className="mb-4 animate-in fade-in slide-in-from-top-1">
+    <label className="block text-gray-700 text-[11px] font-bold uppercase tracking-wider mb-1">
+      Select Record to Fill (ID | Account | Org)
+    </label>
+    <select
+      value={selectedSourceIdx}
+      onChange={(e) => setSelectedSourceIdx(e.target.value)}
+      className="w-full border border-blue-300 bg-blue-50 rounded-md p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+    >
+      <option value="">-- Select One --</option>
+      {localEmployees.map((emp, idx) => (
+        <option key={idx} value={idx}>
+          ID: {emp.emple?.emplId} | Acc: {emp.emple?.accId} | Org: {emp.emple?.orgId}
+        </option>
+      ))}
+    </select>
+  </div>
+)} */}
+              {/* Only show target record dropdown if we are NOT doing a New Entry fill */}
+              {fillMethod === "Copy From Checked Rows" &&
+                newEntries.length === 0 && (
+                  <div className="mb-4 animate-in fade-in slide-in-from-top-1">
+                    <label className="block text-gray-700 text-[11px] font-bold uppercase tracking-wider mb-1">
+                      Select Record to Fill (ID | Account | Org)
+                    </label>
+                    <select
+                      value={selectedSourceIdx}
+                      onChange={(e) => setSelectedSourceIdx(e.target.value)}
+                      className="w-full border border-blue-300 bg-blue-50 rounded-md p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="">-- Select One --</option>
+                      {localEmployees.map((emp, idx) => (
+                        <option key={idx} value={idx}>
+                          ID: {emp.emple?.emplId} | Acc: {emp.emple?.accId} |
+                          Org: {emp.emple?.orgId}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+              {fillMethod === "Specify Hours" && (
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-[11px] font-bold uppercase tracking-wider mb-1">
+                    Hours
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={fillHours}
+                    onChange={(e) =>
+                      setFillHours(
+                        parseFloat(e.target.value.replace(/[^0-9.]/g, "")) || 0
+                      )
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 text-xs"
+                    placeholder="0.00"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-gray-700 text-[11px] font-bold uppercase tracking-wider mb-1">
+                    Start Period
+                  </label>
+                  <input
+                    type="date"
+                    value={fillStartDate}
+                    onChange={(e) => setFillStartDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md p-2 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-[11px] font-bold uppercase tracking-wider mb-1">
+                    End Period
+                  </label>
+                  <input
+                    type="date"
+                    value={fillEndDate}
+                    onChange={(e) => setFillEndDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md p-2 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 border-t pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowFillValues(false);
+                    setFillMethod("None");
+                    setSelectedSourceIdx("");
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
+                >
+                  Close
+                </button>
+                {/* <button
+            type="button"
+            onClick={() => {
+              if (fillMethod === "Copy From Checked Rows" && selectedSourceIdx === "") {
+                toast.error("Please select a record from the dropdown.");
+                return;
+              }
+              handleFillValues();
+            }}
+            disabled={fillMethod === "None" || (fillMethod !== "Copy From Checked Rows" && checkedRows.size === 0)}
+            className="px-4 py-2 bg-[#113d46] text-white rounded-md hover:bg-[#0d2e35] text-xs font-medium disabled:opacity-50 transition-all shadow-sm"
+          >
+            Fill Value
+          </button> */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    // ONLY require dropdown selection if newEntries is empty
+                    if (
+                      newEntries.length === 0 &&
+                      fillMethod === "Copy From Checked Rows" &&
+                      selectedSourceIdx === ""
+                    ) {
+                      toast.error("Please select a record from the dropdown.");
+                      return;
+                    }
+                    handleFillValues();
+                  }}
+                  // Enable if a method is selected AND (there is a new entry OR existing rows are checked)
+                  disabled={
+                    fillMethod === "None" ||
+                    (newEntries.length === 0 && checkedRows.size === 0)
+                  }
+                  className="px-4 py-2 bg-[#113d46] text-white rounded-md hover:bg-[#0d2e35] text-xs font-medium"
+                >
+                  Fill Value
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* {showFillValues && (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm">
             <h3 className="text-lg font-semibold mb-4">
@@ -9790,18 +10972,34 @@ const handleSelectAllCheckboxes = (isChecked) => {
                       lineHeight: "normal",
                     }}
                   >
-                     <th className="th-thead min-w-[45px] px-2">
-      <input
-        type="checkbox"
-        checked={checkedRows.size === localEmployees.filter((_, i) => !hiddenRows[i]).length}
-        onChange={e => handleSelectAllCheckboxes(e.target.checked)}
-        className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-      />
-    </th>
+                    <th className="th-thead min-w-[45px] px-2">
+                      <input
+                        type="checkbox"
+                        checked={
+                          checkedRows.size ===
+                          localEmployees.filter((_, i) => !hiddenRows[i]).length
+                        }
+                        onChange={(e) =>
+                          handleSelectAllCheckboxes(e.target.checked)
+                        }
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                      />
+                    </th>
                     {EMPLOYEE_COLUMNS.map((col) => (
-                      <th key={col.key} className="th-thead min-w-[70px]" onClick={col.key === "acctId" ? () => handleSort("acctId") : undefined} style={{ cursor: col.key === "acctId" ? "pointer" : "default" }}>
+                      <th
+                        key={col.key}
+                        className={`th-thead min-w-[70px] ${col.key === "name" ? "text-left pl-2" : "text-center"}`}
+                        onClick={
+                          col.key === "acctId"
+                            ? () => handleSort("acctId")
+                            : undefined
+                        }
+                        style={{
+                          cursor: col.key === "acctId" ? "pointer" : "default",
+                        }}
+                      >
                         {col.label}
-                         {/* {col.key === "acctId" && (
+                        {/* {col.key === "acctId" && (
         <span className="text-[15px] text-gray-500">
           {getSortIcon("acctId")}
         </span>
@@ -9811,136 +11009,236 @@ const handleSelectAllCheckboxes = (isChecked) => {
                   </tr>
                 </thead>
                 <tbody className="tbody">
-              
+                  {newEntries.length > 0 &&
+                    newEntries.map((entry, entryIndex) => (
+                      <React.Fragment key={`new-entry-months-${entryIndex}`}>
+                        <tr
+                          key={`new-entry-${entryIndex}`}
+                          className="bg-gray-50"
+                          style={{
+                            height: `${ROW_HEIGHT_DEFAULT}px`,
+                            lineHeight: "normal",
+                          }}
+                        >
+                          <td className="tbody-td min-w-[45px] px-2 text-center">
+                            <input
+                              type="checkbox"
+                              disabled
+                              className="w-4 h-4 opacity-50 cursor-not-allowed"
+                            />
+                          </td>
 
-               {newEntries.length > 0 &&
-  newEntries.map((entry, entryIndex) => (
-    <React.Fragment key={`new-entry-months-${entryIndex}`}>
-      <tr
-        key={`new-entry-${entryIndex}`}
-        className="bg-gray-50"
-        style={{
-          height: `${ROW_HEIGHT_DEFAULT}px`,
-          lineHeight: "normal",
-        }}
-      >
-        <td className="tbody-td min-w-[45px] px-2 text-center">
-          <input type="checkbox" disabled className="w-4 h-4 opacity-50 cursor-not-allowed" />
-        </td>
+                          <td className="tbody-td min-w-[70px]">
+                            <select
+                              name="idType"
+                              value={entry.idType}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                const newId = value === "PLC" ? "PLC" : "";
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? {
+                                          ...ent,
+                                          id: newId,
+                                          firstName: "",
+                                          lastName: "",
+                                          isRev: false,
+                                          isBrd: false,
+                                          idType: value,
+                                          acctId:
+                                            laborAccounts.length > 0
+                                              ? laborAccounts[0].id
+                                              : "",
+                                          orgId: "",
+                                          plcGlcCode: "",
+                                          perHourRate: "",
+                                          status: "Act",
+                                        }
+                                      : ent
+                                  )
+                                );
+                                setPlcSearch("");
+                                setAutoPopulatedPLC(false);
+                                const updatedEntryForFetch = {
+                                  ...entry,
+                                  idType: value,
+                                };
+                                fetchSuggestionsForPastedEntry(
+                                  entryIndex,
+                                  updatedEntryForFetch
+                                );
+                              }}
+                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
+                            >
+                              {ID_TYPE_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
 
-        <td className="tbody-td min-w-[70px]">
-          <select
-            name="idType"
-            value={entry.idType}
-            onChange={(e) => {
-              const value = e.target.value;
-              const newId = value === "PLC" ? "PLC" : "";
-              setNewEntries((prev) =>
-                prev.map((ent, idx) =>
-                  idx === entryIndex
-                    ? {
-                        ...ent,
-                        id: newId,
-                        firstName: "",
-                        lastName: "",
-                        isRev: false,
-                        isBrd: false,
-                        idType: value,
-                        acctId: laborAccounts.length > 0 ? laborAccounts[0].id : "",
-                        orgId: "",
-                        plcGlcCode: "",
-                        perHourRate: "",
-                        status: "Act",
-                      }
-                    : ent
-                )
-              );
-              setPlcSearch("");
-              setAutoPopulatedPLC(false);
-              const updatedEntryForFetch = { ...entry, idType: value };
-              fetchSuggestionsForPastedEntry(entryIndex, updatedEntryForFetch);
-            }}
-            className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-          >
-            {ID_TYPE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </td>
+                          {/* ID Column */}
+                          <td className="tbody-td min-w-[100px]">
+                            <input
+                              type="text"
+                              name="id"
+                              value={entry.id}
+                              onKeyDown={(e) =>
+                                e.key === " " && e.stopPropagation()
+                              }
+                              // onChange={(e) => {
+                              //   const val = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+                              //   const trimmedValue = val.trim();
+                              //   setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, id: val } : ent)));
+                              //   if (entry.idType !== "Other") {
+                              //     const suggestions = pastedEntrySuggestions[entryIndex] || [];
+                              //     const selectedEmployee = suggestions.find((emp) => emp.emplId === trimmedValue);
+                              //     if (selectedEmployee) {
+                              //       setNewEntries((prev) =>
+                              //         prev.map((ent, idx) =>
+                              //           idx === entryIndex
+                              //             ? {
+                              //                 ...ent,
+                              //                 id: trimmedValue,
+                              //                 firstName: selectedEmployee.firstName || "",
+                              //                 lastName: selectedEmployee.lastName || "",
+                              //                 perHourRate: selectedEmployee.perHourRate || "",
+                              //                 orgId: selectedEmployee.orgId || ent.orgId,
+                              //                 plcGlcCode: selectedEmployee.plc || "",
+                              //               }
+                              //             : ent
+                              //         )
+                              //       );
+                              //     }
+                              //   }
+                              // }}
+                              // Inside the return of sortedEmployees.map or newEntries.map for the ID input:
+                              onChange={(e) => {
+                                const rawValue = e.target.value;
+                                const [emplId, lastName] = rawValue.split(" - ");
 
-        {/* ID Column */}
-        <td className="tbody-td min-w-[100px]">
-          <input
-            type="text"
-            name="id"
-            value={entry.id}
-            onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
-            onChange={(e) => {
-              const val = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
-              const trimmedValue = val.trim();
-              setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, id: val } : ent)));
-              if (entry.idType !== "Other") {
-                const suggestions = pastedEntrySuggestions[entryIndex] || [];
-                const selectedEmployee = suggestions.find((emp) => emp.emplId === trimmedValue);
-                if (selectedEmployee) {
-                  setNewEntries((prev) =>
-                    prev.map((ent, idx) =>
-                      idx === entryIndex
-                        ? {
-                            ...ent,
-                            id: trimmedValue,
-                            firstName: selectedEmployee.firstName || "",
-                            lastName: selectedEmployee.lastName || "",
-                            perHourRate: selectedEmployee.perHourRate || "",
-                            orgId: selectedEmployee.orgId || ent.orgId,
-                            plcGlcCode: selectedEmployee.plc || "",
-                          }
-                        : ent
-                    )
-                  );
-                }
-              }
-            }}
-            disabled={entry.idType === "PLC"}
-            style={{ maxWidth: "90px" }}
-            className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
-            list={`employee-id-list-${entryIndex}`}
-            placeholder="Enter ID"
-          />
-          <datalist id={`employee-id-list-${entryIndex}`}>
-            {entry.idType !== "Other" && (pastedEntrySuggestions[entryIndex] || []).filter((emp) => emp.emplId).map((emp, idx) => (
-              <option key={idx} value={emp.emplId}>{emp.lastName}, {emp.firstName}</option>
-            ))}
-          </datalist>
-        </td>
+                                // show only ID in the input
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? { ...ent, id: emplId }
+                                      : ent
+                                  )
+                                );
 
-        <td className="tbody-td text-center text-gray-400 text-xs">-</td>
+                                const suggestions =
+                                  pastedEntrySuggestions[entryIndex] || [];
 
-        {/* Name Column */}
-        <td className="tbody-td min-w-[100px]">
-          <input
-            type="text"
-            name="name"
-            value={entry.idType === "Other" || planType === "NBBUD" ? entry.firstName || "" : entry.idType === "PLC" ? entry.firstName : entry.idType === "Vendor" ? entry.lastName || entry.firstName || "" : `${entry.lastName || ""} ${entry.firstName || ""}`.trim()}
-            readOnly={planType !== "NBBUD" && entry.idType !== "Other"}
-            onKeyDown={(e) => e.key === " " && e.stopPropagation()}
-            onChange={(e) => {
-              if (entry.idType === "Other" || planType === "NBBUD") {
-                const cleanValue = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
-                const valToStore = cleanValue.startsWith(" ") ? cleanValue.trimStart() : cleanValue;
-                setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, firstName: valToStore, lastName: "" } : ent)));
-              }
-            }}
-            style={{ maxWidth: "90px" }}
-            className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
-            placeholder="Name"
-          />
-        </td>
+                                const selectedEmployee = suggestions.find(
+                                  (emp) =>
+                                    String(emp.emplId) === emplId &&
+                                    emp.lastName === lastName
+                                );
 
-        {/* Account Column */}
-        {/* <td className="tbody-td min-w-[110px]">
+                                if (selectedEmployee) {
+                                  setNewEntries((prev) =>
+                                    prev.map((ent, idx) =>
+                                      idx === entryIndex
+                                        ? {
+                                            ...ent,
+                                            id: emplId,
+                                            firstName:
+                                              selectedEmployee.firstName || "",
+                                            lastName:
+                                              selectedEmployee.lastName || "",
+                                            perHourRate:
+                                              selectedEmployee.perHourRate ||
+                                              "",
+                                            orgId:
+                                              selectedEmployee.orgId ||
+                                              ent.orgId,
+                                            plcGlcCode:
+                                              selectedEmployee.plc || "",
+                                          }
+                                        : ent
+                                    )
+                                  );
+                                }
+                              }}
+                              disabled={entry.idType === "PLC"}
+                              style={{ maxWidth: "90px" }}
+                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
+                              list={`employee-id-list-${entryIndex}`}
+                              placeholder="Enter ID"
+                            />
+                            <datalist id={`employee-id-list-${entryIndex}`}>
+                              {(pastedEntrySuggestions[entryIndex] || []).map(
+                                (emp, idx) => (
+                                  <option
+                                    key={idx}
+                                    value={`${emp.emplId} - ${emp.lastName}`}
+                                  >
+                                    {emp.lastName}, {emp.firstName}
+                                  </option>
+                                )
+                              )}
+                            </datalist>
+                          </td>
+
+                          <td className="tbody-td text-center text-gray-400 text-xs">
+                            -
+                          </td>
+
+                          {/* Name Column */}
+                          <td className="tbody-td min-w-[100px]">
+                            <input
+                              type="text"
+                              name="name"
+                              value={
+                                entry.idType === "Other" || planType === "NBBUD"
+                                  ? entry.firstName || ""
+                                  : entry.idType === "PLC"
+                                    ? entry.firstName
+                                    : entry.idType === "Vendor"
+                                      ? entry.lastName || entry.firstName || ""
+                                      : `${entry.lastName || ""} ${entry.firstName || ""}`.trim()
+                              }
+                              readOnly={
+                                planType !== "NBBUD" && entry.idType !== "Other"
+                              }
+                              onKeyDown={(e) =>
+                                e.key === " " && e.stopPropagation()
+                              }
+                              onChange={(e) => {
+                                if (
+                                  entry.idType === "Other" ||
+                                  planType === "NBBUD"
+                                ) {
+                                  const cleanValue = e.target.value.replace(
+                                    /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+                                    ""
+                                  );
+                                  const valToStore = cleanValue.startsWith(" ")
+                                    ? cleanValue.trimStart()
+                                    : cleanValue;
+                                  setNewEntries((prev) =>
+                                    prev.map((ent, idx) =>
+                                      idx === entryIndex
+                                        ? {
+                                            ...ent,
+                                            firstName: valToStore,
+                                            lastName: "",
+                                          }
+                                        : ent
+                                    )
+                                  );
+                                }
+                              }}
+                              style={{ maxWidth: "90px" }}
+                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
+                              placeholder="Name"
+                            />
+                          </td>
+
+                          {/* Account Column */}
+                          {/* <td className="tbody-td min-w-[110px]">
           <input
             type="text"
             value={entry.acctId}
@@ -9961,64 +11259,172 @@ const handleSelectAllCheckboxes = (isChecked) => {
             ))}
           </datalist>
         </td> */}
-        <td className="tbody-td min-w-[110px]">
-  <input
-    type="text"
-    value={entry.acctId}
-   onChange={(e) => {
-      const val = e.target.value;
-      // FIX: Look up name from your existing accountOptionsWithNames state
-      const matchedAccount = accountOptionsWithNames.find(
-        (acc) => acc.id === val
-      );
+                          <td className="tbody-td min-w-[110px]">
+                            <input
+                              type="text"
+                              value={entry.acctId}
+                              //  onChange={(e) => {
+                              //     const val = e.target.value;
+                              //     // FIX: Look up name from your existing accountOptionsWithNames state
+                              //     const matchedAccount = accountOptionsWithNames.find(
+                              //       (acc) => acc.id === val
+                              //     );
 
-      setNewEntries((prev) =>
-        prev.map((ent, idx) =>
-          idx === entryIndex
-            ? { 
-                ...ent, 
-                acctId: val, 
-                // AUTO-POPULATE NAME HERE
-                acctName: matchedAccount ? matchedAccount.name : "" 
-              }
-            : ent
-        )
-      );
-    }}
-    style={{ maxWidth: "100px" }}
-    className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
-    list={`account-list-pasted-${entryIndex}`}
-    placeholder="Account"
-  />
-  <datalist id={`account-list-pasted-${entryIndex}`}>
-    {(pastedEntryAccounts[entryIndex] || []).map((account, index) => (
-      <option key={index} value={account.id || account.accountId} />
-    ))}
-  </datalist>
-</td>
+                              //     setNewEntries((prev) =>
+                              //       prev.map((ent, idx) =>
+                              //         idx === entryIndex
+                              //           ? {
+                              //               ...ent,
+                              //               acctId: val,
+                              //               // AUTO-POPULATE NAME HERE
+                              //               acctName: matchedAccount ? matchedAccount.name : ""
+                              //             }
+                              //           : ent
+                              //       )
+                              //     );
+                              //   }}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                const matchedAccount =
+                                  accountOptionsWithNames.find(
+                                    (acc) => acc.id === val
+                                  );
 
-        {/* <td className="tbody-td min-w-[120px]">
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? {
+                                          ...ent,
+                                          acctId: val,
+                                          acctName: matchedAccount
+                                            ? matchedAccount.name
+                                            : "",
+                                        }
+                                      : ent
+                                  )
+                                );
+                              }}
+                              style={{ maxWidth: "100px" }}
+                              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                              list={`account-list-pasted-${entryIndex}`}
+                              placeholder="Account"
+                            />
+                            <datalist id={`account-list-pasted-${entryIndex}`}>
+                              {(pastedEntryAccounts[entryIndex] || []).map(
+                                (account, index) => (
+                                  <option
+                                    key={index}
+                                    value={account.id || account.accountId}
+                                  />
+                                )
+                              )}
+                            </datalist>
+                          </td>
+
+                          {/* <td className="tbody-td min-w-[120px]">
           <input type="text" value={entry.acctName || ""} readOnly style={{ maxWidth: "110px" }} className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100" placeholder="Account Name" />
         </td> */}
 
-        <td className="tbody-td min-w-[120px]">
-  <input 
-    type="text" 
-    value={entry.acctName || ""} 
-    readOnly 
-    style={{ maxWidth: "110px" }} 
-    className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed" 
-    placeholder="Account Name" 
-  />
-</td>
+                          <td className="tbody-td min-w-[120px]">
+                            <input
+                              type="text"
+                              value={entry.acctName || ""}
+                              readOnly
+                              style={{ maxWidth: "110px" }}
+                              className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed"
+                              placeholder="Account Name"
+                            />
+                          </td>
 
-        {/* Organization Column */}
-        <td className="tbody-td min-w-[110px]">
+                          {/* Organization Column */}
+
+                          <td className="tbody-td min-w-[110px]">
+                            <input
+                              type="text"
+                              name="orgId"
+                              value={entry.orgId}
+                              // onChange={(e) => {
+                              //   const val = e.target.value;
+                              //   // Find the matched organization from your existing options
+                              //   const matchedOrg = organizationOptions.find(
+                              //     (o) => o.value.toString() === val.toString()
+                              //   );
+
+                              //   setNewEntries((prev) =>
+                              //     prev.map((ent, idx) =>
+                              //       idx === entryIndex
+                              //         ? {
+                              //             ...ent,
+                              //             orgId: val,
+                              //             // Automatically populate orgName if found
+                              //             orgName: matchedOrg ? matchedOrg.orgName : ""
+                              //           }
+                              //         : ent
+                              //     )
+                              //   );
+                              // }}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                const matchedOrg = organizationOptions.find(
+                                  (o) => o.value.toString() === val.toString()
+                                );
+
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? {
+                                          ...ent,
+                                          orgId: val,
+                                          orgName: matchedOrg
+                                            ? matchedOrg.orgName
+                                            : "",
+                                        }
+                                      : ent
+                                  )
+                                );
+                              }}
+                              style={{ maxWidth: "100px" }}
+                              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                              list={`organization-list-${entryIndex}`}
+                              placeholder="Org"
+                            />
+                            <datalist id={`organization-list-${entryIndex}`}>
+                              {(pastedEntryOrgs[entryIndex] || []).map(
+                                (org, index) => (
+                                  <option key={index} value={org.value}>
+                                    {org.label}
+                                  </option>
+                                )
+                              )}
+                            </datalist>
+                          </td>
+
+                          <td className="tbody-td min-w-[120px]">
+                            <input
+                              type="text"
+                              value={entry.orgName || ""}
+                              readOnly
+                              className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed w-full"
+                              placeholder="Org Name"
+                            />
+                          </td>
+                          {/* <td className="tbody-td min-w-[110px]">
           <input
             type="text"
             name="orgId"
             value={entry.orgId}
-            onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, orgId: e.target.value } : ent)))}
+            // onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, orgId: e.target.value } : ent)))}
+            onChange={(e) => {
+      const val = e.target.value;
+      const matchedOrg = organizationOptions.find(o => o.value.toString() === val.toString());
+      setNewEntries((prev) => prev.map((ent, idx) => 
+        idx === entryIndex ? { 
+          ...ent, 
+          orgId: val, 
+          orgName: matchedOrg ? matchedOrg.orgName : "" // Autopopulate Name
+        } : ent
+      ));
+    }}
             style={{ maxWidth: "100px" }}
             className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
             list={`organization-list-${entryIndex}`}
@@ -10031,243 +11437,470 @@ const handleSelectAllCheckboxes = (isChecked) => {
           </datalist>
         </td>
 
-        {/* PLC Column */}
-        <td className="tbody-td min-w-[110px]">
-          <input
-            type="text"
-            name="plcGlcCode"
-            value={entry.plcGlcCode}
-            onChange={(e) => {
-              const val = e.target.value;
-              const currentPlcOptions = pastedEntryPlcs[entryIndex] || [];
-              const selectedOption = currentPlcOptions.find((opt) => opt.value.toLowerCase() === val.toLowerCase());
-              setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, plcGlcCode: val, firstName: (ent.idType === "PLC" && selectedOption) ? selectedOption.label : ent.firstName } : ent)));
-            }}
-            style={{ maxWidth: "100px" }}
-            className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
-            list={`plc-list-${entryIndex}`}
-            placeholder="PLC"
-          />
-          <datalist id={`plc-list-${entryIndex}`}>
-            {(pastedEntryPlcs[entryIndex] || []).map((plc, index) => (
-              <option key={index} value={plc.value}>{plc.label}</option>
-            ))}
-          </datalist>
-        </td>
+        <td className="tbody-td min-w-[120px]">
+  <input 
+    type="text" 
+    value={entry.orgName || ""} 
+    readOnly 
+    className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed w-full" 
+    placeholder="Org Name" 
+  />
+</td> */}
 
-        <td className="tbody-td text-center">
-          <input type="checkbox" checked={entry.isRev} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, isRev: e.target.checked } : ent)))} />
-        </td>
-        <td className="tbody-td text-center">
-          <input type="checkbox" checked={entry.isBrd} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, isBrd: e.target.checked } : ent)))} />
-        </td>
-        <td className="tbody-td">
-          <input type="text" value={entry.status} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, status: e.target.value } : ent)))} className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" />
-        </td>
-        {/* <td className="tbody-td">
+                          {/* PLC Column */}
+                          <td className="tbody-td min-w-[110px]">
+                            <input
+                              type="text"
+                              name="plcGlcCode"
+                              value={entry.plcGlcCode}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                const currentPlcOptions =
+                                  pastedEntryPlcs[entryIndex] || [];
+                                const selectedOption = currentPlcOptions.find(
+                                  (opt) =>
+                                    opt.value.toLowerCase() ===
+                                    val.toLowerCase()
+                                );
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? {
+                                          ...ent,
+                                          plcGlcCode: val,
+                                          firstName:
+                                            ent.idType === "PLC" &&
+                                            selectedOption
+                                              ? selectedOption.label
+                                              : ent.firstName,
+                                        }
+                                      : ent
+                                  )
+                                );
+                              }}
+                              style={{ maxWidth: "100px" }}
+                              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                              list={`plc-list-${entryIndex}`}
+                              placeholder="PLC"
+                            />
+                            <datalist id={`plc-list-${entryIndex}`}>
+                              {(pastedEntryPlcs[entryIndex] || []).map(
+                                (plc, index) => (
+                                  <option key={index} value={plc.value}>
+                                    {plc.label}
+                                  </option>
+                                )
+                              )}
+                            </datalist>
+                          </td>
+
+                          <td className="tbody-td text-center">
+                            <input
+                              type="checkbox"
+                              checked={entry.isRev}
+                              onChange={(e) =>
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? { ...ent, isRev: e.target.checked }
+                                      : ent
+                                  )
+                                )
+                              }
+                            />
+                          </td>
+                          <td className="tbody-td text-center">
+                            <input
+                              type="checkbox"
+                              checked={entry.isBrd}
+                              onChange={(e) =>
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? { ...ent, isBrd: e.target.checked }
+                                      : ent
+                                  )
+                                )
+                              }
+                            />
+                          </td>
+                          <td className="tbody-td">
+                            <input
+                              type="text"
+                              value={entry.status}
+                              onChange={(e) =>
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? { ...ent, status: e.target.value }
+                                      : ent
+                                  )
+                                )
+                              }
+                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
+                            />
+                          </td>
+                          {/* <td className="tbody-td">
           <input type="text" value={entry.perHourRate} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, perHourRate: e.target.value.replace(/[^0-9.]/g, "") } : ent)))} className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" />
         </td> */}
-        <td className="tbody-td">
-  <input 
-    
-    type={isAdmin ? "text" : "password"} 
-    value={entry.perHourRate} 
-    onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, perHourRate: e.target.value.replace(/[^0-9.]/g, "") } : ent)))} 
-    className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs" 
-    placeholder={isAdmin ? "0.00" : "**"}
-  />
-</td>
-        <td className="tbody-td">
-          {Object.values(newEntryPeriodHoursArray[entryIndex] || {}).reduce((sum, val) => sum + parseFloat(val || 0), 0).toFixed(2)}
-        </td>
-      </tr>
-    </React.Fragment>
-  ))}
+                          <td className="tbody-td">
+                            <input
+                              type={isAdmin ? "text" : "password"}
+                              value={entry.perHourRate}
+                              onChange={(e) =>
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? {
+                                          ...ent,
+                                          perHourRate: e.target.value.replace(
+                                            /[^0-9.]/g,
+                                            ""
+                                          ),
+                                        }
+                                      : ent
+                                  )
+                                )
+                              }
+                              className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
+                              placeholder={isAdmin ? "0.00" : "**"}
+                            />
+                          </td>
+                          <td className="tbody-td">
+                            {Object.values(
+                              newEntryPeriodHoursArray[entryIndex] || {}
+                            )
+                              .reduce(
+                                (sum, val) => sum + parseFloat(val || 0),
+                                0
+                              )
+                              .toFixed(2)}
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    ))}
 
-           {sortedEmployees
-  .filter((_, idx) => !hiddenRows[idx])
-  .map((emp, idx) => {
-    const actualEmpIdx = localEmployees.findIndex((e) => e === emp);
-    const row = getEmployeeRow(emp, actualEmpIdx);
-    const editedData = editedEmployeeData[actualEmpIdx] || {};
-    return (
-      <tr
-        key={`employee-${actualEmpIdx}`}
-        className={`whitespace-nowrap hover:bg-blue-50 transition border-b border-gray-200 ${
-          selectedRows.has(actualEmpIdx)
-            ? "bg-blue-100"
-            : selectedRowIndex === actualEmpIdx
-            ? "bg-yellow-100"
-            : "even:bg-gray-50"
-        }`}
-        style={{
-          height: `${ROW_HEIGHT_DEFAULT}px`,
-          lineHeight: "normal",
-          cursor: "pointer",
-        }}
-      >
-        <td className="tbody-td min-w-[45px] px-2">
-          <input
-            type="checkbox"
-            checked={checkedRows.has(actualEmpIdx)}
-            onChange={(e) => handleCheckboxSelection(actualEmpIdx, e.target.checked)}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-          />
-        </td>
-        <td className="tbody-td min-w-[70px]">{row.idType}</td>
+                  {sortedEmployees
+                    .filter((_, idx) => !hiddenRows[idx])
+                    .map((emp, idx) => {
+                      const actualEmpIdx = localEmployees.findIndex(
+                        (e) => e === emp
+                      );
+                      const row = getEmployeeRow(emp, actualEmpIdx);
+                      const editedData = editedEmployeeData[actualEmpIdx] || {};
+                      return (
+                        // <tr
+                        //   key={`employee-${actualEmpIdx}`}
+                        //   className={`whitespace-nowrap hover:bg-blue-50 transition border-b border-gray-200 ${
+                        //     selectedRows.has(actualEmpIdx)
+                        //       ? "bg-blue-100"
+                        //       : selectedRowIndex === actualEmpIdx
+                        //       ? "bg-yellow-100"
+                        //       : "even:bg-gray-50"
+                        //   }`}
+                        //   style={{
+                        //     height: `${ROW_HEIGHT_DEFAULT}px`,
+                        //     lineHeight: "normal",
+                        //     cursor: "pointer",
+                        //   }}
+                        // >
+                        <tr
+                          id={`emp-row-${actualEmpIdx}`} // Important for auto-scroll
+                          key={`employee-${actualEmpIdx}`}
+                          className={`whitespace-nowrap hover:bg-blue-50 transition border-b border-gray-200 ${
+                            // Add logic to check for the fill highlight
+                            findMatches.some(
+                              (m) =>
+                                m.empIdx === actualEmpIdx && m.isFillHighlight
+                            )
+                              ? "bg-yellow-200"
+                              : selectedRows.has(actualEmpIdx)
+                                ? "bg-blue-100"
+                                : selectedRowIndex === actualEmpIdx
+                                  ? "bg-yellow-100"
+                                  : "even:bg-gray-50"
+                          }`}
+                          style={{
+                            height: `${ROW_HEIGHT_DEFAULT}px`,
+                            lineHeight: "normal",
+                            cursor: "pointer",
+                            transition: "background-color 0.5s ease-in-out", // Makes highlight smooth
+                          }}
+                        >
+                          <td className="tbody-td min-w-[45px] px-2">
+                            <input
+                              type="checkbox"
+                              checked={checkedRows.has(actualEmpIdx)}
+                              onChange={(e) =>
+                                handleCheckboxSelection(
+                                  actualEmpIdx,
+                                  e.target.checked
+                                )
+                              }
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                            />
+                          </td>
+                          <td className="tbody-td min-w-[70px]">
+                            {row.idType}
+                          </td>
 
-        {/* ID Column */}
-        <td className="tbody-td min-w-[100px]">{row.emplId}</td>
+                          {/* ID Column */}
+                          <td className="tbody-td min-w-[100px]">
+                            {row.emplId}
+                          </td>
 
-        {/* Warning Cell */}
-        <td className="tbody-td min-w-[70px]">
-          {row.warning ? (
-            <span
-              className="text-yellow-500 text-lg cursor-pointer hover:text-yellow-600"
-              title="Click to view warnings"
-              onClick={(e) => handleWarningClick(e, row.emplId)}
-            >
-              ⚠️
-            </span>
-          ) : (
-            <span className="text-gray-300 text-xs">-</span>
-          )}
-        </td>
+                          {/* Warning Cell */}
+                          <td className="tbody-td min-w-[70px]">
+                            {row.warning ? (
+                              <span
+                                className="text-yellow-500 text-lg cursor-pointer hover:text-yellow-600"
+                                title="Click to view warnings"
+                                onClick={(e) =>
+                                  handleWarningClick(e, row.emplId)
+                                }
+                              >
+                                ⚠️
+                              </span>
+                            ) : (
+                              <span className="text-gray-300 text-xs">-</span>
+                            )}
+                          </td>
 
-        <td className="tbody-td min-w-[70px] text-left">
-          {editedData.firstName !== undefined ? editedData.firstName : row.name}
-        </td>
+                          <td className="tbody-td min-w-[70px] text-left pl-2">
+                            {editedData.firstName !== undefined
+                              ? editedData.firstName
+                              : row.name}
+                          </td>
 
-        {/* Account Column - Width decreased and Input max-width added */}
-        <td className="tbody-td min-w-[110px]">
-          {isBudPlan && isEditable ? (
-            <input
-              type="text"
-              value={editedData.acctId !== undefined ? editedData.acctId : row.acctId}
-              onChange={(e) => handleAccountInputChangeForUpdate(e.target.value, actualEmpIdx)}
-              onBlur={(e) => {
-                if (planType === "NBBUD") return;
-                const val = e.target.value;
-                const originalValue = row.acctId;
-                if (val !== originalValue && !isValidAccountForUpdate(val, updateAccountOptions)) {
-                  toast.error("Please enter a valid Account from the available list.", { autoClose: 3000 });
-                }
-              }}
-              style={{ maxWidth: "100px" }}
-              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
-              list={`account-list-${actualEmpIdx}`}
-              placeholder="Enter Account"
-            />
-          ) : (
-            row.acctId
-          )}
-          <datalist id={`account-list-${actualEmpIdx}`}>
-            {updateAccountOptions.map((account, index) => (
-              <option key={`${account.id}-${index}`} value={account.id}>
-                {account.id}
-              </option>
-            ))}
-          </datalist>
-        </td>
+                          {/* Account Column - Width decreased and Input max-width added */}
+                          <td className="tbody-td min-w-[110px]">
+                            {isBudPlan && isEditable ? (
+                              <input
+                                type="text"
+                                value={
+                                  editedData.acctId !== undefined
+                                    ? editedData.acctId
+                                    : row.acctId
+                                }
+                                onChange={(e) =>
+                                  handleAccountInputChangeForUpdate(
+                                    e.target.value,
+                                    actualEmpIdx
+                                  )
+                                }
+                                onBlur={(e) => {
+                                  if (planType === "NBBUD") return;
+                                  const val = e.target.value;
+                                  const originalValue = row.acctId;
+                                  if (
+                                    val !== originalValue &&
+                                    !isValidAccountForUpdate(
+                                      val,
+                                      updateAccountOptions
+                                    )
+                                  ) {
+                                    toast.error(
+                                      "Please enter a valid Account from the available list.",
+                                      { autoClose: 3000 }
+                                    );
+                                  }
+                                }}
+                                style={{ maxWidth: "100px" }}
+                                className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                                list={`account-list-${actualEmpIdx}`}
+                                placeholder="Enter Account"
+                              />
+                            ) : (
+                              row.acctId
+                            )}
+                            <datalist id={`account-list-${actualEmpIdx}`}>
+                              {updateAccountOptions.map((account, index) => (
+                                <option
+                                  key={`${account.id}-${index}`}
+                                  value={account.id}
+                                >
+                                  {account.id}
+                                </option>
+                              ))}
+                            </datalist>
+                          </td>
 
-        <td className="tbody-td min-w-[120px]">{row.acctName}</td>
+                          <td className="tbody-td min-w-[120px]">
+                            {row.acctName}
+                          </td>
 
-        {/* Organization Column - Width decreased and Input max-width added */}
-        <td className="tbody-td min-w-[110px]">
-          {isBudPlan && isEditable ? (
-            <input
-              type="text"
-              value={editedData.orgId !== undefined ? editedData.orgId : row.orgId}
-              onChange={(e) => handleOrgInputChangeForUpdate(e.target.value, actualEmpIdx)}
-              onBlur={(e) => {
-                if (planType === "NBBUD") return;
-                const val = e.target.value;
-                const originalValue = row.orgId;
-                if (val !== originalValue && val && !isValidOrgForUpdate(val, updateOrganizationOptions)) {
-                  toast.error("Please enter a valid numeric Organization ID from the available list.", { autoClose: 3000 });
-                }
-              }}
-              style={{ maxWidth: "100px" }}
-              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
-              list={`organization-list-${actualEmpIdx}`}
-              placeholder="Enter Organization ID"
-            />
-          ) : (
-            row.orgId
-          )}
-          <datalist id={`organization-list-${actualEmpIdx}`}>
-            {updateOrganizationOptions.map((org, index) => (
-              <option key={`${org.value}-${index}`} value={org.value}>
-                {org.label}
-              </option>
-            ))}
-          </datalist>
-        </td>
+                          {/* Organization Column - Width decreased and Input max-width added */}
+                          <td className="tbody-td min-w-[110px]">
+                            {isBudPlan && isEditable ? (
+                              <input
+                                type="text"
+                                value={
+                                  editedData.orgId !== undefined
+                                    ? editedData.orgId
+                                    : row.orgId
+                                }
+                                onChange={(e) =>
+                                  handleOrgInputChangeForUpdate(
+                                    e.target.value,
+                                    actualEmpIdx
+                                  )
+                                }
+                                onBlur={(e) => {
+                                  if (planType === "NBBUD") return;
+                                  const val = e.target.value;
+                                  const originalValue = row.orgId;
+                                  if (
+                                    val !== originalValue &&
+                                    val &&
+                                    !isValidOrgForUpdate(
+                                      val,
+                                      updateOrganizationOptions
+                                    )
+                                  ) {
+                                    toast.error(
+                                      "Please enter a valid numeric Organization ID from the available list.",
+                                      { autoClose: 3000 }
+                                    );
+                                  }
+                                }}
+                                style={{ maxWidth: "100px" }}
+                                className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                                list={`organization-list-${actualEmpIdx}`}
+                                placeholder="Enter Organization ID"
+                              />
+                            ) : (
+                              row.orgId
+                            )}
+                            <datalist id={`organization-list-${actualEmpIdx}`}>
+                              {updateOrganizationOptions.map((org, index) => (
+                                <option
+                                  key={`${org.value}-${index}`}
+                                  value={org.value}
+                                >
+                                  {org.label}
+                                </option>
+                              ))}
+                            </datalist>
+                          </td>
 
-        {/* PLC Column - Width decreased and Input max-width added */}
-        <td className="tbody-td min-w-[110px]">
-          {isBudPlan && isEditable ? (
-            <input
-              type="text"
-              value={editedData.glcPlc !== undefined ? editedData.glcPlc : row.glcPlc}
-              onChange={(e) => handlePlcInputChangeForUpdate(e.target.value, actualEmpIdx)}
-              onBlur={(e) => {
-                if (planType === "NBBUD") return;
-                const val = e.target.value.trim();
-                const originalValue = row.glcPlc;
-                if (val !== originalValue && val !== "") {
-                  const exactPlcMatch = plcOptions.find((option) => option.value.toLowerCase() === val.toLowerCase());
-                  if (!exactPlcMatch) {
-                    toast.error("PLC must be selected from the available suggestions. Custom values are not allowed.", { autoClose: 4000 });
-                    handleEmployeeDataChange(actualEmpIdx, "glcPlc", originalValue);
-                    setPlcSearch(originalValue);
-                  }
-                }
-              }}
-              style={{ maxWidth: "100px" }}
-              className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
-              list={`plc-list-${actualEmpIdx}`}
-              placeholder="Enter PLC"
-            />
-          ) : (
-            row.glcPlc
-          )}
-          <datalist id={`plc-list-${actualEmpIdx}`}>
-            {(updatePlcOptions.length > 0 ? updatePlcOptions : plcOptions).map((plc, index) => (
-              <option key={`${plc.value}-${index}`} value={plc.value}>
-                {plc.label}
-              </option>
-            ))}
-          </datalist>
-        </td>
+                          <td className="tbody-td min-w-[120px]">
+                            {editedData.orgName !== undefined
+                              ? editedData.orgName
+                              : row.orgName}
+                          </td>
 
-        <td className="tbody-td min-w-[70px] text-center">
-          {isFieldEditable && isEditable ? (
-            <input
-              type="checkbox"
-              checked={editedData.isRev !== undefined ? editedData.isRev : emp.emple.isRev}
-              onChange={(e) => handleEmployeeDataChange(actualEmpIdx, "isRev", e.target.checked)}
-              className="w-4 h-4"
-            />
-          ) : (
-            row.isRev
-          )}
-        </td>
-        <td className="tbody-td min-w-[70px] text-center">
-          {isFieldEditable && isEditable ? (
-            <input
-              type="checkbox"
-              checked={editedData.isBrd !== undefined ? editedData.isBrd : emp.emple.isBrd}
-              onChange={(e) => handleEmployeeDataChange(actualEmpIdx, "isBrd", e.target.checked)}
-              className="w-4 h-4"
-            />
-          ) : (
-            row.isBrd
-          )}
-        </td>
-        <td className="tbody-td min-w-[70px]">{row.status}</td>
+                          {/* PLC Column - Width decreased and Input max-width added */}
+                          <td className="tbody-td min-w-[110px]">
+                            {isBudPlan && isEditable ? (
+                              <input
+                                type="text"
+                                value={
+                                  editedData.glcPlc !== undefined
+                                    ? editedData.glcPlc
+                                    : row.glcPlc
+                                }
+                                onChange={(e) =>
+                                  handlePlcInputChangeForUpdate(
+                                    e.target.value,
+                                    actualEmpIdx
+                                  )
+                                }
+                                onBlur={(e) => {
+                                  if (planType === "NBBUD") return;
+                                  const val = e.target.value.trim();
+                                  const originalValue = row.glcPlc;
+                                  if (val !== originalValue && val !== "") {
+                                    const exactPlcMatch = plcOptions.find(
+                                      (option) =>
+                                        option.value.toLowerCase() ===
+                                        val.toLowerCase()
+                                    );
+                                    if (!exactPlcMatch) {
+                                      toast.error(
+                                        "PLC must be selected from the available suggestions. Custom values are not allowed.",
+                                        { autoClose: 4000 }
+                                      );
+                                      handleEmployeeDataChange(
+                                        actualEmpIdx,
+                                        "glcPlc",
+                                        originalValue
+                                      );
+                                      setPlcSearch(originalValue);
+                                    }
+                                  }
+                                }}
+                                style={{ maxWidth: "100px" }}
+                                className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                                list={`plc-list-${actualEmpIdx}`}
+                                placeholder="Enter PLC"
+                              />
+                            ) : (
+                              row.glcPlc
+                            )}
+                            <datalist id={`plc-list-${actualEmpIdx}`}>
+                              {(updatePlcOptions.length > 0
+                                ? updatePlcOptions
+                                : plcOptions
+                              ).map((plc, index) => (
+                                <option
+                                  key={`${plc.value}-${index}`}
+                                  value={plc.value}
+                                >
+                                  {plc.label}
+                                </option>
+                              ))}
+                            </datalist>
+                          </td>
 
-        {/* <td className="tbody-td min-w-[70px]">
+                          <td className="tbody-td min-w-[70px] text-center">
+                            {isFieldEditable && isEditable ? (
+                              <input
+                                type="checkbox"
+                                checked={
+                                  editedData.isRev !== undefined
+                                    ? editedData.isRev
+                                    : emp.emple.isRev
+                                }
+                                onChange={(e) =>
+                                  handleEmployeeDataChange(
+                                    actualEmpIdx,
+                                    "isRev",
+                                    e.target.checked
+                                  )
+                                }
+                                className="w-4 h-4"
+                              />
+                            ) : (
+                              row.isRev
+                            )}
+                          </td>
+                          <td className="tbody-td min-w-[70px] text-center">
+                            {isFieldEditable && isEditable ? (
+                              <input
+                                type="checkbox"
+                                checked={
+                                  editedData.isBrd !== undefined
+                                    ? editedData.isBrd
+                                    : emp.emple.isBrd
+                                }
+                                onChange={(e) =>
+                                  handleEmployeeDataChange(
+                                    actualEmpIdx,
+                                    "isBrd",
+                                    e.target.checked
+                                  )
+                                }
+                                className="w-4 h-4"
+                              />
+                            ) : (
+                              row.isBrd
+                            )}
+                          </td>
+                          <td className="tbody-td min-w-[70px]">
+                            {row.status}
+                          </td>
+
+                          {/* <td className="tbody-td min-w-[70px]">
           {isBudPlan && isEditable && emp.emple.type !== "Employee" && emp.emple.type !== "Vendor Employee" && emp.emple.type !== "Vendor" ? (
             <input
               type="password"
@@ -10283,36 +11916,64 @@ const handleSelectAllCheckboxes = (isChecked) => {
           )}
         </td> */}
 
-        <td className="tbody-td min-w-[70px]">
-  {isBudPlan && isEditable && emp.emple.type !== "Employee" && emp.emple.type !== "Vendor Employee" && emp.emple.type !== "Vendor" ? (
-    <input
-      // CHANGE: Type is text for Admin, password for others
-      type={isAdmin ? "text" : "password"} 
-      value={editingPerHourRateIdx === actualEmpIdx 
-        ? (editedData.perHourRate !== undefined ? editedData.perHourRate : row.perHourRate) 
-        : (isAdmin ? row.perHourRate : "")} // Show value if Admin even when not focused
-      placeholder={editingPerHourRateIdx === actualEmpIdx ? "" : (isAdmin ? "0.00" : "**")}
-      onFocus={() => setEditingPerHourRateIdx(actualEmpIdx)}
-      onChange={(e) => handleEmployeeDataChange(actualEmpIdx, "perHourRate", e.target.value.replace(/[^0-9.]/g, ""))}
-      className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
-      disabled={emp.emple.type === "Employee" || emp.emple.type === "Vendor Employee" || emp.emple.type === "Vendor"}
-    />
-  ) : (
-    // CHANGE: Admins can see the read-only value, Users see **
-    <span className="text-gray-400 cursor-not-allowed">
-       {isAdmin ? row.perHourRate : "**"}
-    </span>
-  )}
-</td>
+                          <td className="tbody-td min-w-[70px]">
+                            {isBudPlan &&
+                            isEditable &&
+                            emp.emple.type !== "Employee" &&
+                            emp.emple.type !== "Vendor Employee" &&
+                            emp.emple.type !== "Vendor" ? (
+                              <input
+                                // CHANGE: Type is text for Admin, password for others
+                                type={isAdmin ? "text" : "password"}
+                                value={
+                                  editingPerHourRateIdx === actualEmpIdx
+                                    ? editedData.perHourRate !== undefined
+                                      ? editedData.perHourRate
+                                      : row.perHourRate
+                                    : isAdmin
+                                      ? row.perHourRate
+                                      : ""
+                                } // Show value if Admin even when not focused
+                                placeholder={
+                                  editingPerHourRateIdx === actualEmpIdx
+                                    ? ""
+                                    : isAdmin
+                                      ? "0.00"
+                                      : "**"
+                                }
+                                onFocus={() =>
+                                  setEditingPerHourRateIdx(actualEmpIdx)
+                                }
+                                onChange={(e) =>
+                                  handleEmployeeDataChange(
+                                    actualEmpIdx,
+                                    "perHourRate",
+                                    e.target.value.replace(/[^0-9.]/g, "")
+                                  )
+                                }
+                                className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
+                                disabled={
+                                  emp.emple.type === "Employee" ||
+                                  emp.emple.type === "Vendor Employee" ||
+                                  emp.emple.type === "Vendor"
+                                }
+                              />
+                            ) : (
+                              // CHANGE: Admins can see the read-only value, Users see **
+                              <span className="text-gray-400 cursor-not-allowed">
+                                {isAdmin ? row.perHourRate : "**"}
+                              </span>
+                            )}
+                          </td>
 
-        <td className="tbody-td min-w-[70px]">{row.total}</td>
-      </tr>
-    );
-  })}
+                          <td className="tbody-td min-w-[70px]">{row.total}</td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
                 <tfoot>
-  {/* Spacer row to keep sticky totals from covering data */}
-  {/* <tr
+                  {/* Spacer row to keep sticky totals from covering data */}
+                  {/* <tr
     className="bg-white"
     style={{
       position: "sticky",
@@ -10326,50 +11987,49 @@ const handleSelectAllCheckboxes = (isChecked) => {
     <td colSpan={EMPLOYEE_COLUMNS.length}></td>
   </tr> */}
 
-  {/* Total Hours row */}
-  <tr
-    className="font-bold text-center"
-    style={{
-      position: "sticky",
-      bottom: `${ROW_HEIGHT_DEFAULT}px`,
-      zIndex: 21,
-      height: `${ROW_HEIGHT_DEFAULT}px`,
-      lineHeight: "normal",
-      backgroundColor: "#d7ebf3", // light blue like screenshot
-      color: "#000000",
-    }}
-  >
-    <td
-      colSpan={EMPLOYEE_COLUMNS.length+1}
-      // className="text-left pl-10 text-sm"
-      // style={{ fontWeight: 700 }}
-    >
-      Total Hours:
-    </td>
-  </tr>
+                  {/* Total Hours row */}
+                  <tr
+                    className="font-bold text-center"
+                    style={{
+                      position: "sticky",
+                      bottom: `${ROW_HEIGHT_DEFAULT}px`,
+                      zIndex: 21,
+                      height: `${ROW_HEIGHT_DEFAULT}px`,
+                      lineHeight: "normal",
+                      backgroundColor: "#d7ebf3", // light blue like screenshot
+                      color: "#000000",
+                    }}
+                  >
+                    <td
+                      colSpan={EMPLOYEE_COLUMNS.length + 1}
+                      // className="text-left pl-10 text-sm"
+                      // style={{ fontWeight: 700 }}
+                    >
+                      Total Hours:
+                    </td>
+                  </tr>
 
-  {/* Total Cost row – lighter blue with blue text */}
-  <tr
-    className="font-normal text-center"
-    style={{
-      position: "sticky",
-      bottom: 0,
-      zIndex: 22,
-      height: `${ROW_HEIGHT_DEFAULT}px`,
-      lineHeight: "normal",
-      backgroundColor: "#e5f3fb", // lighter blue
-    }}
-  >
-    <td
-      colSpan={EMPLOYEE_COLUMNS.length+1}
-      // className="text-left pl-10 text-sm"
-      // style={{ color: "#1d4ed8", fontWeight: 700 }} // blue text
-    >
-      Total Cost: {/* inject total cost here if needed */}
-    </td>
-  </tr>
-</tfoot>
-
+                  {/* Total Cost row – lighter blue with blue text */}
+                  <tr
+                    className="font-normal text-center"
+                    style={{
+                      position: "sticky",
+                      bottom: 0,
+                      zIndex: 22,
+                      height: `${ROW_HEIGHT_DEFAULT}px`,
+                      lineHeight: "normal",
+                      backgroundColor: "#e5f3fb", // lighter blue
+                    }}
+                  >
+                    <td
+                      colSpan={EMPLOYEE_COLUMNS.length + 1}
+                      // className="text-left pl-10 text-sm"
+                      // style={{ color: "#1d4ed8", fontWeight: 700 }} // blue text
+                    >
+                      Total Cost: {/* inject total cost here if needed */}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
             <div
@@ -10558,8 +12218,6 @@ const handleSelectAllCheckboxes = (isChecked) => {
                 </thead>
 
                 <tbody className="tbody">
-                
-
                   {/* PASTED ENTRIES - ADD THIS SECTION */}
                   {newEntries.length > 0 &&
                     newEntries.map((entry, entryIndex) => (
@@ -10571,8 +12229,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
                           lineHeight: "normal",
                         }}
                       >
-
-                      {/* ADDED: Render CTD Cell for Pasted Row */}
+                        {/* ADDED: Render CTD Cell for Pasted Row */}
                         {shouldShowCTD() && (
                           <td className="tbody-td text-center text-xs bg-gray-100">
                             0.00
@@ -10923,7 +12580,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
                     })()}
                   </tr>
                 </tfoot> */}
-             {/* <tfoot>
+                {/* <tfoot>
  
   <tr
     className="font-bold text-center"
@@ -11021,91 +12678,93 @@ const handleSelectAllCheckboxes = (isChecked) => {
     })}
   </tr>
 </tfoot> */}
-{/* --- UPDATED TFOOT FOR SECOND TABLE --- */}
-<tfoot className="font-inter">
-  {/* Total Hours Row */}
-  <tr
-    style={{
-      position: "sticky",
-      bottom: `${ROW_HEIGHT_DEFAULT}px`,
-      zIndex: 20,
-      height: `${ROW_HEIGHT_DEFAULT}px`,
-      lineHeight: "normal",
-      borderTop: "2px solid #d1d5db",
-      backgroundColor: "#d7ebf3", // Light blue hours band
-    }}
-  >
-    {shouldShowCTD() && (
-      <td className="tbody-td text-center text-xs font-bold text-gray-700">
-        {columnTotals.ctd?.toFixed(2) || "0.00"}
-      </td>
-    )}
+                {/* --- UPDATED TFOOT FOR SECOND TABLE --- */}
+                <tfoot className="font-inter">
+                  {/* Total Hours Row */}
+                  <tr
+                    style={{
+                      position: "sticky",
+                      bottom: `${ROW_HEIGHT_DEFAULT}px`,
+                      zIndex: 20,
+                      height: `${ROW_HEIGHT_DEFAULT}px`,
+                      lineHeight: "normal",
+                      borderTop: "2px solid #d1d5db",
+                      backgroundColor: "#d7ebf3", // Light blue hours band
+                    }}
+                  >
+                    {shouldShowCTD() && (
+                      <td className="tbody-td text-center text-xs font-bold text-gray-700">
+                        {columnTotals.ctd?.toFixed(2) || "0.00"}
+                      </td>
+                    )}
 
-    {shouldShowPriorYear() && (
-      <td className="tbody-td text-center text-xs font-bold text-gray-700">
-        {columnTotals.priorYear?.toFixed(2) || "0.00"}
-      </td>
-    )}
+                    {shouldShowPriorYear() && (
+                      <td className="tbody-td text-center text-xs font-bold text-gray-700">
+                        {columnTotals.priorYear?.toFixed(2) || "0.00"}
+                      </td>
+                    )}
 
-    {sortedDurations.map((duration) => {
-      const uniqueKey = `${duration.monthNo}_${duration.year}`;
-      return (
-        <td
-          key={`total-h-${uniqueKey}`}
-          className="tbody-td text-center text-xs font-bold text-gray-700"
-        >
-          {columnTotals[uniqueKey]?.toFixed(2) || "0.00"}
-        </td>
-      );
-    })}
-  </tr>
+                    {sortedDurations.map((duration) => {
+                      const uniqueKey = `${duration.monthNo}_${duration.year}`;
+                      return (
+                        <td
+                          key={`total-h-${uniqueKey}`}
+                          className="tbody-td text-center text-xs font-bold text-gray-700"
+                        >
+                          {columnTotals[uniqueKey]?.toFixed(2) || "0.00"}
+                        </td>
+                      );
+                    })}
+                  </tr>
 
-  {/* Total Cost Row */}
-  <tr
-    style={{
-      position: "sticky",
-      bottom: 0,
-      zIndex: 20,
-      height: `${ROW_HEIGHT_DEFAULT}px`,
-      lineHeight: "normal",
-      backgroundColor: "#e5f3fb", // Lighter blue cost band
-    }}
-  >
-    {shouldShowCTD() && (
-      <td className="tbody-td text-center text-xs font-bold text-black pr-1">
-        {columnTotals.ctd_cost?.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) || "0.00"}
-      </td>
-    )}
+                  {/* Total Cost Row */}
+                  <tr
+                    style={{
+                      position: "sticky",
+                      bottom: 0,
+                      zIndex: 20,
+                      height: `${ROW_HEIGHT_DEFAULT}px`,
+                      lineHeight: "normal",
+                      backgroundColor: "#e5f3fb", // Lighter blue cost band
+                    }}
+                  >
+                    {shouldShowCTD() && (
+                      <td className="tbody-td text-center text-xs font-bold text-black pr-1">
+                        {columnTotals.ctd_cost?.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }) || "0.00"}
+                      </td>
+                    )}
 
-    {shouldShowPriorYear() && (
-      <td className="tbody-td text-center text-xs font-bold text-black pr-1">
-        {columnTotals.priorYear_cost?.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) || "0.00"}
-      </td>
-    )}
+                    {shouldShowPriorYear() && (
+                      <td className="tbody-td text-center text-xs font-bold text-black pr-1">
+                        {columnTotals.priorYear_cost?.toLocaleString(
+                          undefined,
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        ) || "0.00"}
+                      </td>
+                    )}
 
-    {sortedDurations.map((duration) => {
-      const key = `${duration.monthNo}_${duration.year}_cost`;
-      return (
-        <td
-          key={`total-c-${duration.monthNo}_${duration.year}`}
-          className="tbody-td text-center text-xs font-bold text-black pr-1"
-        >
-          {columnTotals[key]?.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }) || "0.00"}
-        </td>
-      );
-    })}
-  </tr>
-</tfoot>
-
+                    {sortedDurations.map((duration) => {
+                      const key = `${duration.monthNo}_${duration.year}_cost`;
+                      return (
+                        <td
+                          key={`total-c-${duration.monthNo}_${duration.year}`}
+                          className="tbody-td text-center text-xs font-bold text-black pr-1"
+                        >
+                          {columnTotals[key]?.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }) || "0.00"}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
@@ -11233,7 +12892,6 @@ const handleSelectAllCheckboxes = (isChecked) => {
         </div>
       )} */}
 
-      
       {/* {showFindReplace && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm">
@@ -11409,119 +13067,129 @@ const handleSelectAllCheckboxes = (isChecked) => {
         </div>
       )} */}
 
-{showFindReplace && (
-  <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
-    <div className="mt-20 w-full max-w-md bg-white rounded-lg shadow-xl border">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm">
-        <h3 className="text-lg font-semibold mb-4">
-          {showFindOnly ? "Find Hours" : "Find and Replace Hours"}
-        </h3>
+      {showFindReplace && (
+        <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
+          <div className="mt-20 w-full max-w-md bg-white rounded-lg shadow-xl border">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm">
+              <h3 className="text-lg font-semibold mb-4">
+                {showFindOnly ? "Find Hours" : "Find and Replace Hours"}
+              </h3>
 
-        <div className="mb-3 flex gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setShowFindOnly(false);
-              setFindMatches([]);
-            }}
-            className={`px-3 py-1 rounded text-xs ${
-              !showFindOnly
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            Find & Replace
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setShowFindOnly(true);
-              setFindMatches([]);
-            }}
-            className={`px-3 py-1 rounded text-xs ${
-              showFindOnly
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            Find Only
-          </button>
-        </div>
+              <div className="mb-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowFindOnly(false);
+                    setFindMatches([]);
+                  }}
+                  className={`px-3 py-1 rounded text-xs ${
+                    !showFindOnly
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  Find & Replace
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowFindOnly(true);
+                    setFindMatches([]);
+                  }}
+                  className={`px-3 py-1 rounded text-xs ${
+                    showFindOnly
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  Find Only
+                </button>
+              </div>
 
-        <div className="mb-3">
-          <label htmlFor="findValue" className="block text-gray-700 text-xs font-medium mb-1">
-            Find
-          </label>
-          <input
-            type="text"
-            id="findValue"
-            className="w-full border border-gray-300 rounded-md p-2 text-xs"
-            value={findValue}
-            onChange={(e) => setFindValue(e.target.value)}
-            placeholder="Value to find (e.g., 100 or 0)"
-          />
-        </div>
+              <div className="mb-3">
+                <label
+                  htmlFor="findValue"
+                  className="block text-gray-700 text-xs font-medium mb-1"
+                >
+                  Find
+                </label>
+                <input
+                  type="text"
+                  id="findValue"
+                  className="w-full border border-gray-300 rounded-md p-2 text-xs"
+                  value={findValue}
+                  onChange={(e) => setFindValue(e.target.value)}
+                  placeholder="Value to find (e.g., 100 or 0)"
+                />
+              </div>
 
-        {!showFindOnly && (
-          <div className="mb-4">
-            <label htmlFor="replaceValue" className="block text-gray-700 text-xs font-medium mb-1">
-              Replace with
-            </label>
-            <input
-              type="text"
-              id="replaceValue"
-              className="w-full border border-gray-300 rounded-md p-2 text-xs"
-              value={replaceValue}
-              onChange={(e) => setReplaceValue(e.target.value.replace(/[^0-9.]/g, ""))}
-              placeholder="New value (e.g., 120)"
-            />
-          </div>
-        )}
+              {!showFindOnly && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="replaceValue"
+                    className="block text-gray-700 text-xs font-medium mb-1"
+                  >
+                    Replace with
+                  </label>
+                  <input
+                    type="text"
+                    id="replaceValue"
+                    className="w-full border border-gray-300 rounded-md p-2 text-xs"
+                    value={replaceValue}
+                    onChange={(e) =>
+                      setReplaceValue(e.target.value.replace(/[^0-9.]/g, ""))
+                    }
+                    placeholder="New value (e.g., 120)"
+                  />
+                </div>
+              )}
 
-        {/* ✅ FIXED SCOPE - Now supports CHECKED ROWS */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-xs font-medium mb-1">
-            Scope
-          </label>
-          <div className="flex gap-4 flex-wrap">
-            <label className="inline-flex items-center text-xs cursor-pointer">
-              <input
-                type="radio"
-                className="form-radio text-blue-600"
-                name="replaceScope"
-                value="all"
-                checked={replaceScope === "all"}
-                onChange={(e) => setReplaceScope(e.target.value)}
-              />
-              <span className="ml-2">All</span>
-            </label>
-            <label className="inline-flex items-center text-xs cursor-pointer">
-              <input
-                type="radio"
-                className="form-radio text-blue-600"
-                name="replaceScope"
-                value="checked-rows"
-                checked={replaceScope === "checked-rows"}
-                onChange={(e) => setReplaceScope(e.target.value)}
-              />
-              <span className="ml-2">Selected Row </span>
-            </label>
+              {/* ✅ FIXED SCOPE - Now supports CHECKED ROWS */}
+              <div className="mb-4">
+                <label className="block text-gray-700 text-xs font-medium mb-1">
+                  Scope
+                </label>
+                <div className="flex gap-4 flex-wrap">
+                  <label className="inline-flex items-center text-xs cursor-pointer">
+                    <input
+                      type="radio"
+                      className="form-radio text-blue-600"
+                      name="replaceScope"
+                      value="all"
+                      checked={replaceScope === "all"}
+                      onChange={(e) => setReplaceScope(e.target.value)}
+                    />
+                    <span className="ml-2">All</span>
+                  </label>
+                  <label className="inline-flex items-center text-xs cursor-pointer">
+                    <input
+                      type="radio"
+                      className="form-radio text-blue-600"
+                      name="replaceScope"
+                      value="checked-rows"
+                      checked={replaceScope === "checked-rows"}
+                      onChange={(e) => setReplaceScope(e.target.value)}
+                    />
+                    <span className="ml-2">Selected Row </span>
+                  </label>
 
-            <label className="inline-flex items-center text-xs cursor-pointer">
-      <input
-        type="radio"
-        className="form-radio text-blue-600"
-        name="replaceScope"
-        value="column"
-        checked={replaceScope === "column"}
-        onChange={(e) => setReplaceScope(e.target.value)}
-        disabled={!selectedColumnKey}
-      />
-      <span className={`ml-2 ${!selectedColumnKey ? 'text-gray-400' : ''}`}>
-        Selected Column 
-      </span>
-    </label>
-            {/* <label className="inline-flex items-center text-xs cursor-pointer">
+                  <label className="inline-flex items-center text-xs cursor-pointer">
+                    <input
+                      type="radio"
+                      className="form-radio text-blue-600"
+                      name="replaceScope"
+                      value="column"
+                      checked={replaceScope === "column"}
+                      onChange={(e) => setReplaceScope(e.target.value)}
+                      disabled={!selectedColumnKey}
+                    />
+                    <span
+                      className={`ml-2 ${!selectedColumnKey ? "text-gray-400" : ""}`}
+                    >
+                      Selected Column
+                    </span>
+                  </label>
+                  {/* <label className="inline-flex items-center text-xs cursor-pointer">
               <input
                 type="radio"
                 className="form-radio text-blue-600"
@@ -11535,7 +13203,7 @@ const handleSelectAllCheckboxes = (isChecked) => {
                 Selected Row ({selectedRowIndex !== null ? localEmployees[selectedRowIndex]?.emple?.emplId : "NA"})
               </span>
             </label> */}
-            {/* <label className="inline-flex items-center text-xs cursor-pointer">
+                  {/* <label className="inline-flex items-center text-xs cursor-pointer">
               <input
                 type="radio"
                 className="form-radio text-blue-600"
@@ -11549,48 +13217,46 @@ const handleSelectAllCheckboxes = (isChecked) => {
                 Selected Column ({selectedColumnKey ? sortedDurations.find(d => `${d.monthNo}_${d.year}` === selectedColumnKey)?.month : "NA"})
               </span>
             </label> */}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowFindReplace(false);
+                    setSelectedRowIndex(null);
+                    setSelectedColumnKey(null);
+                    setReplaceScope("all");
+                    setFindMatches([]);
+                    setShowFindOnly(false);
+                  }}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs"
+                >
+                  Cancel
+                </button>
+                {showFindOnly ? (
+                  <button
+                    type="button"
+                    onClick={handleFind}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                  >
+                    Find & Highlight
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleFindReplace}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                  >
+                    Replace All
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setShowFindReplace(false);
-              setSelectedRowIndex(null);
-              setSelectedColumnKey(null);
-              setReplaceScope("all");
-              setFindMatches([]);
-              setShowFindOnly(false);
-            }}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs"
-          >
-            Cancel
-          </button>
-          {showFindOnly ? (
-            <button
-              type="button"
-              onClick={handleFind}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
-            >
-              Find & Highlight
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleFindReplace}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
-            >
-              Replace All
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
-
+      )}
 
       {/* {showFindReplace && (
                    <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
@@ -11824,7 +13490,6 @@ const handleSelectAllCheckboxes = (isChecked) => {
             endDate={endDate}
             fiscalYear={fiscalYear}
           />
-
         </div>
       )}
     </div>
@@ -11832,4 +13497,3 @@ const handleSelectAllCheckboxes = (isChecked) => {
 };
 
 export default ProjectHoursDetails;
-
