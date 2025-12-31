@@ -853,7 +853,7 @@ const ProjectBudgetStatus = () => {
                 className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100  "
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                disabled={searchTerm.length === 0}
+                // disabled={searchTerm.length === 0}
               >
                 <option value="">Both</option>
                 <option value="Y">Active</option>
