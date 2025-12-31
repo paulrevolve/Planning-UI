@@ -47,7 +47,7 @@ const ProjectBudgetStatus = () => {
   const [otherColumnTotalsFromAmounts, setOtherColumnTotalsFromAmounts] =
     useState({});
 
-  // const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
 
   const hoursRefs = useRef({});
   const amountsRefs = useRef({});
@@ -468,7 +468,7 @@ const ProjectBudgetStatus = () => {
 
     try {
       const response = await axios.get(
-        `${backendUrl}/Project/GetAllProjectByProjId/${term}`
+        // `${backendUrl}/Project/GetAllProjectByProjId/${term}`
       );
       const data = Array.isArray(response.data)
         ? response.data[0]
@@ -496,7 +496,7 @@ const ProjectBudgetStatus = () => {
     } catch (error) {
       try {
         const planResponse = await axios.get(
-          `${backendUrl}/Project/GetProjectPlans/${term}`
+          `${backendUrl}/Project/GetProjectPlans/${userId}/${role}/${term}?status=${statusFilter}`
         );
         const planData = Array.isArray(planResponse.data)
           ? planResponse.data[0]
@@ -847,7 +847,7 @@ const ProjectBudgetStatus = () => {
               />
             </div>
 
-            {/* <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1">
               <span className="text-xs font-bold text-gray-500">Status</span>
               <select
                 className="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100  "
@@ -859,7 +859,7 @@ const ProjectBudgetStatus = () => {
                 <option value="Y">Active</option>
                 <option value="N">Inactive</option>
               </select>
-            </div> */}
+            </div>
             <button
               onClick={handleSearch}
               className="bg-[#17414d] text-white group-hover:text-gray px-6 py-1.5 rounded cursor-pointer text-xs sm:text-sm font-semibold   transition-all shadow-md active:scale-95 w-full sm:w-auto"
@@ -1277,6 +1277,7 @@ const ProjectBudgetStatus = () => {
                 fiscalYearOptions={fiscalYearOptions}
                 filteredProjects={filteredProjects}
                 onPlanCreated={handlePlanCreated}
+                status={statusFilter}
                 // onOpenDetails={() => {
                 //   if (!selectedPlan) {
                 //     toast.info("Please select a plan first.", {
