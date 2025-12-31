@@ -1081,7 +1081,7 @@ const NewBusiness = ({
               <button
                 type="button"
                 onClick={handleSave}
-                className="bg-[#17414d] text-white px-4 py-1.5 cursor-pointer rounded text-xs transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+                className="bg-[#17414d] btn1 btn-blue disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
               >
                 {isUpdateMode ? "Update" : "Save"}
               </button>
@@ -1089,7 +1089,7 @@ const NewBusiness = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="cursor-pointer bg-red-500 rounded text-white w-7 h-7 flex items-center justify-center text-lg font-bold transition"
+                className="cursor-pointer bg-red-500 rounded text-white w-6 h-6 flex items-center justify-center text-lg font-bold transition"
                 title="Close"
               >
                 ×
