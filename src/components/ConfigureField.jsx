@@ -118,7 +118,7 @@ const navigationSections = [
     fields: [
       { id: "poolRateTabs", label: "Burden Rate" },
       { id: "analogRate", label: "NBIs Analogous Rate" },
-      { id: "accountMapping", label: "Chart of Accounts" },
+      { id: "accountMapping", label: "Account Mapping" },
       { id: "projectOrgSecurity", label: "Project Org Security" },
       { id: "prospectiveIdSetup", label: "Prospective ID Setup" },
       {id: "ceilingConfiguration", label: "Ceiling Configuration"},

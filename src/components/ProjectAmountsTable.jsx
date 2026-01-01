@@ -9,8 +9,10 @@ const EMPLOYEE_COLUMNS = [
   { key: "emplId", label: "ID" },
   { key: "name", label: "Name" },
   { key: "acctId", label: "Account" },
-  { key: "acctName", label: "Account Name" }, // ADD THIS LINE
-  { key: "orgId", label: "Organization" },
+  { key: "acctName", label: "Account Name" }, 
+  { key: 'orgId', label: 'Org Id' },        
+  { key: 'orgName', label: 'Org Name' },
+  // { key: "orgId", label: "Organization" },
   { key: "isRev", label: "Rev" },
   { key: "isBrd", label: "Brd" },
   { key: "status", label: "Status" },
@@ -124,6 +126,8 @@ const ProjectAmountsTable = ({
   const [organizationOptions, setOrganizationOptions] = useState([]);
   const [modifiedAmounts, setModifiedAmounts] = useState({});
   const [hasUnsavedAmountChanges, setHasUnsavedAmountChanges] = useState(false);
+
+  const [selectedSourceIdx, setSelectedSourceIdx] = useState("");
 
   // Add after existing state declarations around line 88
   const [editingRowIndex, setEditingRowIndex] = useState(null);
@@ -636,316 +640,60 @@ const getSortIcon = (key) => {
     fetchData();
   }, [startDate, endDate, planId, refreshKey]); // Added propFiscalYear for refetch on fiscal year change
 
-  useEffect(() => {
-    const loadOrganizationOptions = async () => {
-      try {
-        const response = await axios.get(
-          `${backendUrl}/Orgnization/GetAllOrgs`
-        );
-        const orgOptions = Array.isArray(response.data)
-          ? response.data.map((org) => ({
-              value: org.orgId,
-              label: org.orgId,
-            }))
-          : [];
-        setOrganizationOptions(orgOptions);
-      } catch (err) {
-        // console.error("Failed to fetch organizations:", err);
-      }
-    };
-    if (showNewForm || isEditable) {
-      loadOrganizationOptions();
-    }
-  }, [showNewForm, isEditable]);
-
-//   useEffect(() => {
-//     const formOpen = showNewForm || isEditable;
-//     // const fetchEmployees = async () => {
-//     //   if (!projectId || !formOpen) {
-//     //     // console.warn("projectId is undefined, skipping employee fetch");
-//     //     setEmployeeSuggestions([]);
-//     //     return;
-//     //   }
-//     //   if (!showNewForm) {
-//     //     // console.log("New entry form is not open, skipping employee fetch");
-//     //     setEmployeeSuggestions([]);
-//     //     return;
-//     //   }
-//     //   // console.log(`Fetching employees for projectId: ${projectId}`);
-//     //   try {
-//     //     const endpoint =
-//     //       newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee"
-//     //         ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}`
-//     //         : `${backendUrl}/Project/GetEmployeesByProject/${projectId}`;
-//     //     const response = await axios.get(endpoint);
-//     //     // console.log("Employee suggestions response:", response.data);
-//     //     const suggestions = Array.isArray(response.data)
-//     //       ? response.data.map((emp) => {
-//     //           if (newEntry.idType === "Vendor") {
-//     //             return {
-//     //               emplId: emp.vendId,
-//     //               firstName: "",
-//     //               lastName: emp.employeeName || "",
-//     //             };
-//     //           } else if (newEntry.idType === "Vendor Employee") {
-//     //             return {
-//     //               emplId: emp.empId,
-//     //               firstName: "",
-//     //               lastName: emp.employeeName || "",
-//     //             };
-//     //           } else {
-//     //             const [lastName, firstName] = (emp.employeeName || "")
-//     //               .split(", ")
-//     //               .map((str) => str.trim());
-//     //             return {
-//     //               emplId: emp.empId,
-//     //               firstName: firstName || "",
-//     //               lastName: lastName || "",
-//     //               orgId: emp.orgId,
-//     //               acctId: emp.acctId,
-//     //             };
-//     //           }
-//     //         })
-//     //       : [];
-//     //     setEmployeeSuggestions(suggestions);
-//     //     // console.log("Updated employeeSuggestions:", suggestions);
-//     //   } catch (err) {
-//     //     // console.error("Error fetching employees:", err);
-//     //     setEmployeeSuggestions([]);
-//     //     toast.error(
-//     //       `Failed to fetch ${
-//     //         newEntry.idType === "Vendor" ||
-//     //         newEntry.idType === "Vendor Employee"
-//     //           ? "vendor "
-//     //           : ""
-//     //       }employee suggestions${
-//     //         projectId
-//     //           ? " for project ID " + projectId
-//     //           : ". Project ID is missing."
-//     //       }`,
-//     //       {
-//     //         toastId: "employee-fetch-error",
-//     //         autoClose: 3000,
-//     //       }
-//     //     );
-//     //   }
-//     // };
-    
-//     const fetchEmployees = async () => {
-//   if (!projectId || !formOpen) {
-//     setEmployeeSuggestions([]);
-//     return;
+ 
+// const getAccountSuggestionsByType = (type) => {
+//   // Normalize type string
+//   const normalizedType = type?.toLowerCase() || "";
+  
+//   if (normalizedType === "employee") {
+//     return employeeNonLaborAccounts; // Map to Employee accounts
+//   } 
+  
+//   if (normalizedType === "vendor" || normalizedType === "vendor employee") {
+//     return subContractorNonLaborAccounts; // Map to SubContractor accounts
 //   }
   
-//   try {
-//     // FIX: Get current type from the specific entry being edited or the newEntry state
-//     const currentIdType = newEntry.idType;
-    
-//     const isVendorType = currentIdType === "Vendor" || currentIdType === "Vendor Employee";
-    
-//     const endpoint = isVendorType
-//       ? `${backendUrl}/Project/GetVenderEmployeesByProject/${encodeURIComponent(projectId)}`
-//       : `${backendUrl}/Project/GetEmployeesByProject/${encodeURIComponent(projectId)}`;
-
-//     const response = await axios.get(endpoint);
-    
-//     const suggestions = Array.isArray(response.data)
-//       ? response.data.map((emp) => {
-//           if (currentIdType === "Vendor") {
-//             return {
-//               emplId: emp.vendId || emp.empId || "", // Robust mapping fallback
-//               firstName: "",
-//               lastName: emp.employeeName || "",
-//               orgId: emp.orgId,
-//               acctId: emp.acctId,
-//             };
-//           } else if (currentIdType === "Vendor Employee") {
-//             return {
-//               emplId: emp.empId || emp.vendId || "", // Robust mapping fallback
-//               firstName: "",
-//               lastName: emp.employeeName || "",
-//               orgId: emp.orgId,
-//               acctId: emp.acctId,
-//             };
-//           } else {
-//             // EXISTING EMPLOYEE LOGIC - PRESERVED
-//             const [lastName, firstName] = (emp.employeeName || "")
-//               .split(", ")
-//               .map((str) => str.trim());
-//             return {
-//               emplId: emp.empId,
-//               firstName: firstName || "",
-//               lastName: lastName || "",
-//               orgId: emp.orgId,
-//               acctId: emp.acctId,
-//             };
-//           }
-//         })
-//       : [];
-//     setEmployeeSuggestions(suggestions);
-//   } catch (err) {
-//     setEmployeeSuggestions([]);
-//     // Toast logic preserved...
+//   if (normalizedType === "other") {
+//     // Other sees EVERYTHING combined
+//     return [
+//       ...employeeNonLaborAccounts, 
+//       ...subContractorNonLaborAccounts, 
+//       ...otherDirectCostNonLaborAccounts
+//     ];
 //   }
+
+//   // Default fallback (usually all lists combined)
+//   return [...employeeNonLaborAccounts, ...subContractorNonLaborAccounts, ...otherDirectCostNonLaborAccounts];
 // };
 
+const getAccountSuggestionsByType = (type) => {
+    const normalizedType = type?.toLowerCase() || "";
+    if (normalizedType === "employee") return employeeNonLaborAccounts;
+    if (normalizedType === "vendor" || normalizedType === "vendor employee") return subContractorNonLaborAccounts;
+    return [...employeeNonLaborAccounts, ...subContractorNonLaborAccounts, ...otherDirectCostNonLaborAccounts];
+};
+
+useEffect(() => {
+  const loadOrganizationOptions = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/Orgnization/GetAllOrgs`);
+      const orgOptions = Array.isArray(response.data) ? response.data.map(org => ({
+        value: org.orgId,
+        // label: `${org.orgId} - ${org.orgName}`,  
+        label: org.orgName,
+        orgName: org.orgName                   
+      })) : [];
+      setOrganizationOptions(orgOptions);
+      // console.log('✅ Loaded', orgOptions.length, 'organizations'); // DEBUG
+    } catch (err) {
+      // console.error('Failed to fetch organizations', err);
+    }
+  };
+  loadOrganizationOptions(); // ✅ Run immediately
+}, []); // ✅ Empty deps = mount only
 
 
-//     const fetchNonLaborAccounts = async () => {
-//       if (!projectId || !formOpen) {
-//         setEmployeeNonLaborAccounts([]);
-//         setSubContractorNonLaborAccounts([]);
-//         setNonLaborAccounts([]);
-//         return;
-//       }
-
-//       try {
-//         // const response = await axios.get(
-//         //   `${backendUrl}/Project/GetAllProjectByProjId/${projectId}`
-//         // );
-//         const response = await axios.get(
-//           `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
-//         );
-
-//         const data = Array.isArray(response.data)
-//           ? response.data[0]
-//           : response.data;
-
-//         // -------------------------
-//         // Employee Non-Labor Accounts
-//         // -------------------------
-//         let employeeAccounts = Array.isArray(data.employeeNonLaborAccounts)
-//           ? data.employeeNonLaborAccounts.map((account) => ({
-//               id: account.accountId || account, // handle both object/string
-//               name: account.acctName || account.accountId || String(account),
-//             }))
-//           : [];
-
-//         // Deduplicate employee accounts
-//         const uniqueEmployeeMap = new Map();
-//         employeeAccounts.forEach((acc) => {
-//           if (acc.id && !uniqueEmployeeMap.has(acc.id)) {
-//             uniqueEmployeeMap.set(acc.id, acc);
-//           }
-//         });
-//         const uniqueEmployeeAccounts = Array.from(uniqueEmployeeMap.values());
-//         setEmployeeNonLaborAccounts(uniqueEmployeeAccounts);
-
-//         // -------------------------
-//         // SubContractor Non-Labor Accounts
-//         // -------------------------
-//         let subAccounts = Array.isArray(data.subContractorNonLaborAccounts)
-//           ? data.subContractorNonLaborAccounts.map((account) => ({
-//               id: account.accountId || account,
-//               name: account.acctName || account.accountId || String(account),
-//             }))
-//           : [];
-
-//         // Deduplicate subcontractor accounts
-//         const uniqueSubMap = new Map();
-//         subAccounts.forEach((acc) => {
-//           if (acc.id && !uniqueSubMap.has(acc.id)) {
-//             uniqueSubMap.set(acc.id, acc);
-//           }
-//         });
-//         const uniqueSubAccounts = Array.from(uniqueSubMap.values());
-//         setSubContractorNonLaborAccounts(uniqueSubAccounts);
-
-//         // Other Direct Cost Non-Labor Accounts
-//         let otherAccounts = Array.isArray(data.otherDirectCostNonLaborAccounts)
-//           ? data.otherDirectCostNonLaborAccounts.map((account) => ({
-//               id: account.accountId || account,
-//               name: account.acctName || account.accountId || String(account),
-//             }))
-//           : [];
-
-//         const uniqueOtherMap = new Map();
-//         otherAccounts.forEach((acc) => {
-//           if (acc.id && !uniqueOtherMap.has(acc.id)) {
-//             uniqueOtherMap.set(acc.id, acc);
-//           }
-//         });
-//         const uniqueOtherAccounts = Array.from(uniqueOtherMap.values());
-//         setOtherDirectCostNonLaborAccounts(uniqueOtherAccounts);
-
-//         // -------------------------
-//         // NEW: PLC-SPECIFIC ACCOUNT LOGIC FOR NEW FORM
-//         // Keep ALL existing logic intact
-//         // -------------------------
-//         let accounts = []; // For newEntry form datalist (just IDs)
-
-//         if (newEntry.idType === "PLC") {
-//           accounts = [
-//             ...uniqueEmployeeAccounts.map((acc) => ({ id: acc.id })),
-//             ...uniqueSubAccounts.map((acc) => ({ id: acc.id })),
-//           ];
-//         } else if (newEntry.idType === "Employee") {
-//           accounts = uniqueEmployeeAccounts.map((acc) => ({ id: acc.id }));
-//         } else if (
-//           newEntry.idType === "Vendor" ||
-//           newEntry.idType === "Vendor Employee"
-//         ) {
-//           accounts = uniqueSubAccounts.map((acc) => ({ id: acc.id }));
-//         } else if (newEntry.idType === "Other") {
-//           // ✅ NOW CORRECT - braces prevent fall-through
-//           // accounts = [
-//           //   ...uniqueEmployeeAccounts.map(acc => ({ id: acc.id })),
-//           //   ...uniqueSubAccounts.map(acc => ({ id: acc.id })),
-//           //   ...uniqueOtherAccounts.map(acc => ({ id: acc.id }))
-//           // ];
-//           accounts = [
-//             ...uniqueEmployeeAccounts.map((acc) => ({ id: acc.id })),
-//             ...uniqueSubAccounts.map((acc) => ({ id: acc.id })),
-//             ...uniqueOtherAccounts.map((acc) => ({ id: acc.id })),
-//           ];
-//         } else {
-//           accounts = [
-//             ...uniqueEmployeeAccounts.map((acc) => ({ id: acc.id })),
-//             ...uniqueSubAccounts.map((acc) => ({ id: acc.id })),
-//             ...uniqueOtherAccounts.map((acc) => ({ id: acc.id })),
-//           ];
-//         }
-
-//         // Set accounts for new form datalist (without names - just IDs)
-//         setNonLaborAccounts(accounts);
-
-//         // Keep allAccountsWithNames for existing row lookups (with names) - NO CHANGE TO EXISTING LOGIC
-//         let allAccountsWithNames = [
-//           ...uniqueEmployeeAccounts,
-//           ...uniqueSubAccounts,
-//           ...uniqueOtherAccounts,
-//         ];
-//         setAccountOptionsWithNames(allAccountsWithNames);
-//       } catch (err) {
-//         // console.error("Error fetching non-labor accounts:", err);
-//         setEmployeeNonLaborAccounts([]);
-//         setSubContractorNonLaborAccounts([]);
-//         setNonLaborAccounts([]); // ADD: Reset nonLaborAccounts on error
-//         setOtherDirectCostNonLaborAccounts([]);
-//         if (planType?.toUpperCase() !== "NBBUD") {
-//           toast.error("Failed to fetch non-labor accounts", {
-//             toastId: "non-labor-accounts-error",
-//             autoClose: 3000,
-//           });
-//         }
-//       }
-//     };
-
-//     if (formOpen) {
-//       fetchEmployees();
-//       fetchNonLaborAccounts();
-//     } else {
-//       setEmployeeNonLaborAccounts([]); // ✅ correct reset
-//       setSubContractorNonLaborAccounts([]);
-//       setEmployeeSuggestions([]);
-//       // setOrganizationOptions([]);
-//     }
-//   }, [projectId, showNewForm, newEntry.idType]);
-
-
-
-  // CORRECTED: Add keyboard listener for paste - MUST be unconditional
- 
+  
   useEffect(() => {
     const formOpen = showNewForm || isEditable;
 
@@ -956,8 +704,6 @@ const getSortIcon = (key) => {
       }
 
       try {
-        // We determine if we need Vendor data based on the single newEntry form 
-        // OR if any of the multiple newEntries are set to Vendor types.
         const isVendorRelated = 
           newEntry.idType === "Vendor" || 
           newEntry.idType === "Vendor Employee" ||
@@ -971,8 +717,6 @@ const getSortIcon = (key) => {
 
         const suggestions = Array.isArray(response.data)
           ? response.data.map((emp) => {
-              // We use a fallback logic (vendId || empId) so that if one is missing, 
-              // the other is used, preventing empty suggestions.
               if (newEntry.idType === "Vendor" || newEntries.some(e => e.idType === "Vendor")) {
                 return {
                   emplId: emp.vendId || emp.empId || "",
@@ -983,14 +727,13 @@ const getSortIcon = (key) => {
                 };
               } else if (newEntry.idType === "Vendor Employee" || newEntries.some(e => e.idType === "Vendor Employee")) {
                 return {
-                  emplId: emp.vendId || emp.empId ||  "",
+                  emplId: emp.empId,
                   firstName: "",
                   lastName: emp.employeeName || "",
                   orgId: emp.orgId,
                   acctId: emp.acctId,
                 };
               } else {
-                // EXISTING EMPLOYEE LOGIC - PRESERVED EXACTLY
                 const [lastName, firstName] = (emp.employeeName || "")
                   .split(", ")
                   .map((str) => str.trim());
@@ -1012,130 +755,221 @@ const getSortIcon = (key) => {
             newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee"
               ? "vendor "
               : ""
-          }employee suggestions for project ID ${projectId}`,
-          {
-            toastId: "employee-fetch-error",
-            autoClose: 3000,
-          }
+          }employee suggestions for project ID ${projectId}`
         );
       }
     };
 
-    const fetchNonLaborAccounts = async () => {
-      if (!projectId || !formOpen) {
-        setEmployeeNonLaborAccounts([]);
-        setSubContractorNonLaborAccounts([]);
-        setNonLaborAccounts([]);
-        return;
-      }
+  
+// const fetchNonLaborAccounts = async () => {
+//   if (!projectId || !formOpen) {
+//     setEmployeeNonLaborAccounts([]);
+//     setSubContractorNonLaborAccounts([]);
+//     setNonLaborAccounts([]);
+//     return;
+//   }
 
-      try {
-        const response = await axios.get(
-          `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
-        );
+//   try {
+//     const response = await axios.get(
+//       `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
+//     );
+//     const data = Array.isArray(response.data) ? response.data[0] : response.data;
 
-        const data = Array.isArray(response.data)
-          ? response.data[0]
-          : response.data;
+//     // Standard mapper to ensure accountId and acctName are always available
+//     const mapAcc = (acc) => ({
+//       accountId: acc.accountId || acc.id || String(acc),
+//       acctName: acc.acctName || acc.name || String(acc),
+//     });
 
-        // preserved existing account logic
-        let employeeAccounts = Array.isArray(data.employeeNonLaborAccounts)
-          ? data.employeeNonLaborAccounts.map((account) => ({
-              id: account.accountId || account,
-              name: account.acctName || account.accountId || String(account),
-            }))
-          : [];
+//     const empAccs = (data.employeeNonLaborAccounts || []).map(mapAcc);
+//     const subAccs = (data.subContractorNonLaborAccounts || []).map(mapAcc);
+//     const otherAccs = (data.otherDirectCostNonLaborAccounts || []).map(mapAcc);
 
-        const uniqueEmployeeMap = new Map();
-        employeeAccounts.forEach((acc) => {
-          if (acc.id && !uniqueEmployeeMap.has(acc.id)) {
-            uniqueEmployeeMap.set(acc.id, acc);
-          }
-        });
-        const uniqueEmployeeAccounts = Array.from(uniqueEmployeeMap.values());
-        setEmployeeNonLaborAccounts(uniqueEmployeeAccounts);
+//     setEmployeeNonLaborAccounts(empAccs);
+//     setSubContractorNonLaborAccounts(subAccs);
+//     setOtherDirectCostNonLaborAccounts(otherAccs);
 
-        let subAccounts = Array.isArray(data.subContractorNonLaborAccounts)
-          ? data.subContractorNonLaborAccounts.map((account) => ({
-              id: account.accountId || account,
-              name: account.acctName || account.accountId || String(account),
-            }))
-          : [];
+//     // Filter suggestions based on ID Type
+//     let filteredList = [];
+//     if (newEntry.idType === "Employee") {
+//       filteredList = empAccs; // Rule 1: Employee type sees Employee accounts only
+//     } else if (newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") {
+//       filteredList = subAccs; // Rule 2: Vendor type sees SubContractor accounts only
+//     } else if (newEntry.idType === "Other") {
+//       filteredList = [...empAccs, ...subAccs, ...otherAccs]; // Rule 3: Other type sees ALL
+//     } else {
+//       filteredList = [...empAccs, ...subAccs, ...otherAccs];
+//     }
 
-        const uniqueSubMap = new Map();
-        subAccounts.forEach((acc) => {
-          if (acc.id && !uniqueSubMap.has(acc.id)) {
-            uniqueSubMap.set(acc.id, acc);
-          }
-        });
-        const uniqueSubAccounts = Array.from(uniqueSubMap.values());
-        setSubContractorNonLaborAccounts(uniqueSubAccounts);
+//     setNonLaborAccounts(filteredList);
+//     setAccountOptionsWithNames([...empAccs, ...subAccs, ...otherAccs]);
 
-        let otherAccounts = Array.isArray(data.otherDirectCostNonLaborAccounts)
-          ? data.otherDirectCostNonLaborAccounts.map((account) => ({
-              id: account.accountId || account,
-              name: account.acctName || account.accountId || String(account),
-            }))
-          : [];
+//   } catch (err) {
+//     console.error("Failed to fetch non-labor accounts", err);
+//   }
+// };
 
-        const uniqueOtherMap = new Map();
-        otherAccounts.forEach((acc) => {
-          if (acc.id && !uniqueOtherMap.has(acc.id)) {
-            uniqueOtherMap.set(acc.id, acc);
-          }
-        });
-        const uniqueOtherAccounts = Array.from(uniqueOtherMap.values());
-        setOtherDirectCostNonLaborAccounts(uniqueOtherAccounts);
+// const fetchNonLaborAccounts = async () => {
+//   if (!projectId || !formOpen) {
+//     setEmployeeNonLaborAccounts([]);
+//     setSubContractorNonLaborAccounts([]);
+//     setNonLaborAccounts([]);
+//     return;
+//   }
 
-        let accounts = []; 
+//   try {
+//     const response = await axios.get(
+//       `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
+//     );
 
-        if (newEntry.idType === "PLC") {
-          accounts = [
-            ...uniqueEmployeeAccounts.map((acc) => ({ id: acc.id })),
-            ...uniqueSubAccounts.map((acc) => ({ id: acc.id })),
-          ];
-        } else if (newEntry.idType === "Employee") {
-          accounts = uniqueEmployeeAccounts.map((acc) => ({ id: acc.id }));
-        } else if (
-          newEntry.idType === "Vendor" ||
-          newEntry.idType === "Vendor Employee"
-        ) {
-          accounts = uniqueSubAccounts.map((acc) => ({ id: acc.id }));
-        } else if (newEntry.idType === "Other") {
-          accounts = [
-            ...uniqueEmployeeAccounts.map((acc) => ({ id: acc.id })),
-            ...uniqueSubAccounts.map((acc) => ({ id: acc.id })),
-            ...uniqueOtherAccounts.map((acc) => ({ id: acc.id })),
-          ];
-        } else {
-          accounts = [
-            ...uniqueEmployeeAccounts.map((acc) => ({ id: acc.id })),
-            ...uniqueSubAccounts.map((acc) => ({ id: acc.id })),
-            ...uniqueOtherAccounts.map((acc) => ({ id: acc.id })),
-          ];
-        }
+//     const data = Array.isArray(response.data) ? response.data[0] : response.data;
 
-        setNonLaborAccounts(accounts);
+//     const mapAcc = (acc) => ({
+//       accountId: acc.accountId || acc.id || String(acc),
+//       acctName: acc.acctName || acc.name || String(acc),
+//     });
 
-        let allAccountsWithNames = [
-          ...uniqueEmployeeAccounts,
-          ...uniqueSubAccounts,
-          ...uniqueOtherAccounts,
-        ];
-        setAccountOptionsWithNames(allAccountsWithNames);
-      } catch (err) {
-        setEmployeeNonLaborAccounts([]);
-        setSubContractorNonLaborAccounts([]);
-        setNonLaborAccounts([]);
-        setOtherDirectCostNonLaborAccounts([]);
-        if (planType?.toUpperCase() !== "NBBUD") {
-          toast.error("Failed to fetch non-labor accounts", {
-            toastId: "non-labor-accounts-error",
-            autoClose: 3000,
-          });
-        }
-      }
-    };
+//     const empAccs = (data.employeeNonLaborAccounts || []).map(mapAcc);
+//     const subAccs = (data.subContractorNonLaborAccounts || []).map(mapAcc);
+//     const otherAccs = (data.otherDirectCostNonLaborAccounts || []).map(mapAcc);
+
+//     setEmployeeNonLaborAccounts(empAccs);
+//     setSubContractorNonLaborAccounts(subAccs);
+//     setOtherDirectCostNonLaborAccounts(otherAccs);
+
+//     // RESTRICTED FILTERING LOGIC
+//     let accounts = [];
+//     if (newEntry.idType === "Employee") {
+//       accounts = empAccs; // Strict Rule 1
+//     } else if (newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") {
+//       accounts = subAccs; // Strict Rule 2
+//     } else if (newEntry.idType === "Other") {
+//       accounts = [...empAccs, ...subAccs, ...otherAccs]; // Strict Rule 3
+//     } else {
+//       accounts = [...empAccs, ...subAccs, ...otherAccs];
+//     }
+
+//     setNonLaborAccounts(accounts);
+//     setAccountOptionsWithNames([...empAccs, ...subAccs, ...otherAccs]);
+//   } catch (err) {
+//     console.error("Failed to fetch non-labor accounts", err);
+//   }
+// };
+
+// const fetchNonLaborAccounts = async () => {
+//   if (!projectId || !formOpen) {
+//     setEmployeeNonLaborAccounts([]);
+//     setSubContractorNonLaborAccounts([]);
+//     setNonLaborAccounts([]);
+//     return;
+//   }
+
+//   try {
+//     const response = await axios.get(
+//       `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
+//     );
+
+//     const data = Array.isArray(response.data) ? response.data[0] : response.data;
+
+//     // Standard mapper to ensure accountId and acctName/name are consistent
+//     const mapAcc = (account) => ({
+//       id: account.accountId || account,
+//       accountId: account.accountId || account,
+//       acctName: account.acctName || account.accountId || String(account),
+//       name: account.acctName || account.accountId || String(account),
+//     });
+
+//     const uniqueEmployeeAccounts = (data.employeeNonLaborAccounts || []).map(mapAcc);
+//     const uniqueSubAccounts = (data.subContractorNonLaborAccounts || []).map(mapAcc);
+//     const uniqueOtherAccounts = (data.otherDirectCostNonLaborAccounts || []).map(mapAcc);
+
+//     setEmployeeNonLaborAccounts(uniqueEmployeeAccounts);
+//     setSubContractorNonLaborAccounts(uniqueSubAccounts);
+//     setOtherDirectCostNonLaborAccounts(uniqueOtherAccounts);
+
+//     // RESTRICTED FILTERING LOGIC based on ID Type
+//     let accounts = []; 
+
+//     if (newEntry.idType === "Employee") {
+//       accounts = uniqueEmployeeAccounts;
+//     } else if (newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") {
+//       accounts = uniqueSubAccounts;
+//     } else if (newEntry.idType === "Other") {
+//       accounts = [...uniqueEmployeeAccounts, ...uniqueSubAccounts, ...uniqueOtherAccounts];
+//     } else {
+//       accounts = [...uniqueEmployeeAccounts, ...uniqueSubAccounts, ...uniqueOtherAccounts];
+//     }
+
+//     // CRITICAL: We set the objects with both ID and Name
+//     setNonLaborAccounts(accounts);
+//     setAccountOptionsWithNames([...uniqueEmployeeAccounts, ...uniqueSubAccounts, ...uniqueOtherAccounts]);
+
+//   } catch (err) {
+//     setEmployeeNonLaborAccounts([]);
+//     setSubContractorNonLaborAccounts([]);
+//     setNonLaborAccounts([]);
+//     setOtherDirectCostNonLaborAccounts([]);
+//     if (planType?.toUpperCase() !== "NBBUD") {
+//       toast.error("Failed to fetch non-labor accounts");
+//     }
+//   }
+// };
+
+const fetchNonLaborAccounts = async () => {
+  if (!projectId || !formOpen) {
+    setEmployeeNonLaborAccounts([]);
+    setSubContractorNonLaborAccounts([]);
+    setNonLaborAccounts([]);
+    return;
+  }
+
+  try {
+    const response = await axios.get(
+      `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
+    );
+
+    const data = Array.isArray(response.data) ? response.data[0] : response.data;
+
+    // Standard mapper to ensure accountId and acctName are consistent
+    const mapAcc = (account) => ({
+      accountId: account.accountId,
+      acctName: account.acctName,
+    });
+
+    // Extract the three specific lists from API response
+    const empAccs = (data.employeeNonLaborAccounts || []).map(mapAcc);
+    const subAccs = (data.subContractorNonLaborAccounts || []).map(mapAcc);
+    const otherOdcAccs = (data.otherDirectCostNonLaborAccounts || []).map(mapAcc);
+
+    // Store them in individual states for reference
+    setEmployeeNonLaborAccounts(empAccs);
+    setSubContractorNonLaborAccounts(subAccs);
+    setOtherDirectCostNonLaborAccounts(otherOdcAccs);
+
+    // --- LOGIC CHANGE START ---
+    let filteredList = [];
+
+    if (newEntry.idType === "Employee") {
+      // Rule 1: Employee type sees Employee accounts only
+      filteredList = empAccs;
+    } else if (newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") {
+      // Rule 2: Vendor types see SubContractor accounts only
+      filteredList = subAccs;
+    } else if (newEntry.idType === "Other") {
+      // Rule 3: Other type sees ALL (Employee + Sub + ODC)
+      filteredList = [...empAccs, ...subAccs, ...otherOdcAccs];
+    } else {
+      // Default fallback
+      filteredList = [...empAccs, ...subAccs, ...otherOdcAccs];
+    }
+
+    setNonLaborAccounts(filteredList);
+    // --- LOGIC CHANGE END ---
+
+  } catch (err) {
+    console.error("Failed to fetch non-labor accounts", err);
+  }
+};
 
     if (formOpen) {
       fetchEmployees();
@@ -1145,9 +979,8 @@ const getSortIcon = (key) => {
       setSubContractorNonLaborAccounts([]);
       setEmployeeSuggestions([]);
     }
-    // Added newEntries here so that suggestions refresh every time a new row form is added
   }, [projectId, showNewForm, newEntry.idType, newEntries, isEditable]);
- 
+  
   useEffect(() => {
     const handleKeyDown = async (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "v") {
@@ -1387,6 +1220,16 @@ const getSortIcon = (key) => {
     }
   };
 
+  // Memoized org lookup for instant name resolution
+const orgLookup = useMemo(() => {
+  const lookup = new Map();
+  (organizationOptions || []).forEach(org => {
+    lookup.set(org.value.toString(), org);
+  });
+  return lookup;
+}, [organizationOptions]);
+
+
   const getEmployeeRow = (emp, idx) => {
     const monthAmounts = getMonthAmounts(emp);
     const totalAmount = sortedDurations.reduce((sum, duration) => {
@@ -1405,6 +1248,15 @@ const getSortIcon = (key) => {
       // Capitalize first letter, lowercase the rest
       return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     };
+
+   const organizationId = emp.emple?.orgId;
+  let resolvedOrgName = '-';
+  if (organizationId && organizationOptions.length > 0) {
+    const matchedOrg = organizationOptions.find(org => 
+      org.value.toString() === organizationId.toString()
+    );
+    resolvedOrgName = matchedOrg ? matchedOrg.orgName || matchedOrg.label.split(' - ')[1] || organizationId : organizationId;
+  }
 
     return {
       // idType: emp.emple.type || "-",
@@ -1425,7 +1277,8 @@ const getSortIcon = (key) => {
         );
         return accountWithName ? accountWithName.name : "-";
       })(), // ADD THIS FIELD
-      orgId: emp.emple.orgId || "-",
+      orgId: emp.emple?.orgId || '-',           // ✅ Column 6
+  orgName: resolvedOrgName || '-',    
       isRev: emp.emple.isRev ? (
         <span className="text-green-600 font-sm text-xl">✓</span>
       ) : (
@@ -1693,97 +1546,203 @@ const getSortIcon = (key) => {
     }
   };
 
-  const handleSaveFieldChanges = async () => {
-    if (editingRowIndex === null || !editedRowData[editingRowIndex]) {
-      toast.info("No field changes to save.", { autoClose: 2000 });
-      return;
-    }
+//   const handleSaveFieldChanges = async () => {
+//   if (editingRowIndex === null || !editedRowData[editingRowIndex]) {
+//     toast.info("No field changes to save.", { autoClose: 2000 });
+//     return;
+//   }
 
-    const emp = employees[editingRowIndex];
-    if (!emp || !emp.emple) {
-      toast.error("Employee data is missing for update.");
-      return;
-    }
+//   const emp = employees[editingRowIndex];
+//   if (!emp || !emp.emple) {
+//     toast.error("Employee data is missing for update.");
+//     return;
+//   }
 
-    const edited = editedRowData[editingRowIndex];
+//   const edited = editedRowData[editingRowIndex];
 
-    // ✅ FIXED: Added "Other" condition for validation
-    const validAccounts =
-      emp.emple.type === "Vendor" || emp.emple.type === "Vendor Employee"
-        ? subContractorNonLaborAccounts.map((a) => a.id || a.accountId || "")
-        : emp.emple.type === "Other"
-        ? otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId || "")
-        : employeeNonLaborAccounts.map((a) => a.id || a.accountId || "");
+//   // --- START VALIDATION LOGIC ---
+//   // Determine valid accounts based on ID Type to match the "New Entry" behavior
+//   let validAccounts = [];
+  
+//   if (emp.emple.type === "Vendor" || emp.emple.type === "Vendor Employee") {
+//     // Only Sub-Contractor accounts
+//     validAccounts = subContractorNonLaborAccounts.map((a) => a.id || a.accountId || "");
+//   } else if (emp.emple.type === "Other") {
+//     // COMBINE ALL THREE for "Other" type: Employee + Sub + Other Direct Cost
+//     validAccounts = [
+//       ...employeeNonLaborAccounts.map((a) => a.id || a.accountId || ""),
+//       ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId || ""),
+//       ...otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId || "")
+//     ];
+//   } else {
+//     // Default: Employee Non-Labor accounts
+//     validAccounts = employeeNonLaborAccounts.map((a) => a.id || a.accountId || "");
+//   }
 
-    if (edited.acctId && !validAccounts.includes(edited.acctId)) {
-      toast.error("Please select a valid account from suggestions");
-      return;
-    }
+//   // Validate Account Selection
+//   if (edited.acctId && !validAccounts.includes(edited.acctId)) {
+//     toast.error("Please select a valid account from suggestions");
+//     return; // STOP execution here to prevent API call and success toast
+//   }
 
-    const validOrgs = organizationOptions.map((org) => org.value);
-    if (edited.orgId && !validOrgs.includes(edited.orgId)) {
-      toast.error("Please select a valid organization from suggestions");
-      return;
-    }
+//   // Validate Organization Selection
+//   const validOrgs = organizationOptions.map((org) => org.value);
+//   if (edited.orgId && !validOrgs.includes(edited.orgId)) {
+//     toast.error("Please select a valid organization from suggestions");
+//     return; // STOP execution here
+//   }
+//   // --- END VALIDATION LOGIC ---
 
-    const payload = {
-      dctId: emp.emple.dctId || 0,
-      plId: emp.emple.plId || 0,
-      accId: edited.acctId !== undefined ? edited.acctId : emp.emple.accId,
-      orgId: edited.orgId !== undefined ? edited.orgId : emp.emple.orgId,
-      type: emp.emple.type || "",
-      category: emp.emple.category || "",
-      amountType: emp.emple.amountType || "",
-      id: emp.emple.emplId || "",
-      isRev: edited.isRev !== undefined ? edited.isRev : emp.emple.isRev,
-      isBrd: edited.isBrd !== undefined ? edited.isBrd : emp.emple.isBrd,
-      createdBy: emp.emple.createdBy || "System",
-      lastModifiedBy: "System",
-    };
+//   const payload = {
+//     dctId: emp.emple.dctId || 0,
+//     plId: emp.emple.plId || 0,
+//     accId: edited.acctId !== undefined ? edited.acctId : emp.emple.accId,
+//     orgId: edited.orgId !== undefined ? edited.orgId : emp.emple.orgId,
+//     type: emp.emple.type || "",
+//     category: emp.emple.category || "",
+//     amountType: emp.emple.amountType || "",
+//     id: emp.emple.emplId || "",
+//     isRev: edited.isRev !== undefined ? edited.isRev : emp.emple.isRev,
+//     isBrd: edited.isBrd !== undefined ? edited.isBrd : emp.emple.isBrd,
+//     createdBy: emp.emple.createdBy || "System",
+//     lastModifiedBy: "System",
+//   };
 
-    setIsLoading(true);
-    try {
-      await axios.put(
-        `${backendUrl}/DirectCost/UpdateDirectCost`,
-        { ...payload, acctId: payload.accId },
-        { headers: { "Content-Type": "application/json" } }
-      );
+//   setIsLoading(true);
+//   try {
+//     await axios.put(
+//       `${backendUrl}/DirectCost/UpdateDirectCost`,
+//       { ...payload, acctId: payload.accId },
+//       { headers: { "Content-Type": "application/json" } }
+//     );
 
-      // Clear edited data and reset states
-      setEditedRowData((prev) => {
-        const newData = { ...prev };
-        delete newData[editingRowIndex];
-        return newData;
-      });
+//     // Clear edited data and reset states only on success
+//     setEditedRowData((prev) => {
+//       const newData = { ...prev };
+//       delete newData[editingRowIndex];
+//       return newData;
+//     });
 
-      setEmployees((prev) => {
-        const updated = [...prev];
-        updated[editingRowIndex] = {
-          ...updated[editingRowIndex],
-          emple: {
-            ...updated[editingRowIndex].emple,
-            ...payload,
-          },
-        };
-        return updated;
-      });
+//     setEmployees((prev) => {
+//       const updated = [...prev];
+//       updated[editingRowIndex] = {
+//         ...updated[editingRowIndex],
+//         emple: {
+//           ...updated[editingRowIndex].emple,
+//           ...payload,
+//         },
+//       };
+//       return updated;
+//     });
 
-      setEditingRowIndex(null);
-      setHasUnsavedFieldChanges(false);
+//     setEditingRowIndex(null);
+//     setHasUnsavedFieldChanges(false);
 
-      toast.success("Employee updated successfully!", {
-        toastId: `employee-update-${editingRowIndex}`,
-        autoClose: 2000,
-      });
-    } catch (err) {
-      toast.error(
-        "Failed to update employee: " +
-          (err.response?.data?.message || err.message)
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+//     toast.success("Employee updated successfully!", {
+//       toastId: `employee-update-${editingRowIndex}`,
+//       autoClose: 2000,
+//     });
+//   } catch (err) {
+//     toast.error(
+//       "Failed to update employee: " +
+//         (err.response?.data?.message || err.message)
+//     );
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+  // const handleSaveFieldChanges = async () => {
+  //   if (editingRowIndex === null || !editedRowData[editingRowIndex]) {
+  //     toast.info("No field changes to save.", { autoClose: 2000 });
+  //     return;
+  //   }
+
+  //   const emp = employees[editingRowIndex];
+  //   if (!emp || !emp.emple) {
+  //     toast.error("Employee data is missing for update.");
+  //     return;
+  //   }
+
+  //   const edited = editedRowData[editingRowIndex];
+
+  //   // ✅ FIXED: Added "Other" condition for validation
+  //   const validAccounts =
+  //     emp.emple.type === "Vendor" || emp.emple.type === "Vendor Employee"
+  //       ? subContractorNonLaborAccounts.map((a) => a.id || a.accountId || "")
+  //       : emp.emple.type === "Other"
+  //       ? otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId || "")
+  //       : employeeNonLaborAccounts.map((a) => a.id || a.accountId || "");
+
+  //   if (edited.acctId && !validAccounts.includes(edited.acctId)) {
+  //     toast.error("Please select a valid account from suggestions");
+  //     return;
+  //   }
+
+  //   const validOrgs = organizationOptions.map((org) => org.value);
+  //   if (edited.orgId && !validOrgs.includes(edited.orgId)) {
+  //     toast.error("Please select a valid organization from suggestions");
+  //     return;
+  //   }
+
+  //   const payload = {
+  //     dctId: emp.emple.dctId || 0,
+  //     plId: emp.emple.plId || 0,
+  //     accId: edited.acctId !== undefined ? edited.acctId : emp.emple.accId,
+  //     orgId: edited.orgId !== undefined ? edited.orgId : emp.emple.orgId,
+  //     type: emp.emple.type || "",
+  //     category: emp.emple.category || "",
+  //     amountType: emp.emple.amountType || "",
+  //     id: emp.emple.emplId || "",
+  //     isRev: edited.isRev !== undefined ? edited.isRev : emp.emple.isRev,
+  //     isBrd: edited.isBrd !== undefined ? edited.isBrd : emp.emple.isBrd,
+  //     createdBy: emp.emple.createdBy || "System",
+  //     lastModifiedBy: "System",
+  //   };
+
+  //   setIsLoading(true);
+  //   try {
+  //     await axios.put(
+  //       `${backendUrl}/DirectCost/UpdateDirectCost`,
+  //       { ...payload, acctId: payload.accId },
+  //       { headers: { "Content-Type": "application/json" } }
+  //     );
+
+  //     // Clear edited data and reset states
+  //     setEditedRowData((prev) => {
+  //       const newData = { ...prev };
+  //       delete newData[editingRowIndex];
+  //       return newData;
+  //     });
+
+  //     setEmployees((prev) => {
+  //       const updated = [...prev];
+  //       updated[editingRowIndex] = {
+  //         ...updated[editingRowIndex],
+  //         emple: {
+  //           ...updated[editingRowIndex].emple,
+  //           ...payload,
+  //         },
+  //       };
+  //       return updated;
+  //     });
+
+  //     setEditingRowIndex(null);
+  //     setHasUnsavedFieldChanges(false);
+
+  //     toast.success("Employee updated successfully!", {
+  //       toastId: `employee-update-${editingRowIndex}`,
+  //       autoClose: 2000,
+  //     });
+  //   } catch (err) {
+  //     toast.error(
+  //       "Failed to update employee: " +
+  //         (err.response?.data?.message || err.message)
+  //     );
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
 //   const handleMasterSave = async () => {
 //   setIsLoading(true);
@@ -1900,86 +1859,165 @@ const getSortIcon = (key) => {
 //     setIsLoading(false);
 //   }
 // };
+const handleSaveFieldChanges = async () => {
+  if (editingRowIndex === null || !editedRowData[editingRowIndex]) {
+    // Return true because there was nothing to save (not a failure)
+    return true;
+  }
+
+  const emp = employees[editingRowIndex];
+  if (!emp || !emp.emple) {
+    toast.error("Employee data is missing for update.");
+    return false;
+  }
+
+  const edited = editedRowData[editingRowIndex];
+
+  // --- START VALIDATION LOGIC ---
+  let validAccounts = [];
+  
+  if (emp.emple.type === "Vendor" || emp.emple.type === "Vendor Employee") {
+    validAccounts = subContractorNonLaborAccounts.map((a) => a.id || a.accountId || "");
+  } else if (emp.emple.type === "Other") {
+    validAccounts = [
+      ...employeeNonLaborAccounts.map((a) => a.id || a.accountId || ""),
+      ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId || ""),
+      ...otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId || "")
+    ];
+  } else {
+    validAccounts = employeeNonLaborAccounts.map((a) => a.id || a.accountId || "");
+  }
+
+  if (edited.acctId && !validAccounts.includes(edited.acctId)) {
+    toast.error("Please select a valid account from suggestions");
+    return false; // STOP: Returns false to prevent Master Save success toast
+  }
+
+  const validOrgs = organizationOptions.map((org) => org.value);
+  if (edited.orgId && !validOrgs.includes(edited.orgId)) {
+    toast.error("Please select a valid organization from suggestions");
+    return false; // STOP
+  }
+  // --- END VALIDATION LOGIC ---
+
+  const payload = {
+    dctId: emp.emple.dctId || 0,
+    plId: emp.emple.plId || 0,
+    accId: edited.acctId !== undefined ? edited.acctId : emp.emple.accId,
+    orgId: edited.orgId !== undefined ? edited.orgId : emp.emple.orgId,
+    type: emp.emple.type || "",
+    category: emp.emple.category || "",
+    amountType: emp.emple.amountType || "",
+    id: emp.emple.emplId || "",
+    isRev: edited.isRev !== undefined ? edited.isRev : emp.emple.isRev,
+    isBrd: edited.isBrd !== undefined ? edited.isBrd : emp.emple.isBrd,
+    createdBy: emp.emple.createdBy || "System",
+    lastModifiedBy: "System",
+  };
+
+  setIsLoading(true);
+  try {
+    await axios.put(
+      `${backendUrl}/DirectCost/UpdateDirectCost`,
+      { ...payload, acctId: payload.accId },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    setEditedRowData((prev) => {
+      const newData = { ...prev };
+      delete newData[editingRowIndex];
+      return newData;
+    });
+
+    setEmployees((prev) => {
+      const updated = [...prev];
+      updated[editingRowIndex] = {
+        ...updated[editingRowIndex],
+        emple: { ...updated[editingRowIndex].emple, ...payload },
+      };
+      return updated;
+    });
+
+    setEditingRowIndex(null);
+    setHasUnsavedFieldChanges(false);
+
+    // toast.success("Employee updated successfully!", {
+    //   toastId: `employee-update-${editingRowIndex}`,
+    //   autoClose: 2000,
+    // });
+    return true; // SUCCESS: Allows Master Save to continue
+  } catch (err) {
+    toast.error("Failed to update employee: " + (err.response?.data?.message || err.message));
+    return false; // FAILURE: Blocks Master Save success toast
+  } finally {
+    setIsLoading(false);
+  }
+};
 
 const handleMasterSave = async () => {
-    setIsLoading(true);
-    try {
-      let saveSuccess = false;
+  setIsLoading(true);
+  try {
+    let saveSuccess = true;
 
-      // 1. Process New Entries or Manual Single Entry
-      if (newEntries.length > 0) {
-        saveSuccess = await handleSaveMultiplePastedEntries();
-      } else if (showNewForm && newEntry.id) {
-        saveSuccess = await handleSaveNewEntry();
-      } else {
-        saveSuccess = true; // Nothing new to save, just grid edits
-      }
-
-      // 2. STOP if saving new entries failed validation or API
-      if (!saveSuccess) {
-        setIsLoading(false);
-        return; 
-      }
-
-      // 3. Save existing grid edits
-      if (hasUnsavedAmountChanges) {
-        await handleSaveAllAmounts();
-      }
-
-      if (hasUnsavedFieldChanges) {
-        await handleSaveFieldChanges();
-      }
-
-      // if (onSaveSuccess) {
-      //   await onSaveSuccess(); 
-      // }
-
-      if (onSaveSuccess) {
-            isSilentRefreshing.current = true; // Tell the effect not to show the spinner
-            await onSaveSuccess(); 
-        }
-
-      // 4. RESET STATE only after successful database commit
-      setNewEntries([]);
-      setNewEntryPeriodAmountsArray([]); 
-      setShowNewForm(false);
-      setHasUnsavedAmountChanges(false);
-      setHasUnsavedFieldChanges(false);
-      setModifiedAmounts({});
-      setEditedRowData({});
-      setInputValues({});
-      // setSelectedRows(new Set());
-      // setShowCopyButton(false);
-
-      // 5. AUTOMATIC RELOAD: Call onSaveSuccess to trigger the parent's refresh logic
-      // if (onSaveSuccess) {
-      //   onSaveSuccess(); 
-      // }
-
-      toast.success("All changes saved successfully!");
-
-    } catch (err) {
-      console.error("Master Save Error:", err);
-    } finally {
-      setIsLoading(false);
+    // 1. Handle Multiple Pasted Entries (POST)
+    if (newEntries.length > 0) {
+      saveSuccess = await handleSaveMultiplePastedEntries();
+    } 
+    // 2. Handle Single Manual New Entry (POST)
+    else if (showNewForm && newEntry.id) {
+      saveSuccess = await handleSaveNewEntry();
     }
-  };
-  
-  
-  // handleCancelFieldChanges = () => {
-  //   if (editingRowIndex !== null) {
-  //     setEditedRowData((prev) => {
-  //       const newData = { ...prev };
-  //       delete newData[editingRowIndex];
-  //       return newData;
-  //     });
-  //   }
-  //   setEditingRowIndex(null);
-  //   setHasUnsavedFieldChanges(false);
-  //   toast.info("Field changes cancelled.", { autoClose: 1500 });
-  // };
 
-  // Combined cancel handler for both amounts and field changes
+    // CRITICAL: If new entry saving failed validation or API, STOP HERE.
+    if (!saveSuccess) {
+      setIsLoading(false);
+      return; 
+    }
+
+    // 3. Handle Field Changes (Account/Org validation inside handleSaveFieldChanges)
+    if (hasUnsavedFieldChanges) {
+      // Note: We need this to return a boolean to know if it succeeded
+      const fieldSuccess = await handleSaveFieldChanges();
+      if (!fieldSuccess) {
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // 4. Handle Grid Amount Changes (PUT Bulk)
+    if (hasUnsavedAmountChanges) {
+      await handleSaveAllAmounts();
+    }
+
+    // 5. Success Cleanup
+    if (onSaveSuccess) {
+      isSilentRefreshing.current = true;
+      await onSaveSuccess();
+    }
+
+    // Reset all states only after full database commit
+    setNewEntries([]);
+    setNewEntryPeriodAmountsArray([]);
+    setShowNewForm(false);
+    setHasUnsavedAmountChanges(false);
+    setHasUnsavedFieldChanges(false);
+    setModifiedAmounts({});
+    setEditedRowData({});
+    setInputValues({});
+    // setSelectedRows(new Set());
+    // setShowCopyButton(false);
+
+    toast.success("All changes saved successfully!");
+
+  } catch (err) {
+    console.error("Master Save Error:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+ 
   const handleCancelAllChanges = () => {
     // Cancel amount changes
     if (hasUnsavedAmountChanges) {
@@ -2115,658 +2153,128 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
     return 0;
 };
 
-  const handleFillValuesAmounts = () => {
-    if (!isEditable) return;
+  
+const handleFillValuesAmounts = () => {
+  if (!isEditable) return;
 
-    if (newEntries.length === 0) {
-      toast.error(
-        "Please add at least one new entry form to use Fill Values.",
-        { autoClose: 3000 }
-      );
-      return;
-    }
-    // --- 1. Basic Validation and Range Setup ---
-    if (!fillStartDate || !fillEndDate) {
-      toast.error("Start Period and End Period are required.", {
-        autoClose: 3000,
-      });
-      return;
-    }
+  // 1. Basic Validation and Range Setup
+  if (!fillStartDate || !fillEndDate) {
+    toast.error("Start Period and End Period are required.");
+    return;
+  }
 
-    const startDateObj = new Date(fillStartDate);
-    const endDateObj = new Date(fillEndDate);
-    if (endDateObj < startDateObj) {
-      toast.error("End Period cannot be before Start Period.", {
-        autoClose: 3000,
-      });
-      return;
-    }
+  const startDateObj = new Date(fillStartDate);
+  const endDateObj = new Date(fillEndDate);
+  if (endDateObj < startDateObj) {
+    toast.error("End Period cannot be before Start Period.");
+    return;
+  }
 
-    const amountToUse =
-      fillAmounts !== null && fillAmounts !== undefined
-        ? String(fillAmounts)
-        : "";
+  const toKeyNum = (y, m) => y * 100 + m;
+  const rangeStartKey = toKeyNum(startDateObj.getFullYear(), startDateObj.getMonth() + 1);
+  const rangeEndKey = toKeyNum(endDateObj.getFullYear(), endDateObj.getMonth() + 1);
 
-    if (fillMethod === "Specify Amounts" && amountToUse.trim() === "") {
-      toast.error("Please specify an amount to fill.", { autoClose: 3000 });
-      return;
-    }
-
-    const toKeyNum = (y, m) => y * 100 + m;
-    const rangeStartKey = toKeyNum(
-      startDateObj.getFullYear(),
-      startDateObj.getMonth() + 1
-    );
-    const rangeEndKey = toKeyNum(
-      endDateObj.getFullYear(),
-      endDateObj.getMonth() + 1
-    );
-    const isInRange = (duration) => {
-      const k = toKeyNum(duration.year, duration.monthNo);
-      return k >= rangeStartKey && k <= rangeEndKey;
-    };
-    // --- 2. Handle Bulk Copy Logic ---
-    if (fillMethod === "Copy From Source Record") {
-      const sourceIndices = Array.from(selectedRows).sort((a, b) => a - b);
-
-      // Error Check: Ensure we have at least one source row
-      if (sourceIndices.length === 0) {
-        toast.error(
-          "Please select at least one existing row in the main grid to use as the source.",
-          { autoClose: 5000 }
-        );
-        return;
-      }
-
-      // Apply bulk copy operation
-      setNewEntryPeriodAmountsArray((prevArray) =>
-        prevArray.map((amounts, entryIndex) => {
-          const sourceRowIdx = sourceIndices[entryIndex % sourceIndices.length];
-          const sourceEmp = employees[sourceRowIdx];
-          const sourceMonthAmounts = getMonthAmounts(sourceEmp);
-          const updatedAmounts = { ...amounts };
-
-          // Iterate over periods to copy values
-          sortedDurations.forEach((duration) => {
-            const uniqueKey = `${duration.monthNo}_${duration.year}`;
-
-            if (!isInRange(duration)) return;
-            if (
-              planType === "EAC" &&
-              !isMonthEditable(duration, closedPeriod, planType)
-            )
-              return;
-
-            // Get the source value (most current: input > committed)
-            const inputValue = inputValues[`${sourceRowIdx}_${uniqueKey}`];
-            const forecastValue = sourceMonthAmounts[uniqueKey]?.value;
-
-            const val =
-              inputValue !== undefined && inputValue !== ""
-                ? inputValue
-                : forecastValue !== undefined && forecastValue !== null
-                ? String(forecastValue)
-                : "";
-            updatedAmounts[uniqueKey] = val;
-          });
-
-          return updatedAmounts;
-        })
-      );
-
-      toast.success(
-        `Copied values from ${sourceIndices.length} source row(s) to ${newEntries.length} new entry form(s).`,
-        { autoClose: 4000 }
-      );
-    } else {
-      // --- 3. Handle Specify Amounts & Use Start Period Amounts Logic ---
-
-      setNewEntryPeriodAmountsArray((prevArray) =>
-        prevArray.map((amounts) => {
-          // Map through ALL new entries
-          const updatedAmounts = { ...amounts };
-          let effectiveStartPeriodKey = null;
-          let effectiveStartValue = "";
-          let effectiveStartNum = Infinity;
-
-          if (fillMethod === "Use Start Period Amounts") {
-            let startDuration = null;
-
-            // 1. Check for selected column key
-            if (selectedColumnKey) {
-              const [selMonthStr, selYearStr] = selectedColumnKey.split("_");
-              const selMonth = parseInt(selMonthStr, 10);
-              const selYear = parseInt(selYearStr, 10);
-              startDuration = sortedDurations.find(
-                (d) => d.monthNo === selMonth && d.year === selYear
-              );
-            }
-
-            // 2. Fallback: first month in the selected date range
-            if (!startDuration) {
-              startDuration = sortedDurations.find((d) => isInRange(d));
-            }
-
-            if (startDuration) {
-              effectiveStartPeriodKey = `${startDuration.monthNo}_${startDuration.year}`;
-              // Get the current value from THIS SPECIFIC new entry row (amounts)
-              effectiveStartValue =
-                updatedAmounts[effectiveStartPeriodKey] ?? "";
-              effectiveStartNum = toKeyNum(
-                startDuration.year,
-                startDuration.monthNo
-              );
-            } else {
-              return amounts; // Skip if no start period found in range/selection
-            }
-          }
-          sortedDurations.forEach((duration) => {
-            const uniqueKey = `${duration.monthNo}_${duration.year}`;
-
-            if (!isInRange(duration)) return;
-            if (
-              planType === "EAC" &&
-              !isMonthEditable(duration, closedPeriod, planType)
-            )
-              return;
-
-            let newValue;
-            if (fillMethod === "Specify Amounts") {
-              newValue = amountToUse;
-            } else if (
-              fillMethod === "Use Start Period Amounts" &&
-              effectiveStartPeriodKey
-            ) {
-              const currentNum = toKeyNum(duration.year, duration.monthNo);
-
-              // Fill forward from effective start month
-              if (currentNum >= effectiveStartNum) {
-                newValue = effectiveStartValue;
-              } else {
-                return; // Keep existing value if before the effective start period
-              }
-            } else {
-              return;
-            }
-            updatedAmounts[uniqueKey] = String(newValue);
-          });
-
-          return updatedAmounts;
-        })
-      );
-
-      if (fillMethod !== "None") {
-        toast.success(
-          `Values successfully applied to ${newEntries.length} new entry form(s).`,
-          { autoClose: 3000 }
-        );
-      }
-    }
-
-    // --- 4. Clean up state and close modal ---
-    setShowFillValues(false);
-    setFillMethod("None");
-    setFillAmounts("");
-    // Critical: Clear all selections after fill is complete
-    setSelectedRowIndex(null);
-    setSelectedColumnKey(null);
-    setSelectedRows(new Set());
+  const isInRange = (duration) => {
+    const k = toKeyNum(duration.year, duration.monthNo);
+    return k >= rangeStartKey && k <= rangeEndKey;
   };
 
+  // Identify Anchor Month for "Use Start Period Amounts"
+  let anchorMonthKey = selectedColumnKey;
+  if (!anchorMonthKey) {
+    const firstVis = sortedDurations.find(d => toKeyNum(d.year, d.monthNo) >= rangeStartKey);
+    if (firstVis) anchorMonthKey = `${firstVis.monthNo}_${firstVis.year}`;
+  }
+  const [aM, aY] = anchorMonthKey ? anchorMonthKey.split('_').map(Number) : [0, 0];
+  const anchorSortVal = toKeyNum(aY, aM);
 
-  
+  let newInputs = { ...inputValues };
+  let newModifiedAmounts = { ...modifiedAmounts };
+  let targetRowIdxForScroll = null;
 
-  // const handleSaveNewEntry = async () => {
-  //   if (!planId) {
-  //     toast.error("Plan ID is required to save a new entry.", {
-  //       toastId: "no-plan-id",
-  //       autoClose: 3000,
-  //     });
-  //     return;
-  //   }
+  // --- SOURCE PREPARATION (Only for Copy Method) ---
+  const sourceIdx = selectedRows.size > 0 ? Array.from(selectedRows)[0] : null;
+  const sourceEmp = sourceIdx !== null ? employees[sourceIdx] : null;
+  const sourceMonthAmounts = sourceEmp ? getMonthAmounts(sourceEmp) : {};
 
-  //   // Check for empty ID
-  //   if (!newEntry.id || newEntry.id.trim() === "") {
-  //     toast.error("ID is required to save a new entry.", {
-  //       toastId: "empty-id-error",
-  //       autoClose: 3000,
-  //     });
-  //     return;
-  //   }
+  // --- 2. Logic for NEW ENTRIES ---
+  if (newEntries.length > 0) {
+    setNewEntryPeriodAmountsArray(prevArray => 
+      prevArray.map((amounts) => {
+        const updatedAmounts = { ...amounts };
+        // Original logic: value from THIS row's anchor month
+        const valToCopyFromSelf = updatedAmounts[anchorMonthKey] || "0";
 
-  //   // **NEW VALIDATION: Check if ID is from valid suggestions (not for "Other" type)**
-  //   if (newEntry.idType !== "Other") {
-  //     const isValidEmployeeId = employeeSuggestions.some(
-  //       (emp) => emp.emplId === newEntry.id
-  //     );
+        sortedDurations.forEach(duration => {
+          const currentK = toKeyNum(duration.year, duration.monthNo);
+          if (currentK < rangeStartKey || currentK > rangeEndKey) return;
+          if (planType === "EAC" && !isMonthEditable(duration, closedPeriod, planType)) return;
 
-  //     if (!isValidEmployeeId) {
-  //       toast.error("Please select a valid employee ID from the suggestions.", {
-  //         toastId: "invalid-employee-selection",
-  //         autoClose: 3000,
-  //       });
-  //       return; // Prevent saving
-  //     }
-  //   }
+          const key = `${duration.monthNo}_${duration.year}`;
+          
+          if (fillMethod === "Copy From Source Record" && sourceEmp) {
+            updatedAmounts[key] = newInputs[`${sourceIdx}_${key}`] ?? String(sourceMonthAmounts[key]?.value || "0");
+          } else if (fillMethod === "Specify Amounts") {
+            updatedAmounts[key] = String(fillAmounts);
+          } else if (fillMethod === "Use Start Period Amounts") {
+            if (currentK >= anchorSortVal) updatedAmounts[key] = valToCopyFromSelf;
+          }
+        });
+        return updatedAmounts;
+      })
+    );
+  } 
 
-  //   // **NEW VALIDATION: Check if account is valid**
-  //   // if (newEntry.acctId) {
-  //   //   const validAccounts =
-  //   //     newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee"
-  //   //       ? subContractorNonLaborAccounts.map((a) => a.id || a.accountId)
-  //   //        : newEntry.idType === "Other"  // ADD THIS
-  //   //   ? otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId || "")
-  //   //       : employeeNonLaborAccounts.map((a) => a.id || a.accountId);
+  // --- 3. Logic for EXISTING ROWS (Checked Rows) ---
+  if (selectedRows.size > 0) {
+    const isDropdownCopy = fillMethod === "Copy From Source Record" && selectedSourceIdx !== "";
+    const targetIndices = isDropdownCopy ? [parseInt(selectedSourceIdx)] : Array.from(selectedRows);
+    
+    targetRowIdxForScroll = targetIndices[0];
 
-  //   //   if (!validAccounts.includes(newEntry.acctId)) {
-  //   //     toast.error("Please select a valid account from the suggestions.", {
-  //   //       toastId: "invalid-account-selection",
-  //   //       autoClose: 3000,
-  //   //     });
-  //   //     return;
-  //   //   }
-  //   // }
+    targetIndices.forEach(targetIdx => {
+      const targetEmp = employees[targetIdx];
+      if (!targetEmp) return;
 
-  //   // FIXED VALIDATION - Combine ALL accounts for Other type
-  //   if (newEntry.acctId) {
-  //     let validAccounts;
-  //     if (
-  //       newEntry.idType === "Vendor" ||
-  //       newEntry.idType === "Vendor Employee"
-  //     ) {
-  //       validAccounts = subContractorNonLaborAccounts.map(
-  //         (a) => a.id || a.accountId
-  //       );
-  //     } else if (newEntry.idType === "Other") {
-  //       // COMBINE ALL THREE LISTS for Other - THIS WAS MISSING
-  //       validAccounts = [
-  //         ...employeeNonLaborAccounts.map((a) => a.id || a.accountId),
-  //         ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId),
-  //         ...otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId),
-  //       ];
-  //     } else {
-  //       validAccounts = employeeNonLaborAccounts.map(
-  //         (a) => a.id || a.accountId
-  //       );
-  //     }
-
-  //     if (!validAccounts.includes(newEntry.acctId)) {
-  //       toast.error("Please select a valid account from the suggestions.", {
-  //         toastId: "invalid-account-selection",
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     }
-  //   }
-
-  //   //     if (newEntry.acctId) {
-  //   //   const validAccounts =
-  //   //     newEntry.idType === 'Vendor' || newEntry.idType === 'Vendor Employee'
-  //   //       ? subContractorNonLaborAccounts.map(a => a.id || a.accountId)
-  //   //       : newEntry.idType === 'Other'
-  //   //       ? otherDirectCostNonLaborAccounts.map(a => a.id || a.accountId)
-  //   //       : employeeNonLaborAccounts.map(a => a.id || a.accountId);
-
-  //   //   if (!validAccounts.includes(newEntry.acctId)) {
-  //   //     toast.error("Please select a valid account from the suggestions.", {
-  //   //       toastId: 'invalid-account-selection',
-  //   //       autoClose: 3000,
-  //   //     });
-  //   //     return;
-  //   //   }
-  //   // }
-
-  //   // **NEW VALIDATION: Check if organization is valid**
-  //   if (newEntry.orgId) {
-  //     const validOrgs = organizationOptions.map((org) => org.value);
-  //     if (!validOrgs.includes(newEntry.orgId)) {
-  //       toast.error(
-  //         "Please select a valid organization from the suggestions.",
-  //         {
-  //           toastId: "invalid-org-selection",
-  //           autoClose: 3000,
-  //         }
-  //       );
-  //       return;
-  //     }
-  //   }
-
-  //   // Check for duplicate ID
-  //   // const isDuplicateId = employees.some((emp) => {
-  //   //   const emple = emp.emple;
-  //   //   if (!emple) return false;
-  //   //   return emple.emplId === newEntry.id;
-  //   // });
-
-  //   // Check for duplicate ID (Combined ID + Account check)
-  //   const isDuplicateId = employees.some((emp) => {
-  //     const emple = emp.emple;
-  //     if (!emple) return false;
-
-  //     // Only consider it a duplicate if BOTH ID and Account match
-  //     return emple.emplId === newEntry.id && emple.accId === newEntry.acctId;
-  //   });
-
-  //   if (isDuplicateId) {
-  //     toast.error(
-  //       "An entry with this ID already exists; cannot save duplicate.",
-  //       {
-  //         toastId: "duplicate-id-error",
-  //         autoClose: 3000,
-  //       }
-  //     );
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-
-  //   const payloadForecasts = durations.map((duration) => ({
-  //     forecastedamt:
-  //       Number(newEntryPeriodAmounts[`${duration.monthNo}_${duration.year}`]) ||
-  //       0,
-  //     forecastid: 0,
-  //     projId: projectId,
-  //     plId: planId,
-  //     emplId: newEntry.id,
-  //     dctId: 0,
-  //     month: duration.monthNo,
-  //     year: duration.year,
-  //     totalBurdenCost: 0,
-  //     fees: 0,
-  //     burden: 0,
-  //     ccffRevenue: 0,
-  //     tnmRevenue: 0,
-  //     revenue: 0,
-  //     cost: 0,
-  //     fringe: 0,
-  //     overhead: 0,
-  //     gna: 0,
-  //     forecastedhours: 0,
-  //     updatedat: new Date().toISOString().split("T")[0],
-  //     displayText: "",
-  //     acctId: newEntry.acctId,
-  //     orgId: newEntry.orgId,
-  //     hrlyRate: Number(newEntry.perHourRate) || 0,
-  //     effectDt: null,
-  //   }));
-
-  //   const payload = {
-  //     dctId: 0,
-  //     plId: planId,
-  //     acctId: newEntry.acctId || "",
-  //     orgId: newEntry.orgId || "",
-  //     notes: "",
-  //     category:
-  //       newEntry.lastName && newEntry.firstName
-  //         ? `${newEntry.lastName}, ${newEntry.firstName}`
-  //         : newEntry.lastName || newEntry.firstName || "",
-  //     amountType: "",
-  //     id: newEntry.id,
-  //     type: newEntry.idType || "-",
-  //     isRev: newEntry.isRev || false,
-  //     isBrd: newEntry.isBrd || false,
-  //     status: newEntry.status || "-",
-  //     createdBy: "System",
-  //     lastModifiedBy: "System",
-  //     plForecasts: payloadForecasts,
-  //     plDct: {},
-  //   };
-
-  //   try {
-  //     const response = await axios.post(
-  //       `${backendUrl}/DirectCost/AddNewDirectCost`,
-  //       payload,
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
-
-  //     const newEmployee = {
-  //       emple: {
-  //         empleId: newEntry.id,
-  //         emplId: newEntry.id,
-  //         firstName: newEntry.firstName || "",
-  //         lastName: newEntry.lastName || "",
-  //         accId: newEntry.acctId || "",
-  //         orgId: newEntry.orgId || "",
-  //         perHourRate: Number(newEntry.perHourRate) || 0,
-  //         isRev: newEntry.isRev || false,
-  //         isBrd: newEntry.isBrd || false,
-  //         status: newEntry.status || "Act",
-  //         type: newEntry.idType || "Employee",
-  //         category:
-  //           newEntry.lastName && newEntry.firstName
-  //             ? `${newEntry.lastName}, ${newEntry.firstName}`
-  //             : newEntry.lastName || newEntry.firstName || "",
-  //         plForecasts: payloadForecasts.map((forecast) => ({
-  //           ...forecast,
-  //           forecastid:
-  //             response.data?.plForecasts?.find(
-  //               (f) => f.month === forecast.month && f.year === forecast.year
-  //             )?.forecastid || 0,
-  //           createdat: new Date().toISOString(),
-  //         })),
-  //       },
-  //     };
-
-  //     setEmployees((prevEmployees) => {
-  //       const employeeMap = new Map();
-  //       prevEmployees.forEach((emp) => {
-  //         const emplId = emp.emple.emplId || `auto-${Math.random()}`;
-  //         employeeMap.set(emplId, emp);
-  //       });
-  //       employeeMap.set(newEntry.id, newEmployee);
-  //       return Array.from(employeeMap.values());
-  //     });
-
-  //     setSuccessMessageText("Entry saved successfully!");
-  //     setShowSuccessMessage(true);
-  //     setShowNewForm(false);
-  //     setNewEntry({
-  //       id: "",
-  //       firstName: "",
-  //       lastName: "",
-  //       isRev: false,
-  //       isBrd: false,
-  //       idType: "",
-  //       acctId: "",
-  //       orgId: "",
-  //       perHourRate: "",
-  //       status: "Act",
-  //     });
-  //     setEmployeeSuggestions([]);
-  //     setNonLaborAccounts([]);
-
-  //     if (onSaveSuccess) {
-  //       onSaveSuccess();
-  //     }
-
-  //     toast.success("New entry saved and added to table!", {
-  //       toastId: "save-entry-success",
-  //       autoClose: 3000,
-  //     });
-  //   } catch (err) {
-  //     const errorMessage = err.response?.data?.errors
-  //       ? Object.entries(err.response.data.errors)
-  //           .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-  //           .join("; ")
-  //       : err.response?.data?.message || err.message;
-  //     setSuccessMessageText("Failed to save entry.");
-  //     setShowSuccessMessage(true);
-  //     toast.error(`Failed to save new entry: ${errorMessage}`, {
-  //       toastId: "save-entry-error",
-  //       autoClose: 5000,
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //     setTimeout(() => setShowSuccessMessage(false), 2000);
-  //   }
-  // };
-  
-  // const handleSaveNewEntry = async () => {
-  //   if (!planId) {
-  //     toast.error("Plan ID is required to save a new entry.", {
-  //       toastId: "no-plan-id",
-  //       autoClose: 3000,
-  //     });
-  //     return;
-  //   }
-
-  //   if (!newEntry.id || newEntry.id.trim() === "") {
-  //     toast.error("ID is required to save a new entry.", {
-  //       toastId: "empty-id-error",
-  //       autoClose: 3000,
-  //     });
-  //     return;
-  //   }
-
-  //   if (newEntry.idType !== "Other") {
-  //     const isValidEmployeeId = employeeSuggestions.some(
-  //       (emp) => emp.emplId === newEntry.id
-  //     );
-  //     if (!isValidEmployeeId) {
-  //       toast.error("Please select a valid employee ID from the suggestions.", {
-  //         toastId: "invalid-employee-selection",
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     }
-  //   }
-
-  //   if (newEntry.acctId) {
-  //     let validAccounts;
-  //     if (newEntry.idType === "Vendor" || newEntry.idType === "Vendor Employee") {
-  //       validAccounts = subContractorNonLaborAccounts.map((a) => a.id || a.accountId);
-  //     } else if (newEntry.idType === "Other") {
-  //       validAccounts = [
-  //         ...employeeNonLaborAccounts.map((a) => a.id || a.accountId),
-  //         ...subContractorNonLaborAccounts.map((a) => a.id || a.accountId),
-  //         ...otherDirectCostNonLaborAccounts.map((a) => a.id || a.accountId),
-  //       ];
-  //     } else {
-  //       validAccounts = employeeNonLaborAccounts.map((a) => a.id || a.accountId);
-  //     }
-
-  //     if (!validAccounts.includes(newEntry.acctId)) {
-  //       toast.error("Please select a valid account from the suggestions.", {
-  //         toastId: "invalid-account-selection",
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     }
-  //   }
-
-  //   if (newEntry.orgId) {
-  //     const validOrgs = organizationOptions.map((org) => org.value);
-  //     if (!validOrgs.includes(newEntry.orgId)) {
-  //       toast.error("Please select a valid organization from the suggestions.", {
-  //         toastId: "invalid-org-selection",
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     }
-  //   }
-
-  //   const isDuplicateId = employees.some((emp) => {
-  //     const emple = emp.emple;
-  //     if (!emple) return false;
-  //     return emple.emplId === newEntry.id && emple.accId === newEntry.acctId;
-  //   });
-
-  //   if (isDuplicateId) {
-  //     toast.error("An entry with this ID already exists; cannot save duplicate.", {
-  //       toastId: "duplicate-id-error",
-  //       autoClose: 3000,
-  //     });
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-
-  //   const payloadForecasts = durations.map((duration) => ({
-  //     forecastedamt: Number(newEntryPeriodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
-  //     forecastid: 0,
-  //     projId: projectId,
-  //     plId: planId,
-  //     emplId: newEntry.id,
-  //     dctId: 0,
-  //     month: duration.monthNo,
-  //     year: duration.year,
-  //     totalBurdenCost: 0,
-  //     fees: 0,
-  //     burden: 0,
-  //     ccffRevenue: 0,
-  //     tnmRevenue: 0,
-  //     revenue: 0,
-  //     cost: 0,
-  //     fringe: 0,
-  //     overhead: 0,
-  //     gna: 0,
-  //     forecastedhours: 0,
-  //     updatedat: new Date().toISOString().split("T")[0],
-  //     displayText: "",
-  //     acctId: newEntry.acctId,
-  //     orgId: newEntry.orgId,
-  //     hrlyRate: Number(newEntry.perHourRate) || 0,
-  //     effectDt: null,
-  //   }));
-
-  //   const payload = {
-  //     dctId: 0,
-  //     plId: planId,
-  //     acctId: newEntry.acctId || "",
-  //     orgId: newEntry.orgId || "",
-  //     notes: "",
-  //     category: newEntry.lastName && newEntry.firstName
-  //       ? `${newEntry.lastName}, ${newEntry.firstName}`
-  //       : newEntry.lastName || newEntry.firstName || "",
-  //     amountType: "",
-  //     id: newEntry.id,
-  //     type: newEntry.idType || "-",
-  //     isRev: newEntry.isRev || false,
-  //     isBrd: newEntry.isBrd || false,
-  //     status: newEntry.status || "-",
-  //     createdBy: "System",
-  //     lastModifiedBy: "System",
-  //     plForecasts: payloadForecasts,
-  //     plDct: {},
-  //   };
-
-  //   try {
-  //     // REPLACED: Bulk API with dynamic parameters and Array payload
-  //     const response = await axios.post(
-  //       `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
-  //       [payload],
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
-
-  //     setSuccessMessageText("Entry saved successfully!");
-  //     setShowSuccessMessage(true);
-  //     setShowNewForm(false);
+      const valToCopyFromSelf = newInputs[`${targetIdx}_${anchorMonthKey}`] ?? String(getMonthAmounts(targetEmp)[anchorMonthKey]?.value || "0");
       
-  //     // Cleanup logic preserved
-  //     setNewEntry({
-  //       id: "", firstName: "", lastName: "", isRev: false, isBrd: false,
-  //       idType: "", acctId: "", orgId: "", perHourRate: "", status: "Act",
-  //     });
-  //     setEmployeeSuggestions([]);
-  //     setNonLaborAccounts([]);
+      sortedDurations.forEach(d => {
+        const currentK = toKeyNum(d.year, d.monthNo);
+        if (currentK < rangeStartKey || currentK > rangeEndKey) return;
+        if (planType === "EAC" && !isMonthEditable(d, closedPeriod, planType)) return;
 
-  //     if (onSaveSuccess) onSaveSuccess();
+        const key = `${d.monthNo}_${d.year}`;
+        const inputKey = `${targetIdx}_${key}`;
+        let val;
 
-  //     toast.success("New entry saved and added to table!", {
-  //       toastId: "save-entry-success",
-  //       autoClose: 3000,
-  //     });
-  //   } catch (err) {
-  //     const errorMessage = err.response?.data?.message || err.message;
-  //     toast.error(`Failed to save new entry: ${errorMessage}`, {
-  //       toastId: "save-entry-error",
-  //       autoClose: 5000,
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //     setTimeout(() => setShowSuccessMessage(false), 2000);
-  //   }
-  // };
+        if (isDropdownCopy && sourceEmp) {
+          val = newInputs[`${sourceIdx}_${key}`] ?? String(sourceMonthAmounts[key]?.value || "0");
+        } else if (fillMethod === "Specify Amounts") {
+          val = String(fillAmounts);
+        } else if (fillMethod === "Use Start Period Amounts") {
+           if (currentK >= anchorSortVal) val = valToCopyFromSelf;
+           else return;
+        } else return;
+
+        newInputs[inputKey] = val;
+        newModifiedAmounts[inputKey] = { empIdx: targetIdx, uniqueKey: key, newValue: val, employee: targetEmp };
+      });
+    });
+  }
+
+  setInputValues(newInputs);
+  setModifiedAmounts(newModifiedAmounts);
+  setHasUnsavedAmountChanges(true);
+  setShowFillValues(false);
+
+  if (targetRowIdxForScroll !== null && newEntries.length === 0) {
+    setFindMatches([{ empIdx: targetRowIdxForScroll, isFillHighlight: true }]);
+    setTimeout(() => { setFindMatches([]); }, 4000);
+  }
+
+  setSelectedSourceIdx(""); 
+  toast.success("Values applied successfully");
+};
 
   const handleSaveNewEntry = async () => {
     if (!planId) {
@@ -2963,6 +2471,8 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
     otherDirectCostNonLaborAccounts,
     organizationOptions,
   ]);
+
+  
 
   // const handleSaveMultiplePastedEntries = async () => {
   //   if (newEntries.length === 0) {
@@ -3416,103 +2926,103 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
   //   }
   // };
 
-  const handleSaveMultiplePastedEntries = async () => {
-  if (newEntries.length === 0) return true;
+//   const handleSaveMultiplePastedEntries = async () => {
+//   if (newEntries.length === 0) return true;
 
-  if (!planId) {
-    toast.error("Plan ID is required to save entries.");
-    return false;
-  }
+//   if (!planId) {
+//     toast.error("Plan ID is required to save entries.");
+//     return false;
+//   }
 
-  // setIsLoading(true);
-  let validationFailed = false;
-  const bulkPayload = [];
+//   // setIsLoading(true);
+//   let validationFailed = false;
+//   const bulkPayload = [];
 
-  try {
-    for (let i = 0; i < newEntries.length; i++) {
-      const entry = newEntries[i];
-      const periodAmounts = newEntryPeriodAmountsArray[i] || {};
+//   try {
+//     for (let i = 0; i < newEntries.length; i++) {
+//       const entry = newEntries[i];
+//       const periodAmounts = newEntryPeriodAmountsArray[i] || {};
 
-      // 1. Basic ID Check
-      if (!entry.id || entry.id.trim() === "") {
-        toast.error(`Entry ${i + 1}: ID is required.`);
-        validationFailed = true; break;
-      }
+//       // 1. Basic ID Check
+//       if (!entry.id || entry.id.trim() === "") {
+//         toast.error(`Entry ${i + 1}: ID is required.`);
+//         validationFailed = true; break;
+//       }
 
-      // 2. Account Validation (Ensure suggestions are loaded and valid)
-      const validAccountsForThisEntry = pastedEntryAccounts[i] || [];
-      if (entry.acctId && validAccountsForThisEntry.length > 0) {
-          const isValidAcc = validAccountsForThisEntry.some(acc => (acc.id || acc.accountId) === entry.acctId);
-          if (!isValidAcc) {
-              toast.error(`Invalid account ${entry.acctId} for entry ${entry.id}`);
-              validationFailed = true; break;
-          }
-      }
+//       // 2. Account Validation (Ensure suggestions are loaded and valid)
+//       const validAccountsForThisEntry = pastedEntryAccounts[i] || [];
+//       if (entry.acctId && validAccountsForThisEntry.length > 0) {
+//           const isValidAcc = validAccountsForThisEntry.some(acc => (acc.id || acc.accountId) === entry.acctId);
+//           if (!isValidAcc) {
+//               toast.error(`Invalid account ${entry.acctId} for entry ${entry.id}`);
+//               validationFailed = true; break;
+//           }
+//       }
 
-      const payloadForecasts = durations.map((duration) => ({
-        forecastedamt: Number(periodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
-        forecastid: 0,
-        projId: projectId,
-        plId: planId,
-        emplId: entry.id.trim(),
-        dctId: 0,
-        month: duration.monthNo,
-        year: duration.year,
-        updatedat: new Date().toISOString().split("T")[0],
-        acctId: entry.acctId,
-        orgId: entry.orgId,
-        hrlyRate: 0,
-        effectDt: null,
-      }));
+//       const payloadForecasts = durations.map((duration) => ({
+//         forecastedamt: Number(periodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
+//         forecastid: 0,
+//         projId: projectId,
+//         plId: planId,
+//         emplId: entry.id.trim(),
+//         dctId: 0,
+//         month: duration.monthNo,
+//         year: duration.year,
+//         updatedat: new Date().toISOString().split("T")[0],
+//         acctId: entry.acctId,
+//         orgId: entry.orgId,
+//         hrlyRate: 0,
+//         effectDt: null,
+//       }));
 
-      bulkPayload.push({
-        dctId: 0,
-        plId: planId,
-        acctId: entry.acctId || "",
-        orgId: entry.orgId || "",
-        category: entry.lastName && entry.firstName
-          ? `${entry.lastName}, ${entry.firstName}`
-          : entry.lastName || entry.firstName || "",
-        id: entry.id.trim(),
-        type: entry.idType || "-",
-        isRev: entry.isRev || false,
-        isBrd: entry.isBrd || false,
-        status: entry.status || "Act",
-        createdBy: "System",
-        lastModifiedBy: "System",
-        plForecasts: payloadForecasts,
-      });
-    }
+//       bulkPayload.push({
+//         dctId: 0,
+//         plId: planId,
+//         acctId: entry.acctId || "",
+//         orgId: entry.orgId || "",
+//         category: entry.lastName && entry.firstName
+//           ? `${entry.lastName}, ${entry.firstName}`
+//           : entry.lastName || entry.firstName || "",
+//         id: entry.id.trim(),
+//         type: entry.idType || "-",
+//         isRev: entry.isRev || false,
+//         isBrd: entry.isBrd || false,
+//         status: entry.status || "Act",
+//         createdBy: "System",
+//         lastModifiedBy: "System",
+//         plForecasts: payloadForecasts,
+//       });
+//     }
 
-    if (validationFailed) {
-      // setIsLoading(false);
-      return false;
-    }
+//     if (validationFailed) {
+//       // setIsLoading(false);
+//       return false;
+//     }
 
-    if (bulkPayload.length > 0) {
-      await axios.post(
-        `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
-        bulkPayload,
-        { headers: { "Content-Type": "application/json" } }
-      );
-      return true; 
-    }
-    return true;
+//     if (bulkPayload.length > 0) {
+//       await axios.post(
+//         `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
+//         bulkPayload,
+//         { headers: { "Content-Type": "application/json" } }
+//       );
+//       return true; 
+//     }
+//     return true;
 
-  } catch (err) {
-    // console.error("Save multiple entries error:", err);
-    // FIX: Catch the specific "Employee already exists" or other backend error
-    const apiError = err.response?.data?.error || err.response?.data?.message || err.message;
-    toast.error(apiError, {
-      autoClose: 5000,
-      toastId: "backend-error-direct-cost"
-    });
-    return false;
-  } 
-  // finally {
-  //   setIsLoading(false);
-  // }
-};
+//   } catch (err) {
+//     // console.error("Save multiple entries error:", err);
+//     // FIX: Catch the specific "Employee already exists" or other backend error
+//     const apiError = err.response?.data?.error || err.response?.data?.message || err.message;
+//     toast.error(apiError, {
+//       autoClose: 5000,
+//       toastId: "backend-error-direct-cost"
+//     });
+//     return false;
+//   } 
+//   // finally {
+//   //   setIsLoading(false);
+//   // }
+// };
   
 //   const handleSaveMultiplePastedEntries = async () => {
 //   if (newEntries.length === 0) return true;
@@ -3617,6 +3127,102 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
 //     setIsLoading(false);
 //   }
 // };
+  
+  const handleSaveMultiplePastedEntries = async () => {
+  if (newEntries.length === 0) return true;
+
+  if (!planId) {
+    toast.error("Plan ID is required to save entries.");
+    return false;
+  }
+
+  let validationFailed = false;
+  const bulkPayload = [];
+
+  try {
+    for (let i = 0; i < newEntries.length; i++) {
+      const entry = newEntries[i];
+      const periodAmounts = newEntryPeriodAmountsArray[i] || {};
+
+      // 1. Basic ID Check
+      if (!entry.id || entry.id.trim() === "") {
+        toast.error(`Entry ${i + 1}: ID is required.`);
+        validationFailed = true; break;
+      }
+
+      // 2. STRICT ACCOUNT VALIDATION
+      // Check if selected Account exists in the allowed suggestions for this specific row type
+      const rowValidAccounts = getAccountSuggestionsByType(entry.idType);
+      const isAccValid = rowValidAccounts.some(acc => (acc.accountId || acc.id) === entry.acctId);
+      
+      if (!isAccValid) {
+        toast.error(`Row ${i + 1}: Invalid Account ID "${entry.acctId}". Please select from the suggestion list.`);
+        validationFailed = true; break;
+      }
+
+      // 3. STRICT ORGANIZATION VALIDATION
+      // Check if selected Org exists in the master organizationOptions list
+      const isOrgValid = organizationOptions.some(org => String(org.value) === String(entry.orgId));
+      
+      if (!isOrgValid) {
+        toast.error(`Row ${i + 1}: Invalid Organization "${entry.orgId}". Please select from the suggestion list.`);
+        validationFailed = true; break;
+      }
+
+      // 4. Construct Forecasts for this entry
+      const payloadForecasts = durations.map((duration) => ({
+        forecastedamt: Number(periodAmounts[`${duration.monthNo}_${duration.year}`]) || 0,
+        forecastid: 0,
+        projId: projectId,
+        plId: planId,
+        emplId: entry.id.trim(),
+        dctId: 0,
+        month: duration.monthNo,
+        year: duration.year,
+        updatedat: new Date().toISOString().split("T")[0],
+        acctId: entry.acctId,
+        orgId: entry.orgId,
+        hrlyRate: 0,
+        effectDt: null,
+      }));
+
+      bulkPayload.push({
+        dctId: 0,
+        plId: planId,
+        acctId: entry.acctId || "",
+        orgId: entry.orgId || "",
+        category: entry.lastName && entry.firstName
+          ? `${entry.lastName}, ${entry.firstName}`
+          : entry.lastName || entry.firstName || "",
+        id: entry.id.trim(),
+        type: entry.idType || "-",
+        isRev: entry.isRev || false,
+        isBrd: entry.isBrd || false,
+        status: entry.status || "Act",
+        createdBy: "System",
+        lastModifiedBy: "System",
+        plForecasts: payloadForecasts,
+      });
+    }
+
+    if (validationFailed) return false;
+
+    if (bulkPayload.length > 0) {
+      await axios.post(
+        `${backendUrl}/DirectCost/AddNewDirectCosts?plid=${planId}&templateid=${templateId}`,
+        bulkPayload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      return true; 
+    }
+    return true;
+
+  } catch (err) {
+    const apiError = err.response?.data?.error || err.response?.data?.message || err.message;
+    toast.error(apiError, { autoClose: 5000, toastId: "backend-error-direct-cost" });
+    return false;
+  } 
+};
 
   const handleRowClickMultiple = (actualEmpIdx) => {
     if (!isEditable) return;
@@ -4263,12 +3869,18 @@ const handleFindReplace = async () => {
       
       setInputValues(updatedInputValues);
       toast.success(`Replaced ${replacementsCount} matches.`);
-      if (onSaveSuccess) onSaveSuccess();
+
+      if (onSaveSuccess) {
+        isSilentRefreshing.current = true; 
+        await onSaveSuccess(); 
+      }
+      
     } else {
       toast.info("No matching values found.");
     }
+      
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     toast.error("Error: " + (err.response?.data?.message || err.message));
   } finally {
     setIsLoading(false);
@@ -4276,8 +3888,8 @@ const handleFindReplace = async () => {
     // Reset specific states to prevent leftover highlights
     setFindValue("");
     setReplaceValue("");
-    setSelectedRowIndex(null);
-    setSelectedColumnKey(null);
+    // setSelectedRowIndex(null);
+    // setSelectedColumnKey(null);
   }
 };
 
@@ -4772,141 +4384,376 @@ const isIndeterminate =
   //       toast.error("Failed to copy data.", { autoClose: 3000 });
   //     });
   // };
-  const handleCopySelectedRows = () => {
-    if (selectedRows.size === 0) {
-      toast.info("No rows selected to copy.", { autoClose: 2000 });
-      return;
-    }
 
-    // COPY ALL DURATIONS (not filtered by fiscal year) - use spread to avoid mutation
-    // const sortedDurations = [...durations].sort((a, b) => {
-    //   if (a.year !== b.year) return a.year - b.year;
-    //   return a.monthNo - b.monthNo;
-    // });
+  const handleCopySelectedRows = async () => {
+  if (selectedRows.size === 0) {
+    toast.info("No rows selected to copy.", { autoClose: 2000 });
+    return;
+  }
 
-    const headers = [
-      "ID Type",
-      "ID",
-      "Name",
-      "Account",
-      "Account Name",
-      "Organization",
-      "Rev",
-      "Brd",
-      "Status",
-      "Total",
-    ];
+  // Use ALL durations to ensure all fiscal years are captured
+  const allAvailableDurations = [...durations].sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.monthNo - b.monthNo;
+  });
 
-    // Store month metadata for matching during paste
-    const monthMetadata = [];
+  // EXACT column order to match your getEmployeeRow structure
+  const headers = [
+    "ID Type", "ID", "Name", "Account", "Account Name", 
+    "Org Id", "Org Name", "Rev", "Brd", "Status", "Total"
+  ];
 
-    // GENERATE MONTH NAMES CORRECTLY
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
+  const monthMetadata = [];
+  allAvailableDurations.forEach(duration => {
+    const monthName = new Date(duration.year, duration.monthNo - 1)
+      .toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    headers.push(monthName);
+    monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+  });
 
-    sortedDurations.forEach((duration) => {
-      // Use direct month mapping instead of Date object
-      const monthName = `${monthNames[duration.monthNo - 1]} ${duration.year}`;
-      headers.push(monthName);
-      monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
-    });
+  const copyData = [headers];
+  const structuredData = [];
 
-    const copyData = [headers];
-    const structuredData = [];
+  selectedRows.forEach(rowIndex => {
+    const emp = employees[rowIndex];
+    if (emp && emp.emple && !hiddenRows[rowIndex]) {
+      const employeeRow = getEmployeeRow(emp, rowIndex);
+      
+      // Ensure this array matches 'headers' length exactly
+      const rowData = [
+        employeeRow.idType,
+        employeeRow.emplId,
+        employeeRow.name,
+        employeeRow.acctId,
+        employeeRow.acctName,
+        employeeRow.orgId,
+        employeeRow.orgName || "-", // Added Org Name to prevent shifting
+        (emp.emple.isRev ? '✓' : '-'), // Simple string for Excel
+        (emp.emple.isBrd ? '✓' : '-'),
+        employeeRow.status,
+        employeeRow.total, // Positioned at index 10
+      ];
 
-    selectedRows.forEach((rowIndex) => {
-      const emp = employees[rowIndex];
-      if (emp && emp.emple && !hiddenRows[rowIndex]) {
-        const employeeRow = getEmployeeRow(emp, rowIndex);
-        const rowData = [
-          employeeRow.idType,
-          employeeRow.emplId,
-          employeeRow.name,
-          employeeRow.acctId,
-          employeeRow.acctName,
-          employeeRow.orgId,
-          typeof employeeRow.isRev === "object"
-            ? "✓"
-            : employeeRow.isRev === true
-            ? "✓"
-            : "-",
-          typeof employeeRow.isBrd === "object"
-            ? "✓"
-            : employeeRow.isBrd === true
-            ? "✓"
-            : "-",
-          employeeRow.status,
-          employeeRow.total,
-        ];
-
-        sortedDurations.forEach((duration) => {
-          const uniqueKey = `${duration.monthNo}_${duration.year}`;
-          const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
-          const monthAmounts = getMonthAmounts(emp);
-          const forecastValue = monthAmounts[uniqueKey]?.value;
-
-          // Format the value properly
-          let value = "0.00";
-          if (
-            inputValue !== undefined &&
-            inputValue !== "" &&
-            inputValue !== null
-          ) {
-            value = parseFloat(inputValue).toFixed(2);
-          } else if (
-            forecastValue !== undefined &&
-            forecastValue !== "" &&
-            forecastValue !== null
-          ) {
-            value = parseFloat(forecastValue).toFixed(2);
-          }
-
-          rowData.push(value);
-        });
-
-        copyData.push(rowData);
-        structuredData.push(rowData);
-      }
-    });
-
-    const tsvContent = copyData.map((row) => row.join("\t")).join("\n");
-
-    navigator.clipboard
-      .writeText(tsvContent)
-      .then(() => {
-        setCopiedRowsData(() => structuredData);
-        setCopiedMonthMetadata(() => monthMetadata);
-        setHasClipboardData(() => true);
-
-        toast.success(
-          `Copied ${structuredData.length} rows with all fiscal year data!`,
-          {
-            autoClose: 3000,
-          }
-        );
-
-        // Promise.resolve().then(() => {
-        //   setSelectedRows(new Set());
-        //   setShowCopyButton(false);
-        // });
-      })
-      .catch((err) => {
-        console.error("Copy failed:", err);
-        toast.error("Failed to copy data.", { autoClose: 3000 });
+      // Add monthly values
+      const empMonthAmounts = getMonthAmounts(emp);
+      allAvailableDurations.forEach(duration => {
+        const uniqueKey = `${duration.monthNo}_${duration.year}`;
+        const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
+        const forecastValue = empMonthAmounts[uniqueKey]?.value;
+        const value = inputValue !== undefined && inputValue !== "" ? inputValue : (forecastValue || "0.00");
+        rowData.push(value);
       });
-  };
+
+      copyData.push(rowData);
+      structuredData.push(rowData);
+    }
+  });
+
+  const tsvContent = copyData.map(row => row.join('\t')).join('\n');
+  navigator.clipboard.writeText(tsvContent).then(() => {
+    setCopiedRowsData(structuredData);
+    setCopiedMonthMetadata(monthMetadata);
+    setHasClipboardData(true);
+    toast.success(`Copied ${structuredData.length} rows with all fiscal years!`);
+    setSelectedRows(new Set());
+    setShowCopyButton(false);
+  });
+};
+
+  // const handleCopySelectedRows = () => {
+  //   if (selectedRows.size === 0) {
+  //     toast.info("No rows selected to copy.", { autoClose: 2000 });
+  //     return;
+  //   }
+
+  //   // COPY ALL DURATIONS (not filtered by fiscal year) - use spread to avoid mutation
+  //   // const sortedDurations = [...durations].sort((a, b) => {
+  //   //   if (a.year !== b.year) return a.year - b.year;
+  //   //   return a.monthNo - b.monthNo;
+  //   // });
+
+  //   const headers = [
+  //     "ID Type",
+  //     "ID",
+  //     "Name",
+  //     "Account",
+  //     "Account Name",
+  //     "Organization",
+  //     "Rev",
+  //     "Brd",
+  //     "Status",
+  //     "Total",
+  //   ];
+
+  //   // Store month metadata for matching during paste
+  //   const monthMetadata = [];
+
+  //   // GENERATE MONTH NAMES CORRECTLY
+  //   const monthNames = [
+  //     "Jan",
+  //     "Feb",
+  //     "Mar",
+  //     "Apr",
+  //     "May",
+  //     "Jun",
+  //     "Jul",
+  //     "Aug",
+  //     "Sep",
+  //     "Oct",
+  //     "Nov",
+  //     "Dec",
+  //   ];
+
+  //   sortedDurations.forEach((duration) => {
+  //     // Use direct month mapping instead of Date object
+  //     const monthName = `${monthNames[duration.monthNo - 1]} ${duration.year}`;
+  //     headers.push(monthName);
+  //     monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+  //   });
+
+  //   const copyData = [headers];
+  //   const structuredData = [];
+
+  //   selectedRows.forEach((rowIndex) => {
+  //     const emp = employees[rowIndex];
+  //     if (emp && emp.emple && !hiddenRows[rowIndex]) {
+  //       const employeeRow = getEmployeeRow(emp, rowIndex);
+  //       const rowData = [
+  //         employeeRow.idType,
+  //         employeeRow.emplId,
+  //         employeeRow.name,
+  //         employeeRow.acctId,
+  //         employeeRow.acctName,
+  //         employeeRow.orgId,
+  //         typeof employeeRow.isRev === "object"
+  //           ? "✓"
+  //           : employeeRow.isRev === true
+  //           ? "✓"
+  //           : "-",
+  //         typeof employeeRow.isBrd === "object"
+  //           ? "✓"
+  //           : employeeRow.isBrd === true
+  //           ? "✓"
+  //           : "-",
+  //         employeeRow.status,
+  //         employeeRow.total,
+  //       ];
+
+  //       sortedDurations.forEach((duration) => {
+  //         const uniqueKey = `${duration.monthNo}_${duration.year}`;
+  //         const inputValue = inputValues[`${rowIndex}_${uniqueKey}`];
+  //         const monthAmounts = getMonthAmounts(emp);
+  //         const forecastValue = monthAmounts[uniqueKey]?.value;
+
+  //         // Format the value properly
+  //         let value = "0.00";
+  //         if (
+  //           inputValue !== undefined &&
+  //           inputValue !== "" &&
+  //           inputValue !== null
+  //         ) {
+  //           value = parseFloat(inputValue).toFixed(2);
+  //         } else if (
+  //           forecastValue !== undefined &&
+  //           forecastValue !== "" &&
+  //           forecastValue !== null
+  //         ) {
+  //           value = parseFloat(forecastValue).toFixed(2);
+  //         }
+
+  //         rowData.push(value);
+  //       });
+
+  //       copyData.push(rowData);
+  //       structuredData.push(rowData);
+  //     }
+  //   });
+
+  //   const tsvContent = copyData.map((row) => row.join("\t")).join("\n");
+
+  //   navigator.clipboard
+  //     .writeText(tsvContent)
+  //     .then(() => {
+  //       setCopiedRowsData(() => structuredData);
+  //       setCopiedMonthMetadata(() => monthMetadata);
+  //       setHasClipboardData(() => true);
+
+  //       toast.success(
+  //         `Copied ${structuredData.length} rows with all fiscal year data!`,
+  //         {
+  //           autoClose: 3000,
+  //         }
+  //       );
+
+  //       // Promise.resolve().then(() => {
+  //       //   setSelectedRows(new Set());
+  //       //   setShowCopyButton(false);
+  //       // });
+  //     })
+  //     .catch((err) => {
+  //       console.error("Copy failed:", err);
+  //       toast.error("Failed to copy data.", { autoClose: 3000 });
+  //     });
+  // };
+
+  // ✅ OPTION 1: Copy WITHOUT orgName (matches existing paste)
+// const handleCopySelectedRows = async () => {
+//   if (selectedRows.size === 0) {
+//     toast.info("No rows selected to copy.", { autoClose: 2000 });
+//     return;
+//   }
+
+//   const sortedDurations = [...durations].sort((a, b) => {
+//     if (a.year !== b.year) return a.year - b.year;
+//     return a.monthNo - b.monthNo;
+//   });
+
+//   // ✅ MATCH EXISTING PASTE ORDER (10 columns)
+//   const headers = [
+//     "ID Type", "ID", "Name", "Account", "Account Name", 
+//     "OrgId", "Rev", "Brd", "Status", "Total"
+//   ];
+
+//   const monthMetadata = [];
+//   sortedDurations.forEach(duration => {
+//     const monthName = new Date(duration.year, duration.monthNo - 1)
+//       .toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+//     headers.push(monthName);
+//     monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+//   });
+
+//   const copyData = [headers];
+//   const structuredData = [];
+
+//   selectedRows.forEach(rowIndex => {
+//     const emp = employees[rowIndex];
+//     if (emp && emp.emple && !hiddenRows[rowIndex]) {
+//       const employeeRow = getEmployeeRow(emp, rowIndex);
+      
+//       const rowData = [
+//         employeeRow.idType,
+//         employeeRow.emplId,
+//         employeeRow.name,
+//         employeeRow.acctId,
+//         employeeRow.acctName,
+//         employeeRow.orgId,           // Position 6 ✅
+//         // Skip orgName for copy compatibility
+//         (employeeRow.isRev ? '✓' : '-'),
+//         (employeeRow.isBrd ? '✓' : '-'),
+//         employeeRow.status,
+//       ];
+
+//       let totalAmount = 0;
+//       sortedDurations.forEach(duration => {
+//         const uniqueKey = `${duration.monthNo}${duration.year}`;
+//         const inputValue = inputValues[rowIndex]?.[uniqueKey];
+//         const monthAmounts = getMonthAmounts(emp);
+//         const forecastValue = monthAmounts[uniqueKey]?.value;
+//         const value = inputValue !== undefined ? inputValue : forecastValue;
+//         totalAmount += value && !isNaN(value) ? Number(value) : 0;
+//         rowData.push(value || '0.00');
+//       });
+
+//       rowData.unshift(totalAmount.toFixed(2)); // Total column
+//       copyData.push(rowData);
+//       structuredData.push(rowData);
+//     }
+//   });
+
+//   const tsvContent = copyData.map(row => row.join('\t')).join('\n');
+//   navigator.clipboard.writeText(tsvContent).then(() => {
+//     setCopiedRowsData(structuredData);
+//     setCopiedMonthMetadata(monthMetadata);
+//     setHasClipboardData(true);
+//     toast.success(`Copied ${structuredData.length} rows!`, { autoClose: 3000 });
+//     setSelectedRows(new Set());
+//     setShowCopyButton(false);
+//   }).catch(err => {
+//     toast.error("Failed to copy data.", { autoClose: 3000 });
+//   });
+// };
+
+
+//   const handleCopySelectedRows = async () => {
+//   if (selectedRows.size === 0) {
+//     toast.info("No rows selected to copy.", { autoClose: 2000 });
+//     return;
+//   }
+
+//   const sortedDurations = [...durations].sort((a, b) => {
+//     if (a.year !== b.year) return a.year - b.year;
+//     return a.monthNo - b.monthNo;
+//   });
+
+//   // ✅ FIXED: Headers with Org Name column
+//   const headers = [
+//     "ID Type", "ID", "Name", "Account", "Account Name", 
+//     "OrgId", "Org Name", "Rev", "Brd", "Status", "Total"
+//   ];
+
+//   const monthMetadata = [];
+//   sortedDurations.forEach(duration => {
+//     const monthName = new Date(duration.year, duration.monthNo - 1)
+//       .toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+//     headers.push(monthName);
+//     monthMetadata.push({ monthNo: duration.monthNo, year: duration.year });
+//   });
+
+//   const copyData = [headers];
+//   const structuredData = [];
+
+//   selectedRows.forEach(rowIndex => {
+//     const emp = employees[rowIndex];
+//     if (emp && emp.emple && !hiddenRows[rowIndex]) {
+//       const employeeRow = getEmployeeRow(emp, rowIndex);
+      
+//       // ✅ FIXED: Include BOTH orgId AND orgName
+//       const rowData = [
+//         employeeRow.idType,
+//         employeeRow.emplId,
+//         employeeRow.name,
+//         employeeRow.acctId,
+//         employeeRow.acctName,
+//         employeeRow.orgId,           // Position 6
+//         employeeRow.orgName || '-',  // ✅ Position 7 - Org Name
+//         typeof employeeRow.isRev === 'object' ? (employeeRow.isRev ? '✓' : '-') : (employeeRow.isRev ? '✓' : '-'),
+//         typeof employeeRow.isBrd === 'object' ? (employeeRow.isBrd ? '✓' : '-') : (employeeRow.isBrd ? '✓' : '-'),
+//         employeeRow.status,
+//       ];
+
+//       // Add month values
+//       let totalAmount = 0;
+//       sortedDurations.forEach(duration => {
+//         const uniqueKey = `${duration.monthNo}${duration.year}`;
+//         const inputValue = inputValues[rowIndex]?.[uniqueKey];
+//         const monthAmounts = getMonthAmounts(emp);
+//         const forecastValue = monthAmounts[uniqueKey]?.value;
+//         const value = inputValue !== undefined ? inputValue : forecastValue;
+//         totalAmount += value && !isNaN(value) ? Number(value) : 0;
+//         rowData.push(value || '0.00');
+//       });
+
+//       rowData.unshift(totalAmount.toFixed(2)); // Total column BEFORE months
+//       copyData.push(rowData);
+//       structuredData.push(rowData);
+//     }
+//   });
+
+//   const tsvContent = copyData.map(row => row.join('\t')).join('\n');
+  
+//   navigator.clipboard.writeText(tsvContent).then(() => {
+//     setCopiedRowsData(structuredData);
+//     setCopiedMonthMetadata(monthMetadata);
+//     setHasClipboardData(true);
+//     toast.success(`Copied ${structuredData.length} rows!`, { autoClose: 3000 });
+//     setSelectedRows(new Set());
+//     setShowCopyButton(false);
+//   }).catch(err => {
+//     console.error("Copy failed", err);
+//     toast.error("Failed to copy data.", { autoClose: 3000 });
+//   });
+// };
+
 
   // const handlePasteMultipleRows = () => {
   //   if (copiedRowsData.length === 0) {
@@ -5303,176 +5150,473 @@ const isIndeterminate =
       }
 
       // **STEP 4: Apply cached data to all entries**
-      processedEntries.forEach((entry, entryIndex) => {
-        // Set employee/vendor suggestions based on type
-        if (entry.idType === "Employee") {
-          setPastedEntrySuggestions((prev) => ({
-            ...prev,
-            [entryIndex]: employeeSuggestions,
-          }));
-        } else if (
-          entry.idType === "Vendor" ||
-          entry.idType === "Vendor Employee"
-        ) {
-          setPastedEntrySuggestions((prev) => ({
-            ...prev,
-            [entryIndex]: vendorSuggestions,
-          }));
-        }
+      // processedEntries.forEach((entry, entryIndex) => {
+      //   // Set employee/vendor suggestions based on type
+      //   if (entry.idType === "Employee") {
+      //     setPastedEntrySuggestions((prev) => ({
+      //       ...prev,
+      //       [entryIndex]: employeeSuggestions,
+      //     }));
+      //   } else if (
+      //     entry.idType === "Vendor" ||
+      //     entry.idType === "Vendor Employee"
+      //   ) {
+      //     setPastedEntrySuggestions((prev) => ({
+      //       ...prev,
+      //       [entryIndex]: vendorSuggestions,
+      //     }));
+      //   }
 
-        // Set account options based on idType
-        let accountsWithNames = [];
+      //   // Set account options based on idType
+      //   let accountsWithNames = [];
 
-        if (entry.idType === "Vendor" || entry.idType === "Vendor Employee") {
-          accountsWithNames = Array.isArray(
-            projectData.subContractorNonLaborAccounts
-          )
-            ? projectData.subContractorNonLaborAccounts.map((account) => ({
-                id: account.accountId || account,
-                name: account.acctName || account.accountId || String(account),
-              }))
-            : [];
-        } else if (entry.idType === "Other") {
-          accountsWithNames = Array.isArray(
-            projectData.otherDirectCostNonLaborAccounts
-          )
-            ? projectData.otherDirectCostNonLaborAccounts.map((account) => ({
-                id: account.accountId || account,
-                name: account.acctName || account.accountId || String(account),
-              }))
-            : [];
-        } else if (entry.idType === "Employee") {
-          accountsWithNames = Array.isArray(
-            projectData.employeeNonLaborAccounts
-          )
-            ? projectData.employeeNonLaborAccounts.map((account) => ({
-                id: account.accountId || account,
-                name: account.acctName || account.accountId || String(account),
-              }))
-            : [];
-        }
+      //   if (entry.idType === "Vendor" || entry.idType === "Vendor Employee") {
+      //     accountsWithNames = Array.isArray(
+      //       projectData.subContractorNonLaborAccounts
+      //     )
+      //       ? projectData.subContractorNonLaborAccounts.map((account) => ({
+      //           id: account.accountId || account,
+      //           name: account.acctName || account.accountId || String(account),
+      //         }))
+      //       : [];
+      //   } else if (entry.idType === "Other") {
+      //     accountsWithNames = Array.isArray(
+      //       projectData.otherDirectCostNonLaborAccounts
+      //     )
+      //       ? projectData.otherDirectCostNonLaborAccounts.map((account) => ({
+      //           id: account.accountId || account,
+      //           name: account.acctName || account.accountId || String(account),
+      //         }))
+      //       : [];
+      //   } else if (entry.idType === "Employee") {
+      //     accountsWithNames = Array.isArray(
+      //       projectData.employeeNonLaborAccounts
+      //     )
+      //       ? projectData.employeeNonLaborAccounts.map((account) => ({
+      //           id: account.accountId || account,
+      //           name: account.acctName || account.accountId || String(account),
+      //         }))
+      //       : [];
+      //   }
 
-        setPastedEntryAccounts((prev) => ({
-          ...prev,
-          [entryIndex]: accountsWithNames,
-        }));
+      //   setPastedEntryAccounts((prev) => ({
+      //     ...prev,
+      //     [entryIndex]: accountsWithNames,
+      //   }));
 
-        // Set org options (same for all)
-        setPastedEntryOrgs((prev) => ({
-          ...prev,
-          [entryIndex]: orgOptions,
-        }));
-      });
+      //   // Set org options (same for all)
+      //   setPastedEntryOrgs((prev) => ({
+      //     ...prev,
+      //     [entryIndex]: orgOptions,
+      //   }));
+      // });
+      // **STEP 4: Apply cached data to all entries**
+// processedEntries.forEach((entry, entryIndex) => {
+//     // Set employee/vendor suggestions based on type
+//     if (entry.idType === "Employee") {
+//         setPastedEntrySuggestions((prev) => ({
+//             ...prev,
+//             [entryIndex]: employeeSuggestions,
+//         }));
+//     } else if (entry.idType === "Vendor" || entry.idType === "Vendor Employee") {
+//         setPastedEntrySuggestions((prev) => ({
+//             ...prev,
+//             [entryIndex]: vendorSuggestions,
+//         }));
+//     }
+
+//     // Set account options based on idType
+//     // let rawAccounts = [];
+
+//     // if (entry.idType === "Vendor" || entry.idType === "Vendor Employee") {
+//     //     rawAccounts = projectData.subContractorNonLaborAccounts || [];
+//     // } else if (entry.idType === "Other") {
+//     //     rawAccounts = projectData.otherDirectCostNonLaborAccounts || [];
+//     // } else if (entry.idType === "Employee") {
+//     //     rawAccounts = projectData.employeeNonLaborAccounts || [];
+//     // }
+
+//     // // MAP THE DATA HERE: Use both legacy and backend keys to ensure display
+//     // const accountsWithNames = rawAccounts.map((account) => ({
+//     //     accountId: account.accountId || account.id || String(account),
+//     //     acctName: account.acctName || account.name || String(account),
+//     //     // Keep these for internal consistency
+//     //     id: account.accountId || account.id || String(account),
+//     //     name: account.acctName || account.name || String(account),
+//     // }));
+
+//     // setPastedEntryAccounts((prev) => ({
+//     //     ...prev,
+//     //     [entryIndex]: accountsWithNames,
+//     // }));
+
+//     let rawAccounts = [];
+//     if (entry.idType === "Vendor" || entry.idType === "Vendor Employee") {
+//         rawAccounts = projectData.subContractorNonLaborAccounts || [];
+//     } else if (entry.idType === "Other") {
+//         rawAccounts = projectData.otherDirectCostNonLaborAccounts || [];
+//     } else if (entry.idType === "Employee") {
+//         // This targets the data you just showed me
+//         rawAccounts = projectData.employeeNonLaborAccounts || [];
+//     }
+
+//     const accountsWithNames = rawAccounts.map((account) => ({
+//         // Ensure we use accountId and acctName from your backend JSON
+//         accountId: account.accountId, 
+//         acctName: account.acctName,
+//         // Also map to generic id/name for internal component consistency
+//         id: account.accountId,
+//         name: account.acctName
+//     }));
+
+//     setPastedEntryAccounts((prev) => ({
+//         ...prev,
+//         [entryIndex]: accountsWithNames,
+//     }));
+
+//     // Set org options (same for all)
+//     setPastedEntryOrgs((prev) => ({
+//         ...prev,
+//         [entryIndex]: orgOptions,
+//     }));
+// });
+// Logic for Paste Suggestions (inside handlePasteMultipleRows or fetchAllSuggestionsOptimized)
+processedEntries.forEach((entry, entryIndex) => {
+    let accountsForThisRow = [];
+    
+    if (entry.idType === "Employee") {
+        accountsForThisRow = employeeNonLaborAccounts;
+    } else if (entry.idType === "Vendor" || entry.idType === "Vendor Employee") {
+        accountsForThisRow = subContractorNonLaborAccounts;
+    } else {
+        // "Other" gets everything
+        accountsForThisRow = [...employeeNonLaborAccounts, ...subContractorNonLaborAccounts, ...otherDirectCostNonLaborAccounts];
+    }
+
+    setPastedEntryAccounts(prev => ({
+        ...prev,
+        [entryIndex]: accountsForThisRow
+    }));
+});
     } catch (err) {
       console.error("Failed to fetch suggestions for pasted entries:", err);
     }
   };
 
-  const handlePasteMultipleRows = async () => {
-    if (copiedRowsData.length === 0) {
-      toast.error("No copied data available to paste", { autoClose: 2000 });
-      return;
-    }
+  // const handlePasteMultipleRows = async () => {
+  //   if (copiedRowsData.length === 0) {
+  //     toast.error("No copied data available to paste", { autoClose: 2000 });
+  //     return;
+  //   }
 
-    if (showNewForm) {
-      setShowNewForm(false);
-    }
+  //   if (showNewForm) {
+  //     setShowNewForm(false);
+  //   }
 
-    // USE ALL DURATIONS (not filtered) - same as what was copied
-    const allDurations = [...durations].sort((a, b) => {
-      if (a.year !== b.year) return a.year - b.year;
-      return a.monthNo - b.monthNo;
-    });
+  //   // USE ALL DURATIONS (not filtered) - same as what was copied
+  //   const allDurations = [...durations].sort((a, b) => {
+  //     if (a.year !== b.year) return a.year - b.year;
+  //     return a.monthNo - b.monthNo;
+  //   });
 
-    const processedEntries = [];
-    const processedAmountsArray = [];
+  //   const processedEntries = [];
+  //   const processedAmountsArray = [];
 
-    copiedRowsData.forEach((rowData) => {
-      const [
-        idTypeLabel,
-        rawId, // Rename to rawId to process it
-        name,
-        acctId,
-        acctName,
-        orgId,
-        isRev,
-        isBrd,
-        status,
-        total,
-        ...monthValues
-      ] = rowData;
+  //   copiedRowsData.forEach((rowData) => {
+  //     const [
+  //       idTypeLabel,
+  //       rawId, // Rename to rawId to process it
+  //       name,
+  //       acctId,
+  //       acctName,
+  //       orgId,
+  //       isRev,
+  //       isBrd,
+  //       status,
+  //       total,
+  //       ...monthValues
+  //     ] = rowData;
 
-      const idType =
-        ID_TYPE_OPTIONS.find((opt) => opt.label === idTypeLabel)?.value ||
-        idTypeLabel;
+  //     const idType =
+  //       ID_TYPE_OPTIONS.find((opt) => opt.label === idTypeLabel)?.value ||
+  //       idTypeLabel;
 
-      // --- FIX: SANITIZE ID IMMEDIATELY ---
-      const id = (rawId || "").replace(
-        /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-        ""
-      );
-      // ------------------------------------
+  //     // --- FIX: SANITIZE ID IMMEDIATELY ---
+  //     const id = (rawId || "").replace(
+  //       /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+  //       ""
+  //     );
+  //     // ------------------------------------
 
-      let firstName = "";
-      let lastName = "";
+  //     let firstName = "";
+  //     let lastName = "";
 
-      if (idType === "Vendor" || idType === "Vendor Employee") {
-        lastName = name;
-      } else if (idType === "Employee") {
-        const nameParts = name.split(" ");
-        firstName = nameParts[0];
-        lastName = nameParts.slice(1).join(" ");
-      } else {
-        firstName = name;
-      }
+  //     if (idType === "Vendor" || idType === "Vendor Employee") {
+  //       lastName = name;
+  //     } else if (idType === "Employee") {
+  //       const nameParts = name.split(" ");
+  //       firstName = nameParts[0];
+  //       lastName = nameParts.slice(1).join(" ");
+  //     } else {
+  //       firstName = name;
+  //     }
 
-      const entry = {
-        id: id, // Use the sanitized id
-        firstName: firstName,
-        lastName: lastName,
-        idType: idType,
-        acctId: acctId,
-        orgId: orgId,
-        perHourRate: "",
-        status: status || "ACT",
-        isRev: isRev === "✓",
-        isBrd: isBrd === "✓",
-      };
+  //     const entry = {
+  //       id: id, // Use the sanitized id
+  //       firstName: firstName,
+  //       lastName: lastName,
+  //       idType: idType,
+  //       acctId: acctId,
+  //       orgId: orgId,
+  //       perHourRate: "",
+  //       status: status || "ACT",
+  //       isRev: isRev === "✓",
+  //       isBrd: isBrd === "✓",
+  //     };
 
-      const periodAmounts = {};
+  //     const periodAmounts = {};
 
-      copiedMonthMetadata.forEach((meta, index) => {
-        const uniqueKey = `${meta.monthNo}_${meta.year}`;
-        const value = monthValues[index];
+  //     copiedMonthMetadata.forEach((meta, index) => {
+  //       const uniqueKey = `${meta.monthNo}_${meta.year}`;
+  //       const value = monthValues[index];
 
-        if (value && value !== "0.00" && value !== "0" && value !== "") {
-          periodAmounts[uniqueKey] = value;
-        }
-      });
+  //       if (value && value !== "0.00" && value !== "0" && value !== "") {
+  //         periodAmounts[uniqueKey] = value;
+  //       }
+  //     });
 
-      processedEntries.push(entry);
-      processedAmountsArray.push(periodAmounts);
-    });
+  //     processedEntries.push(entry);
+  //     processedAmountsArray.push(periodAmounts);
+  //   });
 
-    setNewEntries(processedEntries);
-    setNewEntryPeriodAmountsArray(processedAmountsArray);
+  //   setNewEntries(processedEntries);
+  //   setNewEntryPeriodAmountsArray(processedAmountsArray);
 
-    setHasClipboardData(false);
-    setCopiedRowsData([]);
-    setCopiedMonthMetadata([]);
+  //   setHasClipboardData(false);
+  //   setCopiedRowsData([]);
+  //   setCopiedMonthMetadata([]);
 
-    toast.success(
-      `Pasted ${processedEntries.length} entries with all fiscal year data!`,
-      { autoClose: 3000 }
+  //   toast.success(
+  //     `Pasted ${processedEntries.length} entries with all fiscal year data!`,
+  //     { autoClose: 3000 }
+  //   );
+
+    
+  //    fetchAllSuggestionsOptimizedForAmounts(processedEntries);
+
+    
+
+    
+  // };
+  
+//   const handlePasteMultipleRows = async () => {
+//   if (copiedRowsData.length === 0) {
+//     toast.error("No copied data available to paste", { autoClose: 2000 });
+//     return;
+//   }
+
+//   if (showNewForm) {
+//     setShowNewForm(false);
+//   }
+
+//   // USE ALL DURATIONS (not filtered) - same as what was copied
+//   const allDurations = [...durations].sort((a, b) => {
+//     if (a.year !== b.year) return a.year - b.year;
+//     return a.monthNo - b.monthNo;
+//   });
+
+//   const processedEntries = [];
+//   const processedAmountsArray = [];
+
+//   copiedRowsData.forEach((rowData) => {
+//     // ✅ FIXED: Match EXACT copy order (11 columns before months)
+//     const [
+//       idTypeLabel,
+//       rawId, // ID
+//       name,
+//       acctId,
+//       acctName,
+//       orgId,      // Position 6 ✅ OrgId
+//       orgName,    // Position 7 ✅ Org Name (NEW)
+//       isRev,
+//       isBrd,
+//       status,
+//       total,
+//       ...monthValues
+//     ] = rowData;
+
+//     const idType =
+//       ID_TYPE_OPTIONS.find((opt) => opt.label === idTypeLabel)?.value ||
+//       idTypeLabel;
+
+//     // --- FIX: SANITIZE ID IMMEDIATELY ---
+//     const id = (rawId || "").replace(
+//       /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+//       ""
+//     );
+//     // ------------------------------------
+
+//     let firstName = "";
+//     let lastName = "";
+
+//     if (idType === "Vendor" || idType === "Vendor Employee") {
+//       lastName = name;
+//     } else if (idType === "Employee") {
+//       const nameParts = name.split(" ");
+//       firstName = nameParts[0];
+//       lastName = nameParts.slice(1).join(" ");
+//     } else {
+//       firstName = name;
+//     }
+
+//     // ✅ FIXED: Include orgName from paste data
+//     const entry = {
+//       id: id,           // Sanitized ID
+//       firstName: firstName,
+//       lastName: lastName,
+//       idType: idType,
+//       acctId: acctId,
+//       orgId: orgId,     // ✅ Correct position 6
+//       orgName: orgName || '',  // ✅ NEW from position 7
+//       perHourRate: "",
+//       status: status || "ACT",
+//       isRev: isRev === "✓",
+//       isBrd: isBrd === "✓",
+//     };
+
+//     const periodAmounts = {};
+
+//     copiedMonthMetadata.forEach((meta, index) => {
+//       const uniqueKey = `${meta.monthNo}_${meta.year}`;
+//       const value = monthValues[index];
+
+//       if (value && value !== "0.00" && value !== "0" && value !== "") {
+//         periodAmounts[uniqueKey] = value;
+//       }
+//     });
+
+//     processedEntries.push(entry);
+//     processedAmountsArray.push(periodAmounts);
+//   });
+
+//   setNewEntries(processedEntries);
+//   setNewEntryPeriodAmountsArray(processedAmountsArray);
+
+//   setHasClipboardData(false);
+//   setCopiedRowsData([]);
+//   setCopiedMonthMetadata([]);
+
+//   toast.success(
+//     `Pasted ${processedEntries.length} entries with Org Names & fiscal year data!`,
+//     { autoClose: 3000 }
+//   );
+
+//   fetchAllSuggestionsOptimizedForAmounts(processedEntries);
+// };
+  
+const handlePasteMultipleRows = async () => {
+  if (copiedRowsData.length === 0) {
+    toast.error("No copied data available to paste", { autoClose: 2000 });
+    return;
+  }
+
+  if (showNewForm) {
+    setShowNewForm(false);
+  }
+
+  // USE ALL DURATIONS (not filtered) - same as what was copied
+  const allDurations = [...durations].sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.monthNo - b.monthNo;
+  });
+
+  const processedEntries = [];
+  const processedAmountsArray = [];
+
+  copiedRowsData.forEach((rowData) => {
+    // ✅ FIXED: Added orgName (position 7) - Keep ALL existing logic
+    const [
+      idTypeLabel,
+      rawId,
+      name,
+      acctId,
+      acctName,
+      orgId,           // Position 6
+      orgName,         // ✅ NEW Position 7 (ignore if empty)
+      isRev,           // Position 8  
+      isBrd,           // Position 9
+      status,
+      total,
+      ...monthValues
+    ] = rowData;
+
+    const idType =
+      ID_TYPE_OPTIONS.find((opt) => opt.label === idTypeLabel)?.value ||
+      idTypeLabel;
+
+    // --- FIX: SANITIZE ID IMMEDIATELY ---
+    const id = (rawId || "").replace(
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+      ""
     );
 
-    
-     fetchAllSuggestionsOptimizedForAmounts(processedEntries);
+    let firstName = "";
+    let lastName = "";
 
-    
+    if (idType === "Vendor" || idType === "Vendor Employee") {
+      lastName = name;
+    } else if (idType === "Employee") {
+      const nameParts = name.split(" ");
+      firstName = nameParts[0];
+      lastName = nameParts.slice(1).join(" ");
+    } else {
+      firstName = name;
+    }
 
-    
-  };
+    // ✅ Keep ALL existing entry logic + ADD orgName
+    const entry = {
+      id: id,
+      firstName: firstName,
+      lastName: lastName,
+      idType: idType,
+      acctId: acctId,
+      orgId: orgId,
+      orgName: orgName || '',  // ✅ NEW - store orgName from paste
+      perHourRate: "",
+      status: status || "ACT",
+      isRev: isRev === "✓",
+      isBrd: isBrd === "✓",
+    };
+
+    // ✅ ALL existing month logic - UNCHANGED
+    const periodAmounts = {};
+    copiedMonthMetadata.forEach((meta, index) => {
+      const uniqueKey = `${meta.monthNo}_${meta.year}`;
+      const value = monthValues[index];
+      if (value && value !== "0.00" && value !== "0" && value !== "") {
+        periodAmounts[uniqueKey] = value;
+      }
+    });
+
+    processedEntries.push(entry);
+    processedAmountsArray.push(periodAmounts);
+  });
+
+  setNewEntries(processedEntries);
+  setNewEntryPeriodAmountsArray(processedAmountsArray);
+
+  setHasClipboardData(false);
+  setCopiedRowsData([]);
+  setCopiedMonthMetadata([]);
+
+  toast.success(
+    `Pasted ${processedEntries.length} entries with all fiscal year data!`,
+    { autoClose: 3000 }
+  );
+
+  fetchAllSuggestionsOptimizedForAmounts(processedEntries);
+};
+
 
   const fetchSuggestionsForPastedEntry = async (entryIndex, entry) => {
     const encodedProjectId = encodeURIComponent(projectId);
@@ -6016,7 +6160,7 @@ const isIndeterminate =
     </button>
   )} */}
 
-          {showNewForm && (
+          {/* {showNewForm || checkedRows.size > 0 ? (
             <button
               // className="px-4 py-2 blue-btn-common text-white rounded  transition text-xs font-medium"
                className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
@@ -6032,7 +6176,25 @@ const isIndeterminate =
             >
               Fill Values
             </button>
-          )}
+          )} */}
+
+          {/* Updated Fill Values Button Condition */}
+{(showNewForm || selectedRows.size > 0) && (
+  <button
+    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+    style={{
+      ...geistSansStyle,
+      backgroundColor: "#113d46",
+    }}
+    onClick={() => {
+      if (isEditable) {
+        setShowFillValues(true);
+      }
+    }}
+  >
+    Fill Values
+  </button>
+)}
 
           {/* Combined Save button for both amounts and field changes */}
           {/* {(hasUnsavedAmountChanges || hasUnsavedFieldChanges) && (
@@ -6377,29 +6539,16 @@ const isIndeterminate =
         </div>
       )} */}
 
-      {showFillValues && (
+      {/* {showFillValues && (
                          <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
     <div className="mt-20 w-full max-w-md bg-white rounded-lg shadow-xl border">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm">
-        {/* <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm"> */}
+       
             <h3 className="text-lg font-semibold mb-4">
               Fill Values to New Entries
             </h3>
 
-            {/* {selectedRows.size > 0 && (
-  <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs max-h-32 overflow-y-auto">
-    <p className="font-bold mb-1">Selected Data:</p>
-    {Array.from(selectedRows).map(idx => {
-      const emp = employees[idx]?.emple;
-      return (
-        <div key={idx} className="border-b border-blue-100 pb-1 mb-1 last:border-0">
-          ID: {emp?.emplId} | Acc: {emp?.accId} | Org: {emp?.orgId} 
-        </div>
-      );
-    })}
-  </div>
-)} */}
+       
 
  <div>
      {selectedRows.size > 0 && (
@@ -6418,7 +6567,7 @@ const isIndeterminate =
   </div>
 
 
-            {/* Select Fill Method */}
+            
             <div className="mb-4">
               <label className="block text-gray-700 text-xs font-medium mb-1">
                 Select Fill Method
@@ -6443,23 +6592,10 @@ const isIndeterminate =
               </select>
             </div>
 
-            {/* Display message/error related to source selection */}
-            {/* {fillMethod === "Copy From Source Record" && (
-              <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                Current New Entries: {newEntries.length}
-                <br />
-                Source Rows Selected (in grid): {selectedRows.size}
-                {selectedRows.size === 0 && (
-                  <p className="text-red-600 font-semibold mt-1">
-                    ⚠️ Please select rows in the main grid to copy from.
-                  </p>
-                )}
-              </div>
-            )} */}
-            {/* REPLACE the existing Selected Data section with this */}
+           
 
 
-            {/* Specify Amounts */}
+            
             {fillMethod === "Specify Amounts" && (
               <div className="mb-4">
                 <label className="block text-gray-700 text-xs font-medium mb-1">
@@ -6477,8 +6613,7 @@ const isIndeterminate =
                 />
               </div>
             )}
-
-            {/* Start Period (Date Picker) */}
+ 
             <div className="mb-4">
               <label className="block text-gray-700 text-xs font-medium mb-1">
                 Start Period
@@ -6491,7 +6626,7 @@ const isIndeterminate =
               />
             </div>
 
-            {/* End Period (Date Picker) */}
+
             <div className="mb-4">
               <label className="block text-gray-700 text-xs font-medium mb-1">
                 End Period
@@ -6545,7 +6680,263 @@ const isIndeterminate =
           </div>
         </div>
         </div>
-      )}
+      )} */}
+
+{/* {showFillValues && (
+  <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
+    <div className="mt-20 w-full max-w-md bg-white rounded-lg shadow-xl border">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm font-inter">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">Fill Values</h3>
+
+      
+       <div>
+     {selectedRows.size > 0 && (
+  <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs max-h-32 overflow-y-auto">
+    <p className="font-bold mb-1">Selected Source:</p>
+    {Array.from(selectedRows).map(idx => {
+      const emp =  employees[idx]?.emple;
+      return (
+        <div key={idx} className="border-b border-blue-100 pb-1 mb-1 last:border-0">
+          ID: {emp?.emplId} | Acc: {emp?.accId} | Org: {emp?.orgId} 
+        </div>
+      );
+    })}
+  </div>
+)}
+  </div>
+
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-xs font-bold mb-1 uppercase tracking-tight">Select Fill Method</label>
+          <select
+            value={fillMethod}
+            onChange={(e) => setFillMethod(e.target.value)}
+            className="w-full border border-gray-300 rounded-md p-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+          >
+            <option value="None">None</option>
+            <option value="Copy From Source Record">Copy from Source Record</option>
+            <option value="Specify Amounts">Specify Amounts</option>
+            <option value="Use Start Period Amounts">Use Start Period Amounts</option>
+          </select>
+        </div>
+
+       
+        {fillMethod === "Copy From Source Record" && (
+          <div className="mb-4 animate-in fade-in slide-in-from-top-1">
+            <label className="block text-gray-700 text-xs font-bold mb-1 uppercase tracking-tight">
+              Select Record to Fill
+            </label>
+            <select
+              value={selectedSourceIdx}
+              onChange={(e) => setSelectedSourceIdx(e.target.value)}
+              className="w-full border border-blue-300 bg-blue-50 rounded-md p-2 text-xs outline-none"
+            >
+              <option value="">-- Choose a source --</option>
+              {employees.map((emp, idx) => {
+                // DON'T show rows in dropdown that are already checked as targets
+                if (selectedRows.has(idx)) return null;
+                return (
+                  <option key={idx} value={idx}>
+                    {emp.emple?.emplId} | {emp.emple?.accId} | {emp.emple?.orgId}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        )}
+
+        {fillMethod === "Specify Amounts" && (
+          <div className="mb-4">
+            <label className="block text-gray-700 text-xs font-bold mb-1 uppercase">Amount</label>
+            <input
+              type="text"
+              value={fillAmounts}
+              onChange={(e) => setFillAmounts(e.target.value.replace(/[^0-9.]/g, ""))}
+              className="w-full p-2 border border-gray-300 rounded-md text-xs"
+              placeholder="0.00"
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-gray-700 text-[10px] font-bold uppercase mb-1">Start Period</label>
+            <input
+              type="date"
+              value={fillStartDate || ""}
+              onChange={(e) => setFillStartDate(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 text-xs"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 text-[10px] font-bold uppercase mb-1">End Period</label>
+            <input
+              type="date"
+              value={fillEndDate || ""}
+              onChange={(e) => setFillEndDate(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 text-xs"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              setShowFillValues(false);
+              setFillMethod("None");
+              setSelectedSourceIdx("");
+            }}
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md text-xs font-medium hover:bg-gray-400 transition-colors"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (fillMethod === "Copy From Source Record" && selectedSourceIdx === "") {
+                toast.error("Please select a source record.");
+                return;
+              }
+              handleFillValuesAmounts(); 
+            }}
+            className="px-4 py-2 bg-[#113d46] text-white rounded-md text-xs font-medium disabled:opacity-50 transition-colors shadow-sm"
+            disabled={fillMethod === "None" || (selectedRows.size === 0 && newEntries.length === 0)}
+          >
+            Fill Value
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)} */}
+
+{showFillValues && (
+  <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/20">
+    <div className="mt-20 w-full max-w-md bg-white rounded-lg shadow-xl border">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm font-inter">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">Fill Values</h3>
+
+       
+
+        
+        <div>
+          {selectedRows.size > 0 && (
+            <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs max-h-32 overflow-y-auto">
+              <p className="font-bold mb-1">Selected Source:</p>
+              {Array.from(selectedRows).map(idx => {
+                const emp = employees[idx]?.emple;
+                return (
+                  <div key={idx} className="border-b border-blue-100 pb-1 mb-1 last:border-0">
+                    ID: {emp?.emplId} | Acc: {emp?.accId} | Org: {emp?.orgId} 
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-xs font-bold mb-1 uppercase tracking-tight">Select Fill Method</label>
+          <select
+            value={fillMethod}
+            onChange={(e) => setFillMethod(e.target.value)}
+            className="w-full border border-gray-300 rounded-md p-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+          >
+            <option value="None">None</option>
+            <option value="Copy From Source Record">Copy from Source Record</option>
+            <option value="Specify Amounts">Specify Amounts</option>
+            <option value="Use Start Period Amounts">Use Start Period Amounts</option>
+          </select>
+        </div>
+
+        {/* Dropdown: Shows destination candidates (excludes the checked source row) */}
+        {fillMethod === "Copy From Source Record" && newEntries.length === 0 && (
+          <div className="mb-4 animate-in fade-in slide-in-from-top-1">
+            <label className="block text-gray-700 text-xs font-bold mb-1 uppercase tracking-tight">
+              Select Record to Fill (Destination)
+            </label>
+            <select
+              value={selectedSourceIdx}
+              onChange={(e) => setSelectedSourceIdx(e.target.value)}
+              className="w-full border border-blue-300 bg-blue-50 rounded-md p-2 text-xs outline-none"
+            >
+              <option value="">-- Choose destination --</option>
+              {employees.map((emp, idx) => {
+                // Filter out the source row from the destination dropdown
+                if (selectedRows.has(idx)) return null;
+                return (
+                  <option key={idx} value={idx}>
+                    {emp.emple?.emplId} | {emp.emple?.accId} | {emp.emple?.orgId}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        )}
+
+        {fillMethod === "Specify Amounts" && (
+          <div className="mb-4">
+            <label className="block text-gray-700 text-xs font-bold mb-1 uppercase">Amount</label>
+            <input
+              type="text"
+              value={fillAmounts}
+              onChange={(e) => setFillAmounts(e.target.value.replace(/[^0-9.]/g, ""))}
+              className="w-full p-2 border border-gray-300 rounded-md text-xs"
+              placeholder="0.00"
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-gray-700 text-[10px] font-bold uppercase mb-1">Start Period</label>
+            <input type="date" value={fillStartDate || ""} onChange={(e) => setFillStartDate(e.target.value)} className="w-full border border-gray-300 rounded-md p-2 text-xs"/>
+          </div>
+          <div>
+            <label className="block text-gray-700 text-[10px] font-bold uppercase mb-1">End Period</label>
+            <input type="date" value={fillEndDate || ""} onChange={(e) => setFillEndDate(e.target.value)} className="w-full border border-gray-300 rounded-md p-2 text-xs"/>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              setShowFillValues(false);
+              setFillMethod("None");
+              setSelectedSourceIdx("");
+            }}
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md text-xs font-medium"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (fillMethod === "Copy From Source Record" && selectedRows.size === 0) {
+                toast.error("Please check a row in the grid to act as the source.");
+                return;
+              }
+              if (fillMethod === "Copy From Source Record" && newEntries.length === 0 && selectedSourceIdx === "") {
+                toast.error("Please select a destination record from the dropdown.");
+                return;
+              }
+              handleFillValuesAmounts(); 
+            }}
+            className="px-4 py-2 bg-[#113d46] text-white rounded-md text-xs font-medium disabled:opacity-50 transition-all"
+            disabled={fillMethod === "None" || (selectedRows.size === 0 && newEntries.length === 0)}
+          >
+            Fill Value
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
 
       {/* {showFillValues && (
   <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
@@ -6632,6 +7023,7 @@ const isIndeterminate =
                 maxHeight: "400px",
                 overflowY: "auto",
                 overflowX: "auto",
+                // marginTop: "-3px"
               }}
             >
               <table className="table-fixed min-w-full table">
@@ -6694,29 +7086,43 @@ const isIndeterminate =
           <select
             name="idType"
             value={entry.idType}
+            // onChange={(e) => {
+            //   const value = e.target.value;
+            //   const newId = value === "PLC" ? "PLC" : "";
+            //   setNewEntries((prev) =>
+            //     prev.map((ent, idx) =>
+            //       idx === entryIndex
+            //         ? {
+            //             ...ent,
+            //             id: newId,
+            //             firstName: "",
+            //             lastName: "",
+            //             isRev: false,
+            //             isBrd: false,
+            //             idType: value,
+            //             acctId: "",
+            //             orgId: "",
+            //             status: "Act",
+            //           }
+            //         : ent
+            //     )
+            //   );
+            //   fetchSuggestionsForPastedEntry(entryIndex, { ...entry, idType: value });
+            // }}
             onChange={(e) => {
-              const value = e.target.value;
-              const newId = value === "PLC" ? "PLC" : "";
-              setNewEntries((prev) =>
-                prev.map((ent, idx) =>
-                  idx === entryIndex
-                    ? {
-                        ...ent,
-                        id: newId,
-                        firstName: "",
-                        lastName: "",
-                        isRev: false,
-                        isBrd: false,
-                        idType: value,
-                        acctId: "",
-                        orgId: "",
-                        status: "Act",
-                      }
-                    : ent
-                )
-              );
-              fetchSuggestionsForPastedEntry(entryIndex, { ...entry, idType: value });
-            }}
+    const value = e.target.value;
+    const newId = value === "PLC" ? "PLC" : "";
+    
+    // 1. Update the local entry state
+    setNewEntries((prev) =>
+        prev.map((ent, idx) =>
+            idx === entryIndex ? { ...ent, idType: value, id: newId, firstName: "", lastName: "", acctId: "", orgId: "", status: "Act" } : ent
+        )
+    );
+    
+    
+    fetchSuggestionsForPastedEntry(entryIndex, { ...entry, idType: value });
+}}
             className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
           >
             {ID_TYPE_OPTIONS.map((opt) => (
@@ -6726,35 +7132,63 @@ const isIndeterminate =
         </td>
 
         {/* ID Column */}
-        <td className="tbody-td min-w-[115px]">
+        {/* <td className="tbody-td min-w-[115px]">
           <input
             type="text"
             value={entry.id}
             onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
+            // onChange={(e) => {
+            //   const val = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+            //   const trimmedValue = val.trim();
+            //   setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, id: val } : ent)));
+            //   if (entry.idType !== "Other") {
+            //     const suggestions = pastedEntrySuggestions[entryIndex] || [];
+            //     const selectedEmployee = suggestions.find((emp) => emp.emplId === trimmedValue);
+            //     if (selectedEmployee) {
+            //       setNewEntries((prev) =>
+            //         prev.map((ent, idx) =>
+            //           idx === entryIndex
+            //             ? {
+            //                 ...ent,
+            //                 id: trimmedValue,
+            //                 firstName: selectedEmployee.firstName || "",
+            //                 lastName: selectedEmployee.lastName || "",
+            //                 orgId: selectedEmployee.orgId || ent.orgId,
+            //               }
+            //             : ent
+            //         )
+            //       );
+            //     }
+            //   }
+            // }}
             onChange={(e) => {
-              const val = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
-              const trimmedValue = val.trim();
-              setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, id: val } : ent)));
-              if (entry.idType !== "Other") {
-                const suggestions = pastedEntrySuggestions[entryIndex] || [];
-                const selectedEmployee = suggestions.find((emp) => emp.emplId === trimmedValue);
-                if (selectedEmployee) {
-                  setNewEntries((prev) =>
-                    prev.map((ent, idx) =>
-                      idx === entryIndex
-                        ? {
-                            ...ent,
-                            id: trimmedValue,
-                            firstName: selectedEmployee.firstName || "",
-                            lastName: selectedEmployee.lastName || "",
-                            orgId: selectedEmployee.orgId || ent.orgId,
-                          }
-                        : ent
-                    )
-                  );
-                }
-              }
-            }}
+  const val = e.target.value.trim();
+  const suggestions = pastedEntrySuggestions[entryIndex] || [];
+  
+  // 1. Find the matched employee from suggestions
+  const matchedEmployee = suggestions.find((emp) => emp.emplId === val);
+
+  if (matchedEmployee) {
+    // 2. Find the Account Name for this employee's acctId
+    const acctList = getAccountSuggestionsByType(entry.idType);
+    const matchedAcct = acctList.find(a => (a.accountId || a.id) === matchedEmployee.acctId);
+
+    // 3. Find the Org Name for this employee's orgId
+    const matchedOrg = organizationOptions.find(o => String(o.value) === String(matchedEmployee.orgId));
+
+    updateNewEntry(entryIndex, { 
+      id: val,
+      firstName: matchedEmployee.firstName || "",
+      lastName: matchedEmployee.lastName || "",
+      acctId: matchedEmployee.acctId || "",
+      acctName: matchedAcct ? matchedAcct.acctName : "", // AUTO-POPULATE ACCOUNT NAME
+      orgId: String(matchedEmployee.orgId || ""),
+      orgName: matchedOrg ? matchedOrg.orgName : ""     // AUTO-POPULATE ORG NAME
+    });
+  } else {
+    updateNewEntry(entryIndex, { id: val });
+  }
+}}
             disabled={entry.idType === "PLC"}
             style={{ maxWidth: "100px" }}
             className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
@@ -6766,13 +7200,141 @@ const isIndeterminate =
               <option key={idx} value={emp.emplId}>{emp.lastName}, {emp.firstName}</option>
             ))}
           </datalist>
-        </td>
+        </td> */}
+        {/* <td className="tbody-td min-w-[115px]">
+  <input
+    type="text"
+    value={entry.id}
+    onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
+    onChange={(e) => {
+      const val = e.target.value.trim();
+      const [emplId, lastName] = val.split(" - ");
+      const suggestions = pastedEntrySuggestions[entryIndex] || [];
+      
+      // 1. Find the matched employee object
+      const matchedEmployee = suggestions.find((emp) => emp.lastName === lastName);
 
+      if (matchedEmployee) {
+        // 2. Resolve the names for Account and Org immediately
+        const acctList = getAccountSuggestionsByType(entry.idType);
+        const matchedAcct = acctList.find(a => (a.accountId || a.id) === matchedEmployee.acctId);
+        const matchedOrg = organizationOptions.find(o => String(o.value) === String(matchedEmployee.orgId));
+
+        // 3. Update all 6 fields in one state change
+        updateNewEntry(entryIndex, { 
+          id: emplId,
+          firstName: matchedEmployee.firstName || "",
+          lastName: matchedEmployee.lastName || "",
+          acctId: matchedEmployee.acctId || "",
+          acctName: matchedAcct ? matchedAcct.acctName : "", // AUTO-POPULATE
+          orgId: String(matchedEmployee.orgId || ""),
+          orgName: matchedOrg ? matchedOrg.orgName : ""      // AUTO-POPULATE
+        });
+      } else {
+        updateNewEntry(entryIndex, { id: val });
+      }
+    }}
+    disabled={entry.idType === "PLC"}
+    className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
+    list={`employee-id-list-${entryIndex}`}
+    placeholder="ID"
+  />
+  <datalist id={`employee-id-list-${entryIndex}`}>
+    {(pastedEntrySuggestions[entryIndex] || []).filter((emp) => emp.emplId).map((emp, idx) => (
+      // Adding the Name/Account here is ONLY for the user to see in the dropdown 
+      // so they can choose the correct one if IDs are identical.
+      <option key={idx} value={`${emp.emplId} - ${emp.lastName} ${emp.firstName}`}>
+        
+      </option>
+    ))}
+  </datalist>
+</td> */}
+        <td className="tbody-td min-w-[115px]">
+  <input
+    type="text"
+    value={entry.id}
+    onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
+    onChange={(e) => {
+      const rawValue = e.target.value;
+      // 1. Extract the Clean ID if selecting from datalist (split by " - ")
+      // const cleanId = rawValue.split(" - ")[0].trim();
+      const [emplId, lastName] =
+                                  rawValue.split(" - ");
+
+                                  // show only ID in the input
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? { ...ent, id: emplId }
+                                      : ent
+                                  )
+                                );
+      
+      const suggestions = pastedEntrySuggestions[entryIndex] || [];
+      
+      // 2. Find the matched employee object from suggestions
+      // We check if the ID matches OR if the full display string matches what's in the datalist
+      const matchedEmployee = suggestions.find(
+                                  (emp) =>
+                                    String(emp.emplId) === emplId &&
+                                    emp.lastName === lastName
+                                );
+
+      if (matchedEmployee) {
+        // 3. Resolve the names for Account and Organization
+        const acctList = getAccountSuggestionsByType(entry.idType);
+        const matchedAcct = acctList.find(a => (a.accountId || a.id) === matchedEmployee.acctId);
+        const matchedOrg = organizationOptions.find(o => String(o.value) === String(matchedEmployee.orgId));
+
+        // 4. Update the entry with clean data and auto-populated names
+        updateNewEntry(entryIndex, { 
+          id: matchedEmployee.emplId, // Sets ONLY the numeric ID back to the field
+          firstName: matchedEmployee.firstName || "",
+          lastName: matchedEmployee.lastName || "",
+          acctId: matchedEmployee.acctId || "",
+          acctName: matchedAcct ? (matchedAcct.acctName || matchedAcct.name) : "",
+          orgId: String(matchedEmployee.orgId || ""),
+          orgName: matchedOrg ? (matchedOrg.orgName || matchedOrg.label) : ""
+        });
+      } else {
+        // If the user is just typing and hasn't selected a match yet
+        updateNewEntry(entryIndex, { id: rawValue });
+      }
+    }}
+    disabled={entry.idType === "PLC"}
+    className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
+    list={`employee-id-list-${entryIndex}`}
+    placeholder="ID"
+  />
+  {/* <datalist id={`employee-id-list-${entryIndex}`}>
+    {(pastedEntrySuggestions[entryIndex] || []).filter((emp) => emp.emplId).map((emp, idx) => (
+      <option key={idx} value={`${emp.emplId} - ${emp.lastName} ${emp.firstName}`} />
+    ))}
+  </datalist> */}
+  <datalist id={`employee-id-list-${entryIndex}`}>
+                              {(pastedEntrySuggestions[entryIndex] || []).map(
+                                (emp, idx) => (
+                                  <option
+                                    key={idx}
+                                    value={`${emp.emplId} - ${emp.lastName}`}
+                                  >
+                                    {emp.lastName}, {emp.firstName}
+                                  </option>
+                                )
+                              )}
+                            </datalist>
+</td>
         <td className="tbody-td min-w-[115px]">
           <input
             type="text"
-            value={entry.idType === "Other" || planType === "NBBUD" ? entry.firstName || "" : entry.lastName && entry.firstName ? `${entry.lastName}, ${entry.firstName}` : entry.lastName || entry.firstName || ""}
-            readOnly={entry.idType !== "Other"}
+            // value={entry.idType === "Other" || planType === "NBBUD" ? entry.firstName || "" : entry.lastName && entry.firstName ? `${entry.lastName}, ${entry.firstName}` : entry.lastName || entry.firstName || ""}
+            // readOnly={entry.idType !== "Other"}
+            value={
+      entry.idType === "Other" 
+        ? (entry.firstName || "") 
+        : (entry.lastName && entry.firstName ? `${entry.lastName}, ${entry.firstName}` : (entry.lastName || entry.firstName || ""))
+    }
+    readOnly={entry.idType !== "Other"}
             onKeyDown={(e) => e.key === " " && e.stopPropagation()}
             onChange={(e) => {
               if (entry.idType === "Other" || planType === "NBBUD") {
@@ -6786,37 +7348,157 @@ const isIndeterminate =
           />
         </td>
 
-        {/* Account ID Column */}
-        <td className="tbody-td min-w-[125px]">
-          <input
-            type="text"
-            value={entry.acctId}
-            onChange={(e) => {
-              const val = e.target.value;
-              const accountList = accountOptionsWithNames || [];
-              const matchedAccount = accountList.find((acc) => (acc.id || acc.accountId) === val);
-              setNewEntries((prev) => prev.map((ent, idx) => 
-                idx === entryIndex ? { ...ent, acctId: val, acctName: matchedAccount ? (matchedAccount.name || matchedAccount.acctName) : "" } : ent
-              ));
-            }}
-            style={{ maxWidth: "110px" }}
-            className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
-            list={`account-list-pasted-${entryIndex}`}
-            placeholder="Account"
-          />
-          <datalist id={`account-list-pasted-${entryIndex}`}>
-            {(pastedEntryAccounts[entryIndex] || []).map((account, index) => (
-              <option key={index} value={account.id || account.accountId} />
-            ))}
-          </datalist>
-        </td>
+       {/* Account ID Column */}
+{/* <td className="tbody-td">
+    <input
+        type="text"
+        value={newEntry.acctId}
+        list="new-entry-acct-list"
+        onChange={(e) => {
+            const val = e.target.value;
+            // Requirement: Find the matching account to auto-populate the name
+            const matched = nonLaborAccounts.find(a => a.accountId === val);
+            setNewEntry(prev => ({
+                ...prev,
+                acctId: val,
+                acctName: matched ? matched.acctName : "" 
+            }));
+        }}
+        // Requirement: Styling synced with Org ID
+        className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:border-blue-400"
+        placeholder="Account"
+    />
+    <datalist id="new-entry-acct-list">
+        {nonLaborAccounts.map((acc, idx) => (
+            <option key={idx} value={acc.accountId}>
+                {acc.acctName}
+            </option>
+        ))}
+    </datalist>
+</td> */}
+{/* Inside newEntries.map loop */}
+{/* <td className="tbody-td">
+  <input
+    type="text"
+    value={entry.acctId}
+    // Logic: Get list based on THIS new form's selected idType
+    list={`new-entry-acct-list-${entryIndex}`} 
+    onChange={(e) => {
+      const val = e.target.value;
+      const suggestions = getAccountSuggestionsByType(entry.idType);
+      const matched = suggestions.find(a => (a.accountId || a.id) === val);
+      
+      updateNewEntry(entryIndex, {
+        acctId: val,
+        acctName: matched ? (matched.acctName || matched.name) : ""
+      });
+    }}
+    className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs"
+  />
+  <datalist id={`new-entry-acct-list-${entryIndex}`}>
+    {getAccountSuggestionsByType(entry.idType).map((acc, idx) => (
+      <option key={idx} value={acc.accountId || acc.id}>
+        {acc.acctName || acc.name}
+      </option>
+    ))}
+  </datalist>
+</td> */}
+{/* Inside newEntries.map loop */}
+{/* <td className="tbody-td">
+    <input
+        type="text"
+        value={entry.acctId || ""}
+        list={`new-entry-acct-list-${entryIndex}`}
+        onChange={(e) => {
+            const val = e.target.value;
+            // Get the specific allowed accounts for THIS row's type
+            const suggestions = getAccountSuggestionsByType(entry.idType);
+            
+            // Find the matching account object
+            const matched = suggestions.find(a => (a.accountId || a.id) === val);
+            
+            // Update the state for this specific index
+            updateNewEntry(entryIndex, {
+                acctId: val,
+                acctName: matched ? (matched.acctName || matched.name) : "" 
+            });
+        }}
+        className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+        placeholder="Account"
+    />
+    <datalist id={`new-entry-acct-list-${entryIndex}`}>
+        {getAccountSuggestionsByType(entry.idType).map((acc, idx) => (
+            <option key={idx} value={acc.accountId || acc.id}>
+                {acc.acctName || acc.name}
+            </option>
+        ))}
+    </datalist>
+</td> */}
+{/* Inside newEntries.map loop - Account ID Column */}
+<td className="tbody-td">
+  <input
+    type="text"
+    value={entry.acctId || ""}
+    list={`new-entry-acct-list-${entryIndex}`}
+    onChange={(e) => {
+      const val = e.target.value;
+      // Get filtered suggestions based on this specific row's ID Type
+      const suggestions = getAccountSuggestionsByType(entry.idType);
+      const matched = suggestions.find(a => (a.accountId || a.id) === val);
+      
+      // Update both ID and Name in the array
+      updateNewEntry(entryIndex, {
+        acctId: val,
+        acctName: matched ? matched.acctName : "" 
+      });
+    }}
+    className="w-full border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+    placeholder="Account"
+  />
+  <datalist id={`new-entry-acct-list-${entryIndex}`}>
+    {getAccountSuggestionsByType(entry.idType).map((acc, idx) => (
+      <option key={idx} value={acc.accountId || acc.id}>
+        {acc.acctName}
+      </option>
+    ))}
+  </datalist>
+</td>
 
-        <td className="tbody-td min-w-[120px]">
-          <input type="text" value={entry.acctName || ""} readOnly style={{ maxWidth: "110px" }} className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed" placeholder="Account Name" />
-        </td>
+{/* Account Name Column - Must pull from entry.acctName */}
+<td className="tbody-td">
+  <input
+    type="text"
+    value={entry.acctName || ""} 
+    readOnly
+    className="w-full bg-gray-100 border border-gray-300 rounded px-1 py-0.5 text-xs cursor-not-allowed"
+    placeholder="Account Name"
+  />
+</td>
+
+{/* <td className="tbody-td">
+    <input
+        type="text"
+        value={entry.acctName || ""} // This now pulls from the specific entry object
+        readOnly
+        className="w-full bg-gray-100 border border-gray-300 rounded px-1 py-0.5 text-xs cursor-not-allowed"
+        placeholder="Account Name"
+    />
+</td> */}
+
+{/* Account Name Column */}
+{/* <td className="tbody-td">
+    <input
+        type="text"
+        value={newEntry.acctName || ""}
+        readOnly
+        // Requirement: Styling synced with Org Name (bg-gray-100)
+        className="w-full bg-gray-100 border border-gray-300 rounded px-1 py-0.5 text-xs cursor-not-allowed"
+        placeholder="Account Name"
+    />
+</td> */}
 
         {/* Organization Column */}
-        <td className="tbody-td min-w-[125px]">
+        {/* <td className="tbody-td min-w-[125px]">
           <input
             type="text"
             value={entry.orgId}
@@ -6831,7 +7513,84 @@ const isIndeterminate =
               <option key={index} value={org.value}>{org.label}</option>
             ))}
           </datalist>
-        </td>
+        </td> */}
+        {/* <td className="tbody-td min-w-[125px]">
+  <input
+    type="text"
+    value={entry.orgId}
+    onChange={(e) => {
+      const val = e.target.value;
+      const matchedOrg = organizationOptions.find(org => org.value.toString() === val);
+      updateNewEntry(entryIndex, { 
+        orgId: val, 
+        orgName: matchedOrg ? matchedOrg.orgName : "" 
+      });
+    }}
+    style={{ maxWidth: "110px" }}
+    className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+    list={`org-list-pasted-${entryIndex}`}
+    placeholder="Org"
+  />
+  <datalist id={`org-list-pasted-${entryIndex}`}>
+    {organizationOptions.map((org, index) => (
+      <option key={index} value={org.value}>{org.label}</option>
+    ))}
+  </datalist>
+</td> */}
+<td className="tbody-td min-w-[125px]">
+  <input
+    type="text"
+    value={entry.orgId}
+    onChange={(e) => {
+      const val = e.target.value;
+      // Find matching org from the global organizationOptions state
+      const matchedOrg = organizationOptions.find(
+        (org) => org.value.toString() === val
+      );
+      
+      // Update Org ID and auto-populate Org Name
+      updateNewEntry(entryIndex, { 
+        orgId: val, 
+        orgName: matchedOrg ? (matchedOrg.orgName || matchedOrg.label.split(' - ')[1]) : "" 
+      });
+    }}
+    style={{ maxWidth: "110px" }}
+    className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+    list={`org-list-pasted-${entryIndex}`}
+    placeholder="Org"
+  />
+  <datalist id={`org-list-pasted-${entryIndex}`}>
+    {organizationOptions.map((org, index) => (
+      <option key={index} value={org.value}>
+        {org.label}
+      </option>
+    ))}
+  </datalist>
+</td>
+        
+        {/* <td>
+
+              <input
+  type="text"
+  value={newEntry.orgName || ''}
+  readOnly
+  className="bg-gray-100 border border-gray-300 rounded px-1 py-0.5 text-xs"
+  placeholder="Org Name (auto-populated)"
+  style={{ maxWidth: "130px" }}
+/>
+
+        </td> */}
+        <td>
+  <input
+    type="text"
+    value={entry.orgName || ''}
+    readOnly
+    className="bg-gray-100 border border-gray-300 rounded px-1 py-0.5 text-xs"
+    placeholder="Org Name"
+    style={{ maxWidth: "130px" }}
+  />
+</td>
+    
 
         <td className="tbody-td text-center">
           <input type="checkbox" checked={entry.isRev} onChange={(e) => setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, isRev: e.target.checked } : ent)))} />
@@ -6877,53 +7636,428 @@ const isIndeterminate =
           let tdWidth = "min-w-[70px]";
           if (col.key === "emplId") tdWidth = "min-w-[115px]";
           if (col.key === "acctId" || col.key === "orgId") tdWidth = "min-w-[125px]";
-          if (col.key === "acctName" || col.key === "name") tdWidth = "min-w-[130px]";
+          // if (col.key === "acctName" || col.key === "name") tdWidth = "min-w-[130px]";
+          if (col.key === "acctName" || col.key === "orgName" || col.key === "name") tdWidth = "min-w-[130px]";
 
+//           if (isBudPlan && isEditable) {
+//             if (col.key === "acctId") {
+//               return (
+//                 <td key={`${uniqueRowKey}-acctId`} className={`tbody-td ${tdWidth}`}>
+//                   <input
+//                     type="text"
+//                     value={editedRowData[actualEmpIdx]?.acctId !== undefined ? editedRowData[actualEmpIdx].acctId : row.acctId}
+//                     onChange={(e) => {
+//                       const val = e.target.value;
+//                       const matched = accountOptionsWithNames.find(acc => (acc.id || acc.accountId) === val);
+//                       setEditedRowData(prev => ({
+//                         ...prev,
+//                         [actualEmpIdx]: { ...prev[actualEmpIdx], acctId: val, acctName: matched ? (matched.name || matched.acctName) : "" }
+//                       }));
+//                       setEditingRowIndex(actualEmpIdx);
+//                       setHasUnsavedFieldChanges(true);
+//                     }}
+//                     style={{ maxWidth: "110px" }}
+//                     className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+//                     list={`account-list-${actualEmpIdx}`}
+//                   />
+//                   <datalist id={`account-list-${actualEmpIdx}`}>
+//                     {accountOptionsWithNames.map((acc, i) => <option key={i} value={acc.id} />)}
+//                   </datalist>
+//                 </td>
+//               );
+//             }
+//             // if (col.key === "orgId") {
+//             //   return (
+//             //     <td key={`${uniqueRowKey}-orgId`} className={`tbody-td ${tdWidth}`}>
+//             //       <input
+//             //         type="text"
+//             //         value={editedRowData[actualEmpIdx]?.orgId !== undefined ? editedRowData[actualEmpIdx].orgId : row.orgId}
+//             //         onChange={(e) => handleRowFieldChange(actualEmpIdx, "orgId", e.target.value)}
+//             //         style={{ maxWidth: "110px" }}
+//             //         className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+//             //         list={`org-list-${actualEmpIdx}`}
+//             //       />
+//             //       <datalist id={`org-list-${actualEmpIdx}`}>
+//             //         {organizationOptions.map((org, i) => <option key={i} value={org.value}>{org.label}</option>)}
+//             //       </datalist>
+//             //     </td>
+//             //   );
+//             // }
+// //             if (col.key === "orgId") {
+// //   return (
+// //     <td key={`${uniqueRowKey}-orgId`} className={`tbody-td ${tdWidth}`}>
+// //       <input
+// //         type="text"
+// //         value={editedRowData[actualEmpIdx]?.orgId !== undefined ? editedRowData[actualEmpIdx].orgId : row.orgId}
+// //         onChange={(e) => {
+// //           const val = e.target.value.replace(/[^0-9.]/g, ''); // ✅ Keep decimals
+// //           const matched = organizationOptions.find(org => org.value === val) ||
+// //                          updateOrganizationOptions.find(org => org.value === val);
+// //           setEditedRowData(prev => ({
+// //             ...prev,
+// //             [actualEmpIdx]: { 
+// //               ...prev[actualEmpIdx], 
+// //               orgId: val, 
+// //               orgName: matched ? (matched.orgName || matched.label || '') : '' 
+// //             }
+// //           }));
+// //           setEditingRowIndex(actualEmpIdx);
+// //           setHasUnsavedFieldChanges(true);
+// //         }}
+// //         style={{ maxWidth: "110px" }}
+// //         className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+// //         list={`org-list-${actualEmpIdx}`}
+// //       />
+// //       <datalist id={`org-list-${actualEmpIdx}`}>
+// //         {organizationOptions.map((org, i) => <option key={i} value={org.value} />)}
+// //       </datalist>
+// //     </td>
+// //   );
+// // }
+// if (col.key === "orgId" && isBudPlan && isEditable) {
+//   return (
+//     <td key={`${uniqueRowKey}-orgId`} className={`tbody-td min-w-[125px]`}>
+//       <input
+//         type="text"
+//         value={editedRowData[actualEmpIdx]?.orgId !== undefined 
+//           ? editedRowData[actualEmpIdx].orgId 
+//           : row.orgId}
+//         onChange={(e) => {
+//           const val = e.target.value;
+//           // ✅ Find matching org INSTANTLY
+//           const matched = organizationOptions.find(org => org.value.toString() === val);
+//           setEditedRowData(prev => ({
+//             ...prev,
+//             [actualEmpIdx]: {
+//               ...prev[actualEmpIdx],
+//               orgId: val,
+//               orgName: matched ? matched.orgName || matched.label.split(' - ')[1] || '' : ''
+//             }
+//           }));
+//           setEditingRowIndex(actualEmpIdx);
+//           setHasUnsavedFieldChanges(true);
+//         }}
+//         style={{ maxWidth: "110px" }}
+//         className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+//         list={`org-list-${actualEmpIdx}`}  // ✅ Datalist suggestions
+//       />
+//       <datalist id={`org-list-${actualEmpIdx}`}>
+//         {organizationOptions.map((org, i) => (
+//           <option key={i} value={org.value}>{org.label}</option>  // ✅ Full label in dropdown
+//         ))}
+//       </datalist>
+//     </td>
+//   );
+// }
+
+// if (col.key === "orgName") {
+//   return (
+//     <td key={`${uniqueRowKey}-orgName`} className="tbody-td min-w-[130px]">
+//       {editedRowData[actualEmpIdx]?.orgName !== undefined
+//         ? editedRowData[actualEmpIdx].orgName
+//         : row.orgName || '-'
+//       }
+//     </td>
+//   );
+// }
+
+
+
+//           }
           if (isBudPlan && isEditable) {
-            if (col.key === "acctId") {
-              return (
-                <td key={`${uniqueRowKey}-acctId`} className={`tbody-td ${tdWidth}`}>
-                  <input
-                    type="text"
-                    value={editedRowData[actualEmpIdx]?.acctId !== undefined ? editedRowData[actualEmpIdx].acctId : row.acctId}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const matched = accountOptionsWithNames.find(acc => (acc.id || acc.accountId) === val);
-                      setEditedRowData(prev => ({
+    // 1. Account ID Logic
+    // if (col.key === "acctId") {
+    //     return (
+    //         <td key={`${uniqueRowKey}-acctId`} className={`tbody-td ${tdWidth}`}>
+    //             <input
+    //                 type="text"
+    //                 value={editedRowData[actualEmpIdx]?.acctId !== undefined ? editedRowData[actualEmpIdx].acctId : row.acctId}
+    //                 onChange={(e) => {
+    //                     const val = e.target.value;
+    //                     const matched = accountOptionsWithNames.find(acc => (acc.id || acc.accountId) === val);
+    //                     setEditedRowData(prev => ({
+    //                         ...prev,
+    //                         [actualEmpIdx]: { ...prev[actualEmpIdx], acctId: val, acctName: matched ? (matched.name || matched.acctName) : "" }
+    //                     }));
+    //                     setEditingRowIndex(actualEmpIdx);
+    //                     setHasUnsavedFieldChanges(true);
+    //                 }}
+    //                 style={{ maxWidth: "110px" }}
+    //                 className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+    //                 list={`account-list-${actualEmpIdx}`}
+    //             />
+    //             <datalist id={`account-list-${actualEmpIdx}`}>
+    //                 {accountOptionsWithNames.map((acc, i) => <option key={i} value={acc.id} />)}
+    //             </datalist>
+    //         </td>
+    //     );
+    // }
+//     if (col.key === "acctId") {
+//   // Use the state variables populated by /Project/GetAllProjectByProjId/
+//   let currentSuggestions = [];
+//   const rowIdType = emp.emple.type;
+
+//   if (rowIdType === "Vendor" || rowIdType === "Vendor Employee") {
+//     currentSuggestions = subContractorNonLaborAccounts;
+//   } else if (rowIdType === "Other") {
+//     // Combine all lists for 'Other' type to match New Entry logic
+//     currentSuggestions = [
+//       ...employeeNonLaborAccounts,
+//       ...subContractorNonLaborAccounts,
+//       ...otherDirectCostNonLaborAccounts,
+//     ];
+//   } else {
+//     currentSuggestions = employeeNonLaborAccounts;
+//   }
+
+//   return (
+//     <td key={`${uniqueRowKey}-acctId`} className={`tbody-td ${tdWidth}`}>
+//       <input
+//         type="text"
+//         value={editedRowData[actualEmpIdx]?.acctId !== undefined ? editedRowData[actualEmpIdx].acctId : row.acctId}
+//         onChange={(e) => {
+//           const val = e.target.value;
+//           // Find the name from the suggestions to auto-update Account Name column
+//           const matched = currentSuggestions.find(acc => (acc.id || acc.accountId) === val);
+          
+//           setEditedRowData(prev => ({
+//             ...prev,
+//             [actualEmpIdx]: { 
+//               ...prev[actualEmpIdx], 
+//               acctId: val, 
+//               acctName: matched ? (matched.name || matched.acctName) : "" 
+//             }
+//           }));
+//           setEditingRowIndex(actualEmpIdx);
+//           setHasUnsavedFieldChanges(true);
+//         }}
+//         style={{ maxWidth: "110px" }}
+//         className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+//         list={`account-list-existing-${actualEmpIdx}`}
+//       />
+//       <datalist id={`account-list-existing-${actualEmpIdx}`}>
+//         {currentSuggestions.map((acc, i) => (
+//           <option key={i} value={acc.id || acc.accountId}>
+//             {acc.name || acc.acctName}
+//           </option>
+//         ))}
+//       </datalist>
+//     </td>
+//   );
+// }
+
+    // 2. Organization ID Logic
+    // if (col.key === "orgId") {
+    //     return (
+    //         <td key={`${uniqueRowKey}-orgId`} className={`tbody-td min-w-[125px]`}>
+    //             <input
+    //                 type="text"
+    //                 value={editedRowData[actualEmpIdx]?.orgId !== undefined ? editedRowData[actualEmpIdx].orgId : row.orgId}
+    //                 onChange={(e) => {
+    //                     const val = e.target.value;
+    //                     const matched = organizationOptions.find(org => org.value.toString() === val);
+    //                     setEditedRowData(prev => ({
+    //                         ...prev,
+    //                         [actualEmpIdx]: {
+    //                             ...prev[actualEmpIdx],
+    //                             orgId: val,
+    //                             orgName: matched ? matched.orgName || matched.label.split(' - ')[1] || '' : ''
+    //                         }
+    //                     }));
+    //                     setEditingRowIndex(actualEmpIdx);
+    //                     setHasUnsavedFieldChanges(true);
+    //                 }}
+    //                 style={{ maxWidth: "110px" }}
+    //                 className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+    //                 list={`org-list-${actualEmpIdx}`}
+    //             />
+    //             <datalist id={`org-list-${actualEmpIdx}`}>
+    //                 {organizationOptions.map((org, i) => (
+    //                     <option key={i} value={org.value}>{org.label}</option>
+    //                 ))}
+    //             </datalist>
+    //         </td>
+    //     );
+    // }
+
+    // 3. Org Name Logic
+    // if (col.key === "orgName") {
+    //     return (
+    //         <td key={`${uniqueRowKey}-orgName`} className="tbody-td min-w-[130px]">
+    //             {editedRowData[actualEmpIdx]?.orgName !== undefined
+    //                 ? editedRowData[actualEmpIdx].orgName
+    //                 : row.orgName || '-'}
+    //         </td>
+    //     );
+    // }
+
+//     if (col.key === "acctId") {
+//     // Get suggestions based on row's specific type
+//     let rowSuggestions = [];
+//     const rowType = emp.emple.type;
+
+//     if (rowType === "Vendor" || rowType === "Vendor Employee") {
+//         rowSuggestions = subContractorNonLaborAccounts;
+//     } else if (rowType === "Other") {
+//         rowSuggestions = [...employeeNonLaborAccounts, ...subContractorNonLaborAccounts, ...otherDirectCostNonLaborAccounts];
+//     } else {
+//         rowSuggestions = employeeNonLaborAccounts;
+//     }
+
+//     return (
+//         <td key={`${uniqueRowKey}-acctId`} className={`tbody-td ${tdWidth}`}>
+//             <input
+//                 type="text"
+//                 value={editedRowData[actualEmpIdx]?.acctId !== undefined ? editedRowData[actualEmpIdx].acctId : row.acctId}
+//                 onChange={(e) => {
+//                     const val = e.target.value;
+//                     const matched = rowSuggestions.find(acc => (acc.id || acc.accountId) === val);
+//                     setEditedRowData(prev => ({
+//                         ...prev,
+//                         [actualEmpIdx]: { 
+//                             ...prev[actualEmpIdx], 
+//                             acctId: val, 
+//                             acctName: matched ? (matched.name || matched.acctName) : "" 
+//                         }
+//                     }));
+//                     setEditingRowIndex(actualEmpIdx);
+//                     setHasUnsavedFieldChanges(true);
+//                 }}
+//                 style={{ maxWidth: "110px" }}
+//                 className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+//                 list={`account-list-existing-${actualEmpIdx}`}
+//             />
+//             <datalist id={`account-list-existing-${actualEmpIdx}`}>
+//                 {rowSuggestions.map((acc, i) => (
+//                     <option key={i} value={acc.id || acc.accountId}>
+//                         {acc.name || acc.acctName}
+//                     </option>
+//                 ))}
+//             </datalist>
+//         </td>
+//     );
+// }
+
+if (col.key === "acctId") {
+  // Logic: Get list based on THIS row's employee type
+  const rowSuggestions = getAccountSuggestionsByType(emp.emple.type);
+
+  return (
+    <td key={`${uniqueRowKey}-acctId`} className={`tbody-td ${tdWidth}`}>
+      <input
+        type="text"
+        value={editedRowData[actualEmpIdx]?.acctId !== undefined ? editedRowData[actualEmpIdx].acctId : row.acctId}
+        onChange={(e) => {
+          const val = e.target.value;
+          const matched = rowSuggestions.find(acc => (acc.accountId || acc.id) === val);
+          
+          setEditedRowData(prev => ({
+            ...prev,
+            [actualEmpIdx]: { 
+              ...prev[actualEmpIdx], 
+              acctId: val, 
+              acctName: matched ? (matched.acctName || matched.name) : "" 
+            }
+          }));
+          setEditingRowIndex(actualEmpIdx);
+          setHasUnsavedFieldChanges(true);
+        }}
+        style={{ maxWidth: "110px" }}
+        className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+        list={`account-list-existing-${actualEmpIdx}`}
+      />
+      <datalist id={`account-list-existing-${actualEmpIdx}`}>
+        {rowSuggestions.map((acc, i) => (
+          <option key={i} value={acc.accountId || acc.id}>
+            {acc.acctName || acc.name}
+          </option>
+        ))}
+      </datalist>
+    </td>
+  );
+}
+
+if (col.key === "acctName") {
+    return (
+        <td key={`${uniqueRowKey}-acctName`} className="tbody-td min-w-[130px]">
+            {editedRowData[actualEmpIdx]?.acctName !== undefined
+                ? editedRowData[actualEmpIdx].acctName
+                : row.acctName || '-'}
+        </td>
+    );
+}
+
+if (col.key === "orgId") {
+    return (
+        <td key={`${uniqueRowKey}-orgId`} className={`tbody-td min-w-[125px]`}>
+            <input
+                type="text"
+                value={editedRowData[actualEmpIdx]?.orgId !== undefined ? editedRowData[actualEmpIdx].orgId : row.orgId}
+                onChange={(e) => {
+                    const val = e.target.value;
+                    const matched = organizationOptions.find(org => org.value.toString() === val);
+                    setEditedRowData(prev => ({
                         ...prev,
-                        [actualEmpIdx]: { ...prev[actualEmpIdx], acctId: val, acctName: matched ? (matched.name || matched.acctName) : "" }
-                      }));
-                      setEditingRowIndex(actualEmpIdx);
-                      setHasUnsavedFieldChanges(true);
-                    }}
-                    style={{ maxWidth: "110px" }}
-                    className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
-                    list={`account-list-${actualEmpIdx}`}
-                  />
-                  <datalist id={`account-list-${actualEmpIdx}`}>
-                    {accountOptionsWithNames.map((acc, i) => <option key={i} value={acc.id} />)}
-                  </datalist>
-                </td>
-              );
-            }
-            if (col.key === "orgId") {
-              return (
-                <td key={`${uniqueRowKey}-orgId`} className={`tbody-td ${tdWidth}`}>
-                  <input
-                    type="text"
-                    value={editedRowData[actualEmpIdx]?.orgId !== undefined ? editedRowData[actualEmpIdx].orgId : row.orgId}
-                    onChange={(e) => handleRowFieldChange(actualEmpIdx, "orgId", e.target.value)}
-                    style={{ maxWidth: "110px" }}
-                    className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
-                    list={`org-list-${actualEmpIdx}`}
-                  />
-                  <datalist id={`org-list-${actualEmpIdx}`}>
-                    {organizationOptions.map((org, i) => <option key={i} value={org.value}>{org.label}</option>)}
-                  </datalist>
-                </td>
-              );
-            }
-          }
+                        [actualEmpIdx]: {
+                            ...prev[actualEmpIdx],
+                            orgId: val,
+                            orgName: matched ? (matched.orgName || matched.label.split(' - ')[1]) : ""
+                        }
+                    }));
+                    setEditingRowIndex(actualEmpIdx);
+                    setHasUnsavedFieldChanges(true);
+                }}
+                style={{ maxWidth: "110px" }}
+                className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
+                list={`org-list-existing-${actualEmpIdx}`}
+            />
+            <datalist id={`org-list-existing-${actualEmpIdx}`}>
+                {organizationOptions.map((org, i) => (
+                    <option key={i} value={org.value}>{org.label}</option>
+                ))}
+            </datalist>
+        </td>
+    );
+}
+
+if (col.key === "orgName") {
+    return (
+        <td key={`${uniqueRowKey}-orgName`} className="tbody-td min-w-[130px]">
+            {editedRowData[actualEmpIdx]?.orgName !== undefined
+                ? editedRowData[actualEmpIdx].orgName
+                : row.orgName || '-'}
+        </td>
+    );
+}
+
+    // 4. ADDED: Rev Checkbox Logic
+    if (col.key === "isRev") {
+        return (
+            <td key={`${uniqueRowKey}-isRev`} className="tbody-td text-center">
+                <input
+                    type="checkbox"
+                    checked={editedRowData[actualEmpIdx]?.isRev !== undefined ? editedRowData[actualEmpIdx].isRev : emp.emple.isRev}
+                    onChange={(e) => handleRowFieldChange(actualEmpIdx, "isRev", e.target.checked)}
+                    className="w-4 h-4 cursor-pointer"
+                />
+            </td>
+        );
+    }
+
+    // 5. ADDED: Brd Checkbox Logic
+    if (col.key === "isBrd") {
+        return (
+            <td key={`${uniqueRowKey}-isBrd`} className="tbody-td text-center">
+                <input
+                    type="checkbox"
+                    checked={editedRowData[actualEmpIdx]?.isBrd !== undefined ? editedRowData[actualEmpIdx].isBrd : emp.emple.isBrd}
+                    onChange={(e) => handleRowFieldChange(actualEmpIdx, "isBrd", e.target.checked)}
+                    className="w-4 h-4 cursor-pointer"
+                />
+            </td>
+        );
+    }
+}
           return (
             <td key={`${uniqueRowKey}-${col.key}`} className={`tbody-td ${tdWidth} ${col.key === "name" ? "text-left" : ""}`}>
               {row[col.key]}
@@ -6949,10 +8083,10 @@ const isIndeterminate =
       lineHeight: "normal",
       borderTop: "2px solid #d1d5db",
       backgroundColor: "#d7ebf3", // light blue
-      color: "#000000",
+      // color: "#000000",
     }}
   >
-    <td colSpan={EMPLOYEE_COLUMNS.length + 1}>Total Amount</td>
+    <td colSpan={EMPLOYEE_COLUMNS.length + 1}>Total Amount:</td>
   </tr>
 </tfoot>
 
@@ -6966,6 +8100,7 @@ const isIndeterminate =
                 maxHeight: "400px",
                 overflowY: "auto", // show scrollbar
                 overflowX: "auto",
+                // marginBottom: "-1px"
               }}
             >
               <table className="min-w-full text-xs text-center table">
@@ -7482,7 +8617,7 @@ const isIndeterminate =
         {/* <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-sm"> */}
             <h3 className="text-lg font-semibold mb-4">
-              {showFindOnly ? "Find Hours" : "Find and Replace Hours"}
+              {showFindOnly ? "Find Hours" : "Find and Replace Amounts"}
             </h3>
 
             <div className="mb-3 flex gap-2">

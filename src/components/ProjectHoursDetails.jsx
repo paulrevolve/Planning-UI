@@ -14,7 +14,7 @@ const EMPLOYEE_COLUMNS = [
   { key: "acctId", label: "Account" },
   { key: "acctName", label: "Account Name" },
   // { key: "orgId", label: "Organization" },
-  { key: "orgId", label: "OrgId" },
+  { key: "orgId", label: "Org Id" },
   { key: "orgName", label: "Org Name" },
   { key: "glcPlc", label: "PLC" },
   { key: "isRev", label: "Rev" },
@@ -143,6 +143,8 @@ const ProjectHoursDetails = ({
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
   const [selectedColumnKey, setSelectedColumnKey] = useState(null);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [accountOptions, setAccountOptions] = useState([]);
+
   const [newEntry, setNewEntry] = useState({
     id: "",
     firstName: "",
@@ -715,15 +717,38 @@ const ProjectHoursDetails = ({
   //   loadOrganizationOptions();
   // }, []); // Empty deps = run once on mount
 
+  // useEffect(() => {
+  //   const loadOrganizations = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `${backendUrl}/Orgnization/GetAllOrgs`
+  //       );
+  //       const orgOptions = Array.isArray(response.data)
+  //         ? response.data.map((org) => ({
+  //             value: org.orgId,
+  //             label: org.orgId,
+  //           }))
+  //         : [];
+  //       console.log(orgOptions);
+  //       setOrganizationOptions(orgOptions);
+  //     } catch (err) {
+  //       console.error("Failed to preload organizations", err);
+  //     }
+  //   };
+  //   loadOrganizations();
+  // }, []); // Empty deps = run once on mount
+
   useEffect(() => {
     const loadOrganizations = async () => {
       try {
-        const response = await axios.get(backendUrlOrgnizationGetAllOrgs);
+        const response = await axios.get(
+          `${backendUrl}/Orgnization/GetAllOrgs`
+        );
         const orgOptions = Array.isArray(response.data)
           ? response.data.map((org) => ({
               value: org.orgId,
-              label: `${org.orgId} - ${org.orgName}`,
-              orgName: org.orgName,
+              label: `${org.orgId} - ${org.orgName}`, // FIXED: Include orgName in label
+              orgName: org.orgName, // FIXED: Add orgName property
             }))
           : [];
         setOrganizationOptions(orgOptions);
@@ -732,7 +757,56 @@ const ProjectHoursDetails = ({
       }
     };
     loadOrganizations();
-  }, []); // Empty deps = run once on mount
+  }, []);
+
+  const ACCOUNT_KEYS = [
+    "employeeLaborAccounts",
+    "employeeNonLaborAccounts",
+    "sunContractorLaborAccounts",
+    "subContractorNonLaborAccounts",
+    "otherDirectCostLaborAccounts",
+    "otherDirectCostNonLaborAccounts",
+    "plc",
+  ];
+
+
+useEffect(() => {
+  const loadAccounts = async () => {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/Project/GetAllProjectByProjId/${projectId}`
+      );
+
+      console.log("response", response);
+
+      const projects = Array.isArray(response.data) ? response.data : [];
+
+      const accOptions = projects
+        .flatMap((proj) => ACCOUNT_KEYS.flatMap((key) => proj?.[key] || []))
+        .map((acc) => ({
+          value: acc.accountId, // e.g. "51-000-000"
+          label: `${acc.accountId} - ${acc.acctName}`,
+          accountName: acc.acctName,
+          function: acc.accountFunctionDescription,
+          budgetSheet: acc.budgetSheet,
+        }))
+        // 🔹 remove duplicates by accountId
+        .filter(
+          (acc, index, self) =>
+            index === self.findIndex((a) => a.value === acc.value)
+        );
+
+      setAccountOptions(accOptions);
+    } catch (err) {
+      console.error("Failed to preload accounts", err);
+    }
+  };
+
+  loadAccounts();
+}, [projectId]);
+
+
+
 
   useEffect(() => {
     const initializeUpdateOptions = async () => {
@@ -746,9 +820,9 @@ const ProjectHoursDetails = ({
         const orgOptions = Array.isArray(orgResponse.data)
           ? orgResponse.data.map((org) => ({
               value: org.orgId,
-              // label: org.orgId,
-              label: `${org.orgId} - ${org.orgName}`,
-              orgName: org.orgName,
+              label: org.orgId,
+              // label: `${org.orgId} - ${org.orgName}`,
+              // orgName: org.orgName,
             }))
           : [];
 
@@ -1058,6 +1132,7 @@ const ProjectHoursDetails = ({
                   perHourRate: emp.perHourRate || emp.hrRate || "",
                   plc: emp.plc || "",
                   orgId: emp.orgId || "",
+                  orgName: emp.orgName || "",
                 };
               } else {
                 // Standard Employee Logic
@@ -1387,6 +1462,7 @@ const ProjectHoursDetails = ({
             });
           }
         });
+        // console.log(uniqueAccountsWithNamesMap);
         const uniqueAccountsWithNames = Array.from(
           uniqueAccountsWithNamesMap.values()
         );
@@ -1688,31 +1764,58 @@ const ProjectHoursDetails = ({
   //   setOrgSearch(cleanValue);
   // };
 
+  // const handleOrgInputChangeForUpdate = (value, actualEmpIdx) => {
+  //   const cleanValue = value.replace(/[^0-9.]/g, "");
+  //   handleEmployeeDataChange(actualEmpIdx, "orgId", cleanValue);
+
+  //   // Search in both global and filtered options
+  //   // let matchedOrg = organizationOptions?.find(opt => opt.value?.toString() === cleanValue) ||
+  //   //                  updateOrganizationOptions?.find(opt => opt.value?.toString() === cleanValue);
+
+  //   // if (matchedOrg) {
+  //   //     handleEmployeeDataChange(actualEmpIdx, 'orgName', matchedOrg.orgName || matchedOrg.label);
+  //   // } else {
+  //   //     handleEmployeeDataChange(actualEmpIdx, 'orgName', '');
+  //   // }
+  //   // setOrgSearch(cleanValue);
+  //   const matchedOrg =
+  //     organizationOptions.find((opt) => opt.value?.toString() === cleanValue) ||
+  //     updateOrganizationOptions.find(
+  //       (opt) => opt.value?.toString() === cleanValue
+  //     );
+  //   if (matchedOrg) {
+  //     handleEmployeeDataChange(
+  //       actualEmpIdx,
+  //       "orgName",
+  //       matchedOrg.orgName || matchedOrg.label.split(" - ")[1]
+  //     );
+  //   } else {
+  //     handleEmployeeDataChange(actualEmpIdx, "orgName", "");
+  //   }
+
+  //   setOrgSearch(cleanValue);
+  // };
+
   const handleOrgInputChangeForUpdate = (value, actualEmpIdx) => {
     const cleanValue = value.replace(/[^0-9.]/g, "");
     handleEmployeeDataChange(actualEmpIdx, "orgId", cleanValue);
 
     // Search in both global and filtered options
-    // let matchedOrg = organizationOptions?.find(opt => opt.value?.toString() === cleanValue) ||
-    //                  updateOrganizationOptions?.find(opt => opt.value?.toString() === cleanValue);
-
-    // if (matchedOrg) {
-    //     handleEmployeeDataChange(actualEmpIdx, 'orgName', matchedOrg.orgName || matchedOrg.label);
-    // } else {
-    //     handleEmployeeDataChange(actualEmpIdx, 'orgName', '');
-    // }
-    // setOrgSearch(cleanValue);
     const matchedOrg =
       organizationOptions.find((opt) => opt.value?.toString() === cleanValue) ||
       updateOrganizationOptions.find(
         (opt) => opt.value?.toString() === cleanValue
       );
+
     if (matchedOrg) {
-      handleEmployeeDataChange(
-        actualEmpIdx,
-        "orgName",
-        matchedOrg.orgName || matchedOrg.label.split(" - ")[1]
-      );
+      // FIXED: Properly extract orgName from label format "orgId - orgName"
+      let orgNameValue = "";
+      if (matchedOrg.orgName) {
+        orgNameValue = matchedOrg.orgName;
+      } else if (matchedOrg.label && matchedOrg.label.includes(" - ")) {
+        orgNameValue = matchedOrg.label.split(" - ")[1] || "";
+      }
+      handleEmployeeDataChange(actualEmpIdx, "orgName", orgNameValue);
     } else {
       handleEmployeeDataChange(actualEmpIdx, "orgName", "");
     }
@@ -3073,7 +3176,7 @@ const ProjectHoursDetails = ({
       "Name",
       "Account",
       "Account Name",
-      "OrgId",
+      "Org Id",
       "Org Name",
       "PLC",
       "Rev",
@@ -3313,7 +3416,7 @@ const ProjectHoursDetails = ({
         orgOptions = Array.isArray(orgResponse.data)
           ? orgResponse.data.map((org) => ({
               value: org.orgId,
-              label: `${org.orgId}`,
+              label: org.orgId,
             }))
           : [];
         setCachedOrgData(orgOptions);
@@ -3356,6 +3459,7 @@ const ProjectHoursDetails = ({
                   perHourRate: emp.perHourRate || emp.hrRate || "",
                   plc: emp.plc || "",
                   orgId: emp.orgId || "",
+                  orgName: emp.orgName || "",
                 };
               })
             : [];
@@ -3378,6 +3482,7 @@ const ProjectHoursDetails = ({
                 perHourRate: emp.perHourRate || emp.hrRate || "",
                 plc: emp.plc || "",
                 orgId: emp.orgId || "",
+                orgName: emp.orgName || "",
               }))
             : [];
         } catch (err) {
@@ -3401,6 +3506,8 @@ const ProjectHoursDetails = ({
                 perHourRate: entry.perHourRate || match.perHourRate || "",
                 orgId: entry.orgId || match.orgId || "",
                 plcGlcCode: entry.plcGlcCode || match.plc || "",
+                acctId: entry.acctId || "",
+                acctName: entry.acctName || "",
               };
             }
           }
@@ -4154,7 +4261,7 @@ const ProjectHoursDetails = ({
         orgOptions = Array.isArray(orgResponse.data)
           ? orgResponse.data.map((org) => ({
               value: org.orgId,
-              label: `${org.orgId}`,
+              label: org.orgName,
             }))
           : [];
         setCachedOrgData(orgOptions);
@@ -4189,6 +4296,15 @@ const ProjectHoursDetails = ({
             }))
           : [];
       } else if (entry.idType === "Vendor") {
+        accountsWithNames = Array.isArray(
+          projectData.sunContractorLaborAccounts
+        )
+          ? projectData.sunContractorLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+      } else if (entry.idType === "VendorEmployee") {
         accountsWithNames = Array.isArray(
           projectData.sunContractorLaborAccounts
         )
@@ -5019,6 +5135,24 @@ const ProjectHoursDetails = ({
       }
     }
 
+   const accountId = emp?.emple?.accId || emp?.emple?.plForecasts?.[0]?.acctId;
+
+   let resolvedAccountName = "";
+
+   if (accountId) {
+     const accountIdStr = String(accountId);
+
+     const matchedAccount = [
+       ...(accountOptions || []),
+       ...(updateAccountOptions || []),
+     ].find((opt) => String(opt?.value) === accountIdStr);
+
+     resolvedAccountName =
+       matchedAccount?.accountName || matchedAccount?.label || accountIdStr;
+   }
+
+
+
     // return {
     //   // idType:
     //   //   ID_TYPE_OPTIONS.find(
@@ -5088,23 +5222,37 @@ const ProjectHoursDetails = ({
       acctId:
         emp.emple.accId ||
         (laborAccounts.length > 0 ? laborAccounts[0].id : "-"),
+      // Account name resolution: Prefer mapped account options, but DO NOT
+      // rely solely on `accountOptionsWithNames` because that list can be
+      // temporarily empty (e.g., when toggling the New form and fetching
+      // accounts). If no mapped account is found, fall back to any account
+      // name that may already exist on the employee record (emp.emple.acctName
+      // or emp.emple.accName) before showing a generic "-". This prevents
+      // the visible account name from blanking briefly when clicking "New".
       acctName: (() => {
         const accountId =
           emp.emple.accId ||
           (laborAccounts.length > 0 ? laborAccounts[0].id : null);
-        if (!accountId) return "-";
+
+        // If there is no accountId at all, try to return any employee-provided
+        // account name before falling back to "-".
+        if (!accountId) return emp.emple.acctName || emp.emple.accName || "-";
 
         const accountWithName =
           accountOptionsWithNames.find((acc) => acc.id === accountId) ||
           updateAccountOptions.find((acc) => acc.id === accountId) ||
           laborAccounts.find((acc) => acc.id === accountId);
 
+        // Prefer the mapped account's name when available; otherwise fall back
+        // to any account name already present on the employee object.
         return accountWithName
           ? accountWithName.name ||
               accountWithName.acctName ||
               accountWithName.label ||
-              accountId
-          : accountId;
+              emp.emple.acctName ||
+              emp.emple.accName ||
+              resolvedAccountName
+          : emp.emple.acctName || emp.emple.accName || "-";
       })(),
       orgId: emp.emple.orgId || "-",
       orgName: resolvedOrgName || "-", // Your orgName logic is already correct
@@ -8059,7 +8207,6 @@ const ProjectHoursDetails = ({
           plc: entry.plcGlcCode,
           hrlyRate: Number(entry.perHourRate || 0),
         }));
-
         bulkPayload.push({
           emplId: entry.id.trim(),
           firstName: entry.firstName,
@@ -9804,7 +9951,25 @@ const ProjectHoursDetails = ({
                         idType: "",
                         acctId:
                           laborAccounts.length > 0 ? laborAccounts[0].id : "",
-                        acctName: " ",
+                        // acctName: " ",
+                        acctName: (() => {
+                          if (laborAccounts.length === 0) return "";
+                          const defaultAccount = laborAccounts[0];
+                          // Lookup name from available options
+                          const matched =
+                            accountOptionsWithNames.find(
+                              (acc) => acc.id === defaultAccount.id
+                            ) ||
+                            laborAccounts.find(
+                              (acc) => acc.id === defaultAccount.id
+                            );
+                          return matched
+                            ? matched.name ||
+                                matched.acctName ||
+                                matched.label ||
+                                defaultAccount.id
+                            : defaultAccount.id;
+                        })(),
                         orgId: "",
                         plcGlcCode: "",
                         perHourRate: "",
@@ -9819,7 +9984,7 @@ const ProjectHoursDetails = ({
                       setShowNewForm(true);
                     }}
                     // className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium"
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                    className={` rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
                     style={{
                       ...geistSansStyle,
                       backgroundColor: "#113d46",
@@ -11052,8 +11217,11 @@ const ProjectHoursDetails = ({
                                               : "",
                                           orgId: "",
                                           plcGlcCode: "",
+                                          plcGlcDes: "",
                                           perHourRate: "",
                                           status: "Act",
+                                          orgName: "",
+                                          acctName: "",
                                         }
                                       : ent
                                   )
@@ -11088,36 +11256,10 @@ const ProjectHoursDetails = ({
                               onKeyDown={(e) =>
                                 e.key === " " && e.stopPropagation()
                               }
-                              // onChange={(e) => {
-                              //   const val = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
-                              //   const trimmedValue = val.trim();
-                              //   setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, id: val } : ent)));
-                              //   if (entry.idType !== "Other") {
-                              //     const suggestions = pastedEntrySuggestions[entryIndex] || [];
-                              //     const selectedEmployee = suggestions.find((emp) => emp.emplId === trimmedValue);
-                              //     if (selectedEmployee) {
-                              //       setNewEntries((prev) =>
-                              //         prev.map((ent, idx) =>
-                              //           idx === entryIndex
-                              //             ? {
-                              //                 ...ent,
-                              //                 id: trimmedValue,
-                              //                 firstName: selectedEmployee.firstName || "",
-                              //                 lastName: selectedEmployee.lastName || "",
-                              //                 perHourRate: selectedEmployee.perHourRate || "",
-                              //                 orgId: selectedEmployee.orgId || ent.orgId,
-                              //                 plcGlcCode: selectedEmployee.plc || "",
-                              //               }
-                              //             : ent
-                              //         )
-                              //       );
-                              //     }
-                              //   }
-                              // }}
-                              // Inside the return of sortedEmployees.map or newEntries.map for the ID input:
                               onChange={(e) => {
                                 const rawValue = e.target.value;
-                                const [emplId, lastName] = rawValue.split(" - ");
+                                const [emplId, lastName] =
+                                  rawValue.split(" - ");
 
                                 // show only ID in the input
                                 setNewEntries((prev) =>
@@ -11165,7 +11307,12 @@ const ProjectHoursDetails = ({
                               disabled={entry.idType === "PLC"}
                               style={{ maxWidth: "90px" }}
                               className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
-                              list={`employee-id-list-${entryIndex}`}
+                              // list={`employee-id-list-${entryIndex}`}
+                              list={
+                                entry.idType !== "Other"
+                                  ? `employee-id-list-${entryIndex}`
+                                  : undefined
+                              }
                               placeholder="Enter ID"
                             />
                             <datalist id={`employee-id-list-${entryIndex}`}>
@@ -11195,7 +11342,7 @@ const ProjectHoursDetails = ({
                                 entry.idType === "Other" || planType === "NBBUD"
                                   ? entry.firstName || ""
                                   : entry.idType === "PLC"
-                                    ? entry.firstName
+                                    ? entry.firstName?.split(" - ")?.[1]
                                     : entry.idType === "Vendor"
                                       ? entry.lastName || entry.firstName || ""
                                       : `${entry.lastName || ""} ${entry.firstName || ""}`.trim()
@@ -11215,6 +11362,7 @@ const ProjectHoursDetails = ({
                                     /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
                                     ""
                                   );
+
                                   const valToStore = cleanValue.startsWith(" ")
                                     ? cleanValue.trimStart()
                                     : cleanValue;
@@ -11259,6 +11407,7 @@ const ProjectHoursDetails = ({
             ))}
           </datalist>
         </td> */}
+                          {/* account */}
                           <td className="tbody-td min-w-[110px]">
                             <input
                               type="text"
@@ -11284,25 +11433,38 @@ const ProjectHoursDetails = ({
                               //     );
                               //   }}
                               onChange={(e) => {
-                                const val = e.target.value;
-                                const matchedAccount =
-                                  accountOptionsWithNames.find(
-                                    (acc) => acc.id === val
-                                  );
+                                const rawValue = e.target.value;
 
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? {
-                                          ...ent,
-                                          acctId: val,
-                                          acctName: matchedAccount
-                                            ? matchedAccount.name
-                                            : "",
-                                        }
-                                      : ent
-                                  )
-                                );
+                                // If user selects from datalist → "ID - Name"
+                                if (rawValue.includes(" - ")) {
+                                  const [acctId, acctName] =
+                                    rawValue.split(" - ");
+
+                                  setNewEntries((prev) =>
+                                    prev.map((ent, idx) =>
+                                      idx === entryIndex
+                                        ? {
+                                            ...ent,
+                                            acctId: acctId.trim(), // show only ID
+                                            acctName: acctName.trim(),
+                                          }
+                                        : ent
+                                    )
+                                  );
+                                } else {
+                                  // If user is typing manually
+                                  setNewEntries((prev) =>
+                                    prev.map((ent, idx) =>
+                                      idx === entryIndex
+                                        ? {
+                                            ...ent,
+                                            acctId: rawValue,
+                                            acctName: "",
+                                          }
+                                        : ent
+                                    )
+                                  );
+                                }
                               }}
                               style={{ maxWidth: "100px" }}
                               className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
@@ -11314,7 +11476,7 @@ const ProjectHoursDetails = ({
                                 (account, index) => (
                                   <option
                                     key={index}
-                                    value={account.id || account.accountId}
+                                    value={`${account.id} - ${account.name}`}
                                   />
                                 )
                               )}
@@ -11364,24 +11526,39 @@ const ProjectHoursDetails = ({
                               //   );
                               // }}
                               onChange={(e) => {
-                                const val = e.target.value;
-                                const matchedOrg = organizationOptions.find(
-                                  (o) => o.value.toString() === val.toString()
-                                );
+                                const rawValue = e.target.value;
+                                // const matchedOrg = organizationOptions.find(
+                                //   (o) => o.value.toString() === val.toString()
+                                // );
 
-                                setNewEntries((prev) =>
-                                  prev.map((ent, idx) =>
-                                    idx === entryIndex
-                                      ? {
-                                          ...ent,
-                                          orgId: val,
-                                          orgName: matchedOrg
-                                            ? matchedOrg.orgName
-                                            : "",
-                                        }
-                                      : ent
-                                  )
-                                );
+                                if (rawValue.includes(" - ")) {
+                                  const [orgId, orgName] =
+                                    rawValue.split(" - ");
+
+                                  setNewEntries((prev) =>
+                                    prev.map((ent, idx) =>
+                                      idx === entryIndex
+                                        ? {
+                                            ...ent,
+                                            orgId: orgId,
+                                            orgName: orgName || "",
+                                          }
+                                        : ent
+                                    )
+                                  );
+                                } else {
+                                  setNewEntries((prev) =>
+                                    prev.map((ent, idx) =>
+                                      idx === entryIndex
+                                        ? {
+                                            ...ent,
+                                            orgId: orgId,
+                                            orgName: "",
+                                          }
+                                        : ent
+                                    )
+                                  );
+                                }
                               }}
                               style={{ maxWidth: "100px" }}
                               className="border border-gray-300 rounded px-1 py-0.5 text-xs outline-none"
@@ -11391,9 +11568,10 @@ const ProjectHoursDetails = ({
                             <datalist id={`organization-list-${entryIndex}`}>
                               {(pastedEntryOrgs[entryIndex] || []).map(
                                 (org, index) => (
-                                  <option key={index} value={org.value}>
-                                    {org.label}
-                                  </option>
+                                  <option
+                                    key={index}
+                                    value={`${org.value} - ${org.label}`}
+                                  ></option>
                                 )
                               )}
                             </datalist>
@@ -11402,7 +11580,7 @@ const ProjectHoursDetails = ({
                           <td className="tbody-td min-w-[120px]">
                             <input
                               type="text"
-                              value={entry.orgName || ""}
+                              value={entry.orgName}
                               readOnly
                               className="border border-gray-300 rounded px-1 py-0.5 text-xs bg-gray-100 cursor-not-allowed w-full"
                               placeholder="Org Name"
@@ -11452,22 +11630,33 @@ const ProjectHoursDetails = ({
                             <input
                               type="text"
                               name="plcGlcCode"
-                              value={entry.plcGlcCode}
+                              value={entry.plcGlcDes}
                               onChange={(e) => {
                                 const val = e.target.value;
+
+                                // handlePlcInputChangeForUpdate(val, entryIndex);
+
                                 const currentPlcOptions =
                                   pastedEntryPlcs[entryIndex] || [];
+
+                                const [code, description] = val.split(" - ");
+
                                 const selectedOption = currentPlcOptions.find(
                                   (opt) =>
                                     opt.value.toLowerCase() ===
-                                    val.toLowerCase()
+                                    code.toLowerCase()
                                 );
+
                                 setNewEntries((prev) =>
                                   prev.map((ent, idx) =>
                                     idx === entryIndex
                                       ? {
                                           ...ent,
-                                          plcGlcCode: val,
+                                          plcGlcCode: code,
+                                          // 🔥 DO NOT reformat while typing
+                                          plcGlcDes: selectedOption
+                                            ? `${selectedOption.label.split(" - ")[0]} - (${selectedOption.label.split(" - ")[1]})`
+                                            : val,
                                           firstName:
                                             ent.idType === "PLC" &&
                                             selectedOption
@@ -11486,8 +11675,8 @@ const ProjectHoursDetails = ({
                             <datalist id={`plc-list-${entryIndex}`}>
                               {(pastedEntryPlcs[entryIndex] || []).map(
                                 (plc, index) => (
-                                  <option key={index} value={plc.value}>
-                                    {plc.label}
+                                  <option key={index} value={plc.label}>
+                                    {plc.value}
                                   </option>
                                 )
                               )}

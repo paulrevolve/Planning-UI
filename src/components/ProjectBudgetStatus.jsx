@@ -855,7 +855,7 @@ const ProjectBudgetStatus = () => {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 // disabled={searchTerm.length === 0}
               >
-                <option value="">Both</option>
+                <option value="">All</option>
                 <option value="Y">Active</option>
                 <option value="N">Inactive</option>
               </select>
