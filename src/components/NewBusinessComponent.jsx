@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { backendUrl } from "./config";
 import NewBusiness from "./NewBusiness";
 import { toast } from "react-toastify";
+import { BriefcaseBusiness, FolderKanban } from "lucide-react";
 
 const NewBusinessComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -143,8 +144,17 @@ const NewBusinessComponent = () => {
 
   return (
     <div className="p-2 sm:p-4 space-y-6 text-sm sm:text-base text-gray-800 font-inter">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+      {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4"> */}
+       <div className="flex flex-col gap-2">
+         <div className="flex items-center gap-2 bg-white rounded-sm  p-4">
+        <BriefcaseBusiness size={20} className="text-blue-600" />
+        <h2 className="text-lg font-bold text-gray-800">
+          Manage New Business
+        </h2>
+      </div>
+    
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 relative w-full sm:w-auto">
+          
           <label className="font-semibold text-xs sm:text-sm">
             Busniess ID:
           </label>
@@ -165,7 +175,7 @@ const NewBusinessComponent = () => {
             Search
           </button>
         </div>
-      </div>
+      </div>  
 
       <div className="space-y-4 sm:p-4 border-overall p-2 bg-white mb-8">
         <div className="flex items-center mb-2 gap-1 w-full flex-nowrap">
