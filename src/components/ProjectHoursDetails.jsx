@@ -11540,19 +11540,23 @@ useEffect(() => {
                                       idx === entryIndex
                                         ? {
                                             ...ent,
-                                            orgId: orgId,
+                                            orgId: orgId || "",
                                             orgName: orgName || "",
                                           }
                                         : ent
                                     )
                                   );
                                 } else {
+                                  // Use the raw typed value; previously this referenced
+                                  // `orgId` (undefined) which caused a runtime ReferenceError.
+                                  // Now we store the user's typed `rawValue` and clear the
+                                  // derived `orgName` until a valid selection is made.
                                   setNewEntries((prev) =>
                                     prev.map((ent, idx) =>
                                       idx === entryIndex
                                         ? {
                                             ...ent,
-                                            orgId: orgId,
+                                            orgId: rawValue,
                                             orgName: "",
                                           }
                                         : ent
