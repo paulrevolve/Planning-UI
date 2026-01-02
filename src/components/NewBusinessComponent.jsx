@@ -143,9 +143,9 @@ const NewBusinessComponent = () => {
   };
 
   return (
-    <div className="p-2 sm:p-4 space-y-6 text-sm sm:text-base text-gray-800 font-inter">
+    <div className="p-1 sm:p-2 space-y-2 text-sm sm:text-base text-gray-800 font-inter">
       {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4"> */}
-       <div className="flex flex-col gap-2">
+       <div className="flex flex-col gap-2 ">
          <div className="flex items-center gap-2 bg-white rounded-sm  p-4">
         <BriefcaseBusiness size={20} className="text-blue-600" />
         <h2 className="text-lg font-bold text-gray-800">
@@ -177,7 +177,7 @@ const NewBusinessComponent = () => {
         </div>
       </div>  
 
-      <div className="space-y-4 sm:p-4 border-overall p-2 bg-white mb-8">
+      <div className="space-y-4 sm:p-4 border-overall p-2 bg-white mb-1">
         <div className="flex items-center mb-2 gap-1 w-full flex-nowrap">
           <button
             onClick={() => setShowNewBusinessPopup(true)}
