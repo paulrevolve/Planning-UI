@@ -7130,8 +7130,8 @@ const handlePasteMultipleRows = async () => {
                       <th
                         key={col.key}
                         className="th-thead whitespace-nowrap   min-w-[70px]" // Changed p-2 to p-1.5, min-w-[80px] to min-w-[70px]
-                        onClick={col.key === "acctId" ? () => handleSort("acctId") : undefined}
-    style={{ cursor: col.key === "acctId" ? "pointer" : "default" }}
+                        // onClick={col.key === "acctId" ? () => handleSort("acctId") : undefined}
+    // style={{ cursor: col.key === "acctId" ? "pointer" : "default" }}
                       >
                         {col.label}
                         {/* {col.key === "acctId" && (

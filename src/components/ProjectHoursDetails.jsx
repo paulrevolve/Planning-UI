@@ -11089,14 +11089,14 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                       <th
                         key={col.key}
                         className={`th-thead min-w-[70px] ${col.key === "name" ? "text-left pl-2" : "text-center"}`}
-                        onClick={
-                          col.key === "acctId"
-                            ? () => handleSort("acctId")
-                            : undefined
-                        }
-                        style={{
-                          cursor: col.key === "acctId" ? "pointer" : "default",
-                        }}
+                        // onClick={
+                        //   col.key === "acctId"
+                        //     ? () => handleSort("acctId")
+                        //     : undefined
+                        // }
+                        // style={{
+                        //   cursor: col.key === "acctId" ? "pointer" : "default",
+                        // }}
                       >
                         {col.label}
                         {/* {col.key === "acctId" && (
