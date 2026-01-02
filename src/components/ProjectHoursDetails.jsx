@@ -822,7 +822,7 @@ useEffect(() => {
               value: org.orgId,
               label: org.orgId,
               // label: `${org.orgId} - ${org.orgName}`,
-              // orgName: org.orgName,
+              name: org.orgName,
             }))
           : [];
 
@@ -944,14 +944,17 @@ useEffect(() => {
               allAccounts.push(...otherAccounts);
             }
 
-            // Remove duplicates
+           
             const uniqueAccountsMap = new Map();
-            allAccounts.forEach((acc) => {
-              if (acc.id && !uniqueAccountsMap.has(acc.id)) {
-                uniqueAccountsMap.set(acc.id, { id: acc.id });
-              }
-            });
-            const uniqueAccounts = Array.from(uniqueAccountsMap.values());
+allAccountsWithNames.forEach((acc) => {
+  if (acc.id && !uniqueAccountsMap.has(acc.id)) {
+    uniqueAccountsMap.set(acc.id, {
+      id: acc.id,
+      name: acc.name,
+    });
+  }
+});
+const uniqueAccounts = Array.from(uniqueAccountsMap.values());
 
             // Load PLC options
             let plcOptionsForUpdate = [];
@@ -1913,6 +1916,7 @@ useEffect(() => {
             ? response.data.map((org) => ({
                 value: org.orgId,
                 label: org.orgId,
+                name: org.orgName,
               }))
             : [];
           setOrganizationOptions(orgOptions);
@@ -3417,6 +3421,7 @@ useEffect(() => {
           ? orgResponse.data.map((org) => ({
               value: org.orgId,
               label: org.orgId,
+              name: org.orgName,
             }))
           : [];
         setCachedOrgData(orgOptions);
@@ -11830,7 +11835,7 @@ useEffect(() => {
                                   key={`${account.id}-${index}`}
                                   value={account.id}
                                 >
-                                  {account.id}
+                                  {account.id}- {account.name}
                                 </option>
                               ))}
                             </datalist>
@@ -11888,7 +11893,7 @@ useEffect(() => {
                                   key={`${org.value}-${index}`}
                                   value={org.value}
                                 >
-                                  {org.label}
+                                  {org.label}-{org.name}
                                 </option>
                               ))}
                             </datalist>
