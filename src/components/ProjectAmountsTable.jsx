@@ -719,7 +719,7 @@ useEffect(() => {
           ? response.data.map((emp) => {
               if (newEntry.idType === "Vendor" || newEntries.some(e => e.idType === "Vendor")) {
                 return {
-                  emplId: emp.vendId || emp.empId || "",
+                  emplId: emp.vendId || "",
                   firstName: "",
                   lastName: emp.employeeName || "",
                   orgId: emp.orgId,
@@ -727,7 +727,7 @@ useEffect(() => {
                 };
               } else if (newEntry.idType === "Vendor Employee" || newEntries.some(e => e.idType === "Vendor Employee")) {
                 return {
-                  emplId: emp.empId,
+                  emplId: emp.empId || "",
                   firstName: "",
                   lastName: emp.employeeName || "",
                   orgId: emp.orgId,
@@ -738,7 +738,7 @@ useEffect(() => {
                   .split(", ")
                   .map((str) => str.trim());
                 return {
-                  emplId: emp.empId,
+                  emplId: emp.empId || "",
                   firstName: firstName || "",
                   lastName: lastName || "",
                   orgId: emp.orgId,
