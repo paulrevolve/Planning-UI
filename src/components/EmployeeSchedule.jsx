@@ -1114,8 +1114,15 @@ const EmployeeSchedule = ({
   return (
     <div className="p-4 font-inter">
       {/* Employee Info Header - Matching ProjectHoursDetail styling */}
-      <div className="w-full bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 relative">
-        <div className="grid grid-cols-4 gap-6 text-xs">
+      <div className="w-full relative">
+        {/* <div className="grid grid-cols-4 gap-6 text-xs"> */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative"
+              style={{
+                backgroundColor: "#e9f6fb",
+                color: "#17414d",
+                borderLeftColor: "#17414d",
+                borderRadius: "8px", // Ensures consistent rounding on all corners
+              }}>
           <div>
             <div className="font-semibold text-gray-700 mb-1">Employee ID:</div>
             <div className="text-gray-900">{emplId || "-"}</div>
@@ -1150,7 +1157,7 @@ const EmployeeSchedule = ({
             style={{ maxHeight: "400px", overflowY: "auto" }}
           >
             <table className="table-fixed table min-w-full">
-              <thead className="sticky-thead">
+              <thead className="sticky-thead thead">
                 <tr style={{ height: "48px", lineHeight: "normal" }}>
                   <th className="th-thead min-w-[150px]">Project ID</th>
                   <th className="th-thead min-w-[80px]">Source</th>
@@ -1207,7 +1214,7 @@ const EmployeeSchedule = ({
             style={{ maxHeight: "400px", overflowY: "auto", overflowX: "auto" }}
           >
             <table className="table-fixed table min-w-full">
-              <thead className="sticky-thead">
+              <thead className="sticky-thead thead">
                 <tr style={{ height: "48px", lineHeight: "normal" }}>
                   {sortedDurations.map((duration) => {
                     // Use the month string directly from API if available

@@ -5130,24 +5130,70 @@ const isIndeterminate =
       }
 
       // Fetch Vendor suggestions only if there are Vendor entries
+        // if (vendorEntries.length > 0) {
+        //   try {
+        //     const response = await axios.get(
+        //       `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
+        //     );
+        //     vendorSuggestions = Array.isArray(response.data)
+        //       ? response.data.map((emp) => ({
+        //           emplId: emp.vendId || emp.empId,
+        //           firstName: "",
+        //           lastName: emp.employeeName,
+        //           orgId: emp.orgId || "",
+        //           acctId: emp.acctId || "",
+        //         }))
+        //       : [];
+        //   } catch (err) {
+        //     console.error("Failed to fetch vendor suggestions:", err);
+        //   }
+        // }
+      // fix version
       if (vendorEntries.length > 0) {
-        try {
-          const response = await axios.get(
-            `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
-          );
-          vendorSuggestions = Array.isArray(response.data)
-            ? response.data.map((emp) => ({
-                emplId: emp.vendId || emp.empId,
-                firstName: "",
-                lastName: emp.employeeName,
-                orgId: emp.orgId || "",
-                acctId: emp.acctId || "",
-              }))
-            : [];
-        } catch (err) {
-          console.error("Failed to fetch vendor suggestions:", err);
-        }
-      }
+  try {
+    const response = await axios.get(
+      `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
+    );
+    vendorSuggestions = Array.isArray(response.data)
+      ? response.data.map((emp) => {
+          // ✅ EXACT SAME CONDITION LOGIC AS SINGLE ENTRY
+          const vendorEntriesWithIdType = vendorEntries.map(ve => ve.entry);
+          
+          if (vendorEntriesWithIdType.some(e => e.idType === "Vendor")) {
+            // Use vendId for pure Vendor entries
+            return {
+              emplId: emp.vendId || "",
+              firstName: "",
+              lastName: emp.employeeName || "",
+              orgId: emp.orgId,
+              acctId: emp.acctId,
+            };
+          } else if (vendorEntriesWithIdType.some(e => e.idType === "Vendor Employee")) {
+            // Use empId for Vendor Employee entries
+            return {
+              emplId: emp.empId || "",
+              firstName: "",
+              lastName: emp.employeeName || "",
+              orgId: emp.orgId,
+              acctId: emp.acctId,
+            };
+          } else {
+            // Fallback (shouldn't happen for vendor API, but safe)
+            return {
+              emplId: emp.vendId || emp.empId || "",
+              firstName: "",
+              lastName: emp.employeeName || "",
+              orgId: emp.orgId,
+              acctId: emp.acctId,
+            };
+          }
+        })
+      : [];
+  } catch (err) {
+    console.error("Failed to fetch vendor suggestions:", err);
+  }
+}
+
 
       // **STEP 4: Apply cached data to all entries**
       // processedEntries.forEach((entry, entryIndex) => {
@@ -5845,12 +5891,12 @@ const handlePasteMultipleRows = async () => {
                   setNewEntryPeriodAmountsArray((prev) => [...prev, {}]);
                   setShowNewForm(true); // Ensure the section is visible
                 }}
-                // className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium"
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
+                className={`btn-click`}
+  //                   className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+  //           style={{
+  //   ...geistSansStyle,
+  //   backgroundColor:  "#113d46",
+  // }} 
               >
                 New
               </button>
@@ -5945,12 +5991,12 @@ const handlePasteMultipleRows = async () => {
           {showCopyButton && newEntries.length === 0 && (
             <button
               onClick={handleCopySelectedRows}
-              // className="px-4 py-2 blue-btn-common text-white text-xs font-semibold rounded-md "
-               className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
+              className={`btn-click`}
+  //              className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+  //           style={{
+  //   ...geistSansStyle,
+  //   backgroundColor:  "#113d46",
+  // }} 
             >
               Copy Selected ({selectedRows.size})
             </button>
@@ -5980,12 +6026,12 @@ const handlePasteMultipleRows = async () => {
             initialData.status === "In Progress" && (
               <button
                 onClick={handlePasteMultipleRows}
-                // className="px-4 py-2 blue-btn-common text-white text-xs font-semibold rounded-md "
-                 className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-            style={{
-    ...geistSansStyle,
-    backgroundColor:  "#113d46",
-  }} 
+                className={`btn-click`}
+  //                className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+  //           style={{
+  //   ...geistSansStyle,
+  //   backgroundColor:  "#113d46",
+  // }} 
               >
                 Paste ({copiedRowsData.length} rows)
               </button>
@@ -6057,11 +6103,12 @@ const handlePasteMultipleRows = async () => {
 
           {isEditable && !showNewForm && !shouldHideButtons && (
   <button
-    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-    style={{
-      ...geistSansStyle,
-      backgroundColor: "#113d46",
-    }}
+    // className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+    // style={{
+    //   ...geistSansStyle,
+    //   backgroundColor: "#113d46",
+    // }}
+    className={`btn-click`}
     onClick={() => {
       // Logic is already safe, but double check is good
       if (isEditable) {
@@ -6139,7 +6186,7 @@ const handlePasteMultipleRows = async () => {
 
 {isEditable && !shouldHideButtons && (
   <button
-    className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer ${
+    className={`btn-click ${
       shouldDisableDelete || (selectedRows.size === 0 && !selectedEmployeeId)
         ? "bg-gray-400 cursor-not-allowed"
         : "bg-red-500 hover:bg-red-600"
@@ -6181,11 +6228,12 @@ const handlePasteMultipleRows = async () => {
           {/* Updated Fill Values Button Condition */}
 {(showNewForm || selectedRows.size > 0) && (
   <button
-    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-    style={{
-      ...geistSansStyle,
-      backgroundColor: "#113d46",
-    }}
+    // className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+    // style={{
+    //   ...geistSansStyle,
+    //   backgroundColor: "#113d46",
+    // }}
+    className={`btn-click`}
     onClick={() => {
       if (isEditable) {
         setShowFillValues(true);
@@ -6304,11 +6352,12 @@ const handlePasteMultipleRows = async () => {
 {(newEntries.length > 0 || hasUnsavedAmountChanges || hasUnsavedFieldChanges) && (
   <button
     onClick={handleMasterSave}
-    className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white"
-    style={{
-      ...geistSansStyle,
-      backgroundColor: "#113d46",
-    }}
+    // className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white"
+    // style={{
+    //   ...geistSansStyle,
+    //   backgroundColor: "#113d46",
+    // }}
+    className={`btn-click`}
     disabled={isLoading}
   >
     {isLoading ? (
@@ -6458,11 +6507,12 @@ const handlePasteMultipleRows = async () => {
       setCopiedRowsData([]);
       toast.info("Changes reverted", { autoClose: 1500 });
     }}
-    className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium cursor-pointer"
-    style={{
-        ...geistSansStyle,
-        backgroundColor: "#113d46", // Keeping your requested color
-    }}
+    // className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium cursor-pointer"
+    // style={{
+    //     ...geistSansStyle,
+    //     backgroundColor: "#113d46", // Keeping your requested color
+    // }}
+    className={`btn-click`}
   >
     Cancel
   </button>
@@ -7022,7 +7072,7 @@ const handlePasteMultipleRows = async () => {
               style={{
                 maxHeight: "400px",
                 overflowY: "auto",
-                overflowX: "auto",
+                overflowX: "scroll",
                 // marginTop: "-3px"
               }}
             >
@@ -8072,24 +8122,38 @@ if (col.key === "orgName") {
 
                 
                 </tbody>
-               <tfoot>
-  <tr
-    className="font-normal text-center"
-    style={{
-      position: "sticky",
-      bottom: 0,
-      zIndex: 20,
-      height: `${ROW_HEIGHT_DEFAULT}px`,
-      lineHeight: "normal",
-      borderTop: "2px solid #d1d5db",
-      backgroundColor: "#d7ebf3", // light blue
-      // color: "#000000",
-    }}
-  >
-    <td colSpan={EMPLOYEE_COLUMNS.length + 1}>Total Amount:</td>
-  </tr>
-</tfoot>
+<tfoot>
+                  <tr
+                    style={{
+                      position: "sticky",
+                      bottom: 0,
+                      zIndex: 20,
+                      height: `${ROW_HEIGHT_DEFAULT}px`,
+                      borderTop: "2px solid #d1d5db",
+                      backgroundColor: "#d7ebf3",
+                    }}
+                  >
+                    {/* EMPTY CELLS (scroll normally) */}
+                    {EMPLOYEE_COLUMNS.map((_, idx) => (
+                      <td key={idx}></td>
+                    ))}
+ 
+                    {/* FIXED RIGHT "Total Amount" */}
+                    <td
+                      className="sticky right-0 z-30 text-right font-semibold"
+                      style={{
+                        backgroundColor: "#d7ebf3",
+                        minWidth: "110px",
+                        paddingRight: "1rem",
+                        boxShadow: "-2px 0 0 #d1d5db",
+                      }}
 
+                    >
+                      Total Amounts:
+                    </td>
+                  </tr>
+                </tfoot>
+ 
               </table>
             </div>
             <div
@@ -8099,7 +8163,7 @@ if (col.key === "orgName") {
               style={{
                 maxHeight: "400px",
                 overflowY: "auto", // show scrollbar
-                overflowX: "auto",
+                overflowX: "scroll",
                 // marginBottom: "-1px"
               }}
             >
@@ -8627,9 +8691,9 @@ if (col.key === "orgName") {
                   setShowFindOnly(false);
                   setFindMatches([]);
                 }}
-                className={`px-3 py-1 rounded text-xs ${
+                className={`btn-click ${
                   !showFindOnly
-                    ? "bg-blue-600 text-white"
+                    ? "btn-blue"
                     : "bg-gray-200 text-gray-700"
                 }`}
               >
@@ -8641,9 +8705,9 @@ if (col.key === "orgName") {
                   setShowFindOnly(true);
                   setFindMatches([]);
                 }}
-                className={`px-3 py-1 rounded text-xs ${
+                className={`btn-click ${
                   showFindOnly
-                    ? "bg-blue-600 text-white"
+                    ? "btn-blue"
                     : "bg-gray-200 text-gray-700"
                 }`}
               >
@@ -8759,7 +8823,8 @@ if (col.key === "orgName") {
                   setFindMatches([]);
                   setShowFindOnly(false);
                 }}
-                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs"
+                // className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs"
+                className="px-2 py-2 mt-1 mb-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -8767,7 +8832,8 @@ if (col.key === "orgName") {
                 <button
                   type="button"
                   onClick={handleFind}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                  // className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                  className={`btn-click`}
                 >
                   Find & Highlight
                 </button>
@@ -8775,7 +8841,8 @@ if (col.key === "orgName") {
                 <button
                   type="button"
                   onClick={handleFindReplace}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                  // className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                  className={`btn-click`}
                 >
                   Replace All
                 </button>

@@ -9730,12 +9730,13 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
 
   if (showEmployeeSchedule) {
     return (
-      <div className="p-4 font-inter">
+      <div className="p-2 font-inter">
         {/* Back button */}
-        <div className="mb-4">
+        <div className="mb-1">
           <button
             onClick={() => setShowEmployeeSchedule(false)}
-            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-xs font-medium cursor-pointer"
+            // className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-xs font-medium cursor-pointer"
+            className={`btn-click`}
           >
             Back to Hours
           </button>
@@ -9778,7 +9779,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
             Hours
           </span>
         </div>
-        <div className="flex-grow"></div>
+        {/* <div className="flex-grow"></div> */}
         <div className="flex gap-2 ">
           {hasHiddenRows && (
             <button
@@ -9799,11 +9800,13 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
             <button
               onClick={handleCopySelectedRows}
               // className="blue-btn-common text-white px-4 py-2 rounded text-sm font-medium transition-colors duration-200 flex items-center gap-2"
-              className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-              style={{
-                ...geistSansStyle,
-                backgroundColor: "#113d46",
-              }}
+              className={`btn-click`}
+              //previous button style
+              // className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+              // style={{
+              //   ...geistSansStyle,
+              //   backgroundColor: "#113d46",
+              // }}
               title="Copy selected rows to clipboard"
             >
               {/* <svg
@@ -9907,11 +9910,12 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                       setShowNewForm(true);
                     }}
                     // className="px-4 py-2 blue-btn-common text-white rounded text-xs font-medium"
-                    className={` rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-                    style={{
-                      ...geistSansStyle,
-                      backgroundColor: "#113d46",
-                    }}
+                    className={`btn-click`}
+                    // className={` rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                    // style={{
+                    //   ...geistSansStyle,
+                    //   backgroundColor: "#113d46",
+                    // }}
                   >
                     New
                   </button>
@@ -9924,11 +9928,12 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                         hasUnsavedEmployeeChanges) && (
                         <button
                           onClick={handleMasterSave}
-                          className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white"
-                          style={{
-                            ...geistSansStyle,
-                            backgroundColor: "#113d46",
-                          }}
+                          className={`btn-click`}
+                          // className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white"
+                          // style={{
+                          //   ...geistSansStyle,
+                          //   backgroundColor: "#113d46",
+                          // }}
                           disabled={isLoading}
                         >
                           {isLoading
@@ -9982,11 +9987,12 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                               });
                             }
                           }}
-                          className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer transition-colors text-white"
-                          style={{
-                            ...geistSansStyle,
-                            backgroundColor: "#113d46",
-                          }}
+                          className={`btn-click`}
+                          // className="rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer transition-colors text-white"
+                          // style={{
+                          //   ...geistSansStyle,
+                          //   backgroundColor: "#113d46",
+                          // }}
                         >
                           Cancel
                         </button>
@@ -10004,11 +10010,12 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                     setCopiedRowsData([]);
                   }}
                   // className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-medium"
-                  className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-                  style={{
-                    ...geistSansStyle,
-                    backgroundColor: "#113d46",
-                  }}
+                  className={`btn-click`}
+                  // className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                  // style={{
+                  //   ...geistSansStyle,
+                  //   backgroundColor: "#113d46",
+                  // }}
                 >
                   Paste ({copiedRowsData.length} data)
                 </button>
@@ -10018,11 +10025,12 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                 <>
                   <button
                     // className="px-4 py-2 blue-btn-common text-white rounded  transition text-xs font-medium"
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-                    style={{
-                      ...geistSansStyle,
-                      backgroundColor: "#113d46",
-                    }}
+                    className={`btn-click`}
+                    // className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                    // style={{
+                    //   ...geistSansStyle,
+                    //   backgroundColor: "#113d46",
+                    // }}
                     onClick={() => isEditable && setShowFindReplace(true)}
                   >
                     Find / Replace
@@ -10117,8 +10125,9 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
 </button> */}
 
                   <button
-                    className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
-    ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
+                  className={` btn-click ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
+    //                 className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
+    // ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
                     disabled={planType === "EAC" || checkedRows.size === 0}
                     onClick={async () => {
                       // Gather all IDs from the checked rows
@@ -10193,11 +10202,12 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
 
               {showNewForm || checkedRows.size > 0 ? (
                 <button
-                  className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
-                  style={{
-                    ...geistSansStyle,
-                    backgroundColor: "#113d46",
-                  }}
+                className={`btn-click`}
+                  // className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
+                  // style={{
+                  //   ...geistSansStyle,
+                  //   backgroundColor: "#113d46",
+                  // }}
                   onClick={() => isEditable && setShowFillValues(true)}
                 >
                   Fill Values
@@ -10274,7 +10284,8 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
               setShowEmployeeSchedule(true);
             }}
             // className={`px-4 py-2 rounded text-xs font-medium ${checkedRows.size > 0 ? "blue-btn-common text-white" : "bg-gray-300 text-gray-500"}`}
-            className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors
+
+            className={`btn-click
     ${
       checkedRows.size > 0
         ? "text-white"
@@ -11049,10 +11060,11 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
               style={{
                 maxHeight: "400px",
                 overflowY: "auto",
-                overflowX: "auto",
+                overflowX: "scroll",
               }}
             >
-              <table className="table-fixed table min-w-full  ">
+              
+              <table className="table-fixed table min-w-full">
                 <thead className="thead">
                   <tr
                     style={{
@@ -12087,22 +12099,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                       );
                     })}
                 </tbody>
-                <tfoot>
-                  {/* Spacer row to keep sticky totals from covering data */}
-                  {/* <tr
-    className="bg-white"
-    style={{
-      position: "sticky",
-      bottom: 0,
-      zIndex: 20,
-      height: `${ROW_HEIGHT_DEFAULT}px`,
-      lineHeight: "normal",
-      borderTop: "2px solid #d1d5db",
-    }}
-  >
-    <td colSpan={EMPLOYEE_COLUMNS.length}></td>
-  </tr> */}
-
+               <tfoot>
                   {/* Total Hours row */}
                   <tr
                     className="font-bold text-center"
@@ -12111,21 +12108,30 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                       bottom: `${ROW_HEIGHT_DEFAULT}px`,
                       zIndex: 21,
                       height: `${ROW_HEIGHT_DEFAULT}px`,
-                      lineHeight: "normal",
-                      backgroundColor: "#d7ebf3", // light blue like screenshot
+                      backgroundColor: "#d7ebf3",
                       color: "#000000",
                     }}
                   >
+                    {/* empty scrollable cells */}
+                    {EMPLOYEE_COLUMNS.map((_, idx) => (
+                      <td key={`hours-empty-${idx}`}></td>
+                    ))}
+ 
+                    {/* FIXED RIGHT */}
                     <td
-                      colSpan={EMPLOYEE_COLUMNS.length + 1}
-                      // className="text-left pl-10 text-sm"
-                      // style={{ fontWeight: 700 }}
+                      className="sticky right-0 z-30 text-right font-semibold"
+                      style={{
+                        backgroundColor: "#d7ebf3",
+                        minWidth: "104px",
+                        paddingRight: "1rem",
+                        boxShadow: "-2px 0 0 #d1d5db",
+                      }}
                     >
                       Total Hours:
                     </td>
                   </tr>
-
-                  {/* Total Cost row – lighter blue with blue text */}
+ 
+                  {/* Total Cost row */}
                   <tr
                     className="font-normal text-center"
                     style={{
@@ -12133,16 +12139,25 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                       bottom: 0,
                       zIndex: 22,
                       height: `${ROW_HEIGHT_DEFAULT}px`,
-                      lineHeight: "normal",
-                      backgroundColor: "#e5f3fb", // lighter blue
+                      backgroundColor: "#e5f3fb",
                     }}
                   >
+                    {/* empty scrollable cells */}
+                    {EMPLOYEE_COLUMNS.map((_, idx) => (
+                      <td key={`cost-empty-${idx}`}></td>
+                    ))}
+ 
+                    {/* FIXED RIGHT */}
                     <td
-                      colSpan={EMPLOYEE_COLUMNS.length + 1}
-                      // className="text-left pl-10 text-sm"
-                      // style={{ color: "#1d4ed8", fontWeight: 700 }} // blue text
+                      className="sticky right-0 z-30 text-right font-semibold"
+                      style={{
+                        backgroundColor: "#e5f3fb",
+                        minWidth: "100px",
+                        paddingRight: "1rem",
+                        boxShadow: "-2px 0 0 #d1d5db",
+                      }}
                     >
-                      Total Cost: {/* inject total cost here if needed */}
+                      Total Cost:
                     </td>
                   </tr>
                 </tfoot>
@@ -12155,7 +12170,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
               style={{
                 maxHeight: "400px",
                 overflowY: "auto", // show scrollbar
-                overflowX: "auto",
+                overflowX: "scroll",
               }}
             >
               <table className="min-w-full table">
@@ -13198,9 +13213,9 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                     setShowFindOnly(false);
                     setFindMatches([]);
                   }}
-                  className={`px-3 py-1 rounded text-xs ${
+                  className={`btn-click ${
                     !showFindOnly
-                      ? "bg-blue-600 text-white"
+                      ? "bbtn-blue"
                       : "bg-gray-200 text-gray-700"
                   }`}
                 >
@@ -13212,9 +13227,9 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                     setShowFindOnly(true);
                     setFindMatches([]);
                   }}
-                  className={`px-3 py-1 rounded text-xs ${
+                  className={`btn-click ${
                     showFindOnly
-                      ? "bg-blue-600 text-white"
+                      ? "btn-blue"
                       : "bg-gray-200 text-gray-700"
                   }`}
                 >
@@ -13347,7 +13362,8 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                     setFindMatches([]);
                     setShowFindOnly(false);
                   }}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs"
+                  // className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs"
+                   className="px-2 py-2 mt-1 mb-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -13355,7 +13371,8 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                   <button
                     type="button"
                     onClick={handleFind}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                    // className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                    className={`btn-click`}
                   >
                     Find & Highlight
                   </button>
@@ -13363,7 +13380,8 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                   <button
                     type="button"
                     onClick={handleFindReplace}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                    // className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+                    className={`btn-click`}
                   >
                     Replace All
                   </button>
@@ -13574,7 +13592,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
             <div className="mt-4 flex justify-end">
               <button
                 onClick={() => setShowWarningPopup(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
               >
                 Close
               </button>
