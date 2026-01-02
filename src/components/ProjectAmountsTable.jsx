@@ -1181,7 +1181,7 @@ const fetchNonLaborAccounts = async () => {
 
     try {
       await axios.put(
-        `${backendUrl}DirectCost/UpdateDirectCost`,
+        `${backendUrl}DirectCost/UpdateDirectCost?plid=${planId}&TemplateId=${templateId}`,
         {
           ...payload,
           acctId: payload.accId,
@@ -1918,7 +1918,7 @@ const handleSaveFieldChanges = async () => {
   setIsLoading(true);
   try {
     await axios.put(
-      `${backendUrl}/DirectCost/UpdateDirectCost`,
+      `${backendUrl}/DirectCost/UpdateDirectCost?plid=${planId}&TemplateId=${templateId}`,
       { ...payload, acctId: payload.accId },
       { headers: { "Content-Type": "application/json" } }
     );

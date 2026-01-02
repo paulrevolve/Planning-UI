@@ -5816,88 +5816,6 @@ useEffect(() => {
     }
   };
 
-  const handleEmployeeDataBlur = async (empIdx, emp) => {
-    if (!isEditable || !isBudPlan) return;
-    const editedData = editedEmployeeData[empIdx] || {};
-    const originalData = getEmployeeRow(emp, empIdx);
-    if (
-      !editedData ||
-      ((editedData.acctId === undefined ||
-        editedData.acctId === originalData.acctId) &&
-        (editedData.orgId === undefined ||
-          editedData.orgId === originalData.orgId) &&
-        (editedData.glcPlc === undefined ||
-          editedData.glcPlc === originalData.glcPlc) &&
-        (editedData.perHourRate === undefined ||
-          editedData.perHourRate === originalData.perHourRate) &&
-        (editedData.isRev === undefined ||
-          editedData.isRev === emp.emple.isRev) &&
-        (editedData.isBrd === undefined ||
-          editedData.isBrd === emp.emple.isBrd))
-    ) {
-      return;
-    }
-    const payload = {
-      id: emp.emple.id || 0,
-      emplId: emp.emple.emplId,
-      // firstName: emp.emple.firstName || "",
-      firstName:
-        editedData.firstName !== undefined
-          ? editedData.firstName
-          : emp.emple.firstName || "",
-      lastName: emp.emple.lastName || "",
-      type: emp.emple.type || " ",
-      isRev:
-        editedData.isRev !== undefined ? editedData.isRev : emp.emple.isRev,
-      isBrd:
-        editedData.isBrd !== undefined ? editedData.isBrd : emp.emple.isBrd,
-      // plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "")
-      //   .split("-")[0]
-      //   .substring(0, 20),
-      plcGlcCode: (editedData.glcPlc || emp.emple.plcGlcCode || "")
-        .split("-")[0]
-        .trim()
-        .substring(0, 20),
-      perHourRate: Number(editedData.perHourRate || emp.emple.perHourRate || 0),
-      status: emp.emple.status || "Act",
-      accId:
-        editedData.acctId ||
-        emp.emple.accId ||
-        (laborAccounts.length > 0 ? laborAccounts[0].id : ""),
-      orgId: editedData.orgId || emp.emple.orgId || "",
-      plId: planId,
-      plForecasts: emp.emple.plForecasts || [],
-    };
-
-    try {
-      await axios.put(`${backendUrl}/Employee/UpdateEmployee`, payload, {
-        headers: { "Content-Type": "application/json" },
-      });
-      setEditedEmployeeData((prev) => {
-        const newData = { ...prev };
-        delete newData[empIdx];
-        return newData;
-      });
-      setLocalEmployees((prev) => {
-        const updated = [...prev];
-        updated[empIdx] = {
-          ...updated[empIdx],
-          emple: {
-            ...updated[empIdx].emple,
-            ...payload,
-          },
-        };
-        return updated;
-      });
-
-      toast.success("Employee updated successfully!", {
-        toastId: `employee-update-${empIdx}`,
-        autoClose: 2000,
-      });
-    } catch (err) {
-      // console.error("Failed to update employee:", err);
-    }
-  };
 
   // const handleSaveAll = async () => {
   //   const hasHoursChanges = Object.keys(modifiedHours).length > 0;
@@ -6722,7 +6640,7 @@ useEffect(() => {
             plForecasts: emp.emple.plForecasts || [],
           };
 
-          await axios.put(`${backendUrl}/Employee/UpdateEmployee`, payload, {
+          await axios.put(`${backendUrl}/Employee/UpdateEmployee?plid=${planId}&TemplateId=${templateId}`, payload, {
             headers: { "Content-Type": "application/json" },
           });
 
@@ -9225,7 +9143,7 @@ useEffect(() => {
       }
 
       if (bulkPayload.length > 0) {
-        const apiType = planType === "NBBUD" ? "BUD" : planType;
+        const apiPlanType = planType === "NBBUD" ? "BUD" : planType;
         await axios.put(
           `${backendUrl}/Forecast/BulkUpdateForecastHoursV1/${apiPlanType}?plid=${planId}&templateid=${templateId}`,
           bulkPayload
