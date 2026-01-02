@@ -8173,13 +8173,13 @@ if (col.key === "orgName") {
                       className="sticky right-0 z-30 text-right font-semibold"
                       style={{
                         backgroundColor: "#d7ebf3",
-                        minWidth: "110px",
+                        minWidth: "100px",
                         paddingRight: "1rem",
                         boxShadow: "-2px 0 0 #d1d5db",
                       }}
 
                     >
-                      Total Amounts:
+                      Total Amts:
                     </td>
                   </tr>
                 </tfoot>
