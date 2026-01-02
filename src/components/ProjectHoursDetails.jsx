@@ -612,10 +612,10 @@ const ProjectHoursDetails = ({
     } catch (err) {
       setLocalEmployees([]);
       if (err.response && err.response.status === 500) {
-        toast.info("No forecast data available for this plan.", {
-          toastId: "no-forecast-data",
-          autoClose: 3000,
-        });
+        // toast.info("No forecast data available for this plan.", {
+        //   toastId: "no-forecast-data",
+        //   autoClose: 3000,
+        // });
       } else {
         toast.error(
           "Failed to load forecast data: " +

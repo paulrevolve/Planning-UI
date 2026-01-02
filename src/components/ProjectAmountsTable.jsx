@@ -585,10 +585,10 @@ const getSortIcon = (key) => {
           : [response.data];
         if (apiData.length === 0) {
           setEmployees([]);
-          toast.info("No forecast data available for this plan.", {
-            toastId: "no-forecast-data",
-            autoClose: 3000,
-          });
+          // toast.info("No forecast data available for this plan.", {
+          //   toastId: "no-forecast-data",
+          //   autoClose: 3000,
+          // });
         } else {
           const updatedEmployees = apiData.map((item, idx) => ({
             emple: {
@@ -617,10 +617,10 @@ const getSortIcon = (key) => {
         setError("Failed to load data. Please try again.");
         if (err.response && err.response.status === 500) {
           setEmployees([]);
-          toast.info("No forecast data available for this plan.", {
-            toastId: "no-forecast-data",
-            autoClose: 3000,
-          });
+          // toast.info("No forecast data available for this plan.", {
+          //   toastId: "no-forecast-data",
+          //   autoClose: 3000,
+          // });
         } else {
           toast.error(
             "Failed to load forecast data: " +
