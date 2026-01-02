@@ -1108,7 +1108,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
       try {
         // Both types use the same vendor endpoint
         const isVendorRelated =
-          newEntry.idType === "Vendor" || newEntry.idType === "VendorEmployee";
+          newEntry.idType === "Vendor" || newEntry.idType === "VendorEmployee"
 
         const endpoint = isVendorRelated
           ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}`
@@ -1127,7 +1127,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                   plc: emp.plc || "",
                   orgId: emp.orgId || "",
                 };
-              } else if (newEntry.idType === "VendorEmployee") {
+              } else if (newEntry.idType === "VendorEmployee" || newEntry.idType === "Vendor Employee") {
                 return {
                   emplId: String(emp.empId), // Use empId for Vendor Employee
                   firstName: "",
@@ -3435,7 +3435,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
       processedEntries.forEach((entry, index) => {
         if (entry.idType === "Employee") {
           employeeEntries.push({ entry, index });
-        } else if (entry.idType === "Vendor") {
+        } else if (entry.idType === "Vendor" || entry.idType === "VendorEmployee") {
           vendorEntries.push({ entry, index });
         } else if (entry.idType !== "PLC") {
           otherEntries.push({ entry, index });
@@ -4198,7 +4198,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
     if (entry.idType && entry.idType !== "") {
       try {
         const endpoint =
-          entry.idType === "Vendor"
+          entry.idType === "Vendor" || entry.idType === "VendorEmployee"
             ? `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
             : `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}`;
 

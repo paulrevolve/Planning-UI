@@ -5746,15 +5746,45 @@ const handlePasteMultipleRows = async () => {
           const response = await axios.get(
             `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
           );
+          // vendorSuggestions = Array.isArray(response.data)
+          //   ? response.data.map((emp) => ({
+          //       emplId: emp.vendId || emp.empId,
+          //       firstName: "",
+          //       lastName: emp.employeeName,
+          //       orgId: emp.orgId || "",
+          //       acctId: emp.acctId || "",
+          //     }))
+          //   : [];
           vendorSuggestions = Array.isArray(response.data)
-            ? response.data.map((emp) => ({
-                emplId: emp.vendId || emp.empId,
-                firstName: "",
-                lastName: emp.employeeName,
-                orgId: emp.orgId || "",
-                acctId: emp.acctId || "",
-              }))
-            : [];
+      ? response.data.map((emp) => {
+          if (entry.idType === "Vendor" || newEntries.some(e => e.idType === "Vendor")) {
+            return {
+              emplId: emp.vendId || "",
+              firstName: "",
+              lastName: emp.employeeName || "",
+              orgId: emp.orgId || "",
+              acctId: emp.acctId || "",
+            };
+          } else if (entry.idType === "Vendor Employee" || newEntries.some(e => e.idType === "Vendor Employee")) {
+            return {
+              emplId: emp.empId || "",
+              firstName: "",
+              lastName: emp.employeeName || "",
+              orgId: emp.orgId || "",
+              acctId: emp.acctId || "",
+            };
+          } else {
+            // Fallback to existing logic
+            return {
+              emplId: emp.vendId || emp.empId || "",
+              firstName: "",
+              lastName: emp.employeeName || "",
+              orgId: emp.orgId || "",
+              acctId: emp.acctId || "",
+            };
+          }
+        })
+      : [];
           sessionStorage.setItem(cacheKey, JSON.stringify(vendorSuggestions));
         }
 
