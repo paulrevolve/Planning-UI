@@ -1425,7 +1425,7 @@ const AnalysisByPeriodContent = ({
                                       {dynamicDateRanges.map((range) => (
                                         <td
                                           key={`header-employee-group-${range}`}
-                                          className="py-2 px-4 border-r-2 border-gray-300 text-right text-sm font-semibold text-gray-700 uppercase whitespace-nowrap"
+                                          className="py-2 px-4 text-right text-sm font-semibold text-gray-700 uppercase whitespace-nowrap"
                                         ></td>
                                       ))}
                                     </tr>
@@ -1490,16 +1490,64 @@ const AnalysisByPeriodContent = ({
                                                 {formatValue(employeeGroup.gna)}
                                               </td>
                                               {dynamicDateRanges.map(
-                                                (month) => (
-                                                  <td
-                                                    key={`${employeeGroup.id}-${month}-gna`}
-                                                    className="py-2 px-4 text-right"
-                                                  >
-                                                    {formatValue(
-                                                      entryMap[month]?.gna ?? 0
-                                                    )}
-                                                  </td>
-                                                )
+                                                (month) => {
+                                                  const entry = Object.values(
+                                                    entryMap
+                                                  ).find(
+                                                    (e) =>
+                                                      e.monthLabel === month
+                                                  );
+
+                                                  return (
+                                                    <td
+                                                      key={`${employeeGroup.id}-${month}-materials`}
+                                                      className="py-2 px-4 text-right"
+                                                    >
+                                                      {formatValue(
+                                                        entry?.gna ?? 0
+                                                      )}
+                                                    </td>
+                                                  );
+                                                }
+                                              )}
+                                            </tr>
+
+                                            <tr className="bg-gray-100 bg-opacity-30 text-xs">
+                                              <td
+                                                className="py-2 relative py-3 pl-20 whitespace-nowrap
+                                                          sticky left-0 z-20 bg-inherit
+                                                          before:absolute before:top-0 before:right-0
+                                                          before:h-full before:w-[2px]
+                                                          before:bg-gray-300 before:content-['']"
+                                              >
+                                                --- Overhead
+                                              </td>
+                                              <td colSpan={4}></td>
+                                              <td className="py-2 px-4 text-right font-semibold">
+                                                {formatValue(
+                                                  employeeGroup.overhead
+                                                )}
+                                              </td>
+                                              {dynamicDateRanges.map(
+                                                (month) => {
+                                                  const entry = Object.values(
+                                                    entryMap
+                                                  ).find(
+                                                    (e) =>
+                                                      e.monthLabel === month
+                                                  );
+
+                                                  return (
+                                                    <td
+                                                      key={`${employeeGroup.id}-${month}-materials`}
+                                                      className="py-2 px-4 text-right"
+                                                    >
+                                                      {formatValue(
+                                                        entry?.overhead ?? 0
+                                                      )}
+                                                    </td>
+                                                  );
+                                                }
                                               )}
                                             </tr>
 
@@ -1518,47 +1566,69 @@ const AnalysisByPeriodContent = ({
                                                 {formatValue(employeeGroup.hr)}
                                               </td>
                                               {dynamicDateRanges.map(
-                                                (month) => (
-                                                  <td
-                                                    key={`${employeeGroup.id}-${month}-hr`}
-                                                    className="py-2 px-4 text-right"
-                                                  >
-                                                    {formatValue(
-                                                      entryMap[month]?.hr ?? 0
-                                                    )}
-                                                  </td>
-                                                )
+                                                (month) => {
+                                                  const entry = Object.values(
+                                                    entryMap
+                                                  ).find(
+                                                    (e) =>
+                                                      e.monthLabel === month
+                                                  );
+
+                                                  return (
+                                                    <td
+                                                      key={`${employeeGroup.id}-${month}-materials`}
+                                                      className="py-2 px-4 text-right"
+                                                    >
+                                                      {formatValue(
+                                                        entry?.hr ?? 0
+                                                      )}
+                                                    </td>
+                                                  );
+                                                }
                                               )}
                                             </tr>
 
                                             <tr className="bg-gray-100 bg-opacity-30 text-xs">
                                               <td
                                                 className="relative py-3 pl-20 whitespace-nowrap
-                                                          sticky left-0 z-20 bg-inherit
-                                                          before:absolute before:top-0 before:right-0
-                                                          before:h-full before:w-[2px]
-                                                          before:bg-gray-300 before:content-['']"
+              sticky left-0 z-20 bg-inherit
+              before:absolute before:top-0 before:right-0
+              before:h-full before:w-[2px]
+              before:bg-gray-300 before:content-['']"
                                               >
                                                 --- Material
                                               </td>
+
                                               <td colSpan={4}></td>
+
+                                              {/* TOTAL MATERIAL */}
                                               <td className="py-2 px-4 text-right font-semibold">
                                                 {formatValue(
                                                   employeeGroup.materials
                                                 )}
                                               </td>
+
+                                              {/* MONTH WISE MATERIAL */}
                                               {dynamicDateRanges.map(
-                                                (month) => (
-                                                  <td
-                                                    key={`${employeeGroup.id}-${month}-materials`}
-                                                    className="py-2 px-4 text-right"
-                                                  >
-                                                    {formatValue(
-                                                      entryMap[month]
-                                                        ?.materials ?? 0
-                                                    )}
-                                                  </td>
-                                                )
+                                                (month) => {
+                                                  const entry = Object.values(
+                                                    entryMap
+                                                  ).find(
+                                                    (e) =>
+                                                      e.monthLabel === month
+                                                  );
+
+                                                  return (
+                                                    <td
+                                                      key={`${employeeGroup.id}-${month}-materials`}
+                                                      className="py-2 px-4 text-right"
+                                                    >
+                                                      {formatValue(
+                                                        entry?.materials ?? 0
+                                                      )}
+                                                    </td>
+                                                  );
+                                                }
                                               )}
                                             </tr>
 
@@ -1579,17 +1649,25 @@ const AnalysisByPeriodContent = ({
                                                 )}
                                               </td>
                                               {dynamicDateRanges.map(
-                                                (month) => (
-                                                  <td
-                                                    key={`${employeeGroup.id}-${month}-fringe`}
-                                                    className="py-2 px-4 text-right"
-                                                  >
-                                                    {formatValue(
-                                                      entryMap[month]?.fringe ??
-                                                        0
-                                                    )}
-                                                  </td>
-                                                )
+                                                (month) => {
+                                                  const entry = Object.values(
+                                                    entryMap
+                                                  ).find(
+                                                    (e) =>
+                                                      e.monthLabel === month
+                                                  );
+
+                                                  return (
+                                                    <td
+                                                      key={`${employeeGroup.id}-${month}-materials`}
+                                                      className="py-2 px-4 text-right"
+                                                    >
+                                                      {formatValue(
+                                                        entry?.fringe ?? 0
+                                                      )}
+                                                    </td>
+                                                  );
+                                                }
                                               )}
                                             </tr>
                                           </React.Fragment>
