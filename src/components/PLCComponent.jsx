@@ -103,10 +103,29 @@ const PLCComponent = ({
     setHasFetchedPLC(false);
   }, [selectedProjectId]);
 
+  // const formatDate = (dateString) => {
+  //   if (!dateString) return "";
+  //   return dateString.split("T")[0];
+  // };
+
   const formatDate = (dateString) => {
-    if (!dateString) return "";
-    return dateString.split("T")[0];
-  };
+  if (!dateString) return "";
+  
+  // Extract YYYY-MM-DD from ISO string
+  const datePart = dateString.split("T")[0];  // "2025-12-01"
+  
+  // Parse to Date object
+  const date = new Date(datePart);
+  
+  // Format as MM/DD/YYYY (full year)
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();  // Full 2025, not .slice(-2)
+  
+  return `${month}/${day}/${year}`;  // "12/01/2025"
+};
+
+
 
   // Move the function OUTSIDE useEffect and add useCallback
   const fetchBillingRates = useCallback(async () => {
