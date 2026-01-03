@@ -827,7 +827,7 @@ const ProjectBudgetStatus = () => {
   };
 
   return (
-    <div className="sm:p-4  space-y-6 text-sm sm:text-base text-gray-800 font-inter  mt-7 ">
+    <div className="sm:p-2  space-y-6 text-sm sm:text-base text-gray-800 font-inter  mt-9 ">
       {viewMode === "plans" && (
         <div className="bg-white p-2 rounded shadow-sm border border-gray-100 mb-2 ">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">

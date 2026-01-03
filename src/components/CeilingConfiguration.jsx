@@ -88,7 +88,7 @@ const CeilingConfiguration = () => {
   };
 
   return (
-    <div className="w-full mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg ml-5">
+    <div className="w-full mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg ml-2">
       {/* <h1 className="w-full  bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
         Ceiling Configuration
       </h1> */}

@@ -1027,9 +1027,9 @@ const ProspectiveIDSetup = () => {
 
   return (
     <>
-      <div className="min-h-screen text-gray-900 flex flex-col gap-y-2 justify-center p-4">
-        <div className="p-4 w-full flex items-center justify-between bg-white">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+      <div className="min-h-screen text-gray-900 flex flex-col gap-y-2 justify-center p-2">
+        <div className="p-4 border-b w-full rounded-sm border-gray-100 flex items-center justify-between bg-white">
+          <h2 className="text-lg  font-bold text-gray-800 flex items-center gap-2">
             <IdCard size={20} className="text-blue-500" />
             Prospective ID Setup
           </h2>

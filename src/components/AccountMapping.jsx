@@ -209,7 +209,7 @@ const AccountMapping = () => {
   };
 
   return (
-    <div className="flex justify-center h-screen w-full overflow-hidden text-[13px] ml-3" style={{ fontFamily: geistSans }}>
+    <div className="flex justify-center h-screen w-full overflow-hidden text-[13px] ml-2" style={{ fontFamily: geistSans }}>
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="w-full flex flex-col h-full bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         

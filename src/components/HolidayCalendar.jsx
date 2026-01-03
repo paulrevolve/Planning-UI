@@ -250,12 +250,12 @@ const parseDate = (dateStr) => {
 
 
   return (
-    <div className="min-h-screen text-gray-900 flex justify-center">
-      <div className="w-full px-8 p-8 space-y-2">
+    <div className="min-h-screen text-gray-900 flex w-full">
+      <div className="w-full  p-2 mt-6 space-y-2">
         {/* <h2 className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-4 blue-text">
           Setup Annual Holidays
         </h2> */}
-        <div className="p-4 border-b rounded-sm border-gray-100 flex items-center justify-between bg-white">
+        <div className="p-4 border-b w-full rounded-sm border-gray-100 flex items-center justify-between bg-white">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <CableCar size={20} className="text-blue-500" />
             Manage Holidays
@@ -265,7 +265,7 @@ const parseDate = (dateStr) => {
        
         </div> */}
 
-        <div className="bg-white p-4 rounded-sm">
+        <div className="bg-white p-4 w-full rounded-sm">
           {/* <h3 className="text-xl font-semibold text-gray-900 mb-4">
             Target Year Holidays
           </h3> */}

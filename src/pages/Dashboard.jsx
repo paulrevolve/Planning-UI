@@ -875,7 +875,7 @@ const Dashboard = () => {
             <Route
               path="/new-business"
               element={
-                <div className="mt-12 ml-2">
+                <div className="mt-12">
                   <NewBusinessComponent />
                 </div>
               }
@@ -920,7 +920,7 @@ const Dashboard = () => {
               path="/pool-rate-tabs"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12 ml-2">
+                  <div className="mt-12">
                     <PoolRateTabs />
                   </div>
                 </ProtectedRoute>
@@ -980,7 +980,7 @@ const Dashboard = () => {
               path="/ceiling-configuration"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12 ml-2"><CeilingConfiguration /></div>
+                  <div className="mt-12"><CeilingConfiguration /></div>
                 </ProtectedRoute>
               }
             />
@@ -988,7 +988,7 @@ const Dashboard = () => {
               path="/analog-rate"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12 ml-2"><AnalogRate /></div>
+                  <div className="mt-12 "><AnalogRate /></div>
                 </ProtectedRoute>
               }
             />
@@ -1006,7 +1006,7 @@ const Dashboard = () => {
               path="/prospective-id-setup"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12 ml-2">
+                  <div className="mt-10">
 
                   <ProspectiveIdSetup />
                   </div>
@@ -1050,7 +1050,7 @@ const Dashboard = () => {
               path="/account-mapping"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <div className="mt-12 ml-2">
+                  <div className="mt-12">
 
                   <AccountMapping />
                   </div>
@@ -1065,3 +1065,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+  

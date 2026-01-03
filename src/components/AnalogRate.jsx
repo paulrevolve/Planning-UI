@@ -97,7 +97,7 @@ useEffect(() => {
 
  
   return (
-    <div className="w-full mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg ml-5">
+    <div className="w-full mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg ml-2">
      <div className="p-4 border-b mb-1 border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
              NBIs Analogous Rate

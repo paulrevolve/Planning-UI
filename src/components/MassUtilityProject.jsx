@@ -2115,7 +2115,7 @@ const isAllSelected =
   return (
     <div className="w-full min-h-screen">
       {/* FILTER & ACTION SECTION */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-2 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <Filter size={20} className="text-blue-600" /> Update Multiple Projects
@@ -2703,10 +2703,10 @@ const isAllSelected =
       {/* ADJUSTABLE TABLE CONTAINER */}
      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
   <div className="overflow-x-auto max-h-[70vh]">
-    <table className="w-full text-left table-auto border-collapse">
-      <thead className="bg-gray-50 border-b border-gray-200">
+    <table className="w-full table">
+      <thead className="thead">
         <tr>
-          <th className="px-6 py-4 w-10">
+          <th className="px-2 py-2 w-10">
             <input
               type="checkbox"
               className="th-thead"
@@ -2717,18 +2717,24 @@ const isAllSelected =
          {Object.entries(COLUMN_LABELS).map(([key, label]) => {
       if (key === "selection") return null
 
-      const isLeftCol = key === "projName" || key === "projId"
+      // const isLeftCol = key === "projName" || key === "projId"
 
       return (
         <th
           key={key}
           className={
-            "th-thead capitalize " + (isLeftCol ? "text-left" : "text-center")
+            "th-thead capitalize "
           }
+          style={{
+            textAlign:
+              key === "projId" || key === "projName"
+                ? "left"
+                : "center",
+          }}
         >
           {label}
         </th>
-      )
+      );
     })}
         </tr>
       </thead>
