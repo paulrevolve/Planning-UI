@@ -6642,7 +6642,7 @@ const handlePasteMultipleRows = async () => {
     // 1. Update the local entry state
     setNewEntries((prev) =>
         prev.map((ent, idx) =>
-            idx === entryIndex ? { ...ent, idType: value, id: newId, firstName: "", lastName: "", acctId: "", orgId: "", status: "Act" } : ent
+            idx === entryIndex ? { ...ent, idType: value, id: newId, firstName: "", lastName: "", acctId: "",acctName: "",orgName: "", orgId: "", status: "Act" } : ent
         )
     );
     
