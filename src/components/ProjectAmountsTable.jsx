@@ -2158,6 +2158,12 @@ const applyFillToExistingRows = (startValue, startNum, rangeEndKey, selectedRows
     return 0;
 };
 
+const parseMonth = (dateStr) => {
+  const [year, month] = dateStr.split("-").map(Number);
+  return { year, month };
+};
+
+
   
 const handleFillValuesAmounts = () => {
   if (!isEditable) return;
@@ -2168,16 +2174,18 @@ const handleFillValuesAmounts = () => {
     return;
   }
 
-  const startDateObj = new Date(fillStartDate);
-  const endDateObj = new Date(fillEndDate);
-  if (endDateObj < startDateObj) {
+  const start = parseMonth(fillStartDate);
+  const end = parseMonth(fillEndDate);
+
+  const toKeyNum = (y, m) => y * 100 + m;
+
+  const rangeStartKey = toKeyNum(start.year, start.month);
+  const rangeEndKey = toKeyNum(end.year, end.month);
+
+  if (rangeEndKey < rangeStartKey) {
     toast.error("End Period cannot be before Start Period.");
     return;
   }
-
-  const toKeyNum = (y, m) => y * 100 + m;
-  const rangeStartKey = toKeyNum(startDateObj.getFullYear(), startDateObj.getMonth() + 1);
-  const rangeEndKey = toKeyNum(endDateObj.getFullYear(), endDateObj.getMonth() + 1);
 
   const isInRange = (duration) => {
     const k = toKeyNum(duration.year, duration.monthNo);
@@ -6642,7 +6650,7 @@ const handlePasteMultipleRows = async () => {
     // 1. Update the local entry state
     setNewEntries((prev) =>
         prev.map((ent, idx) =>
-            idx === entryIndex ? { ...ent, idType: value, id: newId, firstName: "", lastName: "", acctId: "",acctName: "",orgName: "", orgId: "", status: "Act" } : ent
+            idx === entryIndex ? { ...ent, idType: value, id: newId, firstName: "", lastName: "", acctId: "", orgId: "",orgName: "",acctName: "", status: "Act" } : ent
         )
     );
     
