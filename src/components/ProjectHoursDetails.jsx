@@ -11248,7 +11248,7 @@ const ProjectHoursDetails = ({
                           </td>
 
                           {/* Name Column */}
-                          <td className="tbody-td min-w-[100px]">
+                          <td className="tbody-td min-w-[100px] flex justify-start mt-[9px]">
                             <input
                               type="text"
                               name="name"
