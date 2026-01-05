@@ -24,7 +24,17 @@ const ProjectPoolCosts = ({
   planType,
   hoursColumnTotals,   // from Hours screen: { "1_2025_cost": 45631.08, ... }
   otherColumnTotals,   // from Other Cost: { "1_2025": 800, ... }
+  refreshCalculation,
 }) => {
+  const usePrevious = (value) => {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+};
+
+  const prevRefresh = usePrevious(refreshCalculation);  // track previous value
   const [durations, setDurations] = useState([]);
   const [aggregatedData, setAggregatedData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +59,9 @@ const ProjectPoolCosts = ({
 
   const handleLeftScroll = () => syncScroll(leftTableRef, rightTableRef);
   const handleRightScroll = () => syncScroll(rightTableRef, leftTableRef);
+
+  // Add this helper hook at top of component
+
 
   const fetchAllData = async () => {
     if (!planId || !startDate || !endDate) return;
@@ -129,6 +142,13 @@ const ProjectPoolCosts = ({
   useEffect(() => {
     fetchAllData();
   }, [planId, startDate, endDate]);
+
+  // Refresh ONLY when flag goes true → false (rising edge)
+  useEffect(() => {
+    if (refreshCalculation && !prevRefresh) {
+      fetchAllData();
+    }
+  }, [refreshCalculation, prevRefresh]);
 
   const visibleDurations = useMemo(() => {
     return durations
@@ -212,7 +232,16 @@ const columnTotals = useMemo(() => {
   return totals;
 }, [visibleDurations, aggregatedData, hoursColumnTotals, otherColumnTotals]);
 
-  if (isLoading) return <div className="p-4 text-xs">Loading...</div>;
+  // if (isLoading) return <div className="p-4 text-xs">Loading...</div>;
+  if(isLoading)
+    return (
+   <div className="p-4 font-inter flex justify-center items-center">
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-600"></div>
+        <span className="ml-2 text-xs text-gray-600">
+          Loading.....
+        </span>
+      </div>
+)
 
   return (
     <div

@@ -3101,69 +3101,105 @@ const ProjectPlanTable = forwardRef(
       setShowNewBusinessPopup(false);
     };
 
+    // const handleRowClick = (plan, tempDates = manualProjectDates) => {
+    //   const isDateMissing =
+    //     filteredProjects.length > 0 &&
+    //     !(filteredProjects[0].startDate || filteredProjects[0].projStartDt);
+
+    //   const effectiveStartDate = plan.projStartDt || plan.startDate || "";
+    //   const effectiveEndDate = plan.projEndDt || plan.endDate || "";
+
+    //   //  const effectiveStartDate =
+    //   //     tempDates?.startDate ??
+    //   //     plan.projStartDt ??
+    //   //     plan.startDate ??
+    //   //     "";
+
+    //   //   const effectiveEndDate =
+    //   //     tempDates?.endDate ??
+    //   //     plan.projEndDt ??
+    //   //     plan.endDate ??
+    //   //     "";
+
+    //   const updatedPlan = {
+    //     ...plan,
+    //     projStartDt: effectiveStartDate,
+    //     projEndDt: effectiveEndDate,
+    //     startDate: effectiveStartDate,
+    //     endDate: effectiveEndDate,
+    //     revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
+    //   };
+
+    //   //    setEditingDates(prev => ({
+    //   //   ...prev,
+    //   //   [plan.plId]: {
+    //   //     startDate: plan.projStartDt || plan.startDate || '',
+    //   //     endDate: plan.projEndDt || plan.endDate || ''
+    //   //   }
+    //   // }));
+
+    //   setEditingDates((prev) => ({
+    //     ...prev,
+    //     [plan.plId]: {
+    //       startDate: effectiveStartDate,
+    //       endDate: effectiveEndDate,
+    //     },
+    //   }));
+
+    //   const isSamePlanButDatesChanged =
+    //     selectedPlan &&
+    //     selectedPlan.plId === updatedPlan.plId &&
+    //     selectedPlan.projId === updatedPlan.projId &&
+    //     (selectedPlan.projStartDt !== updatedPlan.projStartDt ||
+    //       selectedPlan.projEndDt !== updatedPlan.projEndDt);
+
+    //   if (
+    //     !selectedPlan ||
+    //     updatedPlan.plId !== selectedPlan.plId ||
+    //     updatedPlan.projId !== selectedPlan.projId ||
+    //     isSamePlanButDatesChanged
+    //   ) {
+    //     if (typeof onPlanSelect === "function") onPlanSelect(updatedPlan);
+    //   } else {
+    //     if (typeof onPlanSelect === "function") onPlanSelect(updatedPlan);
+    //   }
+    // };
+    
     const handleRowClick = (plan, tempDates = manualProjectDates) => {
-      const isDateMissing =
-        filteredProjects.length > 0 &&
-        !(filteredProjects[0].startDate || filteredProjects[0].projStartDt);
+    // 1. Calculate effective dates (Logic preserved)
+    const isDateMissing =
+      filteredProjects.length > 0 &&
+      !(filteredProjects[0].startDate || filteredProjects[0].projStartDt);
 
-      const effectiveStartDate = plan.projStartDt || plan.startDate || "";
-      const effectiveEndDate = plan.projEndDt || plan.endDate || "";
+    const effectiveStartDate = plan.projStartDt || plan.startDate || "";
+    const effectiveEndDate = plan.projEndDt || plan.endDate || "";
 
-      //  const effectiveStartDate =
-      //     tempDates?.startDate ??
-      //     plan.projStartDt ??
-      //     plan.startDate ??
-      //     "";
+    // 2. Prepare the updated plan object (Logic preserved)
+    const updatedPlan = {
+      ...plan,
+      projStartDt: effectiveStartDate,
+      projEndDt: effectiveEndDate,
+      startDate: effectiveStartDate,
+      endDate: effectiveEndDate,
+      revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
+    };
 
-      //   const effectiveEndDate =
-      //     tempDates?.endDate ??
-      //     plan.projEndDt ??
-      //     plan.endDate ??
-      //     "";
-
-      const updatedPlan = {
-        ...plan,
-        projStartDt: effectiveStartDate,
-        projEndDt: effectiveEndDate,
+    // 3. Update local editing state (Logic preserved)
+    setEditingDates((prev) => ({
+      ...prev,
+      [plan.plId]: {
         startDate: effectiveStartDate,
         endDate: effectiveEndDate,
-        revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
-      };
+      },
+    }));
 
-      //    setEditingDates(prev => ({
-      //   ...prev,
-      //   [plan.plId]: {
-      //     startDate: plan.projStartDt || plan.startDate || '',
-      //     endDate: plan.projEndDt || plan.endDate || ''
-      //   }
-      // }));
-
-      setEditingDates((prev) => ({
-        ...prev,
-        [plan.plId]: {
-          startDate: effectiveStartDate,
-          endDate: effectiveEndDate,
-        },
-      }));
-
-      const isSamePlanButDatesChanged =
-        selectedPlan &&
-        selectedPlan.plId === updatedPlan.plId &&
-        selectedPlan.projId === updatedPlan.projId &&
-        (selectedPlan.projStartDt !== updatedPlan.projStartDt ||
-          selectedPlan.projEndDt !== updatedPlan.projEndDt);
-
-      if (
-        !selectedPlan ||
-        updatedPlan.plId !== selectedPlan.plId ||
-        updatedPlan.projId !== selectedPlan.projId ||
-        isSamePlanButDatesChanged
-      ) {
-        if (typeof onPlanSelect === "function") onPlanSelect(updatedPlan);
-      } else {
-        if (typeof onPlanSelect === "function") onPlanSelect(updatedPlan);
-      }
-    };
+    // 4. FIX: Remove the 'if' condition completely.
+    // Always trigger the select action. This bypasses the issue where 
+    // multiple "New" projects (with plId 0) would block each other.
+    if (typeof onPlanSelect === "function") {
+      onPlanSelect(updatedPlan);
+    }
+  };
 
     const handleDateCellChange = (plId, dateColumn, value) => {
       const dateType =
@@ -3276,7 +3312,7 @@ const ProjectPlanTable = forwardRef(
       const formData = new FormData();
       formData.append("file", file);
 
-      formData.append("projId", selectedPlan.projId);
+      // formData.append("projId", selectedPlan.projId);
 
       try {
         setIsActionLoading(true);
@@ -4050,6 +4086,7 @@ const ProjectPlanTable = forwardRef(
             ? response.data
             : response.data?.message || "Revenue Calculation successful!";
         toast.success(message);
+        refreshPlans()
       } catch (err) {
         const errorMessage =
           err.response?.data?.message ||
@@ -4747,8 +4784,10 @@ const ProjectPlanTable = forwardRef(
                         }`}
                         className={`transition-all duration-200 cursor-pointer ${
                           selectedPlan &&
-                          selectedPlan.plId === plan.plId &&
-                          selectedPlan.projId === plan.projId
+                          // selectedPlan.plId === plan.plId &&
+                          // selectedPlan.projId === plan.projId
+                          String(selectedPlan.projId) === String(plan.projId) &&
+    Number(selectedPlan.plId || 0) === Number(plan.plId || 0)
                             ? "bg-blue-200 hover:bg-blue-300 "
                             : "even:bg-gray-50 hover:bg-blue-50"
                         }`}

@@ -9,47 +9,42 @@ import { Link } from "react-router-dom";
 
 // Project-level PLC rates
 export const PLC_PROJECT_COLUMNS = [
-  { key: "plc",       label: "PLC" },
-  { key: "billRate",  label: "Bill Rate" },
-  { key: "rateType",  label: "Rate Type" },
+  { key: "plc", label: "PLC" },
+  { key: "billRate", label: "Bill Rate" },
+  { key: "rateType", label: "Rate Type" },
   { key: "startDate", label: "Start Date" },
-  { key: "endDate",   label: "End Date" },
+  { key: "endDate", label: "End Date" },
 ];
 
 // Employee PLC rates
 export const PLC_EMPLOYEE_COLUMNS = [
-  { key: "lookupType",   label: "Lookup Type" },
-  { key: "empId",        label: "Employee ID" },
+  { key: "lookupType", label: "Lookup Type" },
+  { key: "empId", label: "Employee ID" },
   { key: "employeeName", label: "Employee Name" },
-  { key: "plc",          label: "PLC" },
+  { key: "plc", label: "PLC" },
   { key: "plcDescription", label: "PLC Description" },
-  { key: "billRate",     label: "Bill Rate" },
-  { key: "rateType",     label: "Rate Type" },
-  { key: "startDate",    label: "Start Date" },
-  { key: "endDate",      label: "End Date" },
+  { key: "billRate", label: "Bill Rate" },
+  { key: "rateType", label: "Rate Type" },
+  { key: "startDate", label: "Start Date" },
+  { key: "endDate", label: "End Date" },
 ];
 
 // Vendor PLC rates
 export const PLC_VENDOR_COLUMNS = [
-  { key: "lookupType",        label: "Lookup Type" },
-  { key: "vendorId",          label: "Vendor ID" },
-  { key: "vendorName",        label: "Vendor Name" },
-  { key: "vendorEmployee",    label: "Vendor Employee ID" },
-  { key: "vendorEmployeeName",label: "Vendor Employee Name" },
-  { key: "plc",               label: "PLC" },
-  { key: "plcDescription",    label: "PLC Description" },
-  { key: "billRate",          label: "Bill Rate" },
-  { key: "rateType",          label: "Rate Type" },
-  { key: "startDate",         label: "Start Date" },
-  { key: "endDate",           label: "End Date" },
+  { key: "lookupType", label: "Lookup Type" },
+  { key: "vendorId", label: "Vendor ID" },
+  { key: "vendorName", label: "Vendor Name" },
+  { key: "vendorEmployee", label: "Vendor Employee ID" },
+  { key: "vendorEmployeeName", label: "Vendor Employee Name" },
+  { key: "plc", label: "PLC" },
+  { key: "plcDescription", label: "PLC Description" },
+  { key: "billRate", label: "Bill Rate" },
+  { key: "rateType", label: "Rate Type" },
+  { key: "startDate", label: "Start Date" },
+  { key: "endDate", label: "End Date" },
 ];
 
-
-const PLCComponent = ({
-  selectedProjectId,
-  selectedPlan,
-  showPLC,
-}) => {
+const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
   const [billingRatesSchedule, setBillingRatesSchedule] = useState([]);
   const [newRate, setNewRate] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -109,23 +104,21 @@ const PLCComponent = ({
   // };
 
   const formatDate = (dateString) => {
-  if (!dateString) return "";
-  
-  // Extract YYYY-MM-DD from ISO string
-  const datePart = dateString.split("T")[0];  // "2025-12-01"
-  
-  // Parse to Date object
-  const date = new Date(datePart);
-  
-  // Format as MM/DD/YYYY (full year)
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const year = date.getFullYear();  // Full 2025, not .slice(-2)
-  
-  return `${month}/${day}/${year}`;  // "12/01/2025"
-};
+    if (!dateString) return "";
 
+    // Extract YYYY-MM-DD from ISO string
+    const datePart = dateString.split("T")[0]; // "2025-12-01"
 
+    // Parse to Date object
+    const date = new Date(datePart);
+
+    // Format as MM/DD/YYYY (full year)
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear(); // Full 2025, not .slice(-2)
+
+    return `${month}/${day}/${year}`; // "12/01/2025"
+  };
 
   // Move the function OUTSIDE useEffect and add useCallback
   const fetchBillingRates = useCallback(async () => {
@@ -298,15 +291,13 @@ const PLCComponent = ({
   // }, [plcSearch]);
 
   const fetchPlcs = useCallback(async () => {
-    if (!plcSearch) {
-      setPlcs([]);
-      return;
-    }
+    // if (!plcSearch) {
+    //   setPlcs([]);
+    //   return;
+    // }
 
     try {
-      const response = await axios.get(
-        `${backendUrl}/Project/GetAllPlcs/${plcSearch}`
-      );
+      const response = await axios.get(`${backendUrl}/Project/GetAllPlcs/`);
       const filteredPlcs = response.data
         .filter((item) =>
           item.laborCategoryCode.toLowerCase().includes(plcSearch.toLowerCase())
@@ -320,7 +311,7 @@ const PLCComponent = ({
       // console.error("Error fetching PLCs:", error);
       setPlcs([]);
     }
-  }, [plcSearch]);
+  }, []);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -1034,44 +1025,45 @@ const PLCComponent = ({
       return;
     }
 
-    if (
-      newRate.startDate &&
-      newRate.endDate &&
-      new Date(newRate.startDate) > new Date(newRate.endDate)
-    ) {
-      toast.error("End Date cannot be before Start Date.");
-      return;
-    }
+    // if (
+    //   newRate.startDate &&
+    //   newRate.endDate &&
+    //   new Date(newRate.startDate) > new Date(newRate.endDate)
+    // ) {
+    //   toast.error("End Date cannot be before Start Date.");
+    //   return;
+    // }
 
-    // Project boundaries
-    const projectStart = new Date(selectedPlan.projStartDt);
-    const projectEnd = new Date(selectedPlan.projEndDt);
+    // // Project boundaries
+    // const projectStart = new Date(selectedPlan.projStartDt);
+    // const projectEnd = new Date(selectedPlan.projEndDt);
 
-    if (newRate.startDate) {
-      const start = new Date(newRate.startDate);
-      if (start < projectStart) {
-        toast.error("Start Date cannot be before Project Start Date.");
-        return;
-      }
-      if (start > projectEnd) {
-        toast.error("Start Date cannot be after Project End Date.");
-        return;
-      }
-    }
+    // if (newRate.startDate) {
+    //   const start = new Date(newRate.startDate);
+    //   if (start < projectStart) {
+    //     toast.error("Start Date cannot be before Project Start Date.");
+    //     return;
+    //   }
+    //   if (start > projectEnd) {
+    //     toast.error("Start Date cannot be after Project End Date.");
+    //     return;
+    //   }
+    // }
 
-    if (newRate.endDate) {
-      const end = new Date(newRate.endDate);
-      if (end < projectStart) {
-        toast.error("End Date cannot be before Project Start Date.");
-        return;
-      }
-      if (end > projectEnd) {
-        toast.error("End Date cannot be after Project End Date.");
-        return;
-      }
-    }
+    // if (newRate.endDate) {
+    //   const end = new Date(newRate.endDate);
+    //   if (end < projectStart) {
+    //     toast.error("End Date cannot be before Project Start Date.");
+    //     return;
+    //   }
+    //   if (end > projectEnd) {
+    //     toast.error("End Date cannot be after Project End Date.");
+    //     return;
+    //   }
+    // }
 
     setLoading(true);
+    const farFutureEndDate = new Date("2078-12-31T23:59:59");
     try {
       await axios.post(`${backendUrl}/api/ProjectPlcRates`, {
         id: 0,
@@ -1080,7 +1072,7 @@ const PLCComponent = ({
         costRate: parseFloat(newRate.billRate) * 0.65,
         billingRate: parseFloat(newRate.billRate),
         effectiveDate: newRate.startDate,
-        endDate: newRate.endDate || null,
+        endDate: newRate.endDate || farFutureEndDate,
         sBillRtTypeCd: newRate.rateType,
         isActive: true,
         modifiedBy: "admin",
@@ -1232,6 +1224,7 @@ const PLCComponent = ({
       return;
     }
     setLoading(true);
+    const farFutureEndDate = new Date("2078-12-31T23:59:59");
     try {
       await axios.post(`${backendUrl}/ProjEmplRt`, {
         id: 0,
@@ -1241,7 +1234,7 @@ const PLCComponent = ({
         billLabCatCd: newEmployeeRate.plc,
         billRtAmt: parseFloat(newEmployeeRate.billRate),
         startDt: newEmployeeRate.startDate,
-        endDt: newEmployeeRate.endDate || null,
+        endDt: newEmployeeRate.endDate || farFutureEndDate,
         sBillRtTypeCd: newEmployeeRate.rateType,
         type: newEmployeeRate.lookupType,
         isActive: true,
@@ -1626,25 +1619,25 @@ const PLCComponent = ({
         }
       }
 
-      if (updated.startDate) {
-        if (
-          new Date(updated.startDate) < new Date(selectedPlan.projStartDt) ||
-          new Date(updated.startDate) > new Date(selectedPlan.projEndDt)
-        ) {
-          toast.error("Start Date must be within project dates.");
-          return prev;
-        }
-      }
+      // if (updated.startDate) {
+      //   if (
+      //     new Date(updated.startDate) < new Date(selectedPlan.projStartDt) ||
+      //     new Date(updated.startDate) > new Date(selectedPlan.projEndDt)
+      //   ) {
+      //     toast.error("Start Date must be within project dates.");
+      //     return prev;
+      //   }
+      // }
 
-      if (updated.endDate) {
-        if (
-          new Date(updated.endDate) < new Date(selectedPlan.projStartDt) ||
-          new Date(updated.endDate) > new Date(selectedPlan.projEndDt)
-        ) {
-          toast.error("End Date must be within project dates.");
-          return prev;
-        }
-      }
+      // if (updated.endDate) {
+      //   if (
+      //     new Date(updated.endDate) < new Date(selectedPlan.projStartDt) ||
+      //     new Date(updated.endDate) > new Date(selectedPlan.projEndDt)
+      //   ) {
+      //     toast.error("End Date must be within project dates.");
+      //     return prev;
+      //   }
+      // }
 
       return updated; // ✅ valid update
     };
@@ -1732,6 +1725,8 @@ const PLCComponent = ({
     }
     setLoading(true);
     try {
+      const farFutureEndDate = new Date("2078-12-31T23:59:59");
+
       await axios.post(`${backendUrl}/ProjVendRt`, {
         id: 0,
         projId: selectedPlan?.projId || selectedProjectId,
@@ -1744,7 +1739,7 @@ const PLCComponent = ({
         startDt: new Date(newVendorRate.startDate).toISOString(),
         endDt: newVendorRate.endDate
           ? new Date(newVendorRate.endDate).toISOString()
-          : null,
+          : farFutureEndDate,
         sBillRtTypeCd: newVendorRate.rateType,
         type: newVendorRate.lookupType,
         modifiedBy: "admin",
@@ -2175,25 +2170,25 @@ const PLCComponent = ({
         }
       }
 
-      if (updated.startDate) {
-        if (
-          new Date(updated.startDate) < new Date(selectedPlan.projStartDt) ||
-          new Date(updated.startDate) > new Date(selectedPlan.projEndDt)
-        ) {
-          toast.error("Start Date must be within project dates.");
-          return prev;
-        }
-      }
+      // if (updated.startDate) {
+      //   if (
+      //     new Date(updated.startDate) < new Date(selectedPlan.projStartDt) ||
+      //     new Date(updated.startDate) > new Date(selectedPlan.projEndDt)
+      //   ) {
+      //     toast.error("Start Date must be within project dates.");
+      //     return prev;
+      //   }
+      // }
 
-      if (updated.endDate) {
-        if (
-          new Date(updated.endDate) < new Date(selectedPlan.projStartDt) ||
-          new Date(updated.endDate) > new Date(selectedPlan.projEndDt)
-        ) {
-          toast.error("End Date must be within project dates.");
-          return prev;
-        }
-      }
+      // if (updated.endDate) {
+      //   if (
+      //     new Date(updated.endDate) < new Date(selectedPlan.projStartDt) ||
+      //     new Date(updated.endDate) > new Date(selectedPlan.projEndDt)
+      //   ) {
+      //     toast.error("End Date must be within project dates.");
+      //     return prev;
+      //   }
+      // }
 
       return updated; // ✅ valid update
     });
@@ -2544,8 +2539,8 @@ const PLCComponent = ({
                         handleNewRateChange("startDate", e.target.value)
                       }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
-                      min={selectedPlan.projStartDt}
-                      max={selectedPlan.projEndDt}
+                      // min={selectedPlan.projStartDt}
+                      // max={selectedPlan.projEndDt}
                     />
                   </td>
 
@@ -2557,8 +2552,8 @@ const PLCComponent = ({
                         handleNewRateChange("endDate", e.target.value)
                       }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
-                      min={newRate.startDate || selectedPlan.projStartDt}
-                      max={selectedPlan.projEndDt}
+                      // min={newRate.startDate || selectedPlan.projStartDt}
+                      // max={selectedPlan.projEndDt}
                     />
                   </td>
                 </tr>
@@ -2906,8 +2901,8 @@ const PLCComponent = ({
                         handleNewEmployeeRateChange("startDate", e.target.value)
                       }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white"
-                      min={selectedPlan.projStartDt}
-                      max={selectedPlan.projEndDt}
+                      // min={selectedPlan.projStartDt}
+                      // max={selectedPlan.projEndDt}
                     />
                   </td>
 
@@ -2919,10 +2914,10 @@ const PLCComponent = ({
                         handleNewEmployeeRateChange("endDate", e.target.value)
                       }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white"
-                      min={
-                        newEmployeeRate.startDate || selectedPlan.projStartDt
-                      }
-                      max={selectedPlan.projEndDt}
+                      // min={
+                      //   newEmployeeRate.startDate || selectedPlan.projStartDt
+                      // }
+                      // max={selectedPlan.projEndDt}
                     />
                   </td>
                 </tr>
@@ -3201,12 +3196,15 @@ const PLCComponent = ({
                       type="text"
                       value={newVendorRate.vendorId || ""}
                       onChange={(e) => {
+                        const rawValue = e.target.value;
+                        const [vId, empName] = rawValue.split(" - ")
+                         
                         const selectedVend = vendorEmployees.find(
-                          (v) => v.vendId === e.target.value
+                          (v) => v.vendId === vId && v.employeeName === empName 
                         );
                         setNewVendorRate((prev) => ({
                           ...prev,
-                          vendorId: e.target.value,
+                          vendorId: vId,
                           vendorName: selectedVend
                             ? selectedVend.employeeName
                             : prev.vendorName,
@@ -3225,7 +3223,7 @@ const PLCComponent = ({
                       {vendorEmployees.map((v, index) => (
                         <option
                           key={`${v.vendId}-${v.empId}-${index}`}
-                          value={v.vendId}
+                          value={`${v.vendId} - ${v.employeeName}`}
                         >
                           {v.employeeName}
                         </option>
@@ -3256,6 +3254,16 @@ const PLCComponent = ({
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
                       list="plc-list"
                     />
+                    <datalist id="plc-list">
+                      {plcs.map((plc, index) => (
+                        <option
+                          key={`${plc.laborCategoryCode}-${index}`}
+                          value={plc.laborCategoryCode}
+                        >
+                          {plc.description}
+                        </option>
+                      ))}
+                    </datalist>
                   </td>
 
                   <td className="px-3 py-2 border-b border-gray-200">
@@ -3318,8 +3326,8 @@ const PLCComponent = ({
                         handleNewVendorRateChange("startDate", e.target.value)
                       }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
-                      min={selectedPlan.projStartDt}
-                      max={selectedPlan.projEndDt}
+                      // min={selectedPlan.projStartDt}
+                      // max={selectedPlan.projEndDt}
                     />
                   </td>
 
@@ -3331,8 +3339,8 @@ const PLCComponent = ({
                         handleNewVendorRateChange("endDate", e.target.value)
                       }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
-                      min={newVendorRate.startDate || selectedPlan.projStartDt}
-                      max={selectedPlan.projEndDt}
+                      // min={newVendorRate.startDate || selectedPlan.projStartDt}
+                      // max={selectedPlan.projEndDt}
                     />
                   </td>
                 </tr>

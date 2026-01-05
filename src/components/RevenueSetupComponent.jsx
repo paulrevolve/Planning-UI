@@ -844,20 +844,20 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
           setRevenueAccountState(data.revAcctId || revenueAccount || "");
           setLabFeeRt(data.labFeeRt.toString());
           setNonLabFeeRt(data.nonLabFeeRt.toString());
-          setLabCostFl(data.labCostFl || false);
-          setLabBurdFl(data.labBurdFl || false);
-          setLabFeeCostFl(data.labFeeCostFl || false);
-          setLabFeeHrsFl(data.labFeeHrsFl || false);
-          setLabTmFl(data.labTmFl || false);
-          setNonLabCostFl(data.labCostFl || false);
-          setNonLabBurdFl(data.labBurdFl || false);
-          setNonLabFeeCostFl(data.labFeeCostFl || false);
-          setNonLabFeeHrsFl(data.labFeeHrsFl || false);
-          setNonLabTmFl(data.nonLabTmFl || false);
-          setOverrideFundingCeilingFl(data.overrideFundingCeilingFl || false);
-          setOverrideSettingsFl(data.overrideRevSettingFl || false);
-          setOverrideRevAdjustmentsFl(data.useBillBurdenRates || false);
-          setUseFixedRevenueFl(data.overrideRevAmtFl || false);
+          setLabCostFl(data.labCostFl);
+          setLabBurdFl(data.labBurdFl);
+          setLabFeeCostFl(data.labFeeCostFl );
+          setLabFeeHrsFl(data.labFeeHrsFl);
+          setLabTmFl(data.labTmFl);
+          setNonLabCostFl(data.labCostFl  );
+          setNonLabBurdFl(data.labBurdFl  );
+          setNonLabFeeCostFl(data.labFeeCostFl  );
+          setNonLabFeeHrsFl(data.labFeeHrsFl  );
+          setNonLabTmFl(data.nonLabTmFl  );
+          setOverrideFundingCeilingFl(data.overrideFundingCeilingFl  );
+          setOverrideSettingsFl(data.overrideRevSettingFl  );
+          setOverrideRevAdjustmentsFl(data.useBillBurdenRates  );
+          setUseFixedRevenueFl(data.overrideRevAmtFl  );
         })
         .catch((error) => {});
     }

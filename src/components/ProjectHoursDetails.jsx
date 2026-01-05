@@ -70,10 +70,6 @@ const ROW_HEIGHT_DEFAULT = 48;
 //   );
 // }
 
-
-
-
-
 const geistSansStyle = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
 
 const hoursFormatDateDisplay = (value) => {
@@ -228,7 +224,6 @@ const ProjectHoursDetails = ({
 
   const [isClosedPeriodEditable, setIsClosedPeriodEditable] = useState();
 
-
   // const [selectedSourceId, setSelectedSourceId] = useState("");
 
   const [checkedRows, setCheckedRows] = useState(new Set());
@@ -240,43 +235,40 @@ const ProjectHoursDetails = ({
   //     setFillEndDate(endDate);
   // }, [startDate, endDate]);
 
-
-
   useEffect(() => {
-  const fetchConfig = async () => {
-    try {
-      const response = await axios.get(
-        `${backendUrl}/api/Configuration/GetConfigValueByName/isClosedPeriodEditable`
-      );
-      setIsClosedPeriodEditable(response.data?.value);
-    } catch (err) {
-      console.warn("Config fetch failed, defaulting to editable:", err);
-      setIsClosedPeriodEditable(true);
-    }
-  };
-  fetchConfig();
-}, [planType]); // Re-fetch if planType changes
+    const fetchConfig = async () => {
+      try {
+        const response = await axios.get(
+          `${backendUrl}/api/Configuration/GetConfigValueByName/isClosedPeriodEditable`
+        );
+        setIsClosedPeriodEditable(response.data?.value);
+      } catch (err) {
+        console.warn("Config fetch failed, defaulting to editable:", err);
+        setIsClosedPeriodEditable(true);
+      }
+    };
+    fetchConfig();
+  }, [planType]); // Re-fetch if planType changes
 
-function isMonthEditable(duration, closedPeriod, planType) {
-  if (planType !== "EAC") return true;
-  if (!closedPeriod) return true;
-  
-  // New API check for config value
-  if (!isClosedPeriodEditable) return false;
-  
-  const closedDate = new Date(closedPeriod);
-  if (isNaN(closedDate)) return true;
-  const durationDate = new Date(duration.year, duration.monthNo - 1, 1);
-  const closedMonth = closedDate.getMonth();
-  const closedYear = closedDate.getFullYear();
-  const durationMonth = durationDate.getMonth();
-  const durationYear = durationDate.getFullYear();
-  return (
-    durationYear > closedYear ||
-    (durationYear === closedYear && durationMonth > closedMonth)
-  );
-}
+  function isMonthEditable(duration, closedPeriod, planType) {
+    if (planType !== "EAC") return true;
+    if (!closedPeriod) return true;
 
+    // New API check for config value
+    if (!isClosedPeriodEditable) return false;
+
+    const closedDate = new Date(closedPeriod);
+    if (isNaN(closedDate)) return true;
+    const durationDate = new Date(duration.year, duration.monthNo - 1, 1);
+    const closedMonth = closedDate.getMonth();
+    const closedYear = closedDate.getFullYear();
+    const durationMonth = durationDate.getMonth();
+    const durationYear = durationDate.getFullYear();
+    return (
+      durationYear > closedYear ||
+      (durationYear === closedYear && durationMonth > closedMonth)
+    );
+  }
 
   useEffect(() => {
     // This ensures that when a new plan is selected, or manual dates are entered,
@@ -814,44 +806,40 @@ function isMonthEditable(duration, closedPeriod, planType) {
     "plc",
   ];
 
-
-useEffect(() => {
-  const loadAccounts = async () => {
-    try {
-      const response = await axios.get(
-        `${backendUrl}/Project/GetAllProjectByProjId/${projectId}`
-      );
-
-      console.log("response", response);
-
-      const projects = Array.isArray(response.data) ? response.data : [];
-
-      const accOptions = projects
-        .flatMap((proj) => ACCOUNT_KEYS.flatMap((key) => proj?.[key] || []))
-        .map((acc) => ({
-          value: acc.accountId, // e.g. "51-000-000"
-          label: `${acc.accountId} - ${acc.acctName}`,
-          accountName: acc.acctName,
-          function: acc.accountFunctionDescription,
-          budgetSheet: acc.budgetSheet,
-        }))
-        // 🔹 remove duplicates by accountId
-        .filter(
-          (acc, index, self) =>
-            index === self.findIndex((a) => a.value === acc.value)
+  useEffect(() => {
+    const loadAccounts = async () => {
+      try {
+        const response = await axios.get(
+          `${backendUrl}/Project/GetAllProjectByProjId/${projectId}`
         );
 
-      setAccountOptions(accOptions);
-    } catch (err) {
-      console.error("Failed to preload accounts", err);
-    }
-  };
+        console.log("response", response);
 
-  loadAccounts();
-}, [projectId]);
+        const projects = Array.isArray(response.data) ? response.data : [];
 
+        const accOptions = projects
+          .flatMap((proj) => ACCOUNT_KEYS.flatMap((key) => proj?.[key] || []))
+          .map((acc) => ({
+            value: acc.accountId, // e.g. "51-000-000"
+            label: `${acc.accountId} - ${acc.acctName}`,
+            accountName: acc.acctName,
+            function: acc.accountFunctionDescription,
+            budgetSheet: acc.budgetSheet,
+          }))
+          // 🔹 remove duplicates by accountId
+          .filter(
+            (acc, index, self) =>
+              index === self.findIndex((a) => a.value === acc.value)
+          );
 
+        setAccountOptions(accOptions);
+      } catch (err) {
+        console.error("Failed to preload accounts", err);
+      }
+    };
 
+    loadAccounts();
+  }, [projectId]);
 
   useEffect(() => {
     const initializeUpdateOptions = async () => {
@@ -989,17 +977,17 @@ useEffect(() => {
               allAccounts.push(...otherAccounts);
             }
 
-           
             const uniqueAccountsMap = new Map();
-allAccountsWithNames.forEach((acc) => {
-  if (acc.id && !uniqueAccountsMap.has(acc.id)) {
-    uniqueAccountsMap.set(acc.id, {
-      id: acc.id,
-      name: acc.name,
-    });
-  }
-});
-const uniqueAccounts = Array.from(uniqueAccountsMap.values());
+            allAccountsWithNames.forEach((acc) => {
+              if (acc.id && !uniqueAccountsMap.has(acc.id)) {
+                uniqueAccountsMap.set(acc.id, {
+                  id: acc.id,
+                  name: acc.name,
+                  type: acc.type
+                });
+              }
+            });
+            const uniqueAccounts = Array.from(uniqueAccountsMap.values());
 
             // Load PLC options
             let plcOptionsForUpdate = [];
@@ -1034,6 +1022,17 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
 
     initializeUpdateOptions();
   }, [localEmployees.length, projectId]);
+
+  const getTheAccountData = (idType) => {
+    if(idType === 'other' || idType === 'plc') return updateAccountOptions
+    
+    if(idType === 'vendor employee') return updateAccountOptions.filter((acc) => acc.type === 'vendor')
+
+    return updateAccountOptions.filter((acc) => acc.type === idType);
+  };
+
+  // console.log(getTheAccountData('employee'))
+  console.log(updateAccountOptions)
 
   useEffect(() => {
     // const fetchEmployeesSuggestions = async () => {
@@ -1153,7 +1152,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
       try {
         // Both types use the same vendor endpoint
         const isVendorRelated =
-          newEntry.idType === "Vendor" || newEntry.idType === "VendorEmployee"
+          newEntry.idType === "Vendor" || newEntry.idType === "VendorEmployee";
 
         const endpoint = isVendorRelated
           ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}`
@@ -1171,11 +1170,14 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                   perHourRate: emp.perHourRate || emp.hrRate || "",
                   plc: emp.plc || "",
                   orgId: emp.orgId || "",
-                  orgName: emp.orgName || "", 
-                  acctId: emp.acctId || emp.accId || "", 
-                  acctName: emp.acctName
+                  orgName: emp.orgName || "",
+                  acctId: emp.acctId || emp.accId || "",
+                  acctName: emp.acctName,
                 };
-              } else if (newEntry.idType === "VendorEmployee" || newEntry.idType === "Vendor Employee") {
+              } else if (
+                newEntry.idType === "VendorEmployee" ||
+                newEntry.idType === "Vendor Employee"
+              ) {
                 return {
                   emplId: String(emp.empId), // Use empId for Vendor Employee
                   firstName: "",
@@ -1184,7 +1186,7 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                   plc: emp.plc || "",
                   orgId: emp.orgId || "",
                   orgName: emp.orgName || "",
-                  acctId: emp.acctId ||  "",
+                  acctId: emp.acctId || "",
                   acctName: emp.acctName || "",
                 };
               } else {
@@ -1196,13 +1198,12 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
                   emplId: emp.empId,
                   firstName: firstName || "",
                   lastName: lastName || "",
-                  perHourRate: emp.hrRate || emp.perHourRate  || "",
+                  perHourRate: emp.hrRate || emp.perHourRate || "",
                   plc: emp.plc || "",
                   orgId: emp.orgId || "",
                   orgName: emp.orgName || "",
                   acctId: emp.acctId || emp.accId || "",
-                  acctName: emp.acctName
-
+                  acctName: emp.acctName,
                 };
               }
             })
@@ -3489,7 +3490,10 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
       processedEntries.forEach((entry, index) => {
         if (entry.idType === "Employee") {
           employeeEntries.push({ entry, index });
-        } else if (entry.idType === "Vendor" || entry.idType === "VendorEmployee") {
+        } else if (
+          entry.idType === "Vendor" ||
+          entry.idType === "VendorEmployee"
+        ) {
           vendorEntries.push({ entry, index });
         } else if (entry.idType !== "PLC") {
           otherEntries.push({ entry, index });
@@ -4453,221 +4457,220 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
   // };
 
   const fetchSuggestionsForPastedEntry = async (entryIndex, entry) => {
-  // if (planType === "NBBUD") return;
+    // if (planType === "NBBUD") return;
 
-  // CRITICAL FIX: URL encode project ID
-  const encodedProjectId = encodeURIComponent(projectId);
+    // CRITICAL FIX: URL encode project ID
+    const encodedProjectId = encodeURIComponent(projectId);
 
-  // Fetch employee suggestions based on ID type (this is entry-specific, must be called per entry)
-  if (entry.idType && entry.idType !== "") {
+    // Fetch employee suggestions based on ID type (this is entry-specific, must be called per entry)
+    if (entry.idType && entry.idType !== "") {
+      try {
+        const endpoint =
+          entry.idType === "Vendor" || entry.idType === "VendorEmployee"
+            ? `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
+            : `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}`;
+
+        const response = await axios.get(endpoint);
+        const suggestions = Array.isArray(response.data)
+          ? response.data.map((emp) => {
+              if (entry.idType === "Vendor") {
+                return {
+                  emplId: emp.vendId,
+                  firstName: "",
+                  lastName: emp.employeeName,
+                  perHourRate: emp.perHourRate || emp.hrRate || "",
+                  plc: emp.plc || "",
+                  orgId: emp.orgId || "",
+                  orgName: emp.orgName || "",
+                  acctId: emp.acctId || emp.accId || "",
+                  acctName: emp.acctName || "",
+                };
+              } else if (entry.idType === "Vendor Employee") {
+                // NEW CASE: Handle VendorEmployee
+                return {
+                  emplId: emp.empId,
+                  firstName: "",
+                  lastName: emp.employeeName,
+                  perHourRate: emp.perHourRate || emp.hrRate || "",
+                  plc: emp.plc || "",
+                  orgId: emp.orgId || "",
+                  orgName: emp.orgName || "",
+                  acctId: emp.acctId || emp.accId || "",
+                  acctName: emp.acctName || "",
+                };
+              } else {
+                // Employee case
+                const [lastName, firstName] = emp.employeeName
+                  .split(",")
+                  .map((str) => str.trim());
+                return {
+                  emplId: emp.empId,
+                  firstName: firstName || "",
+                  lastName: lastName || "",
+                  perHourRate: emp.perHourRate || emp.hrRate || "",
+                  plc: emp.plc || "",
+                  orgId: emp.orgId || "",
+                  orgName: emp.orgName || "",
+                  acctId: emp.acctId || emp.accId || "",
+                  acctName: emp.acctName || "",
+                };
+              }
+            })
+          : [];
+
+        setPastedEntrySuggestions((prev) => ({
+          ...prev,
+          [entryIndex]: suggestions,
+        }));
+      } catch (err) {
+        console.error(
+          `Failed to fetch pasted entry suggestions for index ${entryIndex}:`,
+          err
+        );
+      }
+    }
+
+    // OPTIMIZATION: Fetch project and org data only once, then cache it
     try {
-      const endpoint =
-        entry.idType === "Vendor" || entry.idType === "VendorEmployee"
-          ? `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
-          : `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}`;
+      let projectData = cachedProjectData;
+      let orgOptions = cachedOrgData;
 
-      const response = await axios.get(endpoint);
-      const suggestions = Array.isArray(response.data)
-        ? response.data.map((emp) => {
-            if (entry.idType === "Vendor") {
-              return {
-                emplId: emp.vendId,
-                firstName: "",
-                lastName: emp.employeeName,
-                perHourRate: emp.perHourRate || emp.hrRate || "",
-                plc: emp.plc || "",
-                orgId: emp.orgId || "",
-                orgName: emp.orgName || "",
-                acctId: emp.acctId || emp.accId || "",
-                acctName: emp.acctName || "",
-              };
-            } else if (entry.idType === "Vendor Employee") {
-              // NEW CASE: Handle VendorEmployee
-              return {
-                emplId: emp.empId,
-                firstName: "",
-                lastName: emp.employeeName,
-                perHourRate: emp.perHourRate || emp.hrRate || "",
-                plc: emp.plc || "",
-                orgId: emp.orgId || "",
-                orgName: emp.orgName || "",
-                acctId: emp.acctId || emp.accId || "",
-                acctName: emp.acctName || "",
-              };
-            } else {
-              // Employee case
-              const [lastName, firstName] = emp.employeeName
-                .split(",")
-                .map((str) => str.trim());
-              return {
-                emplId: emp.empId,
-                firstName: firstName || "",
-                lastName: lastName || "",
-                perHourRate: emp.perHourRate || emp.hrRate || "",
-                plc: emp.plc || "",
-                orgId: emp.orgId || "",
-                orgName: emp.orgName || "",
-                acctId: emp.acctId || emp.accId || "",
-                acctName: emp.acctName || "",
-              };
-            }
-          })
-        : [];
+      // Only fetch project data if not already cached
+      if (!projectData) {
+        const response = await axios.get(
+          `${backendUrl}/Project/GetAllProjectByProjId/${encodedProjectId}/${planType}`
+        );
+        projectData = Array.isArray(response.data)
+          ? response.data[0]
+          : response.data;
+        setCachedProjectData(projectData);
+      }
 
-      setPastedEntrySuggestions((prev) => ({
+      // Only fetch org data if not already cached
+      if (!orgOptions) {
+        const orgResponse = await axios.get(
+          `${backendUrl}/Orgnization/GetAllOrgs`
+        );
+        orgOptions = Array.isArray(orgResponse.data)
+          ? orgResponse.data.map((org) => ({
+              value: org.orgId,
+              label: org.orgName,
+            }))
+          : [];
+        setCachedOrgData(orgOptions);
+      }
+
+      // Now use the cached data to populate entry-specific options
+      // Fetch accounts
+      let accountsWithNames = [];
+      if (entry.idType === "PLC") {
+        const employeeAccounts = Array.isArray(
+          projectData.employeeLaborAccounts
+        )
+          ? projectData.employeeLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+        const vendorAccounts = Array.isArray(
+          projectData.sunContractorLaborAccounts
+        )
+          ? projectData.sunContractorLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+        accountsWithNames = [...employeeAccounts, ...vendorAccounts];
+      } else if (entry.idType === "Employee") {
+        accountsWithNames = Array.isArray(projectData.employeeLaborAccounts)
+          ? projectData.employeeLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+      } else if (entry.idType === "Vendor") {
+        accountsWithNames = Array.isArray(
+          projectData.sunContractorLaborAccounts
+        )
+          ? projectData.sunContractorLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+      } else if (entry.idType === "VendorEmployee") {
+        // NEW CASE: Same accounts as Vendor for VendorEmployee
+        accountsWithNames = Array.isArray(
+          projectData.sunContractorLaborAccounts
+        )
+          ? projectData.sunContractorLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+      } else if (entry.idType === "Other") {
+        const otherAccounts = Array.isArray(
+          projectData.otherDirectCostLaborAccounts
+        )
+          ? projectData.otherDirectCostLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+
+        const employeeAccounts = Array.isArray(
+          projectData.employeeLaborAccounts
+        )
+          ? projectData.employeeLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+
+        const vendorAccounts = Array.isArray(
+          projectData.sunContractorLaborAccounts
+        )
+          ? projectData.sunContractorLaborAccounts.map((account) => ({
+              id: account.accountId,
+              name: account.acctName,
+            }))
+          : [];
+
+        accountsWithNames = [
+          ...otherAccounts,
+          ...employeeAccounts,
+          ...vendorAccounts,
+        ];
+      }
+      setPastedEntryAccounts((prev) => ({
         ...prev,
-        [entryIndex]: suggestions,
+        [entryIndex]: accountsWithNames,
       }));
+
+      // Use cached organizations
+      setPastedEntryOrgs((prev) => ({
+        ...prev,
+        [entryIndex]: orgOptions,
+      }));
+
+      // Fetch PLC options
+      if (projectData.plc && Array.isArray(projectData.plc)) {
+        const plcOptions = projectData.plc.map((plc) => ({
+          value: plc.laborCategoryCode,
+          label: `${plc.laborCategoryCode} - ${plc.description}`,
+        }));
+
+        setPastedEntryPlcs((prev) => ({
+          ...prev,
+          [entryIndex]: plcOptions,
+        }));
+      }
     } catch (err) {
       console.error(
-        `Failed to fetch pasted entry suggestions for index ${entryIndex}:`,
+        `Failed to fetch pasted entry options for index ${entryIndex}:`,
         err
       );
     }
-  }
-
-  // OPTIMIZATION: Fetch project and org data only once, then cache it
-  try {
-    let projectData = cachedProjectData;
-    let orgOptions = cachedOrgData;
-
-    // Only fetch project data if not already cached
-    if (!projectData) {
-      const response = await axios.get(
-        `${backendUrl}/Project/GetAllProjectByProjId/${encodedProjectId}/${planType}`
-      );
-      projectData = Array.isArray(response.data)
-        ? response.data[0]
-        : response.data;
-      setCachedProjectData(projectData);
-    }
-
-    // Only fetch org data if not already cached
-    if (!orgOptions) {
-      const orgResponse = await axios.get(
-        `${backendUrl}/Orgnization/GetAllOrgs`
-      );
-      orgOptions = Array.isArray(orgResponse.data)
-        ? orgResponse.data.map((org) => ({
-            value: org.orgId,
-            label: org.orgName,
-          }))
-        : [];
-      setCachedOrgData(orgOptions);
-    }
-
-    // Now use the cached data to populate entry-specific options
-    // Fetch accounts
-    let accountsWithNames = [];
-    if (entry.idType === "PLC") {
-      const employeeAccounts = Array.isArray(
-        projectData.employeeLaborAccounts
-      )
-        ? projectData.employeeLaborAccounts.map((account) => ({
-            id: account.accountId,
-            name: account.acctName,
-          }))
-        : [];
-      const vendorAccounts = Array.isArray(
-        projectData.sunContractorLaborAccounts
-      )
-        ? projectData.sunContractorLaborAccounts.map((account) => ({
-            id: account.accountId,
-            name: account.acctName,
-          }))
-        : [];
-      accountsWithNames = [...employeeAccounts, ...vendorAccounts];
-    } else if (entry.idType === "Employee") {
-      accountsWithNames = Array.isArray(projectData.employeeLaborAccounts)
-        ? projectData.employeeLaborAccounts.map((account) => ({
-            id: account.accountId,
-            name: account.acctName,
-          }))
-        : [];
-    } else if (entry.idType === "Vendor") {
-      accountsWithNames = Array.isArray(
-        projectData.sunContractorLaborAccounts
-      )
-        ? projectData.sunContractorLaborAccounts.map((account) => ({
-            id: account.accountId,
-            name: account.acctName,
-          }))
-        : [];
-    } else if (entry.idType === "VendorEmployee") {
-      // NEW CASE: Same accounts as Vendor for VendorEmployee
-      accountsWithNames = Array.isArray(
-        projectData.sunContractorLaborAccounts
-      )
-        ? projectData.sunContractorLaborAccounts.map((account) => ({
-            id: account.accountId,
-            name: account.acctName,
-          }))
-        : [];
-    } else if (entry.idType === "Other") {
-      const otherAccounts = Array.isArray(
-        projectData.otherDirectCostLaborAccounts
-      )
-        ? projectData.otherDirectCostLaborAccounts.map((account) => ({
-            id: account.accountId,
-            name: account.acctName,
-          }))
-        : [];
-
-      const employeeAccounts = Array.isArray(
-        projectData.employeeLaborAccounts
-      )
-        ? projectData.employeeLaborAccounts.map((account) => ({
-            id: account.accountId,
-            name: account.acctName,
-          }))
-        : [];
-
-      const vendorAccounts = Array.isArray(
-        projectData.sunContractorLaborAccounts
-      )
-        ? projectData.sunContractorLaborAccounts.map((account) => ({
-            id: account.accountId,
-            name: account.acctName,
-          }))
-        : [];
-
-      accountsWithNames = [
-        ...otherAccounts,
-        ...employeeAccounts,
-        ...vendorAccounts,
-      ];
-    }
-    setPastedEntryAccounts((prev) => ({
-      ...prev,
-      [entryIndex]: accountsWithNames,
-    }));
-
-    // Use cached organizations
-    setPastedEntryOrgs((prev) => ({
-      ...prev,
-      [entryIndex]: orgOptions,
-    }));
-
-    // Fetch PLC options
-    if (projectData.plc && Array.isArray(projectData.plc)) {
-      const plcOptions = projectData.plc.map((plc) => ({
-        value: plc.laborCategoryCode,
-        label: `${plc.laborCategoryCode} - ${plc.description}`,
-      }));
-
-      setPastedEntryPlcs((prev) => ({
-        ...prev,
-        [entryIndex]: plcOptions,
-      }));
-    }
-  } catch (err) {
-    console.error(
-      `Failed to fetch pasted entry options for index ${entryIndex}:`,
-      err
-    );
-  }
-};
-
+  };
 
   const handlePasteToNewEntry = async () => {
     try {
@@ -5411,23 +5414,21 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
       }
     }
 
-   const accountId = emp?.emple?.accId || emp?.emple?.plForecasts?.[0]?.acctId;
+    const accountId = emp?.emple?.accId || emp?.emple?.plForecasts?.[0]?.acctId;
 
-   let resolvedAccountName = "";
+    let resolvedAccountName = "";
 
-   if (accountId) {
-     const accountIdStr = String(accountId);
+    if (accountId) {
+      const accountIdStr = String(accountId);
 
-     const matchedAccount = [
-       ...(accountOptions || []),
-       ...(updateAccountOptions || []),
-     ].find((opt) => String(opt?.value) === accountIdStr);
+      const matchedAccount = [
+        ...(accountOptions || []),
+        ...(updateAccountOptions || []),
+      ].find((opt) => String(opt?.value) === accountIdStr);
 
-     resolvedAccountName =
-       matchedAccount?.accountName || matchedAccount?.label || accountIdStr;
-   }
-
-
+      resolvedAccountName =
+        matchedAccount?.accountName || matchedAccount?.label || accountIdStr;
+    }
 
     // return {
     //   // idType:
@@ -6030,92 +6031,102 @@ const uniqueAccounts = Array.from(uniqueAccountsMap.values());
     startDate,
   ]);
 
-  
-const handleInputChange = (empIdx, uniqueKey, newValue) => {
-  if (!isEditable) return;
+  const handleInputChange = (empIdx, uniqueKey, newValue) => {
+    if (!isEditable) return;
 
-  // Only allow numbers and dots
-  if (!/^[0-9.]*$/.test(newValue)) return;
+    // Only allow numbers and dots
+    if (!/^[0-9.]*$/.test(newValue)) return;
 
-  // Silently update state - NO validation here, so backspace works perfectly
-  setInputValues((prev) => ({
-    ...prev,
-    [`${empIdx}_${uniqueKey}`]: newValue,
-  }));
+    // Silently update state - NO validation here, so backspace works perfectly
+    setInputValues((prev) => ({
+      ...prev,
+      [`${empIdx}_${uniqueKey}`]: newValue,
+    }));
 
-  setModifiedHours((prev) => ({
-    ...prev,
-    [`${empIdx}_${uniqueKey}`]: {
-      empIdx,
-      uniqueKey,
-      newValue,
-      employee: localEmployees[empIdx],
-    },
-  }));
-  setHasUnsavedHoursChanges(true);
+    setModifiedHours((prev) => ({
+      ...prev,
+      [`${empIdx}_${uniqueKey}`]: {
+        empIdx,
+        uniqueKey,
+        newValue,
+        employee: localEmployees[empIdx],
+      },
+    }));
+    setHasUnsavedHoursChanges(true);
 
-  // Red Warning Icon logic (Non-blocking)
-  const emp = localEmployees[empIdx];
-  if (emp?.emple) {
-    const warningKey = generateWarningKey(emp.emple.emplId, emp.emple.plcGlcCode, uniqueKey);
-    const hasWarning = checkHoursExceedLimit(empIdx, uniqueKey, newValue);
-    setLocalWarnings((prev) => {
-      const updated = { ...prev };
-      if (hasWarning) updated[warningKey] = true;
-      else delete updated[warningKey];
-      return updated;
-    });
-  }
-};
-
-const handleInputBlur = (empIdx, uniqueKey, value) => {
-  if (!isEditable || value === "") return;
-
-  const duration = sortedDurations.find((d) => `${d.monthNo}_${d.year}` === uniqueKey);
-  if (!duration || !duration.workingHours) return;
-
-  const maxAllowedHours = duration.workingHours * 2;
-  const currentInputNumeric = parseFloat(value) || 0;
-  
-  const targetEmp = localEmployees[empIdx];
-  const targetEmplId = targetEmp?.emple?.emplId;
-
-  if (targetEmplId) {
-    // 1. Sum existing rows with same ID
-    const existingRowsSum = localEmployees.reduce((sum, emp, idx) => {
-      if (emp?.emple?.emplId === targetEmplId && idx !== empIdx) {
-        const inputVal = inputValues[`${idx}_${uniqueKey}`];
-        const forecastVal = getMonthHours(emp)[uniqueKey]?.value || 0;
-        const val = inputVal !== undefined && inputVal !== "" ? inputVal : forecastVal;
-        return sum + (parseFloat(val) || 0);
-      }
-      return sum;
-    }, 0);
-
-    // 2. Sum new/pasted entries with same ID
-    const newEntriesSum = newEntries.reduce((sum, entry, idx) => {
-      if (entry.id === targetEmplId) {
-        const val = newEntryPeriodHoursArray[idx]?.[uniqueKey] || 0;
-        return sum + (parseFloat(val) || 0);
-      }
-      return sum;
-    }, 0);
-
-    const totalForThisId = existingRowsSum + newEntriesSum + currentInputNumeric;
-
-    // 3. Show Toast only on Blur if it exceeds limit
-    if (totalForThisId > maxAllowedHours) {
-      toast.error(
-        `Total hours for ID ${targetEmplId} (${totalForThisId.toFixed(2)}) exceeds limit of ${maxAllowedHours}.`,
-        { autoClose: 4000, toastId: `blur-err-${targetEmplId}` }
+    // Red Warning Icon logic (Non-blocking)
+    const emp = localEmployees[empIdx];
+    if (emp?.emple) {
+      const warningKey = generateWarningKey(
+        emp.emple.emplId,
+        emp.emple.plcGlcCode,
+        uniqueKey
       );
+      const hasWarning = checkHoursExceedLimit(empIdx, uniqueKey, newValue);
+      setLocalWarnings((prev) => {
+        const updated = { ...prev };
+        if (hasWarning) updated[warningKey] = true;
+        else delete updated[warningKey];
+        return updated;
+      });
     }
-  }
-};
+  };
 
+  const handleInputBlur = (empIdx, uniqueKey, value) => {
+    if (!isEditable || value === "") return;
 
+    if (!value || value.toString().trim() === "") return;
 
+    const cellKey = `${empIdx}_${uniqueKey}`;
+    if (!inputValues.hasOwnProperty(cellKey)) {
+      return;
+    }
 
+    const duration = sortedDurations.find(
+      (d) => `${d.monthNo}_${d.year}` === uniqueKey
+    );
+    if (!duration || !duration.workingHours) return;
+
+    const maxAllowedHours = duration.workingHours * 2;
+    const currentInputNumeric = parseFloat(value) || 0;
+
+    const targetEmp = localEmployees[empIdx];
+    const targetEmplId = targetEmp?.emple?.emplId;
+
+    if (targetEmplId) {
+      // 1. Sum existing rows with same ID
+      const existingRowsSum = localEmployees.reduce((sum, emp, idx) => {
+        if (emp?.emple?.emplId === targetEmplId && idx !== empIdx) {
+          const inputVal = inputValues[`${idx}_${uniqueKey}`];
+          const forecastVal = getMonthHours(emp)[uniqueKey]?.value || 0;
+          const val =
+            inputVal !== undefined && inputVal !== "" ? inputVal : forecastVal;
+          return sum + (parseFloat(val) || 0);
+        }
+        return sum;
+      }, 0);
+
+      // 2. Sum new/pasted entries with same ID
+      const newEntriesSum = newEntries.reduce((sum, entry, idx) => {
+        if (entry.id === targetEmplId) {
+          const val = newEntryPeriodHoursArray[idx]?.[uniqueKey] || 0;
+          return sum + (parseFloat(val) || 0);
+        }
+        return sum;
+      }, 0);
+
+      const totalForThisId =
+        existingRowsSum + newEntriesSum + currentInputNumeric;
+
+      // 3. Show Toast only on Blur if it exceeds limit
+      if (totalForThisId > maxAllowedHours) {
+        toast.error(
+          `Total hours for ID ${targetEmplId} (${totalForThisId.toFixed(2)}) exceeds limit of ${maxAllowedHours}.`,
+          { autoClose: 4000, toastId: `blur-err-${targetEmplId}` }
+        );
+      }
+    }
+  };
 
   const handleSaveAll = async () => {
     const hasHoursChanges = Object.keys(modifiedHours).length > 0;
@@ -6239,9 +6250,13 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
             plForecasts: emp.emple.plForecasts || [],
           };
 
-          await axios.put(`${backendUrl}/Employee/UpdateEmployee?plid=${planId}&TemplateId=${templateId}`, payload, {
-            headers: { "Content-Type": "application/json" },
-          });
+          await axios.put(
+            `${backendUrl}/Employee/UpdateEmployee?plid=${planId}&TemplateId=${templateId}`,
+            payload,
+            {
+              headers: { "Content-Type": "application/json" },
+            }
+          );
 
           // Update local state for fields
           setLocalEmployees((prev) => {
@@ -6258,6 +6273,53 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
 
       // 2. Save hours changes (the grid monthly inputs)
       if (hasHoursChanges) {
+        for (const key in modifiedHours) {
+          const { empIdx, uniqueKey, newValue, employee } = modifiedHours[key];
+          const targetId = employee?.emple?.emplId;
+          const newNumericValue = parseFloat(newValue) || 0;
+
+          // Find limit
+          const duration = sortedDurations.find(
+            (d) => `${d.monthNo}_${d.year}` === uniqueKey
+          );
+          if (duration && duration.workingHours) {
+            const maxLimit = duration.workingHours * 2;
+
+            // 1. Sum Existing Rows (Excluding the row being edited, add new value)
+            const existingSum = localEmployees.reduce((sum, emp, idx) => {
+              if (emp?.emple?.emplId === targetId) {
+                // If this is the row being edited, use the NEW value, otherwise use stored value
+                if (String(idx) === String(empIdx)) return sum;
+                const val = getMonthHours(emp)[uniqueKey]?.value || 0;
+                return sum + (parseFloat(val) || 0);
+              }
+              return sum;
+            }, 0);
+
+            // 2. Sum any Unsaved New Entries for the same ID
+            const newEntrySum = newEntries.reduce((sum, entry, idx) => {
+              if (entry.id === targetId) {
+                const val = newEntryPeriodHoursArray[idx]?.[uniqueKey] || 0;
+                return sum + (parseFloat(val) || 0);
+              }
+              return sum;
+            }, 0);
+
+            const total = existingSum + newEntrySum + newNumericValue;
+
+            if (total > maxLimit) {
+              toast.error(
+                `Cannot save. Total hours for ID ${targetId} in ${duration.month} (${total.toFixed(2)}) exceed limit of ${maxLimit}.`,
+                {
+                  autoClose: 5000,
+                }
+              );
+              setIsLoading(false);
+              return false; // STOP SAVING
+            }
+          }
+        }
+
         const bulkPayload = [];
         for (const key in modifiedHours) {
           const { empIdx, uniqueKey, newValue, employee } = modifiedHours[key];
@@ -6564,7 +6626,7 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
   //   setSelectedSourceIdx("");
   //   toast.success("Values applied successfully");
   // };
-  
+
   const handleFillValues = () => {
     if (!isEditable) return;
 
@@ -6586,7 +6648,7 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
       );
       if (firstVis) anchorMonthKey = `${firstVis.monthNo}_${firstVis.year}`;
     }
-    
+
     const [aM, aY] = anchorMonthKey
       ? anchorMonthKey.split("_").map(Number)
       : [0, 0];
@@ -6637,7 +6699,7 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
     else if (checkedRows.size > 0) {
       const isDropdownCopy =
         fillMethod === "Copy From Checked Rows" && selectedSourceIdx !== "";
-      
+
       const targetIndices = isDropdownCopy
         ? [parseInt(selectedSourceIdx)]
         : Array.from(checkedRows);
@@ -6649,7 +6711,9 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
         if (!emp) return;
         const sourceIdx = Array.from(checkedRows)[0];
         const sourceEmp = localEmployees[sourceIdx];
-        const sourceMonthHoursForSource = sourceEmp ? getMonthHours(sourceEmp) : {};
+        const sourceMonthHoursForSource = sourceEmp
+          ? getMonthHours(sourceEmp)
+          : {};
         const sourceMonthHoursForSelf = getMonthHours(emp);
 
         // Get value from the specific column clicked in the existing row
@@ -6828,6 +6892,45 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
             }
           );
           return;
+        }
+      }
+    }
+
+    const targetId = newEntry.id.trim();
+
+    // Loop through every month in the plan
+    for (const duration of durations) {
+      const uniqueKey = `${duration.monthNo}_${duration.year}`;
+
+      // Get the hours entered in the "New Entry" form for this month
+      const val = newEntryPeriodHours[uniqueKey];
+      const currentNewHours = parseFloat(val) || 0;
+
+      // Only calculate if there are working hours defined for this month
+      if (duration.workingHours) {
+        const maxLimit = duration.workingHours * 2;
+
+        // 1. Calculate sum of hours from EXISTING rows for this same Employee ID
+        const existingSum = localEmployees.reduce((sum, emp) => {
+          if (emp?.emple?.emplId === targetId) {
+            // Re-use existing helper to get forecast value
+            const monthHoursMap = getMonthHours(emp);
+            const v = monthHoursMap[uniqueKey]?.value || 0;
+            return sum + (parseFloat(v) || 0);
+          }
+          return sum;
+        }, 0);
+
+        // 2. Calculate Grand Total
+        const total = existingSum + currentNewHours;
+
+        // 3. Check Limit
+        if (total > maxLimit) {
+          toast.error(
+            `Cannot save. Total hours for ID ${targetId} in ${duration.month} (${total.toFixed(2)}) exceed limit of ${maxLimit}.`,
+            { autoClose: 5000 }
+          );
+          return; // STOP SAVE IMMEDIATELY
         }
       }
     }
@@ -7846,6 +7949,49 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
             );
             setIsDurationLoading(false);
             return false; // STOPS THE WHOLE PROCESS
+          }
+        }
+
+        const targetId = entry.id.trim();
+
+        for (const duration of durations) {
+          const uniqueKey = `${duration.monthNo}_${duration.year}`;
+          const currentVal = newEntryPeriodHoursArray[i][uniqueKey];
+          const currentHours = parseFloat(currentVal) || 0;
+
+          if (currentHours > 0 && duration.workingHours) {
+            const maxLimit = duration.workingHours * 2;
+
+            // 1. Sum Existing Rows for this ID
+            const existingSum = localEmployees.reduce((sum, emp) => {
+              if (emp?.emple?.emplId === targetId) {
+                const v = getMonthHours(emp)[uniqueKey]?.value || 0;
+                return sum + (parseFloat(v) || 0);
+              }
+              return sum;
+            }, 0);
+
+            // 2. Sum OTHER entries in this bulk save list for the SAME ID
+            const bulkSum = newEntries.reduce((sum, e, idx) => {
+              if (idx !== i && e.id === targetId) {
+                const v = newEntryPeriodHoursArray[idx]?.[uniqueKey] || 0;
+                return sum + (parseFloat(v) || 0);
+              }
+              return sum;
+            }, 0);
+
+            const total = existingSum + bulkSum + currentHours;
+
+            if (total > maxLimit) {
+              toast.error(
+                `Row ${i + 1}: Total hours for ID ${targetId} in ${duration.month} (${total.toFixed(2)}) exceed limit of ${maxLimit}.`,
+                {
+                  autoClose: 5000,
+                }
+              );
+              setIsDurationLoading(false);
+              return false; // STOP SAVING
+            }
           }
         }
 
@@ -9871,9 +10017,9 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
 </button> */}
 
                   <button
-                  className={` btn-click ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
-    //                 className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
-    // ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
+                    className={` btn-click ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
+                    //                 className={`px-4 py-2 text-white rounded transition text-xs font-medium cursor-pointer
+                    // ${planType === "EAC" || checkedRows.size === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
                     disabled={planType === "EAC" || checkedRows.size === 0}
                     onClick={async () => {
                       // Gather all IDs from the checked rows
@@ -9948,7 +10094,7 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
 
               {showNewForm || checkedRows.size > 0 ? (
                 <button
-                className={`btn-click`}
+                  className={`btn-click`}
                   // className={`rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer disabled:opacity-40 transition-colors text-white`}
                   // style={{
                   //   ...geistSansStyle,
@@ -10581,14 +10727,17 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
                     placeholder="0.00"
                   /> */}
                   <input
-  type="text" 
-  inputMode="decimal"
-  value={fillHours}
-  onChange={(e) => setFillHours(parseFloat(e.target.value.replace(/[^0-9.]/g, '')))}
-  className="w-full border border-gray-300 rounded-md p-2 text-xs placeholder='0.00'"
-  placeholder="0.00"
-/>
-
+                    type="text"
+                    inputMode="decimal"
+                    value={fillHours}
+                    onChange={(e) =>
+                      setFillHours(
+                        parseFloat(e.target.value.replace(/[^0-9.]/g, ""))
+                      )
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 text-xs placeholder='0.00'"
+                    placeholder="0.00"
+                  />
                 </div>
               )}
 
@@ -10818,7 +10967,6 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
                 overflowX: "scroll",
               }}
             >
-              
               <table className="table-fixed table min-w-full">
                 <thead className="thead">
                   <tr
@@ -10844,21 +10992,22 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
                       <th
                         key={col.key}
                         className={`th-thead min-w-[70px] ${col.key === "name" ? "text-left pl-2" : "text-center"}`}
-                        // onClick={
-                        //   col.key === "acctId"
-                        //     ? () => handleSort("acctId")
-                        //     : undefined
-                        // }
-                        // style={{
-                        //   cursor: col.key === "acctId" ? "pointer" : "default",
-                        // }}
+                        onClick={
+                          col.key === "acctId"
+                            ? () => handleSort("acctId")
+                            : undefined
+                        }
+                        style={{
+                          cursor: col.key === "acctId" ? "pointer" : "default",
+                          textAlign: col.key === "name" ? "left" : "",
+                        }}
                       >
                         {col.label}
-                        {/* {col.key === "acctId" && (
-        <span className="text-[15px] text-gray-500">
-          {getSortIcon("acctId")}
-        </span>
-      )} */}
+                        {col.key === "acctId" && (
+                          <span className="text-[15px] text-gray-500">
+                            {getSortIcon("acctId")}
+                          </span>
+                        )}
                       </th>
                     ))}
                   </tr>
@@ -10946,109 +11095,128 @@ const handleInputBlur = (empIdx, uniqueKey, value) => {
                               onKeyDown={(e) =>
                                 e.key === " " && e.stopPropagation()
                               }
-            //                   onChange={(e) => {
-            //                     const rawValue = e.target.value;
-            //                     const [emplId, lastName] =
-            //                       rawValue.split(" - ");
+                              //                   onChange={(e) => {
+                              //                     const rawValue = e.target.value;
+                              //                     const [emplId, lastName] =
+                              //                       rawValue.split(" - ");
 
-            //                     // show only ID in the input
-            //                     setNewEntries((prev) =>
-            //                       prev.map((ent, idx) =>
-            //                         idx === entryIndex
-            //                           ? { ...ent, id: emplId }
-            //                           : ent
-            //                       )
-            //                     );
+                              //                     // show only ID in the input
+                              //                     setNewEntries((prev) =>
+                              //                       prev.map((ent, idx) =>
+                              //                         idx === entryIndex
+                              //                           ? { ...ent, id: emplId }
+                              //                           : ent
+                              //                       )
+                              //                     );
 
-            //                     const suggestions =
-            //                       pastedEntrySuggestions[entryIndex] || [];
+                              //                     const suggestions =
+                              //                       pastedEntrySuggestions[entryIndex] || [];
 
-            //                     const selectedEmployee = suggestions.find(
-            //                       (emp) =>
-            //                         String(emp.emplId) === emplId &&
-            //                         emp.lastName === lastName
-            //                     );
+                              //                     const selectedEmployee = suggestions.find(
+                              //                       (emp) =>
+                              //                         String(emp.emplId) === emplId &&
+                              //                         emp.lastName === lastName
+                              //                     );
 
-            //                     if (selectedEmployee) {
-            //                       setNewEntries((prev) =>
-            //                         prev.map((ent, idx) =>
-            //                           idx === entryIndex
-            //                             ? {
-            //                                 ...ent,
-            //                                 id: emplId,
-            //                                 firstName:
-            //                                   selectedEmployee.firstName || "",
-            //                                 lastName:
-            //                                   selectedEmployee.lastName || "",
-            //                                 perHourRate:
-            //                                   selectedEmployee.perHourRate ||
-            //                                   "",
-            //                                 orgId:
-            //                                   selectedEmployee.orgId ||
-            //                                   ent.orgId,
-            //                                 // plcGlcCode:
-            //                                 //   selectedEmployee.plc || "",
-            //                                  plcGlcCode: selectedEmployee.plc || "",
-            //                                  acctId: selectedEmployee.acctId || ent.acctId,
-            // acctName: selectedEmployee.acctName || ent.acctName,
-            // orgName: selectedEmployee.orgName || ent.orgName,
-            //                               }
-            //                             : ent
-            //                         )
-            //                       );
-            //                     }
-            //                   }}
-            onChange={(e) => {
-  const rawValue = e.target.value;
-  const [emplId, lastName] = rawValue.split(" - ");
+                              //                     if (selectedEmployee) {
+                              //                       setNewEntries((prev) =>
+                              //                         prev.map((ent, idx) =>
+                              //                           idx === entryIndex
+                              //                             ? {
+                              //                                 ...ent,
+                              //                                 id: emplId,
+                              //                                 firstName:
+                              //                                   selectedEmployee.firstName || "",
+                              //                                 lastName:
+                              //                                   selectedEmployee.lastName || "",
+                              //                                 perHourRate:
+                              //                                   selectedEmployee.perHourRate ||
+                              //                                   "",
+                              //                                 orgId:
+                              //                                   selectedEmployee.orgId ||
+                              //                                   ent.orgId,
+                              //                                 // plcGlcCode:
+                              //                                 //   selectedEmployee.plc || "",
+                              //                                  plcGlcCode: selectedEmployee.plc || "",
+                              //                                  acctId: selectedEmployee.acctId || ent.acctId,
+                              // acctName: selectedEmployee.acctName || ent.acctName,
+                              // orgName: selectedEmployee.orgName || ent.orgName,
+                              //                               }
+                              //                             : ent
+                              //                         )
+                              //                       );
+                              //                     }
+                              //                   }}
+                              onChange={(e) => {
+                                const rawValue = e.target.value;
+                                const [emplId, lastName] =
+                                  rawValue.split(" - ");
 
-  // show only ID in the input
-  setNewEntries((prev) =>
-    prev.map((ent, idx) =>
-      idx === entryIndex
-        ? { ...ent, id: emplId }
-        : ent
-    )
-  );
+                                // show only ID in the input
+                                setNewEntries((prev) =>
+                                  prev.map((ent, idx) =>
+                                    idx === entryIndex
+                                      ? { ...ent, id: emplId }
+                                      : ent
+                                  )
+                                );
 
-  const suggestions = pastedEntrySuggestions[entryIndex] || [];
+                                const suggestions =
+                                  pastedEntrySuggestions[entryIndex] || [];
 
-  // FIXED: First try emplId only, then emplId + lastName
-  let selectedEmployee = suggestions.find(
-    (emp) => String(emp.emplId) === emplId
-  );
-  if (!selectedEmployee && lastName) {
-    selectedEmployee = suggestions.find(
-      (emp) =>
-        String(emp.emplId) === emplId &&
-        emp.lastName === lastName
-    );
-  }
-console.log("DEBUG selectedEmployee:", selectedEmployee);
-  if (selectedEmployee) {
-    console.log("DEBUG PLC value:", selectedEmployee.plc);
-    setNewEntries((prev) =>
-      prev.map((ent, idx) =>
-        idx === entryIndex
-          ? {
-              ...ent,
-              id: emplId,
-              firstName: selectedEmployee.firstName || "",
-              lastName: selectedEmployee.lastName || "",
-              perHourRate: selectedEmployee.perHourRate || "",
-              orgId: selectedEmployee.orgId || ent.orgId,
-              plcGlcCode: selectedEmployee.plc || "",
-              acctId: selectedEmployee.acctId || ent.acctId,
-              acctName: selectedEmployee.acctName || ent.acctName,
-              orgName: selectedEmployee.orgName || ent.orgName,
-            }
-          : ent
-      )
-    );
-  }
-}}
-
-                            
+                                // FIXED: First try emplId only, then emplId + lastName
+                                let selectedEmployee = suggestions.find(
+                                  (emp) => String(emp.emplId) === emplId
+                                );
+                                if (!selectedEmployee && lastName) {
+                                  selectedEmployee = suggestions.find(
+                                    (emp) =>
+                                      String(emp.emplId) === emplId &&
+                                      emp.lastName === lastName
+                                  );
+                                }
+                                console.log(
+                                  "DEBUG selectedEmployee:",
+                                  selectedEmployee
+                                );
+                                if (selectedEmployee) {
+                                  console.log(
+                                    "DEBUG PLC value:",
+                                    selectedEmployee.plc
+                                  );
+                                  setNewEntries((prev) =>
+                                    prev.map((ent, idx) =>
+                                      idx === entryIndex
+                                        ? {
+                                            ...ent,
+                                            id: emplId,
+                                            firstName:
+                                              selectedEmployee.firstName || "",
+                                            lastName:
+                                              selectedEmployee.lastName || "",
+                                            perHourRate:
+                                              selectedEmployee.perHourRate ||
+                                              "",
+                                            orgId:
+                                              selectedEmployee.orgId ||
+                                              ent.orgId,
+                                            plcGlcCode:
+                                              selectedEmployee.plc || "",
+                                            acctId:
+                                              selectedEmployee.acctId ||
+                                              ent.acctId,
+                                            acctName:
+                                              selectedEmployee.acctName ||
+                                              ent.acctName,
+                                            orgName:
+                                              selectedEmployee.orgName ||
+                                              ent.orgName,
+                                          }
+                                        : ent
+                                    )
+                                  );
+                                }
+                              }}
                               disabled={entry.idType === "PLC"}
                               style={{ maxWidth: "90px" }}
                               className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
@@ -11060,7 +11228,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                               }
                               placeholder="Enter ID"
                             />
-                           
+
                             <datalist id={`employee-id-list-${entryIndex}`}>
                               {(pastedEntrySuggestions[entryIndex] || []).map(
                                 (emp, idx) => (
@@ -11127,6 +11295,8 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                               }}
                               style={{ maxWidth: "90px" }}
                               className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
+                              // style={{
+                              // }}
                               placeholder="Name"
                             />
                           </td>
@@ -11605,7 +11775,12 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                             )}
                           </td>
 
-                          <td className="tbody-td min-w-[70px] text-left pl-2">
+                          <td
+                            className="tbody-td min-w-[70px] text-left pl-2"
+                            style={{
+                              textAlign: "left",
+                            }}
+                          >
                             {editedData.firstName !== undefined
                               ? editedData.firstName
                               : row.name}
@@ -11616,6 +11791,9 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                             {isBudPlan && isEditable ? (
                               <input
                                 type="text"
+                                // value={
+                                //   row.idType
+                                // }
                                 value={
                                   editedData.acctId !== undefined
                                     ? editedData.acctId
@@ -11653,7 +11831,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                               row.acctId
                             )}
                             <datalist id={`account-list-${actualEmpIdx}`}>
-                              {updateAccountOptions.map((account, index) => (
+                              {getTheAccountData(row.idType.toLowerCase()).map((account, index) => (
                                 <option
                                   key={`${account.id}-${index}`}
                                   value={account.id}
@@ -11910,7 +12088,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                       );
                     })}
                 </tbody>
-               <tfoot>
+                <tfoot>
                   {/* Total Hours row */}
                   <tr
                     className="font-bold text-center"
@@ -11927,7 +12105,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                     {EMPLOYEE_COLUMNS.map((_, idx) => (
                       <td key={`hours-empty-${idx}`}></td>
                     ))}
- 
+
                     {/* FIXED RIGHT */}
                     <td
                       className="sticky right-0 z-30 text-right font-semibold"
@@ -11941,7 +12119,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                       Total Hours:
                     </td>
                   </tr>
- 
+
                   {/* Total Cost row */}
                   <tr
                     className="font-normal text-center"
@@ -11957,7 +12135,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                     {EMPLOYEE_COLUMNS.map((_, idx) => (
                       <td key={`cost-empty-${idx}`}></td>
                     ))}
- 
+
                     {/* FIXED RIGHT */}
                     <td
                       className="sticky right-0 z-30 text-right font-semibold"
@@ -12294,10 +12472,10 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                       </tr>
                     ))}
 
-                  {localEmployees
+                  {sortedEmployees
                     .filter((_, idx) => !hiddenRows[idx])
                     .map((emp, idx) => {
-                      const actualEmpIdx = localEmployees.findIndex(
+                      const actualEmpIdx = sortedEmployees.findIndex(
                         (e) => e === emp
                       );
                       const monthHours = getMonthHours(emp);
@@ -12482,7 +12660,13 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                                       e.target.value.replace(/[^0-9.]/g, "")
                                     )
                                   }
-                                  onBlur={(e) => handleInputBlur(actualEmpIdx, uniqueKey, e.target.value)}
+                                  onBlur={(e) =>
+                                    handleInputBlur(
+                                      actualEmpIdx,
+                                      uniqueKey,
+                                      e.target.value
+                                    )
+                                  }
                                   disabled={!isInputEditable}
                                   placeholder="0.00"
                                 />
@@ -13027,9 +13211,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                     setFindMatches([]);
                   }}
                   className={`btn-click ${
-                    !showFindOnly
-                      ? "bbtn-blue"
-                      : "bg-gray-200 text-gray-700"
+                    !showFindOnly ? "bbtn-blue" : "bg-gray-200 text-gray-700"
                   }`}
                 >
                   Find & Replace
@@ -13041,9 +13223,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                     setFindMatches([]);
                   }}
                   className={`btn-click ${
-                    showFindOnly
-                      ? "btn-blue"
-                      : "bg-gray-200 text-gray-700"
+                    showFindOnly ? "btn-blue" : "bg-gray-200 text-gray-700"
                   }`}
                 >
                   Find Only
@@ -13176,7 +13356,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
                     setShowFindOnly(false);
                   }}
                   // className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-xs"
-                   className="px-2 py-2 mt-1 mb-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
+                  className="px-2 py-2 mt-1 mb-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -13405,7 +13585,7 @@ console.log("DEBUG selectedEmployee:", selectedEmployee);
             <div className="mt-4 flex justify-end">
               <button
                 onClick={() => setShowWarningPopup(false)}
-                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
               >
                 Close
               </button>

@@ -46,6 +46,8 @@ const ProjectBudgetStatus = () => {
   );
   const [otherColumnTotalsFromAmounts, setOtherColumnTotalsFromAmounts] =
     useState({});
+ const [calculation, setCalculation] = useState(false);
+
 
   const [statusFilter, setStatusFilter] = useState('')
 
@@ -196,10 +198,10 @@ const ProjectBudgetStatus = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (!selectedPlan?.projId) {
-      toast.error("Please select a project before importing data.");
-      return;
-    }
+    // if (!selectedPlan?.projId) {
+    //   toast.error("Please select a project before importing data.");
+    //   return;
+    // }
 
     const validExtensions = [".xlsx", ".xls"];
     const fileExtension = file.name
@@ -219,7 +221,7 @@ const ProjectBudgetStatus = () => {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("projId", selectedPlan.projId);
+    // formData.append("projId", selectedPlan.projId);
 
     try {
       const response = await axios.post(
@@ -652,49 +654,85 @@ const ProjectBudgetStatus = () => {
   //     }
   //   };
 
+  // const handlePlanSelect = (plan) => {
+  //   if (!plan) {
+  //     setSelectedPlan(null);
+  //     localStorage.removeItem("selectedPlan");
+  //     setActiveTab(null);
+  //     return;
+  //   }
+
+  //   // --- RUNTIME SYNC FIX ---
+  //   // We check if the plan identity OR any of the status fields have changed
+  //   const isDifferentPlan = !selectedPlan || selectedPlan.plId !== plan.plId;
+
+  //   const hasStatusChanged =
+  //     selectedPlan &&
+  //     (selectedPlan.status !== plan.status ||
+  //       selectedPlan.isCompleted !== plan.isCompleted ||
+  //       selectedPlan.isApproved !== plan.isApproved ||
+  //       selectedPlan.finalVersion !== plan.finalVersion ||
+  //       selectedPlan.projStartDt !== plan.projStartDt ||
+  //       selectedPlan.projEndDt !== plan.projEndDt);
+
+  //   if (isDifferentPlan || hasStatusChanged) {
+  //     const project = {
+  //       projId: plan.projId || "",
+  //       projName: plan.projName || "",
+  //       projStartDt: plan.projStartDt || "",
+  //       projEndDt: plan.projEndDt || "",
+  //       orgId: plan.orgId || "",
+  //       fundedCost: plan.fundedCost || "",
+  //       fundedFee: plan.fundedFee || "",
+  //       fundedRev: plan.fundedRev || "",
+  //       revenue: plan.revenue || "",
+  //     };
+
+  //     setFilteredProjects([project]);
+  //     setRevenueAccount(plan.revenueAccount || "");
+  //     setSelectedPlan(plan); // This now carries the fresh status
+  //     localStorage.setItem("selectedPlan", JSON.stringify(plan));
+
+  //     // Optional: Clear analysis data to force reload with new status context
+  //     setAnalysisApiData([]);
+  //   }
+  // };
+
+
   const handlePlanSelect = (plan) => {
+    // Validation: Ensure plan exists before proceeding
     if (!plan) {
       setSelectedPlan(null);
       localStorage.removeItem("selectedPlan");
       setActiveTab(null);
       return;
     }
-
-    // --- RUNTIME SYNC FIX ---
-    // We check if the plan identity OR any of the status fields have changed
-    const isDifferentPlan = !selectedPlan || selectedPlan.plId !== plan.plId;
-
-    const hasStatusChanged =
-      selectedPlan &&
-      (selectedPlan.status !== plan.status ||
-        selectedPlan.isCompleted !== plan.isCompleted ||
-        selectedPlan.isApproved !== plan.isApproved ||
-        selectedPlan.finalVersion !== plan.finalVersion ||
-        selectedPlan.projStartDt !== plan.projStartDt ||
-        selectedPlan.projEndDt !== plan.projEndDt);
-
-    if (isDifferentPlan || hasStatusChanged) {
-      const project = {
-        projId: plan.projId || "",
-        projName: plan.projName || "",
-        projStartDt: plan.projStartDt || "",
-        projEndDt: plan.projEndDt || "",
-        orgId: plan.orgId || "",
-        fundedCost: plan.fundedCost || "",
-        fundedFee: plan.fundedFee || "",
-        fundedRev: plan.fundedRev || "",
-        revenue: plan.revenue || "",
-      };
-
-      setFilteredProjects([project]);
-      setRevenueAccount(plan.revenueAccount || "");
-      setSelectedPlan(plan); // This now carries the fresh status
-      localStorage.setItem("selectedPlan", JSON.stringify(plan));
-
-      // Optional: Clear analysis data to force reload with new status context
-      setAnalysisApiData([]);
-    }
+ 
+   
+ 
+    const project = {
+      projId: plan.projId || "",
+      projName: plan.projName || "",
+      projStartDt: plan.projStartDt || "",
+      projEndDt: plan.projEndDt || "",
+      orgId: plan.orgId || "",
+      fundedCost: plan.fundedCost || "",
+      fundedFee: plan.fundedFee || "",
+      fundedRev: plan.fundedRev || "",
+      revenue: plan.revenue || "",
+    };
+ 
+    setFilteredProjects([project]);
+    setRevenueAccount(plan.revenueAccount || "");
+   
+    // Update the selected plan state
+    setSelectedPlan(plan);
+    localStorage.setItem("selectedPlan", JSON.stringify(plan));
+ 
+    // Clear analysis data to ensure fresh data is loaded for the newly selected row
+    setAnalysisApiData([]);
   };
+ 
 
   // inside ProjectBudgetStatus
   // inside ProjectBudgetStatus
@@ -790,6 +828,7 @@ const ProjectBudgetStatus = () => {
   }
 
   const handleCalc = async () => {
+    setCalculation(true)
     if (!selectedPlan) {
       toast.error("No plan selected for calculation.", {
         toastId: "no-plan-selected",
@@ -823,6 +862,7 @@ const ProjectBudgetStatus = () => {
       toast.error(errorMessage);
     } finally {
       // setIsActionLoading(false);
+      setCalculation(false);
     }
   };
 
@@ -879,7 +919,7 @@ const ProjectBudgetStatus = () => {
         {viewMode === "plans" && selectedPlan && (
           <div
             // className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-1"
-            className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-3 rounded-md border-l-[6px] mb-4 relative"
+            className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-2 rounded-md border-l-[6px] mb-1 relative"
             style={{
               backgroundColor: "#e9f6fb",
               color: "#17414d",
@@ -1104,7 +1144,7 @@ const ProjectBudgetStatus = () => {
 )} */}
 
           {viewMode === "details" && showTabs && (
-            <div className="px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between min-w-full mt-6 gap-4">
+            <div className="px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between min-w-full mt-2 gap-4">
               {/* LEFT SIDE: Tabs Container */}
               <div className="flex gap-2 overflow-x-auto border-none border-gray-200">
                 <span
@@ -1551,8 +1591,9 @@ const ProjectBudgetStatus = () => {
                   onClick={handleCalc}
                   className="btn1 btn-blue cursor-pointer flex items-center"
                   title="Import Plan"
+                  disabled={calculation}
                 >
-                  Calc
+                  {calculation ? "Calculating" : "Calc"}
                 </button>
               </div>
               {/* HOURS CARD */}
@@ -1613,6 +1654,7 @@ const ProjectBudgetStatus = () => {
                     fiscalYear={fiscalYear}
                     hoursColumnTotals={hoursColumnTotalsFromHours}
                     otherColumnTotals={otherColumnTotalsFromAmounts}
+                    refreshCalculation={calculation}
                   />
                 </div>
               </div>
