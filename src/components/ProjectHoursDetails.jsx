@@ -11175,15 +11175,17 @@ const ProjectHoursDetails = ({
                                       emp.lastName === lastName
                                   );
                                 }
-                                console.log(
-                                  "DEBUG selectedEmployee:",
-                                  selectedEmployee
-                                );
+                                // console.log(
+                                //   "DEBUG selectedEmployee:",
+                                //   selectedEmployee
+                                // );
                                 if (selectedEmployee) {
                                   console.log(
                                     "DEBUG PLC value:",
                                     selectedEmployee.plc
                                   );
+                                  const [code, description] =
+                                    selectedEmployee.plc.split(" - ")
                                   setNewEntries((prev) =>
                                     prev.map((ent, idx) =>
                                       idx === entryIndex
@@ -11200,8 +11202,7 @@ const ProjectHoursDetails = ({
                                             orgId:
                                               selectedEmployee.orgId ||
                                               ent.orgId,
-                                            plcGlcCode:
-                                              selectedEmployee.plc || "",
+                                            plcGlcCode: code || "",
                                             acctId:
                                               selectedEmployee.acctId ||
                                               ent.acctId,
