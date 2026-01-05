@@ -6627,18 +6627,189 @@ const ProjectHoursDetails = ({
   //   toast.success("Values applied successfully");
   // };
 
-  const handleFillValues = () => {
+//   const handleFillValues = () => {
+//     if (!isEditable) return;
+
+//     const toKeyNum = (y, m) => y * 100 + m;
+//     const rangeStartKey = toKeyNum(
+//       new Date(fillStartDate).getFullYear(),
+//       new Date(fillStartDate).getMonth() + 1
+//     );
+//     const rangeEndKey = toKeyNum(
+//       new Date(fillEndDate).getFullYear(),
+//       new Date(fillEndDate).getMonth() + 1
+//     );
+
+//     // FIX: Ensure anchorMonthKey specifically targets the column you clicked
+//     let anchorMonthKey = selectedColumnKey;
+//     if (!anchorMonthKey) {
+//       const firstVis = sortedDurations.find(
+//         (d) => toKeyNum(d.year, d.monthNo) >= rangeStartKey
+//       );
+//       if (firstVis) anchorMonthKey = `${firstVis.monthNo}_${firstVis.year}`;
+//     }
+
+//     const [aM, aY] = anchorMonthKey
+//       ? anchorMonthKey.split("_").map(Number)
+//       : [0, 0];
+//     const anchorSortVal = toKeyNum(aY, aM);
+
+//     let newInputs = { ...inputValues };
+//     let newModifiedHours = { ...modifiedHours };
+//     let targetRowIdxForScroll = null;
+
+//     // --- PRIORITY: APPLY TO NEW ENTRIES FIRST ---
+//     if (newEntries.length > 0) {
+//       const sourceIdx =
+//         checkedRows.size > 0 ? Array.from(checkedRows)[0] : null;
+//       const sourceEmp = sourceIdx !== null ? localEmployees[sourceIdx] : null;
+//       const sourceMonthHours = sourceEmp ? getMonthHours(sourceEmp) : {};
+
+//       setNewEntryPeriodHoursArray((prevArray) =>
+//         prevArray.map((amounts) => {
+//           const updatedAmounts = { ...amounts };
+//           // Get the value from the specific column clicked in the "New Entry" row
+//           const valToCopyFromSelf = updatedAmounts[anchorMonthKey] || "0";
+
+//           sortedDurations.forEach((duration) => {
+//             const currentK = toKeyNum(duration.year, duration.monthNo);
+//             if (currentK < rangeStartKey || currentK > rangeEndKey) return;
+
+//             const key = `${duration.monthNo}_${duration.year}`;
+
+//             if (fillMethod === "Copy From Checked Rows" && sourceEmp) {
+//               updatedAmounts[key] =
+//                 newInputs[`${sourceIdx}_${key}`] ??
+//                 String(sourceMonthHours[key]?.value || "0");
+//             } else if (fillMethod === "Specify Hours") {
+//               updatedAmounts[key] = String(fillHours);
+//             } else if (fillMethod === "Use Available Hours") {
+//               updatedAmounts[key] = String(duration.workingHours || 0);
+//             } else if (fillMethod === "Use Start Period Hours") {
+//               // Fill if current month is the anchor column or after it
+//               if (currentK >= anchorSortVal)
+//                 updatedAmounts[key] = valToCopyFromSelf;
+//             }
+//           });
+//           return updatedAmounts;
+//         })
+//       );
+//     }
+//     // --- SECONDARY: APPLY TO EXISTING DATA ---
+//     else if (checkedRows.size > 0) {
+//       const isDropdownCopy =
+//         fillMethod === "Copy From Checked Rows" && selectedSourceIdx !== "";
+
+//       const targetIndices = isDropdownCopy
+//         ? [parseInt(selectedSourceIdx)]
+//         : Array.from(checkedRows);
+
+//       targetRowIdxForScroll = targetIndices[0];
+
+//       targetIndices.forEach((empIdx) => {
+//         const emp = localEmployees[empIdx];
+//         if (!emp) return;
+//         const sourceIdx = Array.from(checkedRows)[0];
+//         const sourceEmp = localEmployees[sourceIdx];
+//         const sourceMonthHoursForSource = sourceEmp
+//           ? getMonthHours(sourceEmp)
+//           : {};
+//         const sourceMonthHoursForSelf = getMonthHours(emp);
+
+//         // Get value from the specific column clicked in the existing row
+//         const valToCopyFromSelf =
+//           newInputs[`${empIdx}_${anchorMonthKey}`] ??
+//           String(sourceMonthHoursForSelf[anchorMonthKey]?.value || "0");
+
+//         sortedDurations.forEach((d) => {
+//           const currentK = toKeyNum(d.year, d.monthNo);
+//           if (currentK < rangeStartKey || currentK > rangeEndKey) return;
+//           if (planType === "EAC" && !isMonthEditable(d, closedPeriod, planType))
+//             return;
+
+//           const key = `${d.monthNo}_${d.year}`;
+//           const inputKey = `${empIdx}_${key}`;
+//           let val;
+
+//           if (isDropdownCopy && sourceEmp) {
+//             val =
+//               newInputs[`${sourceIdx}_${key}`] ??
+//               String(sourceMonthHoursForSource[key]?.value || "0");
+//           } else if (fillMethod === "Specify Hours") {
+//             val = String(fillHours);
+//           } else if (fillMethod === "Use Available Hours") {
+//             val = String(d.workingHours || 0);
+//           } else if (fillMethod === "Use Start Period Hours") {
+//             // Fill if current month is the anchor column or after it
+//             if (currentK >= anchorSortVal) val = valToCopyFromSelf;
+//             else return;
+//           } else return;
+
+//           newInputs[inputKey] = val;
+//           newModifiedHours[inputKey] = {
+//             empIdx,
+//             uniqueKey: key,
+//             newValue: val,
+//             employee: emp,
+//           };
+//         });
+//       });
+//     }
+
+//     setInputValues(newInputs);
+//     setModifiedHours(newModifiedHours);
+//     setHasUnsavedHoursChanges(true);
+//     setShowFillValues(false);
+
+//     if (targetRowIdxForScroll !== null && newEntries.length === 0) {
+//       setFindMatches([
+//         { empIdx: targetRowIdxForScroll, isFillHighlight: true },
+//       ]);
+//       setTimeout(() => {
+//         const rowElement = document.getElementById(
+//           `emp-row-${targetRowIdxForScroll}`
+//         );
+//         if (rowElement)
+//           rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+//       }, 100);
+//       setTimeout(() => {
+//         setFindMatches([]);
+//       }, 4000);
+//     }
+
+//     setSelectedSourceIdx("");
+//     toast.success("Values applied successfully");
+//   };
+
+const handleFillValues = () => {
     if (!isEditable) return;
 
+    if (!fillStartDate || !fillEndDate) {
+        toast.error("Start Period and End Period are required.");
+        return;
+      }
+
+    if (fillEndDate < fillStartDate) {
+      toast.error("End Period cannot be before Start Period.", {
+        autoClose: 3000,
+      });
+      return; 
+    }
+
     const toKeyNum = (y, m) => y * 100 + m;
-    const rangeStartKey = toKeyNum(
-      new Date(fillStartDate).getFullYear(),
-      new Date(fillStartDate).getMonth() + 1
-    );
-    const rangeEndKey = toKeyNum(
-      new Date(fillEndDate).getFullYear(),
-      new Date(fillEndDate).getMonth() + 1
-    );
+    // const rangeStartKey = toKeyNum(
+    //   new Date(fillStartDate).getFullYear(),
+    //   new Date(fillStartDate).getMonth() + 1
+    // );
+    // const rangeEndKey = toKeyNum(
+    //   new Date(fillEndDate).getFullYear(),
+    //   new Date(fillEndDate).getMonth() + 1
+    // );
+    const [sYear, sMonth] = fillStartDate.split('-').map(Number);
+    const rangeStartKey = toKeyNum(sYear, sMonth);
+
+    const [eYear, eMonth] = fillEndDate.split('-').map(Number);
+    const rangeEndKey = toKeyNum(eYear, eMonth);
 
     // FIX: Ensure anchorMonthKey specifically targets the column you clicked
     let anchorMonthKey = selectedColumnKey;
@@ -10726,7 +10897,7 @@ const ProjectHoursDetails = ({
                     className="w-full border border-gray-300 rounded-md p-2 text-xs"
                     placeholder="0.00"
                   /> */}
-                  <input
+                  {/* <input
                     type="text"
                     inputMode="decimal"
                     value={fillHours}
@@ -10737,7 +10908,20 @@ const ProjectHoursDetails = ({
                     }
                     className="w-full border border-gray-300 rounded-md p-2 text-xs placeholder='0.00'"
                     placeholder="0.00"
-                  />
+                  /> */}
+                   <input
+            type="text"
+            inputMode="decimal"
+            value={fillHours}
+            onChange={(e) => {
+              // Simply remove any character that isn't a number or a dot.
+              // We do NOT use parseFloat here, so users can type "0." freely.
+              const cleanValue = e.target.value.replace(/[^0-9.]/g, "");
+              setFillHours(cleanValue);
+            }}
+            className="w-full border border-gray-300 rounded-md p-2 text-xs placeholder='0.00'"
+            placeholder="0.00"
+          />
                 </div>
               )}
 
