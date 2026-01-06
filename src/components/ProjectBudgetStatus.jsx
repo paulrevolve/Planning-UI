@@ -537,7 +537,7 @@ const ProjectBudgetStatus = () => {
         setSelectedPlan(null);
         setRevenueAccount("");
         setPrefixes(new Set());
-        toast.error("Failed to fetch project or plan data.");
+        // toast.error("Failed to fetch project or plan data.");
       }
     } finally {
       setLoading(false);
