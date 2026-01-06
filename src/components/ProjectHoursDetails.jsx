@@ -7198,7 +7198,6 @@ const handleFillValues = () => {
 
       if (err?.response?.data) {
         const errorData = err.response.data;
-
         // Handle validation errors specifically
         if (errorData.errors) {
           const fieldErrors = [];
@@ -8223,7 +8222,7 @@ const handleFillValues = () => {
     } catch (err) {
       toast.error(
         "Failed to save entries: " +
-          (err.response?.data?.message || err.message)
+          (err.response?.data?.error || err.error)
       );
       return false;
     } finally {

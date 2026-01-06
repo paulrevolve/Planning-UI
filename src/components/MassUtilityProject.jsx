@@ -1892,7 +1892,8 @@ const getCurrentPlan = () => {
 
   const getCalcButtonDisabled = () => {
     return !selectedPlan || !selectedPlan.plId || !selectedPlan.templateId;
-  };const getTopButtonDisabled = (field) => {
+  };
+  const getTopButtonDisabled = (field) => {
   const currentPlan = getCurrentPlan();
   if (!currentPlan || !currentPlan.plType || !currentPlan.version) return true;
 
@@ -2112,427 +2113,572 @@ const isAllSelected =
     setVersionFilter("All")
   };
 
+  // console.log(selectedRows);
+  // console.log(filteredPlans);
+
+  const buttonDisable = (plans, selectedRows) => {
+    let firstStatus;
+
+    for (const plan of plans) {
+      if (!selectedRows.has(plan.plId)) continue;
+
+      if (firstStatus === undefined) {
+        firstStatus = plan.status;
+      } else if (plan.status !== firstStatus) {
+        return true; 
+      }
+    }
+
+    return false;
+  };
+
+
+  
+
   return (
     <div className="w-full min-h-screen">
       {/* FILTER & ACTION SECTION */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-2 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            <Filter size={20} className="text-blue-600" /> Update Multiple Projects
+            <Filter size={20} className="text-blue-600" /> Update Multiple
+            Projects
           </h2>
-          
         </div>
-        
-         
-            <div className="p-5 space-y-3">
-  {/* Row 1: filters */}
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-    {/* Search */}
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-bold text-gray-500 uppercase">
-        Search Project
-      </label>
-      <div className="relative">
-        <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
-        <input
-          type="text"
-          placeholder="ID or Name..."
-          className="pl-9 pr-4 py-2 w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 outline-none transition"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-    </div>
 
-    {/* Plan Type */}
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-bold text-gray-500 uppercase">
-        Plan Type (BUD/EAC)
-      </label>
-      <select
-        className="border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-100"
-        value={typeFilter}
-        onChange={(e) => setTypeFilter(e.target.value)}
-      >
-        <option value="All">All Types</option>
-        <option value="BUD">BUD</option>
-        <option value="EAC">EAC</option>
-      </select>
-    </div>
+        <div className="p-5 space-y-3">
+          {/* Row 1: filters */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">
+                Search Project
+              </label>
+              <div className="relative">
+                <Search
+                  className="absolute left-3 top-2.5 text-gray-400"
+                  size={16}
+                />
+                <input
+                  type="text"
+                  placeholder="ID or Name..."
+                  className="pl-9 pr-4 py-2 w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 outline-none transition"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
 
-    {/* Status */}
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-bold text-gray-500 uppercase">
-        Status
-      </label>
-      <select
-        className="border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-100"
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value)}
-      >
-        <option value="All">All Statuses</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Submitted">Submitted</option>
-        <option value="Approved">Approved</option>
-        <option value="Concluded">Concluded</option>
-      </select>
-    </div>
+            {/* Plan Type */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">
+                Plan Type (BUD/EAC)
+              </label>
+              <select
+                className="border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+              >
+                <option value="All">All Types</option>
+                <option value="BUD">BUD</option>
+                <option value="EAC">EAC</option>
+              </select>
+            </div>
 
-    {/* Version */}
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-bold text-gray-500 uppercase">
-        Version
-      </label>
-      <select
-        className="border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-100"
-        value={versionFilter}
-        onChange={(e) => setVersionFilter(e.target.value)}
-      >
-        <option value="All">All</option>
-        <option value="Latest">Latest</option>
-        <option value="Final">Final</option>
-      </select>
-    </div>
-  </div>
+            {/* Status */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">
+                Status
+              </label>
+              <select
+                className="border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="All">All Statuses</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Submitted">Submitted</option>
+                <option value="Approved">Approved</option>
+                <option value="Concluded">Concluded</option>
+              </select>
+            </div>
 
-  {/* Row 2: Clear + Fetch aligned right, small width */}
-  <div className="flex justify-end gap-2">
-    <button
-      onClick={resetFilters}
-      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-    >
-      <X size={14} />
-      Clear All
-    </button>
+            {/* Version */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">
+                Version
+              </label>
+              <select
+                className="border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+                value={versionFilter}
+                onChange={(e) => setVersionFilter(e.target.value)}
+              >
+                <option value="All">All</option>
+                <option value="Latest">Latest</option>
+                <option value="Final">Final</option>
+              </select>
+            </div>
+          </div>
 
-    <button
-      onClick={fetchAllPlans}
-      disabled={loading}
-      // className="inline-flex items-center justify-center px-4 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
-      className="btn1 btn-blue hover:btn-blue disabled:btn-blue "
-    >
-      {loading ? "Loading..." : "Fetch Plans"}
-    </button>
-  </div>
-</div>
+          {/* Row 2: Clear + Fetch aligned right, small width */}
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={resetFilters}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              <X size={14} />
+              Clear All
+            </button>
 
+            <button
+              onClick={fetchAllPlans}
+              disabled={loading}
+              // className="inline-flex items-center justify-center px-4 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+              className="btn1 btn-blue hover:btn-blue disabled:btn-blue "
+            >
+              {loading ? "Loading..." : "Fetch Plans"}
+            </button>
+          </div>
+        </div>
 
         {/* MASS ACTIONS BAR */}
         {selectedRows.size > 0 && (
           <div className="px-5 py-3 bg-blue-50 border-t border-blue-100 flex items-center justify-between">
             {/* <span className="text-sm font-bold text-blue-700">{selectedRows.size} Projects Selected</span> */}
             <div className="flex justify-between items-center mb-2 gap-1">
-            <div className="flex gap-1 flex-wrap items-center ">
-            {safePlans.length >= 0 && (
-              <>
-                <button
-                    onClick={async () => {
-                    setIsActionLoading(true);
-                    if (selectedRows.size > 0) await handleMassAction("Create Budget");
-                    else
-                      await handleActionSelect(
-                        safePlans.findIndex((p) => p.plId === selectedPlan?.plId),
-                        "Create Budget"
-                      );
-                    setIsActionLoading(false);
-                  }}
-                  disabled={
-                    isActionLoading ||
-                    (selectedRows.size > 0 &&
-                      !Array.from(selectedRows)
-                        .map((id) => safePlans.find((p) => p.plId === id))
-                        .some((p) => p && getButtonAvailability(p, "Create Budget"))) ||
-                    (selectedRows.size === 0 &&
-                      (!selectedPlan || !getButtonAvailability(selectedPlan, "Create Budget")))
-                  }
-                  className={`btn1 ${
-                    selectedRows.size > 0
-                      ? !Array.from(selectedRows)
-                          .map((id) => safePlans.find((p) => p.plId === id))
-                          .some((p) => p && getButtonAvailability(p, "Create Budget"))
-                        ? "btn-disabled"
-                        : "btn-blue"
-                      : !selectedPlan || !getButtonAvailability(selectedPlan, "Create Budget")
-                      ? "btn-disabled"
-                      : "btn-blue"
-                  }`}
-                  title="Create Budget"
-                >
-                  New Budget
-                </button>
+              <div className="flex gap-1 flex-wrap items-center ">
+                {safePlans.length >= 0 && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        setIsActionLoading(true);
+                        if (selectedRows.size > 0)
+                          await handleMassAction("Create Budget");
+                        else
+                          await handleActionSelect(
+                            safePlans.findIndex(
+                              (p) => p.plId === selectedPlan?.plId
+                            ),
+                            "Create Budget"
+                          );
+                        setIsActionLoading(false);
+                      }}
+                      disabled={
+                        isActionLoading ||
+                        (selectedRows.size > 0 &&
+                          !Array.from(selectedRows)
+                            .map((id) => safePlans.find((p) => p.plId === id))
+                            .some(
+                              (p) =>
+                                p && getButtonAvailability(p, "Create Budget")
+                            )) ||
+                        (selectedRows.size === 0 &&
+                          (!selectedPlan ||
+                            !getButtonAvailability(
+                              selectedPlan,
+                              "Create Budget"
+                            ))) ||
+                        (selectedRows.size > 0 &&
+                          buttonDisable(filteredPlans, selectedRows))
+                      }
+                      className={`btn1 ${
+                        selectedRows.size > 0
+                          ? !Array.from(selectedRows)
+                              .map((id) => safePlans.find((p) => p.plId === id))
+                              .some(
+                                (p) =>
+                                  p && getButtonAvailability(p, "Create Budget")
+                              ) ||
+                            (selectedRows.size > 0 &&
+                              buttonDisable(filteredPlans, selectedRows))
+                            ? "btn-disabled"
+                            : "btn-blue"
+                          : !selectedPlan ||
+                              !getButtonAvailability(
+                                selectedPlan,
+                                "Create Budget"
+                              )
+                            ? "btn-disabled"
+                            : "btn-blue"
+                      }`}
+                      title="Create Budget"
+                    >
+                      New Budget
+                    </button>
 
-                <button
-                    onClick={async () => {
-                    setIsActionLoading(true);
-                    if (selectedRows.size > 0) await handleMassAction("Create Blank Budget");
-                    else
-                      await handleActionSelect(
-                        safePlans.findIndex((p) => p.plId === selectedPlan?.plId),
-                        "Create Blank Budget"
-                      );
-                    setIsActionLoading(false);
-                  }}
-                  disabled={
-                    isActionLoading ||
-                      (selectedRows.size > 0 &&
-                      !Array.from(selectedRows)
-                        .map((id) => safePlans.find((p) => p.plId === id))
-                        .some((p) => p && getButtonAvailability(p, "Create Blank Budget"))) ||
-                    (selectedRows.size === 0 &&
-                      (!selectedPlan || !getButtonAvailability(selectedPlan, "Create Blank Budget")))
-                  }
-                  className={`btn1 ${
-                    selectedRows.size > 0
-                      ? !Array.from(selectedRows)
-                          .map((id) => safePlans.find((p) => p.plId === id))
-                          .some((p) => p && getButtonAvailability(p, "Create Blank Budget"))
-                        ? "btn-disabled"
-                        : "btn-blue"
-                      : !selectedPlan || !getButtonAvailability(selectedPlan, "Create Blank Budget")
-                      ? "btn-disabled"
-                      : "btn-blue"
-                  }`}
-                  title="Create Blank Budget"
-                >
-                  New Blank Budget
-                </button>
+                    <button
+                      onClick={async () => {
+                        setIsActionLoading(true);
+                        if (selectedRows.size > 0)
+                          await handleMassAction("Create Blank Budget");
+                        else
+                          await handleActionSelect(
+                            safePlans.findIndex(
+                              (p) => p.plId === selectedPlan?.plId
+                            ),
+                            "Create Blank Budget"
+                          );
+                        setIsActionLoading(false);
+                      }}
+                      disabled={
+                        isActionLoading ||
+                        (selectedRows.size > 0 &&
+                          !Array.from(selectedRows)
+                            .map((id) => safePlans.find((p) => p.plId === id))
+                            .some(
+                              (p) =>
+                                p &&
+                                getButtonAvailability(p, "Create Blank Budget")
+                            )) ||
+                        (selectedRows.size === 0 &&
+                          (!selectedPlan ||
+                            !getButtonAvailability(
+                              selectedPlan,
+                              "Create Blank Budget"
+                            ))) ||
+                        (selectedRows.size > 0 &&
+                          buttonDisable(filteredPlans, selectedRows))
+                      }
+                      className={`btn1 ${
+                        selectedRows.size > 0
+                          ? !Array.from(selectedRows)
+                              .map((id) => safePlans.find((p) => p.plId === id))
+                              .some(
+                                (p) =>
+                                  p &&
+                                  getButtonAvailability(
+                                    p,
+                                    "Create Blank Budget"
+                                  )
+                              ) ||
+                            (selectedRows.size > 0 &&
+                              buttonDisable(filteredPlans, selectedRows))
+                            ? "btn-disabled"
+                            : "btn-blue"
+                          : !selectedPlan ||
+                              !getButtonAvailability(
+                                selectedPlan,
+                                "Create Blank Budget"
+                              )
+                            ? "btn-disabled"
+                            : "btn-blue"
+                      }`}
+                      title="Create Blank Budget"
+                    >
+                      New Blank Budget
+                    </button>
 
-                <button
-                    onClick={async () => {
-                    setIsActionLoading(true);
-                    if (selectedRows.size > 0) await handleMassAction("Create EAC");
-                    else
-                      await handleActionSelect(
-                        safePlans.findIndex((p) => p.plId === selectedPlan?.plId),
-                        "Create EAC"
-                      );
-                    setIsActionLoading(false);
-                  }}
-                    disabled={
-                      isActionLoading ||
-                    (selectedRows.size > 0 &&
-                      !Array.from(selectedRows)
-                        .map((id) => safePlans.find((p) => p.plId === id))
-                        .some((p) => p && getButtonAvailability(p, "Create EAC"))) ||
-                    (selectedRows.size === 0 &&
-                      (!selectedPlan || !getButtonAvailability(selectedPlan, "Create EAC")))
-                  }
-                  className={`btn1 ${
-                    selectedRows.size > 0
-                      ? !Array.from(selectedRows)
-                          .map((id) => safePlans.find((p) => p.plId === id))
-                          .some((p) => p && getButtonAvailability(p, "Create EAC"))
-                        ? "btn-disabled"
-                        : "btn-blue"
-                      : !selectedPlan || !getButtonAvailability(selectedPlan, "Create EAC")
-                      ? "btn-disabled"
-                      : "btn-blue"
-                  }`}
-                  title="Create EAC"
-                >
-                  New EAC
-                </button>
+                    <button
+                      onClick={async () => {
+                        setIsActionLoading(true);
+                        if (selectedRows.size > 0)
+                          await handleMassAction("Create EAC");
+                        else
+                          await handleActionSelect(
+                            safePlans.findIndex(
+                              (p) => p.plId === selectedPlan?.plId
+                            ),
+                            "Create EAC"
+                          );
+                        setIsActionLoading(false);
+                      }}
+                      disabled={
+                        isActionLoading ||
+                        (selectedRows.size > 0 &&
+                          !Array.from(selectedRows)
+                            .map((id) => safePlans.find((p) => p.plId === id))
+                            .some(
+                              (p) => p && getButtonAvailability(p, "Create EAC")
+                            )) ||
+                        (selectedRows.size === 0 &&
+                          (!selectedPlan ||
+                            !getButtonAvailability(
+                              selectedPlan,
+                              "Create EAC"
+                            ))) ||
+                        (selectedRows.size > 0 &&
+                          buttonDisable(filteredPlans, selectedRows))
+                      }
+                      className={`btn1 ${
+                        selectedRows.size > 0
+                          ? !Array.from(selectedRows)
+                              .map((id) => safePlans.find((p) => p.plId === id))
+                              .some(
+                                (p) =>
+                                  p && getButtonAvailability(p, "Create EAC")
+                              ) ||
+                            (selectedRows.size > 0 &&
+                              buttonDisable(filteredPlans, selectedRows))
+                            ? "btn-disabled"
+                            : "btn-blue"
+                          : !selectedPlan ||
+                              !getButtonAvailability(selectedPlan, "Create EAC")
+                            ? "btn-disabled"
+                            : "btn-blue"
+                      }`}
+                      title="Create EAC"
+                    >
+                      New EAC
+                    </button>
 
-                {selectedPlan && selectedPlan.plType === "NBBUD" && (
-                  <button
-                    onClick={() => {
-                      setIsActionLoading(true);
-                      handleActionSelect(
-                        safePlans.findIndex((p) => p.plId === selectedPlan?.plId),
-                        "Create NB BUD"
-                      );
-                    }}
-                    className="btn1 btn-blue"
-                    title="Create BUD"
-                  >
-                    CREATE NB BUD
-                  </button>
-                )}
+                    {selectedPlan && selectedPlan.plType === "NBBUD" && (
+                      <button
+                        onClick={() => {
+                          setIsActionLoading(true);
+                          handleActionSelect(
+                            safePlans.findIndex(
+                              (p) => p.plId === selectedPlan?.plId
+                            ),
+                            "Create NB BUD"
+                          );
+                        }}
+                        className="btn1 btn-blue"
+                        title="Create BUD"
+                      >
+                        CREATE NB BUD
+                      </button>
+                    )}
 
-                <button
-                    onClick={async () => {
-                    setIsActionLoading(true);
-                    if (selectedRows.size > 0) await handleMassDelete();
-                    else
-                      await handleActionSelect(
-                        safePlans.findIndex((p) => p.plId === selectedPlan?.plId),
-                        "Delete"
-                      );
-                    setIsActionLoading(false);
-                  }}
-                  disabled={
-                    isActionLoading ||
-                    (selectedRows.size > 0 &&
-                      !Array.from(selectedRows)
-                        .map((id) => safePlans.find((p) => p.plId === id))
-                        .some((p) => p && getButtonAvailability(p, "Delete") && !p.isApproved && getMasterAndRelatedProjects(safePlans, p.projId).sameLevelBud)) ||
-                    (selectedRows.size === 0 && (
-                      !selectedPlan ||
-                      selectedPlan.isApproved ||
-                      !getButtonAvailability(selectedPlan, "Delete") ||
-                      !getMasterAndRelatedProjects(safePlans, selectedPlan?.projId).sameLevelBud
-                    ))
-                  }
-                  className={`btn1 ${
-                    selectedRows.size > 0
-                      ? !Array.from(selectedRows)
-                          .map((id) => safePlans.find((p) => p.plId === id))
-                          .some((p) => p && getButtonAvailability(p, "Delete") && !p.isApproved && getMasterAndRelatedProjects(safePlans, p.projId).sameLevelBud)
-                        ? "btn-disabled"
-                        : "btn-red"
-                      : !selectedPlan || selectedPlan.isApproved || !getButtonAvailability(selectedPlan, "Delete") || !getMasterAndRelatedProjects(safePlans, selectedPlan?.projId).sameLevelBud
-                      ? "btn-disabled"
-                      : "btn-red"
-                  }`}
-                  title="Delete Selected Plan"
-                >
-                  Delete
-                </button>
+                    <button
+                      onClick={async () => {
+                        setIsActionLoading(true);
+                        if (selectedRows.size > 0) await handleMassDelete();
+                        else
+                          await handleActionSelect(
+                            safePlans.findIndex(
+                              (p) => p.plId === selectedPlan?.plId
+                            ),
+                            "Delete"
+                          );
+                        setIsActionLoading(false);
+                      }}
+                      disabled={
+                        isActionLoading ||
+                        (selectedRows.size > 0 &&
+                          !Array.from(selectedRows)
+                            .map((id) => safePlans.find((p) => p.plId === id))
+                            .some(
+                              (p) =>
+                                p &&
+                                getButtonAvailability(p, "Delete") &&
+                                !p.isApproved &&
+                                getMasterAndRelatedProjects(safePlans, p.projId)
+                                  .sameLevelBud
+                            )) ||
+                        (selectedRows.size === 0 &&
+                          (!selectedPlan ||
+                            selectedPlan.isApproved ||
+                            !getButtonAvailability(selectedPlan, "Delete") ||
+                            !getMasterAndRelatedProjects(
+                              safePlans,
+                              selectedPlan?.projId
+                            ).sameLevelBud)) ||
+                        (selectedRows.size > 0 &&
+                          buttonDisable(filteredPlans, selectedRows))
+                      }
+                      className={`btn1 ${
+                        selectedRows.size > 0
+                          ? !Array.from(selectedRows)
+                              .map((id) => safePlans.find((p) => p.plId === id))
+                              .some(
+                                (p) =>
+                                  p &&
+                                  getButtonAvailability(p, "Delete") &&
+                                  !p.isApproved &&
+                                  getMasterAndRelatedProjects(
+                                    safePlans,
+                                    p.projId
+                                  ).sameLevelBud
+                              ) ||
+                            (selectedRows.size > 0 &&
+                              buttonDisable(filteredPlans, selectedRows))
+                            ? "btn-disabled"
+                            : "btn-red"
+                          : !selectedPlan ||
+                              selectedPlan.isApproved ||
+                              !getButtonAvailability(selectedPlan, "Delete") ||
+                              !getMasterAndRelatedProjects(
+                                safePlans,
+                                selectedPlan?.projId
+                              ).sameLevelBud
+                            ? "btn-disabled"
+                            : "btn-red"
+                      }`}
+                      title="Delete Selected Plan"
+                    >
+                      Delete
+                    </button>
 
-                <button
-                  onClick={async () => {
-                    setIsActionLoading(true);
-                    if (selectedRows.size > 0) await handleMassToggle("isCompleted");
-                    else await handleTopButtonToggle("isCompleted");
-                    setIsActionLoading(false);
-                  }}
-                  disabled={
-                    isActionLoading ||
-                    (selectedRows.size > 0 && getMassToggleProps("isCompleted").disabled) ||
-                    (selectedRows.size === 0 && (getTopButtonDisabled("isCompleted") || isActionLoading))
-                  }
-                  className={`btn1 ${
-                    selectedRows.size > 0
-                      ? getMassToggleProps("isCompleted").disabled
-                        ? "btn-disabled"
-                        : getMassToggleProps("isCompleted").label === "Unsubmit"
-                        ? "btn-orange"
-                        : "btn-blue"
-                      : getTopButtonDisabled("isCompleted") || isActionLoading
-                      ? "btn-disabled"
-                      : getCurrentPlan()?.status === "Submitted"
-                      ? "btn-orange"
-                      : "btn-blue"
-                  }`}
-                  title={
-                    selectedRows.size > 0
-                      ? getMassToggleProps("isCompleted").title
-                      : getCurrentPlan()?.status === "Submitted"
-                      ? "Unsubmit"
-                      : "Submit"
-                  }
-                >
-                  {  selectedRows.size > 0
-                    ? getMassToggleProps("isCompleted").label || "Submit"
-                    : getCurrentPlan()?.status === "Submitted"
-                    ? "Unsubmit"
-                    : "Submit"}
-                </button>
- 
-                <button
-                  onClick={async () => {
-                    setIsActionLoading(true);
-                    if (selectedRows.size > 0) await handleMassToggle("isApproved");
-                    else await handleTopButtonToggle("isApproved");
-                    setIsActionLoading(false);
-                  }}
-                  disabled={
-                    isActionLoading ||
-                    (selectedRows.size > 0 && getMassToggleProps("isApproved").disabled) ||
-                    (selectedRows.size === 0 && (getTopButtonDisabled("isApproved") || isActionLoading))
-                  }
-                  className={`btn1 ${
-                    selectedRows.size > 0
-                      ? getMassToggleProps("isApproved").disabled
-                        ? "btn-disabled"
-                        : getMassToggleProps("isApproved").label === "Unapprove"
-                        ? "btn-orange"
-                        : "btn-blue"
-                      : getTopButtonDisabled("isApproved") || isActionLoading
-                      ? "btn-disabled"
-                      : getCurrentPlan()?.status === "Approved" || getCurrentPlan()?.finalVersion
-                      ? "btn-orange"
-                      : "btn-blue"
-                  }`}
-                  title={
-                    selectedRows.size > 0
-                      ? getMassToggleProps("isApproved").title
-                      : getCurrentPlan()?.status === "Approved"
-                      ? "Unapprove"
-                      : "Approve"
-                  }
-                >
-                  {  selectedRows.size > 0
-                    ? getMassToggleProps("isApproved").label || "Approve"
-                    : getCurrentPlan()?.status === "Approved" || getCurrentPlan()?.finalVersion
-                    ? "Unapprove"
-                    : "Approve"}
-                </button>
+                    <button
+                      onClick={async () => {
+                        setIsActionLoading(true);
+                        if (selectedRows.size > 0)
+                          await handleMassToggle("isCompleted");
+                        else await handleTopButtonToggle("isCompleted");
+                        setIsActionLoading(false);
+                      }}
+                      disabled={
+                        isActionLoading ||
+                        (selectedRows.size > 0 &&
+                          getMassToggleProps("isCompleted").disabled) ||
+                        (selectedRows.size === 0 &&
+                          (getTopButtonDisabled("isCompleted") ||
+                            isActionLoading))
+                      }
+                      className={`btn1 ${
+                        selectedRows.size > 0
+                          ? getMassToggleProps("isCompleted").disabled
+                            ? "btn-disabled"
+                            : getMassToggleProps("isCompleted").label ===
+                                "Unsubmit"
+                              ? "btn-orange"
+                              : "btn-blue"
+                          : getTopButtonDisabled("isCompleted") ||
+                              isActionLoading
+                            ? "btn-disabled"
+                            : getCurrentPlan()?.status === "Submitted"
+                              ? "btn-orange"
+                              : "btn-blue"
+                      }`}
+                      title={
+                        selectedRows.size > 0
+                          ? getMassToggleProps("isCompleted").title
+                          : getCurrentPlan()?.status === "Submitted"
+                            ? "Unsubmit"
+                            : "Submit"
+                      }
+                    >
+                      {selectedRows.size > 0
+                        ? getMassToggleProps("isCompleted").label || "Submit"
+                        : getCurrentPlan()?.status === "Submitted"
+                          ? "Unsubmit"
+                          : "Submit"}
+                    </button>
 
-                <button
-                  onClick={async () => {
-                    setIsActionLoading(true);
-                    if (selectedRows.size > 0) await handleMassToggle("finalVersion");
-                    else await handleTopButtonToggle("finalVersion");
-                    setIsActionLoading(false);
-                  }}
-                  disabled={
-                    isActionLoading ||
-                    (selectedRows.size > 0 && getMassToggleProps("finalVersion").disabled) ||
-                    (selectedRows.size === 0 && (getTopButtonDisabled("finalVersion") || isActionLoading))
-                  }
-                  className={`btn1 ${
-                    selectedRows.size > 0
-                      ? getMassToggleProps("finalVersion").disabled
-                        ? "btn-disabled"
-                        : getMassToggleProps("finalVersion").label === "Unconclude"
-                        ? "btn-orange"
-                        : "btn-blue"
-                      : getTopButtonDisabled("finalVersion") || isActionLoading
-                      ? "btn-disabled"
-                      : getCurrentPlan()?.finalVersion
-                      ? "btn-orange"
-                      : "btn-blue"
-                  }`}
-                  title={
-                    selectedRows.size > 0
-                      ? getMassToggleProps("finalVersion").title
-                      : getCurrentPlan()?.finalVersion
-                      ? "Unconclude"
-                      : "Conclude"
-                  }
-                >
-                  {selectedRows.size > 0
-                    ? getMassToggleProps("finalVersion").label || "Conclude"
-                    : getCurrentPlan()?.finalVersion
-                    ? "Unconclude"
-                    : "Conclude"}
-                </button>
+                    <button
+                      onClick={async () => {
+                        setIsActionLoading(true);
+                        if (selectedRows.size > 0)
+                          await handleMassToggle("isApproved");
+                        else await handleTopButtonToggle("isApproved");
+                        setIsActionLoading(false);
+                      }}
+                      disabled={
+                        isActionLoading ||
+                        (selectedRows.size > 0 &&
+                          getMassToggleProps("isApproved").disabled) ||
+                        (selectedRows.size === 0 &&
+                          (getTopButtonDisabled("isApproved") ||
+                            isActionLoading))
+                      }
+                      className={`btn1 ${
+                        selectedRows.size > 0
+                          ? getMassToggleProps("isApproved").disabled
+                            ? "btn-disabled"
+                            : getMassToggleProps("isApproved").label ===
+                                "Unapprove"
+                              ? "btn-orange"
+                              : "btn-blue"
+                          : getTopButtonDisabled("isApproved") ||
+                              isActionLoading
+                            ? "btn-disabled"
+                            : getCurrentPlan()?.status === "Approved" ||
+                                getCurrentPlan()?.finalVersion
+                              ? "btn-orange"
+                              : "btn-blue"
+                      }`}
+                      title={
+                        selectedRows.size > 0
+                          ? getMassToggleProps("isApproved").title
+                          : getCurrentPlan()?.status === "Approved"
+                            ? "Unapprove"
+                            : "Approve"
+                      }
+                    >
+                      {selectedRows.size > 0
+                        ? getMassToggleProps("isApproved").label || "Approve"
+                        : getCurrentPlan()?.status === "Approved" ||
+                            getCurrentPlan()?.finalVersion
+                          ? "Unapprove"
+                          : "Approve"}
+                    </button>
 
-                <button
-                  onClick={async () => {
-                    setIsActionLoading(true);
-                    if (selectedRows.size > 0) await handleMassCalc();
-                    else await handleCalc();
-                    setIsActionLoading(false);
-                  }}
-                  disabled={
-                    isActionLoading ||
-                    (selectedRows.size > 0 &&
-                      !Array.from(selectedRows)
-                        .map((id) => safePlans.find((p) => p.plId === id))
-                        .some((p) => p && p.plId && p.templateId)) ||
-                    (selectedRows.size === 0 && getCalcButtonDisabled())
-                  }
-                  className={`btn1 ${(selectedRows.size > 0 && !Array.from(selectedRows)
-                      .map((id) => safePlans.find((p) => p.plId === id))
-                      .some((p) => p && p.plId && p.templateId)) || getCalcButtonDisabled() ? "btn-disabled" : "btn-blue"}`}
-                  title="Calculate"
-                >
-                  Calc
-                </button>
+                    <button
+                      onClick={async () => {
+                        setIsActionLoading(true);
+                        if (selectedRows.size > 0)
+                          await handleMassToggle("finalVersion");
+                        else await handleTopButtonToggle("finalVersion");
+                        setIsActionLoading(false);
+                      }}
+                      disabled={
+                        isActionLoading ||
+                        (selectedRows.size > 0 &&
+                          getMassToggleProps("finalVersion").disabled) ||
+                        (selectedRows.size === 0 &&
+                          (getTopButtonDisabled("finalVersion") ||
+                            isActionLoading))
+                      }
+                      className={`btn1 ${
+                        selectedRows.size > 0
+                          ? getMassToggleProps("finalVersion").disabled
+                            ? "btn-disabled"
+                            : getMassToggleProps("finalVersion").label ===
+                                "Unconclude"
+                              ? "btn-orange"
+                              : "btn-blue"
+                          : getTopButtonDisabled("finalVersion") ||
+                              isActionLoading
+                            ? "btn-disabled"
+                            : getCurrentPlan()?.finalVersion
+                              ? "btn-orange"
+                              : "btn-blue"
+                      }`}
+                      title={
+                        selectedRows.size > 0
+                          ? getMassToggleProps("finalVersion").title
+                          : getCurrentPlan()?.finalVersion
+                            ? "Unconclude"
+                            : "Conclude"
+                      }
+                    >
+                      {selectedRows.size > 0
+                        ? getMassToggleProps("finalVersion").label || "Conclude"
+                        : getCurrentPlan()?.finalVersion
+                          ? "Unconclude"
+                          : "Conclude"}
+                    </button>
 
-                {/* <button
+                    <button
+                      onClick={async () => {
+                        setIsActionLoading(true);
+                        if (selectedRows.size > 0) await handleMassCalc();
+                        else await handleCalc();
+                        setIsActionLoading(false);
+                      }}
+                      disabled={
+                        isActionLoading ||
+                        (selectedRows.size > 0 &&
+                          !Array.from(selectedRows)
+                            .map((id) => safePlans.find((p) => p.plId === id))
+                            .some((p) => p && p.plId && p.templateId)) ||
+                        (selectedRows.size === 0 && getCalcButtonDisabled())
+                      }
+                      className={`btn1 ${
+                        (selectedRows.size > 0 &&
+                          !Array.from(selectedRows)
+                            .map((id) => safePlans.find((p) => p.plId === id))
+                            .some((p) => p && p.plId && p.templateId)) ||
+                        getCalcButtonDisabled()
+                          ? "btn-blue"
+                          : "btn-disabled"
+                      }`}
+                      title="Calculate"
+                    >
+                      Calc
+                    </button>
+
+                    {/* <button
                   onClick={() => setBudEacFilter(!budEacFilter)}
                   className={`btn1 ${budEacFilter ? "btn-orange" : "btn-blue"}`}
                   title={
@@ -2550,7 +2696,7 @@ const isAllSelected =
                   New Business
                 </button> */}
 
-                {/* <button
+                    {/* <button
   onClick={handleSaveDatesClick}
   disabled={isActionLoading || !selectedPlan}
   className={`btn1 ${
@@ -2561,8 +2707,8 @@ const isAllSelected =
   Save Dates
 </button> */}
 
-{/* Replace the current input block with this */}
-{/* <div  className="flex flex-col items-end gap-1">
+                    {/* Replace the current input block with this */}
+                    {/* <div  className="flex flex-col items-end gap-1">
   <div className="flex items-center gap-2">
     <button className="px-4 py-1 bg-blue-700 text-white text-xs font-bold rounded">
       VERSION CODE
@@ -2581,99 +2727,101 @@ const isAllSelected =
     onChange={(e) => setVersionCodeInput(e.target.value)}
   />
 </div> */}
-<div className="flex flex-col items-end gap-1">
-    <div className="flex items-center gap-1">
-  <button className="px-2 py-1 text-black text-xs font-bold rounded">
-    VERSION CODE:
-  </button>
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="flex items-center gap-1">
+                        <button className="px-2 py-1 text-black text-xs font-bold rounded">
+                          VERSION CODE:
+                        </button>
 
-  <input
-    type="text"
-    className="w-32 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-    value={versionCodeInput}
-    onChange={(e) => setVersionCodeInput(e.target.value)}
-  />
+                        <input
+                          type="text"
+                          className="w-32 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                          value={versionCodeInput}
+                          onChange={(e) => setVersionCodeInput(e.target.value)}
+                        />
 
-  {/* <button
+                        {/* <button
     onClick={handleSaveVersionCodeClick}
     className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-700"
   >
     SAVE
   </button> */}
-</div>
+                      </div>
+                    </div>
 
-  </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase">
+                        Project Dates
+                      </label>
 
-  <div className="flex items-center gap-2">
-  <label className="text-xs font-bold text-gray-500 uppercase">
-    Project Dates
-  </label>
+                      <input
+                        type="date"
+                        className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        value={headerStartDate}
+                        onChange={(e) => setHeaderStartDate(e.target.value)}
+                      />
 
-  <input
-    type="date"
-    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-    value={headerStartDate}
-    onChange={(e) => setHeaderStartDate(e.target.value)}
-  />
+                      <span className="text-xs text-gray-500">to</span>
 
-  <span className="text-xs text-gray-500">to</span>
+                      <input
+                        type="date"
+                        className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        value={headerEndDate}
+                        onChange={(e) => setHeaderEndDate(e.target.value)}
+                      />
 
-  <input
-    type="date"
-    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-    value={headerEndDate}
-    onChange={(e) => setHeaderEndDate(e.target.value)}
-  />
-
-  {/* <button
+                      {/* <button
     onClick={handleSaveHeaderDatesClick}
     className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-700"
   >
     SAVE
   </button> */}
-</div>
-<div className="flex items-center gap-2">
-  <span className="text-xs font-bold text-gray-500 uppercase">
-    Template
-  </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-gray-500 uppercase">
+                        Template
+                      </span>
 
-  <select
-    value={headerTemplateId}
-    onChange={(e) => setHeaderTemplateId(Number(e.target.value) || 0)}
-     disabled={selectedPlan?.status !== "In Progress"}
-     className={`border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-      selectedPlan?.status !== "In Progress" ? "cursor-not-allowed" : ""
-    }`}
-  >
-    <option value={0}>Select</option>
-    {templates.map((t) => (
-      <option key={t.id} value={t.id}>
-        {t.templateCode}
-      </option>
-    ))}
-  </select>
+                      <select
+                        value={headerTemplateId}
+                        onChange={(e) =>
+                          setHeaderTemplateId(Number(e.target.value) || 0)
+                        }
+                        disabled={selectedPlan?.status !== "In Progress"}
+                        className={`border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                          selectedPlan?.status !== "In Progress"
+                            ? "cursor-not-allowed"
+                            : ""
+                        }`}
+                      >
+                        <option value={0}>Select</option>
+                        {templates.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.templateCode}
+                          </option>
+                        ))}
+                      </select>
 
-  {/* <button
+                      {/* <button
     onClick={handleSaveHeaderTemplateClick}
     className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-700"
   >
     SAVE
   </button> */}
-</div>
+                    </div>
 
-<button
-  onClick={handleHeaderSaveAll}
-  className="px-4 py-1 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-700"
->
-  SAVE
-</button>
+                    <button
+                      onClick={handleHeaderSaveAll}
+                      className="px-4 py-1 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-700"
+                    >
+                      SAVE
+                    </button>
+                  </>
+                )}
+              </div>
 
-              </>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {/* <div className="flex items-center gap-1">
               <label
                 htmlFor="fiscalYear"
                 className="font-semibold text-xs whitespace-nowrap"
@@ -2694,163 +2842,160 @@ const isAllSelected =
                 ))}
               </select>
             </div> */}
-          </div>
-        </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
       {/* ADJUSTABLE TABLE CONTAINER */}
-     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-  <div className="overflow-x-auto max-h-[70vh]">
-    <table className="w-full table">
-      <thead className="thead">
-        <tr>
-          <th className="px-2 py-2 w-10">
-            <input
-              type="checkbox"
-              className="th-thead"
-              checked={isAllSelected}
-              onChange={toggleSelectAll}
-            />
-          </th>
-         {Object.entries(COLUMN_LABELS).map(([key, label]) => {
-      if (key === "selection") return null
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto max-h-[70vh]">
+          <table className="w-full table">
+            <thead className="thead">
+              <tr>
+                <th className="px-2 py-2 w-10">
+                  <input
+                    type="checkbox"
+                    className="th-thead"
+                    checked={isAllSelected}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
+                {Object.entries(COLUMN_LABELS).map(([key, label]) => {
+                  if (key === "selection") return null;
 
-      // const isLeftCol = key === "projName" || key === "projId"
+                  // const isLeftCol = key === "projName" || key === "projId"
 
-      return (
-        <th
-          key={key}
-          className={
-            "th-thead capitalize "
-          }
-          style={{
-            textAlign:
-              key === "projId" || key === "projName"
-                ? "left"
-                : "center",
-          }}
-        >
-          {label}
-        </th>
-      );
-    })}
-        </tr>
-      </thead>
+                  return (
+                    <th
+                      key={key}
+                      className={"th-thead capitalize "}
+                      style={{
+                        textAlign:
+                          key === "projId" || key === "projName"
+                            ? "left"
+                            : "center",
+                      }}
+                    >
+                      {label}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
 
-      <tbody className="tbody">
-        {/* Global processing state */}
-        {isActionLoading && (
-          <tr>
-            <td colSpan={11} className="py-8">
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-                <span className="ml-2 text-sm text-gray-700">
-                  Processing...
-                </span>
-              </div>
-            </td>
-          </tr>
-        )}
+            <tbody className="tbody">
+              {/* Global processing state */}
+              {isActionLoading && (
+                <tr>
+                  <td colSpan={11} className="py-8">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                      <span className="ml-2 text-sm text-gray-700">
+                        Processing...
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              )}
 
-        {/* Loading state */}
-        {!isActionLoading && loading && (
-          <tr>
-            <td
-              colSpan={11}
-              className="text-center py-20 text-gray-400 animate-pulse"
-            >
-              Loading mass project data...
-            </td>
-          </tr>
-        )}
+              {/* Loading state */}
+              {!isActionLoading && loading && (
+                <tr>
+                  <td
+                    colSpan={11}
+                    className="text-center py-20 text-gray-400 animate-pulse"
+                  >
+                    Loading mass project data...
+                  </td>
+                </tr>
+              )}
 
-        {/* Empty state */}
-        {!isActionLoading && !loading && filteredPlans.length === 0 && (
-          <tr>
-            <td
-              colSpan={11}
-              className="text-center py-20 text-gray-400 font-medium"
-            >
-              No projects found. Try adjusting your filters.
-            </td>
-          </tr>
-        )}
+              {/* Empty state */}
+              {!isActionLoading && !loading && filteredPlans.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={11}
+                    className="text-center py-20 text-gray-400 font-medium"
+                  >
+                    No projects found. Try adjusting your filters.
+                  </td>
+                </tr>
+              )}
 
-        {/* Data rows */}
-        {!isActionLoading &&
-          !loading &&
-          filteredPlans.length > 0 &&
-          filteredPlans.map((plan) => (
-            <tr
-              key={plan.plId}
-              className={`transition-colors duration-150 ${
-                selectedRows.has(plan.plId)
-                  ? "bg-blue-50/40"
-                  : "hover:bg-gray-50/80"
-              }`}
-            >
-              <td className="px-6 py-4">
-                <input
-                  type="checkbox"
-                  className="h-3 px-4 py-1 text-gray-700"
-                  checked={selectedRows.has(plan.plId)}
-                  onChange={() => toggleRowSelection(plan)}
-                />
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700">
-                {plan.projId}
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700">
-                {plan.projName}
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
-                {plan.plType}
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
-                {plan.version}
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
-                {plan.versionCode}
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
-                {plan.source}
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
-                {getTemplateName(plan.templateId || 0)}
-              </td>
-              <td className="px-4 py-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-[12px] capitalize tracking-tighter
+              {/* Data rows */}
+              {!isActionLoading &&
+                !loading &&
+                filteredPlans.length > 0 &&
+                filteredPlans.map((plan) => (
+                  <tr
+                    key={plan.plId}
+                    className={`transition-colors duration-150 ${
+                      selectedRows.has(plan.plId)
+                        ? "bg-blue-50/40"
+                        : "hover:bg-gray-50/80"
+                    }`}
+                  >
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        className="h-3 px-4 py-1 text-gray-700"
+                        checked={selectedRows.has(plan.plId)}
+                        onChange={() => toggleRowSelection(plan)}
+                      />
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700">
+                      {plan.projId}
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700">
+                      {plan.projName}
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
+                      {plan.plType}
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
+                      {plan.version}
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
+                      {plan.versionCode}
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
+                      {plan.source}
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
+                      {getTemplateName(plan.templateId || 0)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-[12px] capitalize tracking-tighter
                   ${
                     plan.status === "Approved"
                       ? "bg-green-100 text-black"
                       : plan.status === "In Progress"
-                      ? "bg-red-100 text-black"
-                      : plan.status === "Concluded"
-                      ? "bg-blue-200 text-black"
-                      : plan.status === "Submitted"
-                      ? "bg-yellow-100 text-black"
-                      : "bg-amber-50 text-amber-700 border-amber-200"
+                        ? "bg-red-100 text-black"
+                        : plan.status === "Concluded"
+                          ? "bg-blue-200 text-black"
+                          : plan.status === "Submitted"
+                            ? "bg-yellow-100 text-black"
+                            : "bg-amber-50 text-amber-700 border-amber-200"
                   }`}
-                >
-                  {plan.status}
-                </span>
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
-                {formatDate(plan.projStartDt)}
-              </td>
-              <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
-                {formatDate(plan.projEndDt)}
-              </td>
-            </tr>
-          ))}
-      </tbody>
-    </table>
-  </div>
-</div>
-
+                      >
+                        {plan.status}
+                      </span>
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
+                      {formatDate(plan.projStartDt)}
+                    </td>
+                    <td className="text-xs h-1 px-1 py-1 text-gray-700 text-center">
+                      {formatDate(plan.projEndDt)}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
