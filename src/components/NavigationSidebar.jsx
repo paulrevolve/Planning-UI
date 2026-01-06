@@ -594,6 +594,12 @@ const NavigationSidebar = () => {
                         searchTerm={searchTerm}
                       />
                       {/* <NavItem
+                        label="Rights Settings"
+                        path="/dashboard/role-rights"
+                        selected={selectedPage}
+                        onClick={handleLinkClick}
+                      /> */}
+                      {/* <NavItem
                         label="Override Configuration"
                         path="/dashboard/override-settings"
                         selected={selectedPage}

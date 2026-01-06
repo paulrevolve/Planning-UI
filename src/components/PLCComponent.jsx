@@ -3061,7 +3061,7 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
                 </button>
                 <button
                   onClick={() => setNewVendorRate(null)}
-                  className="bg-red-500 cursor-pointer text-white px-3 py-1 rounded hover:bg-red-600 transition text-xs font-normal flex items-center space-x-1"
+                  className="bg-gray-500 cursor-pointer text-white px-3 py-1 rounded hover:bg-red-600 transition text-xs font-normal flex items-center space-x-1"
                   disabled={loading}
                   title="Cancel"
                 >

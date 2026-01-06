@@ -1133,9 +1133,9 @@ const renderManageUsersTab = () => {
                     onChange={() => toggleSelectAllUsers(filteredUsers)}
                   />
                 </th>
-                <th className="px-3 py-2 text-left text-gray-500 text-xs">
+                {/* <th className="px-3 py-2 text-left text-gray-500 text-xs">
                   ID
-                </th>
+                </th> */}
                 <th className="px-3 py-2 text-left text-gray-500 text-xs">
                   Username
                 </th>
@@ -1175,7 +1175,7 @@ const renderManageUsersTab = () => {
                           }
                         />
                       </td>
-                      <td className="px-3 py-2">{u.userId}</td>
+                      {/* <td className="px-3 py-2">{u.userId}</td> */}
                       <td className="px-3 py-2">{u.username}</td>
                       <td className="px-3 py-2">{u.fullName}</td>
                       <td className="px-3 py-2">{u.email}</td>
