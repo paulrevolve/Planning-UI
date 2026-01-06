@@ -6645,7 +6645,9 @@ const handlePasteMultipleRows = async () => {
             // }}
             onChange={(e) => {
     const value = e.target.value;
-    const newId = value === "PLC" ? "PLC" : "";
+    // const newId = value === "PLC" ? "PLC" : "";
+    const newId = value === "PLC" ? "PLC" : value === "Other" ? "TBD" : "";
+
     
     // 1. Update the local entry state
     setNewEntries((prev) =>
@@ -6840,8 +6842,8 @@ const handlePasteMultipleRows = async () => {
         updateNewEntry(entryIndex, { id: rawValue });
       }
     }}
-    disabled={entry.idType === "PLC"}
-    className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
+    disabled={entry.idType === "PLC" || entry.idType === "Other"  }
+    className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none ${entry.idType === "PLC" || entry.idType === "Other" ? "bg-gray-100" : ""}`}
     list={`employee-id-list-${entryIndex}`}
     placeholder="ID"
   />
