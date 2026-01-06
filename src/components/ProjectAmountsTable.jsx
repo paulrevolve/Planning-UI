@@ -712,8 +712,8 @@ useEffect(() => {
           newEntries.some(e => e.idType === "Vendor" || e.idType === "Vendor Employee");
 
         const endpoint = isVendorRelated
-          ? `${backendUrl}/Project/GetVenderEmployeesByProject/${encodeURIComponent(projectId)}`
-          : `${backendUrl}/Project/GetEmployeesByProject/${encodeURIComponent(projectId)}`;
+          ? `${backendUrl}/Project/GetVenderEmployeesByProject/${encodeURIComponent(projectId)}?type=othercost`
+          : `${backendUrl}/Project/GetEmployeesByProject/${encodeURIComponent(projectId)}?type=othercost`;
 
         const response = await axios.get(endpoint);
 
@@ -4552,7 +4552,7 @@ const isIndeterminate =
       if (employeeEntries.length > 0) {
         try {
           const response = await axios.get(
-            `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}`
+            `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}?type=othercost`
           );
           employeeSuggestions = Array.isArray(response.data)
             ? response.data.map((emp) => {
@@ -4596,7 +4596,7 @@ const isIndeterminate =
       if (vendorEntries.length > 0) {
   try {
     const response = await axios.get(
-      `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
+      `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}?type=othercost`
     );
     vendorSuggestions = Array.isArray(response.data)
       ? response.data.map((emp) => {
@@ -5156,7 +5156,7 @@ const handlePasteMultipleRows = async () => {
           employeeSuggestions = JSON.parse(cached);
         } else {
           const response = await axios.get(
-            `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}`
+            `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}?type=othercost`
           );
           employeeSuggestions = Array.isArray(response.data)
             ? response.data.map((emp) => {
@@ -5191,7 +5191,7 @@ const handlePasteMultipleRows = async () => {
           vendorSuggestions = JSON.parse(cached);
         } else {
           const response = await axios.get(
-            `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
+            `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}?type=othercost`
           );
           // vendorSuggestions = Array.isArray(response.data)
           //   ? response.data.map((emp) => ({

@@ -1155,8 +1155,8 @@ const ProjectHoursDetails = ({
           newEntry.idType === "Vendor" || newEntry.idType === "VendorEmployee";
 
         const endpoint = isVendorRelated
-          ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}`
-          : `${backendUrl}/Project/GetEmployeesByProject/${projectId}`;
+          ? `${backendUrl}/Project/GetVenderEmployeesByProject/${projectId}?type=hours`
+          : `${backendUrl}/Project/GetEmployeesByProject/${projectId}?type=hours`;
 
         const response = await axios.get(endpoint);
 
@@ -3512,7 +3512,7 @@ const ProjectHoursDetails = ({
       if (employeeEntries.length > 0) {
         try {
           const response = await axios.get(
-            `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}`
+            `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}?type=hours`
           );
           employeeSuggestions = Array.isArray(response.data)
             ? response.data.map((emp) => {
@@ -3539,7 +3539,7 @@ const ProjectHoursDetails = ({
       if (vendorEntries.length > 0) {
         try {
           const response = await axios.get(
-            `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
+            `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}?type=hours`
           );
           vendorSuggestions = Array.isArray(response.data)
             ? response.data.map((emp) => ({
@@ -4472,8 +4472,8 @@ const ProjectHoursDetails = ({
       try {
         const endpoint =
           entry.idType === "Vendor" || entry.idType === "VendorEmployee"
-            ? `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}`
-            : `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}`;
+            ? `${backendUrl}/Project/GetVenderEmployeesByProject/${encodedProjectId}?type=hours`
+            : `${backendUrl}/Project/GetEmployeesByProject/${encodedProjectId}?type=hours`;
 
         const response = await axios.get(endpoint);
         const suggestions = Array.isArray(response.data)
