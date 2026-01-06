@@ -212,8 +212,10 @@ const LaborForm = () => {
   const [closingPeriodId, setClosingPeriodId] = useState("");
   const [escalationPercentId, setEscalationPercentId] = useState("");
   const [escalationMonthId, setEscalationMonthId] = useState("");
+  const [isEditableId,setIsEditableId]=useState("");
   const [escalationPercent, setEscalationPercent] = useState("");
   const [escalationMonth, setEscalationMonth] = useState("");
+  const [isEditable, setIsEditable] = useState(false);
 
   // Month options mapping numeric values to display text
   const monthOptions = [
@@ -345,10 +347,12 @@ const LaborForm = () => {
         const monthConfig = configArray.find(
           (cfg) => cfg.name === "escallation_month"
         );
+        const isEditableConfig = configArray.find(cfg => cfg.name === "isClosedPeriodEditable");
 
         setClosingPeriodId(closingConfig?.id || 0);
         setEscalationPercentId(percentConfig?.id || 0);
         setEscalationMonthId(monthConfig?.id || 0);
+        setIsEditableId(isEditableConfig?.id || 0);
 
         // Format date for input type="date" (yyyy-MM-dd)
         let formattedDate = "";
@@ -364,10 +368,12 @@ const LaborForm = () => {
         setClosingPeriod(formattedDate);
         setEscalationPercent(percentConfig?.value || "");
         setEscalationMonth(monthConfig?.value?.toString() || "");
+         setIsEditable(isEditableConfig?.value === "true");
       } catch (err) {
         setClosingPeriod("");
         setEscalationPercent("");
         setEscalationMonth("");
+        setIsEditable(false); 
       } finally {
         setLoading(false);
       }
@@ -614,6 +620,13 @@ const LaborForm = () => {
         createdAt: nowIsoString,
         projId: "xxxxx",
       },
+      {
+  id: isEditableId,
+  name: "isClosedPeriodEditable",
+  value: isEditable.toString(),  // ✅ Boolean → "true"/"false"
+  createdAt: nowIsoString,
+  projId: "xxxxx",
+},
     ];
 
     // console.log("Closing Period Payload:", closingPeriodPayload);
@@ -640,10 +653,12 @@ const LaborForm = () => {
 
       const result = await response.json();
       // console.log("Closing period saved successfully:", result);
-      alert("Closing period saved successfully!");
+      toast.success("Setting saved successfully!")
+      // alert("Closing period saved successfully!");
     } catch (e) {
       // console.error("Error saving Closing Period:", e);
-      alert(`Error saving Closing Period: ${e.message}`);
+      // alert(`Error saving Closing Period: ${e.message}`);
+      toast.error(`Error saving Closing Period: ${e.message}`);
     }
   }, [
     closingPeriod,
@@ -652,6 +667,8 @@ const LaborForm = () => {
     closingPeriodId,
     escalationMonthId,
     escalationPercentId,
+    isEditableId,
+    isEditable,
   ]);
 
   const handleSaveAllSettings = async () => {
@@ -869,6 +886,7 @@ const LaborForm = () => {
                       />
                     </div>
                   </div>
+
                   <div>
                     <label
                       htmlFor="paidTimeOffExpenseAccount"
@@ -1086,6 +1104,20 @@ const LaborForm = () => {
                     </select>
                   </div>{" "}
                   {/* Adjusted space-y to 4 for checkboxes for slightly less spacing */}
+                   
+                   {/* Closed Period Editable */}
+<div className="flex items-center space-x-2">
+  <input
+    id="isEditableId"                     
+    type="checkbox"
+    checked={isEditable}                  
+    onChange={(e) => setIsEditable(e.target.checked)}   
+    className="rounded-md h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+  />
+  <label htmlFor="isEditableId" className="text-sm">  
+    Is Closed Period Editable for EAC
+  </label>
+</div>
                   {/* Update Employee Home Org */}
                   <div className="flex items-center space-x-2">
                     <input
