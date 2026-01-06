@@ -206,7 +206,7 @@ const NewBusinessComponent = () => {
               title="Delete"
               disabled={editNewBusinessPopup || showNewBusinessPopup}
             >
-              Delete {selectedRows.size}
+              Delete ({selectedRows.size})
             </button>
           </div>
         </div>
