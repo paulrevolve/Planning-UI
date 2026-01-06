@@ -336,19 +336,15 @@
 // export default AnalogRate;
 
 
-
 import React, { useState, useEffect } from "react";
 import { backendUrl } from "./config";
 
 const AnalogRate = () => {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [rawData, setRawData] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [editMode, setEditMode] = useState(null);
-  
-  // Toggle between 'Overwrite' and 'Calculated'
-  const [viewMode, setViewMode] = useState("Calculated"); 
+  const [viewMode, setViewMode] = useState("Calculated");
 
   const categories = [
     { label: "1 - Total Revenue (REVENUE)", key: "totRev" },
@@ -373,45 +369,53 @@ const AnalogRate = () => {
       const data = await response.json();
       setRawData(data);
     } catch (err) {
-      setError(err.message);
+      console.error("Fetch Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Helper to create a new Overwrite record based on existing Calculated data
+   * This ensures we don't send 0s for fields we didn't touch.
+   */
+  const initializeOverwriteRecord = (fyCd) => {
+    const calculatedRec = rawData.find(d => d.fyCd === fyCd && d.actualAmt === false && d.ovrwrteRt === false);
+    
+    return {
+      ...(calculatedRec || {}), // Copy all existing values (totRev, etc.)
+      analgId: undefined,       // Ensure ID is removed for auto-gen
+      ovrwrteRt: true,          // Mark as overwrite
+      actualAmt: false,         // It's still a forecast rate
+      fyCd: fyCd,               // Ensure correct year
+      isDirty: true,            // Mark for bulk save
+      modifiedBy: "myuser",
+      timeStamp: new Date().toISOString(),
+    };
+  };
+
   const getValue = (categoryKey, fyCode, isActual) => {
-    // If it's the Actual column, always look for actualAmt: true
     if (isActual) {
       const record = rawData.find(d => d.fyCd === fyCode && d.actualAmt === true);
       return record ? (record[categoryKey] ?? "") : "";
     }
-
-    // Otherwise, look for the record based on the current viewMode (Slider)
-    const targetOverwriteStatus = viewMode === "Overwrite";
-    const record = rawData.find(d => 
-      d.fyCd === fyCode && 
-      d.actualAmt === false && 
-      d.ovrwrteRt === targetOverwriteStatus
-    );
-    
+    const targetStatus = viewMode === "Overwrite";
+    const record = rawData.find(d => d.fyCd === fyCode && d.actualAmt === false && d.ovrwrteRt === targetStatus);
     return record ? (record[categoryKey] ?? "") : "";
-  };
-
-  const handleStartOverwrite = (year) => {
-    setViewMode("Overwrite");
-    setEditMode(year);
   };
 
   const handleRateChange = (categoryKey, fyCode, newValue) => {
     setRawData((prevData) => {
       const newData = [...prevData];
-      const index = newData.findIndex(d => d.fyCd === fyCode && d.actualAmt === false && d.ovrwrteRt === true);
-      const parsedVal = newValue === "" ? "" : parseFloat(newValue);
+      let index = newData.findIndex(d => d.fyCd === fyCode && d.actualAmt === false && d.ovrwrteRt === true);
+      const parsedVal = newValue === "" ? 0 : parseFloat(newValue);
 
       if (index > -1) {
-        newData[index] = { ...newData[index], [categoryKey]: parsedVal };
+        newData[index] = { ...newData[index], [categoryKey]: parsedVal, isDirty: true };
       } else {
-        newData.push({ fyCd: fyCode, actualAmt: false, ovrwrteRt: true, [categoryKey]: parsedVal });
+        const newRec = initializeOverwriteRecord(fyCode);
+        newRec[categoryKey] = parsedVal;
+        newData.push(newRec);
       }
       return newData;
     });
@@ -421,83 +425,78 @@ const AnalogRate = () => {
     const sourceRecord = rawData.find(d => d.fyCd === sourceYear && d.actualAmt === false && d.ovrwrteRt === true);
     if (!sourceRecord) return;
 
-    setRawData((prevData) => {
-      const valuesToCopy = {};
-      categories.forEach(cat => {
-        valuesToCopy[cat.key] = sourceRecord[cat.key];
-      });
+    // Capture the current visible values from the source column
+    const sourceValues = {};
+    categories.forEach(cat => { sourceValues[cat.key] = sourceRecord[cat.key] ?? 0; });
 
-      return prevData.map(record => {
-        if (record.actualAmt === false && record.ovrwrteRt === true) {
-          return { ...record, ...valuesToCopy };
+    setRawData((prevData) => {
+      let newData = [...prevData];
+      fyYears.forEach(year => {
+        let index = newData.findIndex(d => d.fyCd === year && d.actualAmt === false && d.ovrwrteRt === true);
+        if (index > -1) {
+          // Update existing pending overwrite
+          newData[index] = { ...newData[index], ...sourceValues, isDirty: true };
+        } else {
+          // Create new overwrite based on that year's calculated data + source values
+          newData.push({ ...initializeOverwriteRecord(year), ...sourceValues });
         }
-        return record;
       });
+      return newData;
     });
   };
 
+  const handleCancel = () => {
+    setEditMode(null);
+    fetchData(); 
+  };
+
   const handleSave = async (fyCode) => {
-    const recordToSave = rawData.find(d => d.fyCd === fyCode && d.actualAmt === false && d.ovrwrteRt === true);
-    if (!recordToSave) return;
+    const modifiedRecords = rawData.filter(d => d.actualAmt === false && d.ovrwrteRt === true && d.isDirty === true);
+    if (modifiedRecords.length === 0) { setEditMode(null); return; }
 
     setIsSaving(true);
     try {
-      const response = await fetch(`${backendUrl}/api/AnalgsRt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(recordToSave),
+      const savePromises = modifiedRecords.map(record => {
+        const { analgId, isDirty, ...payload } = record;
+        return fetch(`${backendUrl}/api/AnalgsRt`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, timeStamp: new Date().toISOString() }),
+        });
       });
-      if (!response.ok) throw new Error("Update failed");
-      alert(`FY-${fyCode} rates saved successfully!`);
+
+      const results = await Promise.all(savePromises);
+      const failed = results.filter(r => !r.ok);
+      if (failed.length > 0) throw new Error(`${failed.length} updates failed.`);
+
+      alert(modifiedRecords.length > 1 ? "Bulk update successful!" : `FY-${fyCode} saved!`);
       setEditMode(null);
       fetchData();
     } catch (err) {
-      alert("Error: " + err.message);
-    } finally {
-      setIsSaving(false);
-    }
+      alert("Save Error: " + err.message);
+    } finally { setIsSaving(false); }
   };
 
-  if (loading) return <div className="p-10 text-center text-gray-500 italic">Loading Financials...</div>;
+  if (loading) return <div className="p-10 text-center text-gray-400 font-mono">Loading...</div>;
 
   return (
     <div className="w-full mx-auto bg-white p-4 rounded-xl shadow-lg border border-gray-100">
       <style>{`
-        .financial-font {
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-          font-variant-numeric: tabular-nums;
-        }
+        .financial-font { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
+        .pulse-update { animation: pulse-bg 1s ease-in-out; }
+        @keyframes pulse-bg { 0% { background-color: rgba(79, 70, 229, 0.1); } 100% { background-color: transparent; } }
       `}</style>
 
-      {/* Header with Slider */}
       <div className="p-4 border-b mb-4 flex items-center justify-between bg-gray-50 rounded-t-lg">
         <h2 className="text-xl font-bold text-slate-800">NBIs Analogous Rate</h2>
-        
         <div className="flex items-center gap-6">
-          <div className="flex items-center bg-gray-200 p-1 rounded-lg border border-gray-300">
-            <button
-              onClick={() => { setViewMode("Calculated"); setEditMode(null); }}
-              className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${
-                viewMode === "Calculated" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Calculated Rates
-            </button>
-            <button
-              onClick={() => setViewMode("Overwrite")}
-              className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${
-                viewMode === "Overwrite" ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Overwrite Rates
-            </button>
+          <div className="flex items-center bg-gray-200 p-1 rounded-lg border border-gray-300 shadow-inner">
+            <button onClick={() => setViewMode("Calculated")} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === "Calculated" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}>Calculated</button>
+            <button onClick={() => setViewMode("Overwrite")} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === "Overwrite" ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}>Saved Overwrites</button>
           </div>
-
-          <button onClick={fetchData} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-semibold hover:bg-gray-100 transition-all shadow-sm">
-            Refresh Data
-          </button>
+          <button onClick={fetchData} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-semibold hover:bg-gray-100 shadow-sm">Refresh</button>
         </div>
       </div>
 
@@ -508,28 +507,18 @@ const AnalogRate = () => {
               <th className="border border-gray-300 px-3 py-3 text-left text-slate-700 min-w-[200px]">Category</th>
               <th className="border border-gray-300 px-3 py-3 text-right bg-blue-100/30 text-blue-900 min-w-[150px]">FY-2025 Actuals</th>
               {fyYears.map(year => (
-                <th key={year} className={`border border-gray-300 px-2 py-3 text-right transition-colors ${editMode === year ? 'bg-orange-50' : ''} min-w-[230px]`}>
+                <th key={year} className={`border border-gray-300 px-2 py-3 text-right ${editMode === year ? 'bg-orange-50' : ''} min-w-[230px]`}>
                   <div className="flex flex-col items-end gap-2">
-                    <span className="text-slate-700 font-bold text-xs uppercase tracking-tight">FY-{year} {viewMode} (%)</span>
-                    
-                    <div className="flex flex-row items-center justify-end gap-1.5 w-full whitespace-nowrap">
-                      {/* Scenario 1: Slider is on Calculated -> Show Overwrite Button */}
-                      {viewMode === "Calculated" && (
-                        <button 
-                          onClick={() => handleStartOverwrite(year)}
-                          className="bg-blue-600 text-white px-3 py-1 rounded-[4px] text-[10px] font-bold hover:bg-blue-700 uppercase shadow-sm"
-                        >
-                          Overwrite
-                        </button>
-                      )}
-
-                      {/* Scenario 2: Slider is on Overwrite and this year is being edited -> Show Save/Cancel */}
-                      {viewMode === "Overwrite" && editMode === year && (
+                    <span className="text-slate-700 font-bold text-xs uppercase">FY-{year} Rate (%)</span>
+                    <div className="flex flex-row gap-1 whitespace-nowrap">
+                      {editMode === year ? (
                         <>
-                          <button onClick={() => handleApplyToAll(year)} className="bg-indigo-600 text-white px-2 py-1 rounded-[4px] text-[10px] font-bold hover:bg-indigo-700 uppercase">Apply All</button>
-                          <button onClick={() => handleSave(year)} className="bg-green-600 text-white px-2 py-1 rounded-[4px] text-[10px] font-bold hover:bg-green-700 uppercase">Save</button>
-                          <button onClick={() => setEditMode(null)} className="bg-gray-500 text-white px-2 py-1 rounded-[4px] text-[10px] font-bold hover:bg-gray-600 uppercase">Cancel</button>
+                          <button onClick={() => handleApplyToAll(year)} className="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] font-bold uppercase hover:bg-indigo-700">Apply All</button>
+                          <button onClick={() => handleSave(year)} className="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold uppercase hover:bg-green-700">{isSaving ? '...' : 'Save'}</button>
+                          <button onClick={handleCancel} className="bg-gray-500 text-white px-2 py-1 rounded text-[10px] font-bold uppercase hover:bg-gray-600">Cancel</button>
                         </>
+                      ) : (
+                        viewMode === "Calculated" && <button onClick={() => setEditMode(year)} className="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase hover:bg-blue-700">Overwrite</button>
                       )}
                     </div>
                   </div>
@@ -540,33 +529,24 @@ const AnalogRate = () => {
           <tbody>
             {categories.map((cat) => (
               <tr key={cat.key} className="hover:bg-gray-50/50">
-                <td className="border border-gray-300 px-3 py-3 font-medium text-slate-700 bg-white text-xs leading-tight">
-                  {cat.label}
+                <td className="border border-gray-300 px-3 py-3 font-medium text-slate-700 text-xs">{cat.label}</td>
+                <td className="border border-gray-300 px-3 py-3 text-right financial-font font-semibold text-sm">
+                  {getValue(cat.key, 2025, true) !== "" ? `$ ${Number(getValue(cat.key, 2025, true)).toLocaleString()}` : "—"}
                 </td>
-                
-                <td className="border border-gray-300 px-3 py-3 text-right bg-blue-50/10 financial-font text-slate-800 font-semibold text-sm">
-                  {getValue(cat.key, 2025, true) !== "" 
-                    ? `$ ${Number(getValue(cat.key, 2025, true)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
-                    : "—"}
-                </td>
-
                 {fyYears.map(year => {
                   const isActive = editMode === year;
-                  const value = getValue(cat.key, year, false);
-                  
+                  const record = rawData.find(d => d.fyCd === year && d.actualAmt === false && d.ovrwrteRt === true);
+                  const isDirty = record?.isDirty;
+
                   return (
-                    <td key={year} className={`border border-gray-300 px-1 py-1 transition-colors ${isActive ? 'bg-orange-50/20' : ''}`}>
+                    <td key={year} className={`border border-gray-300 px-1 py-1 transition-all ${isActive ? 'bg-orange-50/20' : isDirty ? 'pulse-update' : ''}`}>
                       <input
                         type="number"
                         disabled={!isActive}
-                        className={`w-full text-right px-2 py-2.5 rounded outline-none financial-font font-bold transition-all
-                          ${isActive 
-                            ? 'text-xl text-orange-700 bg-white border-2 border-orange-300' 
-                            : viewMode === "Overwrite"
-                              ? 'text-xl text-blue-700 bg-blue-50/40'
-                              : 'text-xl text-slate-700 bg-transparent border-transparent'
-                          }`}
-                        value={value}
+                        className={`w-full text-right px-2 py-2.5 rounded outline-none financial-font font-bold text-xl
+                          ${isActive ? 'text-orange-700 bg-white border-2 border-orange-300 shadow-sm' 
+                            : isDirty ? 'text-indigo-600' : viewMode === "Overwrite" ? 'text-blue-700' : 'text-slate-700 bg-transparent'}`}
+                        value={isActive || isDirty ? (record?.[cat.key] ?? "") : getValue(cat.key, year, false)}
                         onChange={(e) => handleRateChange(cat.key, year, e.target.value)}
                       />
                     </td>

@@ -130,7 +130,7 @@ const MaintainFiscalYearPeriods = () => {
   );
 
   return (
-    <div className="min-h-screen  text-gray-900 flex flex-col gap-y-2 items-center justify-center ">
+    <div className="min-h-screen  text-gray-900 flex flex-col gap-y-2 items-center">
       {/* Adjusted max-w-7xl to w-full px-8 for wider display within its parent */}
       <div className="p-4 w-full  flex items-center rounded-sm bg-white">
         <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -152,7 +152,7 @@ const MaintainFiscalYearPeriods = () => {
             className={cn(
               "py-2 px-4 text-[16px] font-medium focus:outline-none",
               activeTab === "accountingPeriods"
-                ? "border-b-2 text-gray-600 group-hover:text-[#17414d]"
+                ? "text-white btn-click"
                 : "text-gray-600 group-hover:text-[#17414d]"
             )}
             onClick={() => setActiveTab("accountingPeriods")}
@@ -163,7 +163,7 @@ const MaintainFiscalYearPeriods = () => {
             className={cn(
               "py-2 px-4 text-[16px] font-medium focus:outline-none",
               activeTab === "budgetingPeriods"
-                ? "border-b-2 text-gray-600 group-hover:text-[#17414d]"
+                ? "text-white btn-click"
                 : "text-gray-600 group-hover:text-[#17414d]"
             )}
             onClick={() => setActiveTab("budgetingPeriods")}
@@ -175,18 +175,18 @@ const MaintainFiscalYearPeriods = () => {
         {/* Year Navigation */}
         <div className="flex items-center justify-between space-x-4 mb-6">
           <div></div>
-          <div className="flex gap-2 text-sm">
+          <div className="flex gap-3 text-sm">
             <button
               onClick={() => handleYearChange(-1)}
               disabled={currentYear === 2020}
-              className=" bg-[#17414d] btn1 btn-blue disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-click"
             >
               &lt; Previous Year
             </button>
             <select
               value={currentYear}
               onChange={handleManualYearChange}
-              className="border border-gray-300 rounded-md shadow-sm py-1.5 px-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              className="border border-gray-300 rounded-md shadow-sm px-1 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
             >
               {years.map((year) => (
                 <option key={year} value={year}>
@@ -197,16 +197,13 @@ const MaintainFiscalYearPeriods = () => {
             <button
               onClick={() => handleYearChange(1)}
               disabled={currentYear === 2035}
-              className="bg-[#17414d] btn1 btn-blue disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-click"
             >
               Next Year &gt;
             </button>
           </div>
-          <div className="">
-            <button
-              onClick={handleSaveSettings}
-              className="bg-[#17414d] btn1 btn-blue focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mr-4 transition-colors duration-200"
-            >
+          <div className=" mr-5">
+            <button onClick={handleSaveSettings} className="btn-click">
               Save
             </button>
           </div>

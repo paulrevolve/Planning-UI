@@ -55,12 +55,12 @@ const FundingComponent = ({ selectedProjectId }) => {
             percent: "",
           },
           { label: "Cost", funding: "", budget: "", balance: "", percent: "" },
-          {
-            funding: "",
-            budget: "",
-            balance: "",
-            percent: "",
-          },
+            // {
+            //   funding: "",
+            //   budget: "",
+            //   balance: "",
+            //   percent: "",
+            // },
         ]);
       }
     };
