@@ -1906,7 +1906,7 @@ const ProjectHoursDetails = ({
         handleEmployeeDataChange(
           actualEmpIdx,
           "firstName",
-          selectedOption.label
+          selectedOption.label.split(" - ")[1]
         );
       } else if (value === "") {
         // Clear name if PLC is cleared
@@ -1921,10 +1921,14 @@ const ProjectHoursDetails = ({
           option.value.toLowerCase().includes(value.toLowerCase()) ||
           option.label.toLowerCase().includes(value.toLowerCase())
       );
+      // console.log('filter plc option ', filtered)
       setUpdatePlcOptions(filtered);
     } else {
       setUpdatePlcOptions(plcOptions);
     }
+
+    // console.log('updatedPlcOption ', updatePlcOptions)
+
   };
 
   const handleOrgInputChange = (value) => {
@@ -3917,7 +3921,8 @@ const ProjectHoursDetails = ({
         acctName,
         orgId,
         orgName: orgName || "",
-        plcGlcCode: plc,
+        // plcGlcCode: plc,
+        plcGlcCode: plc.split("-")[0],
         perHourRate: hourRate,
         status: status || "ACT",
         isRev: isRev === "✓",
@@ -6783,19 +6788,19 @@ const ProjectHoursDetails = ({
 
 const handleFillValues = () => {
     if (!isEditable) return;
- 
+
     if (!fillStartDate || !fillEndDate) {
         toast.error("Start Period and End Period are required.");
         return;
       }
- 
+
     if (fillEndDate < fillStartDate) {
       toast.error("End Period cannot be before Start Period.", {
         autoClose: 3000,
       });
-      return;
+      return; 
     }
- 
+
     const toKeyNum = (y, m) => y * 100 + m;
     // const rangeStartKey = toKeyNum(
     //   new Date(fillStartDate).getFullYear(),
@@ -6807,10 +6812,10 @@ const handleFillValues = () => {
     // );
     const [sYear, sMonth] = fillStartDate.split('-').map(Number);
     const rangeStartKey = toKeyNum(sYear, sMonth);
- 
+
     const [eYear, eMonth] = fillEndDate.split('-').map(Number);
     const rangeEndKey = toKeyNum(eYear, eMonth);
- 
+
     // FIX: Ensure anchorMonthKey specifically targets the column you clicked
     let anchorMonthKey = selectedColumnKey;
     if (!anchorMonthKey) {
@@ -6819,37 +6824,35 @@ const handleFillValues = () => {
       );
       if (firstVis) anchorMonthKey = `${firstVis.monthNo}_${firstVis.year}`;
     }
- 
+
     const [aM, aY] = anchorMonthKey
       ? anchorMonthKey.split("_").map(Number)
       : [0, 0];
     const anchorSortVal = toKeyNum(aY, aM);
- 
+
     let newInputs = { ...inputValues };
     let newModifiedHours = { ...modifiedHours };
     let targetRowIdxForScroll = null;
- 
+
     // --- PRIORITY: APPLY TO NEW ENTRIES FIRST ---
     if (newEntries.length > 0) {
       const sourceIdx =
         checkedRows.size > 0 ? Array.from(checkedRows)[0] : null;
       const sourceEmp = sourceIdx !== null ? localEmployees[sourceIdx] : null;
       const sourceMonthHours = sourceEmp ? getMonthHours(sourceEmp) : {};
- 
+
       setNewEntryPeriodHoursArray((prevArray) =>
         prevArray.map((amounts) => {
           const updatedAmounts = { ...amounts };
           // Get the value from the specific column clicked in the "New Entry" row
           const valToCopyFromSelf = updatedAmounts[anchorMonthKey] || "0";
- 
+
           sortedDurations.forEach((duration) => {
             const currentK = toKeyNum(duration.year, duration.monthNo);
             if (currentK < rangeStartKey || currentK > rangeEndKey) return;
- 
-            if (!isMonthEditable(duration, closedPeriod, planType)) return;
- 
+
             const key = `${duration.monthNo}_${duration.year}`;
- 
+
             if (fillMethod === "Copy From Checked Rows" && sourceEmp) {
               updatedAmounts[key] =
                 newInputs[`${sourceIdx}_${key}`] ??
@@ -6872,13 +6875,13 @@ const handleFillValues = () => {
     else if (checkedRows.size > 0) {
       const isDropdownCopy =
         fillMethod === "Copy From Checked Rows" && selectedSourceIdx !== "";
- 
+
       const targetIndices = isDropdownCopy
         ? [parseInt(selectedSourceIdx)]
         : Array.from(checkedRows);
- 
+
       targetRowIdxForScroll = targetIndices[0];
- 
+
       targetIndices.forEach((empIdx) => {
         const emp = localEmployees[empIdx];
         if (!emp) return;
@@ -6888,25 +6891,22 @@ const handleFillValues = () => {
           ? getMonthHours(sourceEmp)
           : {};
         const sourceMonthHoursForSelf = getMonthHours(emp);
- 
+
         // Get value from the specific column clicked in the existing row
         const valToCopyFromSelf =
           newInputs[`${empIdx}_${anchorMonthKey}`] ??
           String(sourceMonthHoursForSelf[anchorMonthKey]?.value || "0");
- 
+
         sortedDurations.forEach((d) => {
           const currentK = toKeyNum(d.year, d.monthNo);
           if (currentK < rangeStartKey || currentK > rangeEndKey) return;
- 
-          if (!isMonthEditable(d, closedPeriod, planType)) return;
- 
-          // if (planType === "EAC" && !isMonthEditable(d, closedPeriod, planType))
-          //   return;
- 
+          if (planType === "EAC" && !isMonthEditable(d, closedPeriod, planType))
+            return;
+
           const key = `${d.monthNo}_${d.year}`;
           const inputKey = `${empIdx}_${key}`;
           let val;
- 
+
           if (isDropdownCopy && sourceEmp) {
             val =
               newInputs[`${sourceIdx}_${key}`] ??
@@ -6920,7 +6920,7 @@ const handleFillValues = () => {
             if (currentK >= anchorSortVal) val = valToCopyFromSelf;
             else return;
           } else return;
- 
+
           newInputs[inputKey] = val;
           newModifiedHours[inputKey] = {
             empIdx,
@@ -6931,12 +6931,12 @@ const handleFillValues = () => {
         });
       });
     }
- 
+
     setInputValues(newInputs);
     setModifiedHours(newModifiedHours);
     setHasUnsavedHoursChanges(true);
     setShowFillValues(false);
- 
+
     if (targetRowIdxForScroll !== null && newEntries.length === 0) {
       setFindMatches([
         { empIdx: targetRowIdxForScroll, isFillHighlight: true },
@@ -6952,11 +6952,11 @@ const handleFillValues = () => {
         setFindMatches([]);
       }, 4000);
     }
- 
+
     setSelectedSourceIdx("");
     toast.success("Values applied successfully");
   };
- 
+
   const handleSaveNewEntry = async () => {
     if (!planId) {
       toast.error("Plan ID is required to save a new entry.", {
@@ -8200,8 +8200,7 @@ const handleFillValues = () => {
         }));
         bulkPayload.push({
           emplId: entry.id.trim(),
-          firstName: entry.firstName,
-          // firstName: entry.idType === 'PLC' ? entry.firstName.split(' - ')[1] : entry.firstName, 
+          firstName: entry.idType === 'PLC' ? entry.firstName.split(' - ')[1] : entry.firstName,
           lastName: entry.lastName,
           type: entry.idType,
           isRev: entry.isRev,
@@ -11228,8 +11227,7 @@ const handleFillValues = () => {
                               value={entry.idType}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                // const newId = value === "PLC" ? "PLC" : "";
-                                const newId = value === "PLC" ? "PLC" : value === "Other" ? "TBD" : "";
+                                const newId = value === "PLC" ? "PLC" : "";
                                 setNewEntries((prev) =>
                                   prev.map((ent, idx) =>
                                     idx === entryIndex
@@ -11411,9 +11409,9 @@ const handleFillValues = () => {
                                   );
                                 }
                               }}
-                              disabled={entry.idType === "PLC" ||  entry.idType === "Other"}
+                              disabled={entry.idType === "PLC"}
                               style={{ maxWidth: "90px" }}
-                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ||  entry.idType === "Other" ? "bg-gray-100" : ""}`}
+                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
                               // list={`employee-id-list-${entryIndex}`}
                               list={
                                 entry.idType !== "Other"
@@ -11450,7 +11448,7 @@ const handleFillValues = () => {
                                 entry.idType === "Other" || planType === "NBBUD"
                                   ? entry.firstName || ""
                                   : entry.idType === "PLC"
-                                    ? entry.firstName?.split(" - ")?.[1]
+                                    ? entry.firstName?.split(" - ")?.[1] 
                                     : entry.idType === "Vendor"
                                       ? entry.lastName || entry.firstName || ""
                                       : `${entry.lastName || ""} ${entry.firstName || ""}`.trim()
@@ -11474,6 +11472,7 @@ const handleFillValues = () => {
                                   const valToStore = cleanValue.startsWith(" ")
                                     ? cleanValue.trimStart()
                                     : cleanValue;
+
                                   setNewEntries((prev) =>
                                     prev.map((ent, idx) =>
                                       idx === entryIndex
@@ -12127,10 +12126,10 @@ const handleFillValues = () => {
                                         val.toLowerCase()
                                     );
                                     if (!exactPlcMatch) {
-                                      toast.error(
-                                        "PLC must be selected from the available suggestions. Custom values are not allowed.",
-                                        { autoClose: 4000 }
-                                      );
+                                      // toast.error(
+                                      //   "PLC must be selected from the available suggestions. Custom values are not allowed.",
+                                      //   { autoClose: 4000 }
+                                      // );
                                       handleEmployeeDataChange(
                                         actualEmpIdx,
                                         "glcPlc",
