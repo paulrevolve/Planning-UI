@@ -11222,7 +11222,8 @@ const handleFillValues = () => {
                               value={entry.idType}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                const newId = value === "PLC" ? "PLC" : "";
+                                // const newId = value === "PLC" ? "PLC" : "";
+                                const newId = value === "PLC" ? "PLC" : value === "Other" ? "TBD" : "";
                                 setNewEntries((prev) =>
                                   prev.map((ent, idx) =>
                                     idx === entryIndex
@@ -11350,7 +11351,9 @@ const handleFillValues = () => {
 
                                 // FIXED: First try emplId only, then emplId + lastName
                                 let selectedEmployee = suggestions.find(
-                                  (emp) => String(emp.emplId) === emplId
+                                  (emp) =>
+                                    String(emp.emplId) === emplId &&
+                                    emp.lastName === lastName
                                 );
                                 if (!selectedEmployee && lastName) {
                                   selectedEmployee = suggestions.find(
@@ -11402,9 +11405,9 @@ const handleFillValues = () => {
                                   );
                                 }
                               }}
-                              disabled={entry.idType === "PLC"}
+                              disabled={entry.idType === "PLC" ||  entry.idType === "Other"}
                               style={{ maxWidth: "90px" }}
-                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ? "bg-gray-100" : ""}`}
+                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" ||  entry.idType === "Other" ? "bg-gray-100" : ""}`}
                               // list={`employee-id-list-${entryIndex}`}
                               list={
                                 entry.idType !== "Other"
