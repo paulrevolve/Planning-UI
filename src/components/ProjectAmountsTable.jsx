@@ -6878,13 +6878,15 @@ const handlePasteMultipleRows = async () => {
     readOnly={entry.idType !== "Other"}
             onKeyDown={(e) => e.key === " " && e.stopPropagation()}
             onChange={(e) => {
-              if (entry.idType === "Other" || planType === "NBBUD") {
+              // || planType === "NBBUD"
+              if (entry.idType === "Other" ) {
                 const cleanValue = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
                 setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, firstName: cleanValue.trimStart(), lastName: "" } : ent)));
               }
             }}
             style={{ maxWidth: "100px" }}
-            className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
+            // || planType === "NBBUD"
+            className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other"  ? "bg-white" : "bg-gray-100"}`}
             placeholder="Name"
           />
         </td>
