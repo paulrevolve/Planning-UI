@@ -6865,7 +6865,7 @@ const handlePasteMultipleRows = async () => {
                               )}
                             </datalist>
 </td>
-        <td className="tbody-td min-w-[115px]">
+        <td className="tbody-td min-w-[115px] flex justify-start mt-[9px]">
           <input
             type="text"
             // value={entry.idType === "Other" || planType === "NBBUD" ? entry.firstName || "" : entry.lastName && entry.firstName ? `${entry.lastName}, ${entry.firstName}` : entry.lastName || entry.firstName || ""}
