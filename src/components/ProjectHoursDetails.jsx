@@ -11445,24 +11445,27 @@ const handleFillValues = () => {
                               type="text"
                               name="name"
                               value={
-                                entry.idType === "Other" || planType === "NBBUD"
+                                // || planType === "NBBUD"
+                                entry.idType === "Other" 
                                   ? entry.firstName || ""
                                   : entry.idType === "PLC"
                                     ? entry.firstName?.split(" - ")?.[1] 
-                                    : entry.idType === "Vendor"
+                                    : entry.idType === "Vendor" 
                                       ? entry.lastName || entry.firstName || ""
                                       : `${entry.lastName || ""} ${entry.firstName || ""}`.trim()
                               }
                               readOnly={
-                                planType !== "NBBUD" && entry.idType !== "Other"
+                                // planType !== "NBBUD" &&
+                                 entry.idType !== "Other"
                               }
                               onKeyDown={(e) =>
                                 e.key === " " && e.stopPropagation()
                               }
                               onChange={(e) => {
                                 if (
-                                  entry.idType === "Other" ||
-                                  planType === "NBBUD"
+                                  
+                                  //  ||planType === "NBBUD"
+                                  entry.idType === "Other"
                                 ) {
                                   const cleanValue = e.target.value.replace(
                                     /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
@@ -11486,8 +11489,9 @@ const handleFillValues = () => {
                                   );
                                 }
                               }}
+                              // || planType === "NBBUD" 
                               style={{ maxWidth: "90px" }}
-                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
+                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" ? "bg-white" : "bg-gray-100"}`}
                               // style={{
                               // }}
                               placeholder="Name"
