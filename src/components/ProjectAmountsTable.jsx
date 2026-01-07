@@ -6538,7 +6538,7 @@ const handlePasteMultipleRows = async () => {
 )} */}
 
       {employees.length === 0 && !showNewForm && sortedDurations.length > 0 ? (
-        <div className="  border border-yellow-400 text-yellow-700 px-4 py-3 rounded text-xs">
+        <div className=" bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded text-xs">
           No forecast data available for this plan.
         </div>
       ) : (
