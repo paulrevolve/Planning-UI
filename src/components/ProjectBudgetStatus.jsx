@@ -67,6 +67,7 @@ const ProjectBudgetStatus = () => {
   const CALCULATE_COST_ENDPOINT = "/Forecast/CalculateCost";
 
   const [currentUserRole, setCurrentUserRole] = useState(null);
+  const [currentPlan, setCurrentPlan] = useState(null);
   const [userName, setUserName] = useState("User");
   const [tabVisibility, setTabVisibility] = useState({});
   const planTableRef = useRef(null);
@@ -810,6 +811,7 @@ const ProjectBudgetStatus = () => {
     setActiveTab(null);
     setViewMode("plans"); // back to plan table
     setShowTabs(false); // hide tabs row
+     setRefreshKey(prev => prev + 1);
   };
 
   const geistSansStyle = {
@@ -866,6 +868,11 @@ const ProjectBudgetStatus = () => {
     }
   };
 
+const getCurrentPlan = () => {
+  if (!selectedPlan) return null;
+  return selectedPlan;
+}
+
   return (
     <div className="sm:p-2  space-y-6 text-sm sm:text-base text-gray-800 font-inter  mt-9 ">
       {viewMode === "plans" && (
@@ -916,7 +923,7 @@ const ProjectBudgetStatus = () => {
 
         className="space-y-4 bg-white rounded-lg"
       >
-        {viewMode === "plans" && selectedPlan && (
+        {viewMode === "plans" && getCurrentPlan() && (
           <div
             // className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg shadow-sm mb-1"
             className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs sm:text-sm p-2 rounded-md border-l-[6px] mb-1 relative"
@@ -930,7 +937,7 @@ const ProjectBudgetStatus = () => {
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
               <div>
                 <span className="font-semibold blue-text">Project ID:</span>{" "}
-                <span className="text-gray-700">{selectedPlan.projId}</span>
+                <span className="text-gray-700">{getCurrentPlan().projId}</span>
               </div>
 
               <div>
@@ -939,18 +946,18 @@ const ProjectBudgetStatus = () => {
                 </span>{" "}
                 Start Date:{" "}
                 <span className="text-gray-700">
-                  {selectedPlan.projStartDt || selectedPlan.startDate
+                  {getCurrentPlan().projStartDt || getCurrentPlan().startDate
                     ? safeFormatDate(
-                        selectedPlan.projStartDt || selectedPlan.startDate
+                        getCurrentPlan().projStartDt || getCurrentPlan().startDate
                       )
                     : "N/A"}
                 </span>
                 {" | "}
                 End Date:{" "}
                 <span className="text-gray-700">
-                  {selectedPlan.projEndDt || selectedPlan.endDate
+                  {getCurrentPlan().projEndDt || getCurrentPlan().endDate
                     ? safeFormatDate(
-                        selectedPlan.projEndDt || selectedPlan.endDate
+                        getCurrentPlan().projEndDt || getCurrentPlan().endDate
                       )
                     : "N/A"}
                 </span>
@@ -961,12 +968,12 @@ const ProjectBudgetStatus = () => {
                     <span className="font-semibold text-green-800">
                       Organization:
                     </span>{" "}
-                    <span className="text-gray-700">{selectedPlan.orgId}</span>
+                    <span className="text-gray-700">{getCurrentPlan().orgId}</span>
                   </div> */}
               <div>
                 <span className="font-semibold blue-text">Funded Fee:</span>{" "}
                 <span className="text-gray-700">
-                  {Number(selectedPlan.fundedFee).toLocaleString("en-US", {
+                  {Number(getCurrentPlan().fundedFee).toLocaleString("en-US", {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}
@@ -975,7 +982,7 @@ const ProjectBudgetStatus = () => {
               <div>
                 <span className="font-semibold blue-text">Funded Cost:</span>{" "}
                 <span className="text-gray-700">
-                  {Number(selectedPlan.fundedCost).toLocaleString("en-US", {
+                  {Number(getCurrentPlan().fundedCost).toLocaleString("en-US", {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}
@@ -984,7 +991,7 @@ const ProjectBudgetStatus = () => {
               <div>
                 <span className="font-semibold blue-text">Funded Rev:</span>{" "}
                 <span className="text-gray-700">
-                  {Number(selectedPlan.fundedRev).toLocaleString("en-US", {
+                  {Number(getCurrentPlan().fundedRev).toLocaleString("en-US", {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}
@@ -993,7 +1000,7 @@ const ProjectBudgetStatus = () => {
               <div>
                 <span className="font-semibold blue-text">Revenue:</span>{" "}
                 <span className="text-gray-700">
-                  {Number(selectedPlan.revenue || 0).toLocaleString("en-US", {
+                  {Number(getCurrentPlan().revenue || 0).toLocaleString("en-US", {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}
@@ -1003,7 +1010,7 @@ const ProjectBudgetStatus = () => {
                 <span className="font-semibold blue-text">Backlog:</span>{" "}
                 <span className="text-gray-700">
                   {Number(
-                    (selectedPlan.revenue || 0) - (selectedPlan.fundedCost || 0)
+                    (getCurrentPlan().revenue || 0) - (getCurrentPlan().fundedCost || 0)
                   ).toLocaleString("en-US", {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,

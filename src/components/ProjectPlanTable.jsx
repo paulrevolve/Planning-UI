@@ -3201,6 +3201,15 @@ const ProjectPlanTable = forwardRef(
     }
   };
 
+  useEffect(() => {
+  if (selectedPlan && plans.length > 0) {
+    const freshPlan = getCurrentPlan();  // Latest from plans[]
+    if (freshPlan && typeof onPlanSelect === 'function') {
+      onPlanSelect(freshPlan);  // Always sync - safe, no loops
+    }
+  }
+}, [refreshKey, plans]);
+
     const handleDateCellChange = (plId, dateColumn, value) => {
       const dateType =
         dateColumn === "projectStartDate" ? "startDate" : "endDate";
