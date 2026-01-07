@@ -958,6 +958,7 @@ const handleSaveHeaderDatesClick = async () => {
 //     }
 //   }
 // };
+
 // single
 
 const handleCheckboxChange = async (idx, field) => {
@@ -1016,13 +1017,13 @@ const handleCheckboxChange = async (idx, field) => {
           p.projId === updated.projId
       ).length;
 
-      if (inProgressCount > 0 && updated.status === "In Progress") {
-        toast.error(
-          `Only one ${isEAC ? "EAC" : "BUD"} plan can have In Progress status at a time.`,
-          { toastId: "checkbox-error" }
-        );
-        return currentPlans;
-      }
+      // if (inProgressCount > 0 && updated.status === "In Progress") {
+      //   toast.error(
+      //     `Only one ${isEAC ? "EAC" : "BUD"} plan can have In Progress status at a time.`,
+      //     { toastId: "checkbox-error" }
+      //   );
+      //   return currentPlans;
+      // }
     }
 
     if (field === "finalVersion" && updated.finalVersion) {
@@ -1037,16 +1038,16 @@ const handleCheckboxChange = async (idx, field) => {
       newPlans = currentPlans.map((p, i) => (i === idx ? updated : p));
     }
 
-    if (updated.status === "In Progress") {
-      newPlans = newPlans.map((p, i) =>
-        i !== idx &&
-        p.status === "In Progress" &&
-        p.plType === updated.plType &&
-        p.projId === updated.projId
-          ? { ...p, status: "Submitted", isCompleted: true }
-          : p
-      );
-    }
+    // if (updated.status === "In Progress") {
+    //   newPlans = newPlans.map((p, i) =>
+    //     i !== idx &&
+    //     p.status === "In Progress" &&
+    //     p.plType === updated.plType &&
+    //     p.projId === updated.projId
+    //       ? { ...p, status: "Submitted", isCompleted: true }
+    //       : p
+    //   );
+    // }
 
     // also keep onPlanSelect behavior
     if (typeof onPlanSelect === "function") onPlanSelect(updated);
@@ -1056,6 +1057,8 @@ const handleCheckboxChange = async (idx, field) => {
 
     return newPlans;
   });
+
+  
   
     const updated = updatedRef.current || plan;
 
@@ -1098,6 +1101,7 @@ const handleCheckboxChange = async (idx, field) => {
       }
     }
   };
+
 
   // const handleVersionCodeChange = async (plId, value) => {
   //   const prevPlans = [...plans];

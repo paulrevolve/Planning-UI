@@ -103,22 +103,34 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
   //   return dateString.split("T")[0];
   // };
 
+  // const formatDate = (dateString) => {
+  //   if (!dateString) return "";
+
+  //   // Extract YYYY-MM-DD from ISO string
+  //   const datePart = dateString.split("T")[0]; // "2025-12-01"
+
+  //   // Parse to Date object
+  //   const date = new Date(datePart);
+
+  //   // Format as MM/DD/YYYY (full year)
+  //   const month = String(date.getMonth() + 1).padStart(2, "0");
+  //   const day = String(date.getDate()).padStart(2, "0");
+  //   const year = date.getFullYear(); // Full 2025, not .slice(-2)
+
+  //   return `${month}/${day}/${year}`; // "12/01/2025"
+  // };
   const formatDate = (dateString) => {
-    if (!dateString) return "";
-
-    // Extract YYYY-MM-DD from ISO string
-    const datePart = dateString.split("T")[0]; // "2025-12-01"
-
-    // Parse to Date object
-    const date = new Date(datePart);
-
-    // Format as MM/DD/YYYY (full year)
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const year = date.getFullYear(); // Full 2025, not .slice(-2)
-
-    return `${month}/${day}/${year}`; // "12/01/2025"
-  };
+  if (!dateString) return "N/A";
+  
+  // Remove 'T' and everything after it
+  const cleanDate = dateString.split('T')[0]; // "2023-03-01T00:00:00" → "2023-03-01"
+  
+  // Split YYYY-MM-DD → [2023, 03, 01]
+  const [year, month, day] = cleanDate.split('-');
+  
+  // Return MM/DD/YYYY
+  return `${month}/${day}/${year}`;
+};
 
   // Move the function OUTSIDE useEffect and add useCallback
   const fetchBillingRates = useCallback(async () => {
@@ -2559,73 +2571,96 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
                 </tr>
               )}
 
-              {billingRatesSchedule.map((item, idx) => (
-                <tr
-                  key={item.id}
-                  className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                >
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4"
-                      checked={!!selectedRows[item.id]}
-                      onChange={() => {
-                        setSelectedRows((prev) => ({
-                          ...prev,
-                          [item.id]: !prev[item.id],
-                        }));
-                      }}
-                    />
-                  </td>
-
-                  <td className="px-3 py-2 border-b border-gray-200 text-gray-900">
-                    {item.plc}
-                  </td>
-
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editedBillRates[item.id] ?? item.billRate}
-                        onChange={(e) =>
-                          setEditedBillRates((prev) => ({
-                            ...prev,
-                            [item.id]: e.target.value,
-                          }))
-                        }
-                        onBlur={() => {
-                          const raw = editedBillRates[item.id] ?? item.billRate;
-                          const num = parseFloat(raw.replace(/,/g, ""));
-                          if (!isNaN(num)) {
-                            setEditedBillRates((prev) => ({
-                              ...prev,
-                              [item.id]: num.toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }),
-                            }));
-                          }
-                        }}
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
-                      />
-                    ) : (
-                      <span>{item.billRate}</span>
-                    )}
-                  </td>
-
-                  <td className="px-3 py-2 border-b border-gray-200 text-gray-500">
-                    {item.rateType}
-                  </td>
-
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {item.startDate}
-                  </td>
-
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {item.endDate || ""}
+              {loadingPLC ? (
+                <tr>
+                  <td colSpan={PLC_EMPLOYEE_COLUMNS.length}>
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 mt-4">
+                        Loading...
+                      </span>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              ) : billingRatesSchedule.length === 0 && !newEmployeeRate ? (
+                <tr>
+                  <td
+                    colSpan="9"
+                    className="px-3 py-4 text-center text-gray-500"
+                  >
+                    No data available
+                  </td>
+                </tr>
+              ) : (
+                billingRatesSchedule.map((item, idx) => (
+                  <tr
+                    key={item.id}
+                    className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4"
+                        checked={!!selectedRows[item.id]}
+                        onChange={() => {
+                          setSelectedRows((prev) => ({
+                            ...prev,
+                            [item.id]: !prev[item.id],
+                          }));
+                        }}
+                      />
+                    </td>
+
+                    <td className="px-3 py-2 border-b border-gray-200 text-gray-900">
+                      {item.plc}
+                    </td>
+
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedBillRates[item.id] ?? item.billRate}
+                          onChange={(e) =>
+                            setEditedBillRates((prev) => ({
+                              ...prev,
+                              [item.id]: e.target.value,
+                            }))
+                          }
+                          onBlur={() => {
+                            const raw =
+                              editedBillRates[item.id] ?? item.billRate;
+                            const num = parseFloat(raw.replace(/,/g, ""));
+                            if (!isNaN(num)) {
+                              setEditedBillRates((prev) => ({
+                                ...prev,
+                                [item.id]: num.toLocaleString("en-US", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                }),
+                              }));
+                            }
+                          }}
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
+                        />
+                      ) : (
+                        <span>{item.billRate}</span>
+                      )}
+                    </td>
+
+                    <td className="px-3 py-2 border-b border-gray-200 text-gray-500">
+                      {item.rateType}
+                    </td>
+
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {item.startDate}
+                    </td>
+
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {item.endDate || ""}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -2925,11 +2960,13 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
 
               {loadingEmployee ? (
                 <tr>
-                  <td
-                    colSpan="9"
-                    className="px-3 py-4 text-center text-gray-500"
-                  >
-                    Loading...
+                  <td colSpan={PLC_EMPLOYEE_COLUMNS.length}>
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 mt-4">
+                        Loading...
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ) : employeeBillingRates.length === 0 && !newEmployeeRate ? (
@@ -3197,10 +3234,10 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
                       value={newVendorRate.vendorId || ""}
                       onChange={(e) => {
                         const rawValue = e.target.value;
-                        const [vId, empName] = rawValue.split(" - ")
-                         
+                        const [vId, empName] = rawValue.split(" - ");
+
                         const selectedVend = vendorEmployees.find(
-                          (v) => v.vendId === vId && v.employeeName === empName 
+                          (v) => v.vendId === vId && v.employeeName === empName
                         );
                         setNewVendorRate((prev) => ({
                           ...prev,
@@ -3346,69 +3383,91 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
                 </tr>
               )}
 
-              {vendorBillingRates.map((item, idx) => (
-                <tr
-                  key={item.id}
-                  className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                >
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4"
-                      checked={!!selectedVendorRows[item.id]}
-                      onChange={() =>
-                        setSelectedVendorRows((prev) => ({
-                          ...prev,
-                          [item.id]: !prev[item.id],
-                        }))
-                      }
-                    />
-                  </td>
-
-                  <td className="px-3 py-2 border-b border-gray-200 text-gray-900">
-                    {item.vendorId}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {item.vendorName}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {item.vendorEmployee}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {item.vendorEmployeeName}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {item.plc}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {plcs.find((plc) => plc.laborCategoryCode === item.plc)
-                      ?.description || item.plcDescription}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {isVendorEditing ? (
-                      <input
-                        type="text"
-                        value={editVendorBillRate[item.id] ?? item.billRate}
-                        onChange={(e) =>
-                          handleVendorBillRateChange(item.id, e.target.value)
-                        }
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
-                      />
-                    ) : (
-                      <span>{item.billRate}</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200 text-gray-500">
-                    {item.rateType}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {item.startDate}
-                  </td>
-                  <td className="px-3 py-2 border-b border-gray-200">
-                    {item.endDate || ""}
+              {loadingVendor ? (
+                <tr>
+                  <td colSpan={PLC_VENDOR_COLUMNS.length}>
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 mt-4">
+                        Loading...
+                      </span>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              ) : vendorBillingRates.length === 0 && !newEmployeeRate ? (
+                <tr>
+                  <td
+                    colSpan="9"
+                    className="px-3 py-4 text-center text-gray-500"
+                  >
+                    No data available
+                  </td>
+                </tr>
+              ) : (
+                vendorBillingRates.map((item, idx) => (
+                  <tr
+                    key={item.id}
+                    className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4"
+                        checked={!!selectedVendorRows[item.id]}
+                        onChange={() =>
+                          setSelectedVendorRows((prev) => ({
+                            ...prev,
+                            [item.id]: !prev[item.id],
+                          }))
+                        }
+                      />
+                    </td>
+
+                    <td className="px-3 py-2 border-b border-gray-200 text-gray-900">
+                      {item.vendorId}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {item.vendorName}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {item.vendorEmployee}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {item.vendorEmployeeName}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {item.plc}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {plcs.find((plc) => plc.laborCategoryCode === item.plc)
+                        ?.description || item.plcDescription}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {isVendorEditing ? (
+                        <input
+                          type="text"
+                          value={editVendorBillRate[item.id] ?? item.billRate}
+                          onChange={(e) =>
+                            handleVendorBillRateChange(item.id, e.target.value)
+                          }
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
+                        />
+                      ) : (
+                        <span>{item.billRate}</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200 text-gray-500">
+                      {item.rateType}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {item.startDate}
+                    </td>
+                    <td className="px-3 py-2 border-b border-gray-200">
+                      {item.endDate || ""}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
