@@ -1451,7 +1451,7 @@ const handleActionSelect = async (idx, action) => {
 
     if (plan.status === "In Progress") options = ["None", "Delete"];
     else if (plan.status === "Submitted")
-      options = ["None", "Create Budget", "Create Blank Budget"];
+      options = ["None"];
     else if (plan.status === "Approved")
       options = [
         "None",
