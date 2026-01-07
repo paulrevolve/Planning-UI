@@ -6538,7 +6538,7 @@ const handlePasteMultipleRows = async () => {
 )} */}
 
       {employees.length === 0 && !showNewForm && sortedDurations.length > 0 ? (
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded text-xs">
+        <div className="  border border-yellow-400 text-yellow-700 px-4 py-3 rounded text-xs">
           No forecast data available for this plan.
         </div>
       ) : (
@@ -6606,7 +6606,7 @@ const handlePasteMultipleRows = async () => {
     <React.Fragment key={`pasted-duration-${entryIndex}`}>
       <tr
         key={`new-entry-${entryIndex}`}
-        className="bg-yellow-50"
+        className=" "
         style={{
           height: `${ROW_HEIGHT_DEFAULT}px`,
           lineHeight: "normal",
@@ -7161,7 +7161,7 @@ const handlePasteMultipleRows = async () => {
       <tr
         key={uniqueRowKey}
         className={`whitespace-nowrap hover:bg-blue-50 transition border-b border-gray-200 ${
-          isSelected ? "bg-blue-100" : selectedRowIndex === actualEmpIdx ? "bg-yellow-100" : "even:bg-gray-50"
+          isSelected ? "bg-blue-100" : selectedRowIndex === actualEmpIdx ? "" : "even:bg-gray-50"
         }`}
         style={{
           height: `${ROW_HEIGHT_DEFAULT}px`,
@@ -7725,7 +7725,7 @@ if (col.key === "orgName") {
                       return (  
                         <th
                           key={uniqueKey}
-                          className={`th-thead min-w-80px ${isColSelected ? "bg-yellow-100" : ""}`}
+                          className={`th-thead min-w-80px ${isColSelected ? " " : ""}`}
                           style={{ cursor: isEditable ? "pointer" : "default" }}
                           onClick={() => handleColumnHeaderClick(uniqueKey)}
                         >
@@ -7749,7 +7749,7 @@ if (col.key === "orgName") {
                     newEntries.map((entry, entryIndex) => (
                       <tr
                         key={`pasted-duration-${entryIndex}`}
-                        className="bg-yellow-50"
+                        className=""
                         style={{
                           height: `${ROW_HEIGHT_DEFAULT}px`,
                           lineHeight: "normal",
@@ -7832,7 +7832,7 @@ if (col.key === "orgName") {
                             selectedRows.has(actualEmpIdx)
                               ? "bg-blue-100" // Selected row background
                               : selectedRowIndex === actualEmpIdx
-                              ? "bg-yellow-100"
+                              ? " "
                               : "even:bg-gray-50"
                           }`}
                           style={{
@@ -7942,7 +7942,7 @@ if (col.key === "orgName") {
                                 className={`tbody-td min-w-[80px] ${
                                   /* Changed py-2 px-3 to px-2 py-1.5, min-w-[100px] to min-w-[80px] */
                                   selectedColumnKey === uniqueKey
-                                    ? "bg-yellow-100"
+                                    ? " "
                                     : ""
                                 } ${
                                   planType === "EAC"
@@ -7965,7 +7965,7 @@ if (col.key === "orgName") {
                                         match.empIdx === actualEmpIdx &&
                                         match.uniqueKey === uniqueKey
                                     )
-                                      ? "bg-yellow-200 border-yellow-500 border-2"
+                                      ? "  border-2"
                                       : ""
                                   }`}
                                   value={value}
