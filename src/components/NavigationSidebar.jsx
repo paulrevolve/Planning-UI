@@ -188,10 +188,12 @@ const NavigationSidebar = () => {
         pathname.includes("/dashboard/manage-users") ||
           pathname.includes("/dashboard/manage-groups")
       );
-    } else if (currentUserRole === "user") {
+    } else if (currentUserRole === "user" || currentUserRole === "User") {
       const isProjectBudget = pathname.includes(
         "/dashboard/project-budget-status"
-      );
+      ) ||
+          pathname.includes("/dashboard/project-report") ||
+          pathname.includes("/dashboard/mass-utility");
       setGeneralMenuOpen(isProjectBudget);
       setPlanningOpen(isProjectBudget);
       setConfigurationOpen(false);
@@ -351,6 +353,7 @@ const NavigationSidebar = () => {
               </div>
 
               {/* --- NEW BUSINESS BUDGET SECTION (NEW) --- */}
+               {currentUserRole === "admin" && (
               <div>
                 {!searchTerm && (
                   <div
@@ -399,6 +402,7 @@ const NavigationSidebar = () => {
                   </div>
                 )}
               </div>
+               )}
 
               {currentUserRole === "admin" && (
                 <div>

@@ -2359,7 +2359,7 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
                 </button>
                 <button
                   onClick={() => setNewRate(null)}
-                  className="bg-gray-500 cursor-pointer text-white px-3 py-1 rounded hover:bg-gray-600 transition text-xs font-normal flex items-center space-x-1"
+                  className="bg-[#17414d] cursor-pointer text-white px-3 py-1 rounded transition text-xs font-normal flex items-center space-x-1"
                   disabled={loading}
                   title="Cancel"
                 >
@@ -2699,7 +2699,7 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
                 </button>
                 <button
                   onClick={() => setNewEmployeeRate(null)}
-                  className="bg-gray-500 cursor-pointer text-white px-3 py-1 rounded hover:bg-gray-600 transition text-xs font-normal flex items-center space-x-1"
+                  className="bg-[#17414d] cursor-pointer text-white px-3 py-1 rounded transition text-xs font-normal flex items-center space-x-1"
                   disabled={loading}
                   title="Cancel"
                 >
@@ -3098,7 +3098,7 @@ const PLCComponent = ({ selectedProjectId, selectedPlan, showPLC }) => {
                 </button>
                 <button
                   onClick={() => setNewVendorRate(null)}
-                  className="bg-gray-500 cursor-pointer text-white px-3 py-1 rounded hover:bg-red-600 transition text-xs font-normal flex items-center space-x-1"
+                  className="bg-[#17414d] cursor-pointer text-white px-3 py-1 rounded transition text-xs font-normal flex items-center space-x-1"
                   disabled={loading}
                   title="Cancel"
                 >

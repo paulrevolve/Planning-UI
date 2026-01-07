@@ -4371,7 +4371,7 @@ const ProjectPlanTable = forwardRef(
                   )}
 
                   {/* Detail */}
-                  {selectedPlan && !isActionLoading && (
+                  {currentPlan && !isActionLoading &&  currentPlan?.plType && (
                     <button
                       onClick={() => {
                         if (!selectedPlan) return;
@@ -4385,7 +4385,7 @@ const ProjectPlanTable = forwardRef(
                   )}
 
                   {/* Monthly Forecast */}
-                  {selectedPlan && !isActionLoading && (
+                  {currentPlan && !isActionLoading &&  currentPlan?.plType && (
                     <button
                       onClick={() => {
                         if (!selectedPlan) return;
@@ -4926,7 +4926,9 @@ const ProjectPlanTable = forwardRef(
                                       e.target.value
                                     );
                                   }}
-                                  className="border border-blue-300 rounded px-1 py-0.5 text-xs bg-yellow-50 focus:border-blue-500 w-full text-center"
+                                  className={`rounded px-1 py-0.5 text-xs w-24 text-center ${
+                                  currentPlan.plType ? "": "bg-yellow-50 focus:border-blue-500 order border-blue-300" } `}
+                                  disabled={currentPlan.plType}
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               ) : (

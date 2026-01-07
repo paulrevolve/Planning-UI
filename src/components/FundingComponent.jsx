@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { backendUrl } from "./config";
 
-const FundingComponent = ({ selectedProjectId }) => {
+const FundingComponent = ({ selectedProjectId,selectedPlan }) => {
   const [fundingData, setFundingData] = useState([
     {
       label: "Cost Fee + Funding",
@@ -12,6 +12,7 @@ const FundingComponent = ({ selectedProjectId }) => {
     },
     { label: "Cost", funding: "", budget: "", balance: "", percent: "" },
   ]);
+const [loading,setLoading]= useState("false");
 
   // Font Styling consistent with your other components
   const geistSans = { fontFamily: "'Geist', 'Geist Fallback', sans-serif" };
@@ -26,11 +27,13 @@ const FundingComponent = ({ selectedProjectId }) => {
         maximumFractionDigits: 2,
       });
     };
+    
 
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await fetch(
-          `${backendUrl}/Project/GetFunding/${selectedProjectId}`
+          `${backendUrl}/Project/GetFundingV1/${selectedProjectId}?plid=${selectedPlan}`
         );
         let data = await response.json();
 
@@ -42,26 +45,33 @@ const FundingComponent = ({ selectedProjectId }) => {
         }));
 
         setFundingData([
-          { label: "Cost Fee + Funding", ...roundedData[0] },
           { label: "Cost", ...roundedData[1] },
+          { label: "Fee", ...roundedData[2] },
+          { label: "Total Funding", ...roundedData[0] },
         ]);
+        
       } catch (error) {
         setFundingData([
           {
-            label: "Cost Fee + Funding",
+            label: "Cost ",
             funding: "",
             budget: "",
             balance: "",
             percent: "",
           },
-          { label: "Cost", funding: "", budget: "", balance: "", percent: "" },
-            // {
-            //   funding: "",
-            //   budget: "",
-            //   balance: "",
-            //   percent: "",
-            // },
+          { label: "Fee", funding: "", budget: "", balance: "", percent: "" },
+            {
+              label: "Total Funding",
+              funding: "",
+              budget: "",
+              balance: "",
+              percent: "",
+            },
         ]);
+         
+      }
+      finally{
+        setLoading(false)
       }
     };
 
@@ -71,9 +81,18 @@ const FundingComponent = ({ selectedProjectId }) => {
   }, [selectedProjectId]);
 
   return (
-    <div className="border-line overflow-hidden" style={geistSans}>
+    <div className="border border-gray-200 rounded overflow-hidden" style={geistSans}>
+       {loading ? 
+       (<div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 mt-2">
+                        Loading...
+                      </span>
+                    </div>
+       ) : (
+
       <table className="w-full table">
-        <thead className="thead">
+        <thead className="thead h-8">
           <tr>
             <th className="th-thead" style={geistSans}></th>
             <th className="th-thead" style={geistSans}>Funded</th>
@@ -94,6 +113,7 @@ const FundingComponent = ({ selectedProjectId }) => {
           ))}
         </tbody>
       </table>
+  )}
     </div>
   );
 };

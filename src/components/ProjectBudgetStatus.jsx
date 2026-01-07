@@ -2262,7 +2262,7 @@ const getCurrentPlan = () => {
               </div>
               <FundingComponent
                 selectedProjectId={selectedPlan.projId}
-                selectedPlan={selectedPlan}
+                selectedPlan={selectedPlan.plId}
               />
             </div>
           )}
