@@ -593,16 +593,289 @@
 
 // export default Opportunities;
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaFileExcel, FaFileImport, FaTable, FaFileExport } from 'react-icons/fa';
-import * as XLSX from 'xlsx'; 
-import moment from 'moment'; 
+// Version 2 Below with New Format
 
-// --- CONFIGURATION CONSTANTS ---
+
+// import React, { useState, useEffect, useCallback, useRef } from 'react';
+// import { FaFileExcel, FaFileImport, FaTable, FaFileExport } from 'react-icons/fa';
+// import * as XLSX from 'xlsx'; 
+// import moment from 'moment'; 
+
+// // --- CONFIGURATION CONSTANTS ---
+// const BATCH_SIZE = 25; 
+
+// // 1. UPDATED COLUMN MAPPING: B to AC (Index 1 to 28)
+// // B & C Merged = Index 1
+// const EXPECTED_COLUMNS = [
+//     { index: 1, field: 'year', header: 'Year' },
+//     { index: 3, field: 'revProjName', header: 'Revenue Projection Name' },
+//     { index: 4, field: 'growthOppName', header: 'Growth Opp Name' },
+//     { index: 5, field: 'stage', header: 'Stage' },
+//     { index: 6, field: 'customer', header: 'Customer' },
+//     { index: 7, field: 'type', header: 'Type' },
+//     { index: 8, field: 'role', header: 'Our Role' },
+//     { index: 9, field: 'workshare', header: 'Our Workshare %' },
+//     { index: 10, field: 'startDate', header: 'Start Date' },
+//     { index: 11, field: 'endDate', header: 'Estimated End Date' },
+//     { index: 12, field: 'contractValue', header: 'Our Contract Value' },
+//     { index: 13, field: 'contractType', header: 'Contract Type(s)' },
+//     { index: 14, field: 'pgoCalc', header: 'PGO Calculation' },
+//     { index: 15, field: 'pwin', header: 'Pwin Value' },
+//     // Monthly Factored Columns
+//     { index: 16, field: 'jan', header: 'January (Factored)' },
+//     { index: 17, field: 'feb', header: 'February (Factored)' },
+//     { index: 18, field: 'mar', header: 'March (Factored)' },
+//     { index: 19, field: 'apr', header: 'April (Factored)' },
+//     { index: 20, field: 'may', header: 'May (Factored)' },
+//     { index: 21, field: 'jun', header: 'June (Factored)' },
+//     { index: 22, field: 'jul', header: 'July (Factored)' },
+//     { index: 23, field: 'aug', header: 'August (Factored)' },
+//     { index: 24, field: 'sep', header: 'September (Factored)' },
+//     { index: 25, field: 'oct', header: 'October (Factored)' },
+//     { index: 26, field: 'nov', header: 'November (Factored)' },
+//     { index: 27, field: 'dec', header: 'December (Factored)' },
+//     { index: 28, field: 'yearlyTotal', header: 'Yearly (Factored) Total' },
+// ];
+
+// const BASE_HEADERS = EXPECTED_COLUMNS.map(col => col.header);
+
+// const Opportunities = () => {
+//     const [rawData, setRawData] = useState(null); 
+//     const [opportunityData, setOpportunityData] = useState([]); 
+//     const [isImporting, setIsImporting] = useState(false);
+//     const [isCalculating, setIsCalculating] = useState(false); 
+//     const [dynamicHeaders, setDynamicHeaders] = useState(BASE_HEADERS);
+    
+//     const [calculationState, setCalculationState] = useState({
+//         results: [],
+//         currentIndex: 0,
+//         total: 0
+//     });
+
+//     const fileInputRef = useRef(null);
+
+//     // --- BATCH PROCESSOR (Direct Data Mapping) ---
+//     const processBatch = useCallback((data, state) => {
+//         if (state.currentIndex >= data.length) {
+//             setOpportunityData(state.results);
+//             setDynamicHeaders(BASE_HEADERS);
+//             setRawData(null); 
+//             setIsCalculating(false);
+//             return;
+//         }
+
+//         const batchEndIndex = Math.min(state.currentIndex + BATCH_SIZE, data.length);
+//         const newResults = [...state.results];
+
+//         for (let i = state.currentIndex; i < batchEndIndex; i++) {
+//             const rowArr = data[i];
+//             const mappedRow = { id: `row-${i}-${Date.now()}` };
+            
+//             // Directly map Excel indices to field names
+//             EXPECTED_COLUMNS.forEach(col => {
+//                 mappedRow[col.field] = rowArr[col.index];
+//             });
+
+//             newResults.push(mappedRow);
+//         }
+
+//         const nextState = {
+//             results: newResults,
+//             total: state.total,
+//             currentIndex: batchEndIndex
+//         };
+        
+//         setCalculationState(nextState);
+//         setTimeout(() => processBatch(data, nextState), 5); 
+//     }, []);
+
+//     // --- TRIGGER PROCESSING ---
+//     useEffect(() => {
+//         if (!rawData) return;
+//         setIsCalculating(true);
+        
+//         const initialState = {
+//             results: [],
+//             total: rawData.length,
+//             currentIndex: 0
+//         };
+//         setCalculationState(initialState);
+//         processBatch(rawData, initialState);
+//     }, [rawData, processBatch]); 
+
+//     // --- FILE HANDLER ---
+//     const handleFileChange = useCallback((event) => {
+//         const file = event.target.files[0];
+//         if (!file) return;
+
+//         setIsImporting(true);
+//         const reader = new FileReader();
+
+//         reader.onload = (e) => {
+//             try {
+//                 const data = new Uint8Array(e.target.result);
+//                 const workbook = XLSX.read(data, { type: 'array' }); 
+//                 const importedData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, raw: true });
+
+//                 // Skip 9 rows (Header is row 10, Data starts at row 11)
+//                 if (importedData.length <= 10) {
+//                     alert("Import failed: No data rows found starting from row 11.");
+//                     return;
+//                 }
+
+//                 const dataRows = importedData.slice(10); 
+//                 setRawData(dataRows); 
+                
+//             } catch (error) {
+//                 console.error("Error parsing file:", error);
+//                 alert("Import failed. Please check the file format.");
+//             } finally {
+//                 setIsImporting(false); 
+//             }
+//         };
+//         reader.readAsArrayBuffer(file);
+//     }, []);
+
+//     // --- VALUE FORMATTER ---
+//     const formatValue = (field, value) => {
+//         if (value === undefined || value === null || value === "") return "-";
+
+//         // Handle Date Fields
+//         if ((field === 'startDate' || field === 'endDate') && typeof value === 'number') {
+//             const date = XLSX.SSF.parse_date_code(value);
+//             return `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
+//         }
+
+//         // Handle Currency Fields (Contract Value, Monthly Totals, Yearly Total)
+//         const currencyFields = ['contractValue', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'yearlyTotal'];
+//         if (currencyFields.includes(field)) {
+//             const num = parseFloat(value);
+//             return !isNaN(num) ? `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : value;
+//         }
+
+//         // Handle Percentage Fields
+//         if (field === 'workshare' || field === 'pwin') {
+//             const num = parseFloat(value);
+//             if (!isNaN(num)) {
+//                 return num <= 1 ? `${(num * 100).toFixed(1)}%` : `${num.toFixed(1)}%`;
+//             }
+//         }
+
+//         return value;
+//     };
+
+//     const handleExportToExcel = () => {
+//         const ws = XLSX.utils.json_to_sheet(opportunityData.map(opp => {
+//             const row = {};
+//             EXPECTED_COLUMNS.forEach(col => {
+//                 row[col.header] = opp[col.field];
+//             });
+//             return row;
+//         }));
+//         const wb = XLSX.utils.book_new();
+//         XLSX.utils.book_append_sheet(wb, ws, "Opportunities");
+//         XLSX.writeFile(wb, `Opportunities_Export_${moment().format('YYYYMMDD')}.xlsx`);
+//     };
+
+//     const handleImportClick = () => fileInputRef.current?.click();
+
+//     const isLoading = isImporting || isCalculating;
+
+//     return (
+//         <div className="p-8 space-y-8 max-w-full mx-auto bg-gray-50/70 backdrop-blur-sm min-h-screen">
+//             <h1 className="text-4xl font-extrabold text-gray-900 border-b-2 border-blue-500 pb-4">✨ Revenue Projection Viewer</h1>
+            
+//             {/* --- Import Panel --- */}
+//             <div className="bg-white p-6 rounded-xl shadow-xl border border-gray-100 flex justify-between items-center">
+//                 <div className="flex items-center space-x-4">
+//                     <FaFileExcel className="w-8 h-8 text-green-600" />
+//                     <span className="text-lg font-semibold text-gray-700">
+//                         {isCalculating 
+//                             ? `Loading Rows (${calculationState.currentIndex} / ${calculationState.total})...`
+//                             : "Upload Revenue Projection Excel"}
+//                     </span>
+//                 </div>
+
+//                 <div className="flex space-x-3">
+//                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".xlsx, .xls" style={{ display: 'none' }} disabled={isLoading} />
+                    
+//                     <button
+//                         onClick={handleExportToExcel}
+//                         className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 border border-gray-300 disabled:opacity-50"
+//                         disabled={isLoading || opportunityData.length === 0}
+//                     >
+//                         <FaFileExport className="w-4 h-4 text-blue-600" /> Export
+//                     </button>
+
+//                     <button
+//                         onClick={handleImportClick}
+//                         className="flex items-center gap-2 px-6 py-3 text-lg font-bold text-white bg-gradient-to-r from-green-500 to-green-600 rounded-xl hover:from-green-600 hover:to-green-700 shadow-lg transition-all disabled:opacity-50"
+//                         disabled={isLoading}
+//                     >
+//                         {isLoading ? (
+//                             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+//                         ) : (
+//                             <><FaFileImport className="w-5 h-5" /> Import Excel</>
+//                         )}
+//                     </button>
+//                 </div>
+//             </div>
+            
+//             {/* --- Table --- */}
+//             <div className="bg-white p-8 rounded-2xl shadow-2xl border border-gray-100">
+//                 <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center"><FaTable className="w-6 h-6 mr-3 text-red-600" /> Projection Data ({opportunityData.length} records)</h2>
+                
+//                 {opportunityData.length === 0 && !isCalculating ? (
+//                     <div className="text-center py-20 text-xl text-gray-500 bg-gray-50 rounded-lg border-dashed border-2 border-gray-300">
+//                         Upload the Excel file to view the data from Row 11 onwards.
+//                     </div>
+//                 ) : (
+//                     <div className="overflow-x-auto border border-gray-200 rounded-lg max-h-[70vh]">
+//                         <table className="min-w-full divide-y divide-gray-200">
+//                             <thead className="bg-gray-100 sticky top-0 z-10">
+//                                 <tr>
+//                                     {dynamicHeaders.map((header, idx) => (
+//                                         <th key={idx} className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200 whitespace-nowrap bg-blue-50">
+//                                             {header}
+//                                         </th>
+//                                     ))}
+//                                 </tr>
+//                             </thead>
+//                             <tbody className="bg-white divide-y divide-gray-200">
+//                                 {opportunityData.map((opp, idx) => (
+//                                     <tr key={opp.id} className="hover:bg-blue-50/30 transition">
+//                                         {EXPECTED_COLUMNS.map((col, colIdx) => (
+//                                             <td key={colIdx} className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100">
+//                                                 {formatValue(col.field, opp[col.field])}
+//                                             </td>
+//                                         ))}
+//                                     </tr>
+//                                 ))}
+//                             </tbody>
+//                         </table>
+//                     </div>
+//                 )}
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default Opportunities; 
+
+
+////////////////////////////////////////////
+
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { 
+    FaFileExcel, FaFileImport, FaTable, FaSearch, FaCheckCircle, 
+    FaExclamationTriangle, FaCloudUploadAlt, FaBan, FaSort, FaSortUp, FaSortDown 
+} from 'react-icons/fa';
+import * as XLSX from 'xlsx'; 
+import { backendUrl } from './config'; 
+import { toast } from 'react-toastify';
+
 const BATCH_SIZE = 25; 
 
-// 1. UPDATED COLUMN MAPPING: B to AC (Index 1 to 28)
-// B & C Merged = Index 1
 const EXPECTED_COLUMNS = [
     { index: 1, field: 'year', header: 'Year' },
     { index: 3, field: 'revProjName', header: 'Revenue Projection Name' },
@@ -618,7 +891,6 @@ const EXPECTED_COLUMNS = [
     { index: 13, field: 'contractType', header: 'Contract Type(s)' },
     { index: 14, field: 'pgoCalc', header: 'PGO Calculation' },
     { index: 15, field: 'pwin', header: 'Pwin Value' },
-    // Monthly Factored Columns
     { index: 16, field: 'jan', header: 'January (Factored)' },
     { index: 17, field: 'feb', header: 'February (Factored)' },
     { index: 18, field: 'mar', header: 'March (Factored)' },
@@ -634,224 +906,255 @@ const EXPECTED_COLUMNS = [
     { index: 28, field: 'yearlyTotal', header: 'Yearly (Factored) Total' },
 ];
 
-const BASE_HEADERS = EXPECTED_COLUMNS.map(col => col.header);
-
 const Opportunities = () => {
+    // --- States ---
     const [rawData, setRawData] = useState(null); 
     const [opportunityData, setOpportunityData] = useState([]); 
     const [isImporting, setIsImporting] = useState(false);
     const [isCalculating, setIsCalculating] = useState(false); 
-    const [dynamicHeaders, setDynamicHeaders] = useState(BASE_HEADERS);
-    
-    const [calculationState, setCalculationState] = useState({
-        results: [],
-        currentIndex: 0,
-        total: 0
+    const [isVerifying, setIsVerifying] = useState(false); 
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [syncProgress, setSyncProgress] = useState(0);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+    const [verificationSummary, setVerificationSummary] = useState({
+        duplicates: [], 
+        isVerified: false
     });
 
+    const [calculationState, setCalculationState] = useState({ results: [], currentIndex: 0, total: 0 });
     const fileInputRef = useRef(null);
 
-    // --- BATCH PROCESSOR (Direct Data Mapping) ---
+    // --- Sorting Logic ---
+    const sortedData = useMemo(() => {
+        let sortableItems = [...opportunityData];
+        if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                const aVal = a[sortConfig.key] ?? '';
+                const bVal = b[sortConfig.key] ?? '';
+                
+                if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [opportunityData, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    // --- Batch Processor ---
     const processBatch = useCallback((data, state) => {
         if (state.currentIndex >= data.length) {
             setOpportunityData(state.results);
-            setDynamicHeaders(BASE_HEADERS);
             setRawData(null); 
             setIsCalculating(false);
             return;
         }
-
         const batchEndIndex = Math.min(state.currentIndex + BATCH_SIZE, data.length);
         const newResults = [...state.results];
 
         for (let i = state.currentIndex; i < batchEndIndex; i++) {
             const rowArr = data[i];
             const mappedRow = { id: `row-${i}-${Date.now()}` };
-            
-            // Directly map Excel indices to field names
             EXPECTED_COLUMNS.forEach(col => {
                 mappedRow[col.field] = rowArr[col.index];
             });
-
             newResults.push(mappedRow);
         }
 
-        const nextState = {
-            results: newResults,
-            total: state.total,
-            currentIndex: batchEndIndex
-        };
-        
+        const nextState = { results: newResults, total: state.total, currentIndex: batchEndIndex };
         setCalculationState(nextState);
         setTimeout(() => processBatch(data, nextState), 5); 
     }, []);
 
-    // --- TRIGGER PROCESSING ---
     useEffect(() => {
         if (!rawData) return;
         setIsCalculating(true);
-        
-        const initialState = {
-            results: [],
-            total: rawData.length,
-            currentIndex: 0
-        };
+        const initialState = { results: [], total: rawData.length, currentIndex: 0 };
         setCalculationState(initialState);
         processBatch(rawData, initialState);
     }, [rawData, processBatch]); 
 
-    // --- FILE HANDLER ---
-    const handleFileChange = useCallback((event) => {
-        const file = event.target.files[0];
-        if (!file) return;
+    // --- Verification (Only RP-) ---
+    const handleVerifyExistence = async () => {
+        if (opportunityData.length === 0) return;
+        setIsVerifying(true);
+        try {
+            const localRpItems = opportunityData.filter(item => 
+                item.revProjName && item.revProjName.toString().startsWith("RP-")
+            );
+            const uniqueRpNames = [...new Set(localRpItems.map(item => item.revProjName))];
+            const response = await fetch(`${backendUrl}/GetAllNewBusiness`);
+            const apiData = await response.json();
+            const systemIds = new Set(apiData.map(item => item.businessBudgetId));
+            const duplicatesFound = uniqueRpNames.filter(name => systemIds.has(name));
 
-        setIsImporting(true);
-        const reader = new FileReader();
+            setVerificationSummary({ duplicates: duplicatesFound, isVerified: true });
+            toast.success(`Verified: ${localRpItems.length}  items processed. Found ${duplicatesFound.length} existing.`);
+        } catch (error) {
+            toast.error("Verification failed.");
+        } finally { setIsVerifying(false); }
+    };
 
-        reader.onload = (e) => {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' }); 
-                const importedData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, raw: true });
-
-                // Skip 9 rows (Header is row 10, Data starts at row 11)
-                if (importedData.length <= 10) {
-                    alert("Import failed: No data rows found starting from row 11.");
-                    return;
+    // --- Sync (Only RP-) ---
+    const handleSyncToSystem = async () => {
+        const eligibleItems = opportunityData.filter(row => 
+            row.revProjName?.toString().startsWith("RP-") && 
+            !verificationSummary.duplicates.includes(row.revProjName)
+        );
+        if (eligibleItems.length === 0) return toast.info("No new eligible records.");
+        
+        setIsSyncing(true);
+        try {
+            for (let i = 0; i < eligibleItems.length; i++) {
+                const row = eligibleItems[i];
+                const res = await fetch(`${backendUrl}/api/projects/upsert`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        revProjName: row.revProjName,
+                        customer: row.customer,
+                        stage: row.stage,
+                        startDate: row.startDate,
+                        endDate: row.endDate,
+                        contractValue: row.contractValue,
+                        workshare: row.workshare
+                    })
+                });
+                if (res.ok) {
+                    const result = await res.json();
+                    await fetch(`${backendUrl}/api/projections/entries`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            projectId: result.id,
+                            year: row.year,
+                            monthlyData: {
+                                jan: row.jan, feb: row.feb, mar: row.mar, apr: row.apr,
+                                may: row.may, jun: row.jun, jul: row.jul, aug: row.aug,
+                                sep: row.sep, oct: row.oct, nov: row.nov, dec: row.dec
+                            }
+                        })
+                    });
                 }
-
-                const dataRows = importedData.slice(10); 
-                setRawData(dataRows); 
-                
-            } catch (error) {
-                console.error("Error parsing file:", error);
-                alert("Import failed. Please check the file format.");
-            } finally {
-                setIsImporting(false); 
+                setSyncProgress(Math.round(((i + 1) / eligibleItems.length) * 100));
             }
+            toast.success("Import Complete!");
+        } catch (err) { toast.error("Sync error."); } finally { setIsSyncing(false); }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setIsImporting(true);
+        setVerificationSummary({ duplicates: [], isVerified: false });
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const imported = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, raw: true });
+            setRawData(imported.slice(10)); 
+            setIsImporting(false);
         };
         reader.readAsArrayBuffer(file);
-    }, []);
-
-    // --- VALUE FORMATTER ---
-    const formatValue = (field, value) => {
-        if (value === undefined || value === null || value === "") return "-";
-
-        // Handle Date Fields
-        if ((field === 'startDate' || field === 'endDate') && typeof value === 'number') {
-            const date = XLSX.SSF.parse_date_code(value);
-            return `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
-        }
-
-        // Handle Currency Fields (Contract Value, Monthly Totals, Yearly Total)
-        const currencyFields = ['contractValue', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'yearlyTotal'];
-        if (currencyFields.includes(field)) {
-            const num = parseFloat(value);
-            return !isNaN(num) ? `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : value;
-        }
-
-        // Handle Percentage Fields
-        if (field === 'workshare' || field === 'pwin') {
-            const num = parseFloat(value);
-            if (!isNaN(num)) {
-                return num <= 1 ? `${(num * 100).toFixed(1)}%` : `${num.toFixed(1)}%`;
-            }
-        }
-
-        return value;
     };
 
-    const handleExportToExcel = () => {
-        const ws = XLSX.utils.json_to_sheet(opportunityData.map(opp => {
-            const row = {};
-            EXPECTED_COLUMNS.forEach(col => {
-                row[col.header] = opp[col.field];
-            });
-            return row;
-        }));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Opportunities");
-        XLSX.writeFile(wb, `Opportunities_Export_${moment().format('YYYYMMDD')}.xlsx`);
+    // Helper for rendering sort icons
+    const getSortIcon = (columnField) => {
+        if (sortConfig.key !== columnField) return <FaSort className="ml-2 text-gray-400" />;
+        return sortConfig.direction === 'asc' ? <FaSortUp className="ml-2 text-blue-600" /> : <FaSortDown className="ml-2 text-blue-600" />;
     };
-
-    const handleImportClick = () => fileInputRef.current?.click();
-
-    const isLoading = isImporting || isCalculating;
 
     return (
-        <div className="p-8 space-y-8 max-w-full mx-auto bg-gray-50/70 backdrop-blur-sm min-h-screen">
-            <h1 className="text-4xl font-extrabold text-gray-900 border-b-2 border-blue-500 pb-4">✨ Revenue Projection Viewer</h1>
+        <div className="p-8 space-y-8 max-w-full mx-auto bg-gray-50 min-h-screen">
+            <h1 className="text-3xl font-bold text-gray-800 border-b pb-4 flex items-center gap-3">
+                <FaTable className="text-blue-600" /> Opportunities
+            </h1>
             
-            {/* --- Import Panel --- */}
-            <div className="bg-white p-6 rounded-xl shadow-xl border border-gray-100 flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                    <FaFileExcel className="w-8 h-8 text-green-600" />
-                    <span className="text-lg font-semibold text-gray-700">
-                        {isCalculating 
-                            ? `Loading Rows (${calculationState.currentIndex} / ${calculationState.total})...`
-                            : "Upload Revenue Projection Excel"}
-                    </span>
+            <div className="bg-white p-6 rounded-xl shadow-lg flex justify-between items-center">
+                <div>
+                    <h3 className="text-lg font-bold text-gray-700">Data Management</h3>
+                    {/* <p className="text-sm text-gray-500 italic">Sorting enabled on all headers. Only "RP-" entries are importable.</p> */}
                 </div>
-
                 <div className="flex space-x-3">
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".xlsx, .xls" style={{ display: 'none' }} disabled={isLoading} />
-                    
-                    <button
-                        onClick={handleExportToExcel}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 border border-gray-300 disabled:opacity-50"
-                        disabled={isLoading || opportunityData.length === 0}
-                    >
-                        <FaFileExport className="w-4 h-4 text-blue-600" /> Export
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                    <button onClick={handleVerifyExistence} className="bg-amber-500 text-white px-5 py-2 rounded-lg font-bold hover:bg-amber-600 disabled:opacity-50" disabled={opportunityData.length === 0 || isVerifying}>
+                        {isVerifying ? "Verifying..." : "Verify Items"}
                     </button>
-
-                    <button
-                        onClick={handleImportClick}
-                        className="flex items-center gap-2 px-6 py-3 text-lg font-bold text-white bg-gradient-to-r from-green-500 to-green-600 rounded-xl hover:from-green-600 hover:to-green-700 shadow-lg transition-all disabled:opacity-50"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                        ) : (
-                            <><FaFileImport className="w-5 h-5" /> Import Excel</>
-                        )}
+                    <button onClick={handleSyncToSystem} className="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50" disabled={!verificationSummary.isVerified || isSyncing}>
+                        <FaCloudUploadAlt className="inline mr-2" /> Import New Items
+                    </button>
+                    <button onClick={() => fileInputRef.current?.click()} className="bg-green-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-green-700">
+                        <FaFileImport className="inline mr-2" /> Upload Excel
                     </button>
                 </div>
             </div>
+
+            {isSyncing && (
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="bg-blue-600 h-3 rounded-full transition-all" style={{ width: `${syncProgress}%` }}></div>
+                </div>
+            )}
             
-            {/* --- Table --- */}
-            <div className="bg-white p-8 rounded-2xl shadow-2xl border border-gray-100">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center"><FaTable className="w-6 h-6 mr-3 text-red-600" /> Projection Data ({opportunityData.length} records)</h2>
-                
-                {opportunityData.length === 0 && !isCalculating ? (
-                    <div className="text-center py-20 text-xl text-gray-500 bg-gray-50 rounded-lg border-dashed border-2 border-gray-300">
-                        Upload the Excel file to view the data from Row 11 onwards.
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto border border-gray-200 rounded-lg max-h-[70vh]">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-100 sticky top-0 z-10">
-                                <tr>
-                                    {dynamicHeaders.map((header, idx) => (
-                                        <th key={idx} className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200 whitespace-nowrap bg-blue-50">
-                                            {header}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {opportunityData.map((opp, idx) => (
-                                    <tr key={opp.id} className="hover:bg-blue-50/30 transition">
+            <div className="bg-white p-6 rounded-xl shadow-lg">
+                <div className="overflow-x-auto border rounded-lg max-h-[60vh]">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50 sticky top-0 z-10">
+                            <tr>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase bg-blue-50 border-r">Status</th>
+                                {EXPECTED_COLUMNS.map((col, idx) => (
+                                    <th 
+                                        key={idx} 
+                                        onClick={() => requestSort(col.field)}
+                                        className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase bg-blue-50 border-r whitespace-nowrap cursor-pointer hover:bg-blue-100 transition-colors"
+                                    >
+                                        <div className="flex items-center">
+                                            {col.header}
+                                            {getSortIcon(col.field)}
+                                        </div>
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {sortedData.map((opp) => {
+                                const startsWithRP = opp.revProjName?.toString().startsWith("RP-");
+                                const isDuplicate = verificationSummary.duplicates.includes(opp.revProjName);
+                                
+                                let rowClass = "hover:bg-gray-50";
+                                let statusText = <span className="text-gray-400 font-normal italic">Display Only</span>;
+
+                                if (startsWithRP) {
+                                    if (isDuplicate) {
+                                        rowClass = "bg-red-50";
+                                        statusText = <span className="text-red-600 font-bold flex items-center gap-1"><FaBan /> Exists</span>;
+                                    } else {
+                                        rowClass = "bg-green-50/50";
+                                        statusText = <span className="text-green-600 font-bold flex items-center gap-1"><FaCheckCircle /> Eligible</span>;
+                                    }
+                                }
+
+                                return (
+                                    <tr key={opp.id} className={`${rowClass} transition`}>
+                                        <td className="px-4 py-3 text-xs border-r">{statusText}</td>
                                         {EXPECTED_COLUMNS.map((col, colIdx) => (
-                                            <td key={colIdx} className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100">
-                                                {formatValue(col.field, opp[col.field])}
+                                            <td key={colIdx} className={`px-4 py-3 text-sm border-r ${startsWithRP && col.field === 'revProjName' ? 'font-bold text-blue-800' : 'text-gray-600'}`}>
+                                                {opp[col.field] || "-"}
                                             </td>
                                         ))}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
