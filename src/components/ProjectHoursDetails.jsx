@@ -217,6 +217,8 @@ const ProjectHoursDetails = ({
   const [cachedProjectData, setCachedProjectData] = useState(null);
   const [cachedOrgData, setCachedOrgData] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+    const [allData, setAllData] = useState({})
+  
 
   const [showEmployeeSchedule, setShowEmployeeSchedule] = useState(false);
 
@@ -234,6 +236,23 @@ const ProjectHoursDetails = ({
   //     setFillStartDate(startDate);
   //     setFillEndDate(endDate);
   // }, [startDate, endDate]);
+
+    useEffect(() => {
+      const getAllData = async() => {
+        try {
+          const projectResponse = await axios.get(
+            `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
+          );
+          const projectData = Array.isArray(projectResponse.data)
+            ? projectResponse.data[0]
+            : projectResponse.data;
+          setAllData(projectData)
+        } catch (error) {
+          console.log(error)
+        }
+      }
+      getAllData()
+    }, [])
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -1030,9 +1049,6 @@ const ProjectHoursDetails = ({
 
     return updateAccountOptions.filter((acc) => acc.type === idType);
   };
-
-  // console.log(getTheAccountData('employee'))
-  console.log(updateAccountOptions)
 
   useEffect(() => {
     // const fetchEmployeesSuggestions = async () => {
@@ -4560,6 +4576,7 @@ const ProjectHoursDetails = ({
           ? orgResponse.data.map((org) => ({
               value: org.orgId,
               label: org.orgName,
+              name:org.orgName,
             }))
           : [];
         setCachedOrgData(orgOptions);
@@ -11228,6 +11245,10 @@ const handleFillValues = () => {
                                 const value = e.target.value;
                                 // const newId = value === "PLC" ? "PLC" : "";
                                 const newId = value === "PLC" ? "PLC" : value === "Other" ? "TBD" : "";
+                                const org_id =
+                                  value === "Other" ? allData.orgId : "";
+                                const org_Name =
+                                  value === "Other" ? allData.orgName : "";
                                 setNewEntries((prev) =>
                                   prev.map((ent, idx) =>
                                     idx === entryIndex
@@ -11243,12 +11264,12 @@ const handleFillValues = () => {
                                             laborAccounts.length > 0
                                               ? laborAccounts[0].id
                                               : "",
-                                          orgId: "",
+                                          orgId: org_id,
                                           plcGlcCode: "",
                                           plcGlcDes: "",
                                           perHourRate: "",
                                           status: "Act",
-                                          orgName: "",
+                                          orgName: org_Name,
                                           acctName: "",
                                         }
                                       : ent
@@ -11445,27 +11466,24 @@ const handleFillValues = () => {
                               type="text"
                               name="name"
                               value={
-                                // || planType === "NBBUD"
-                                entry.idType === "Other" 
+                                entry.idType === "Other" || planType === "NBBUD"
                                   ? entry.firstName || ""
                                   : entry.idType === "PLC"
                                     ? entry.firstName?.split(" - ")?.[1] 
-                                    : entry.idType === "Vendor" 
+                                    : entry.idType === "Vendor"
                                       ? entry.lastName || entry.firstName || ""
                                       : `${entry.lastName || ""} ${entry.firstName || ""}`.trim()
                               }
                               readOnly={
-                                // planType !== "NBBUD" &&
-                                 entry.idType !== "Other"
+                                planType !== "NBBUD" && entry.idType !== "Other"
                               }
                               onKeyDown={(e) =>
                                 e.key === " " && e.stopPropagation()
                               }
                               onChange={(e) => {
                                 if (
-                                  
-                                  //  ||planType === "NBBUD"
-                                  entry.idType === "Other"
+                                  entry.idType === "Other" ||
+                                  planType === "NBBUD"
                                 ) {
                                   const cleanValue = e.target.value.replace(
                                     /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
@@ -11489,9 +11507,8 @@ const handleFillValues = () => {
                                   );
                                 }
                               }}
-                              // || planType === "NBBUD" 
                               style={{ maxWidth: "90px" }}
-                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" ? "bg-white" : "bg-gray-100"}`}
+                              className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
                               // style={{
                               // }}
                               placeholder="Name"
@@ -11687,7 +11704,7 @@ const handleFillValues = () => {
                                 (org, index) => (
                                   <option
                                     key={index}
-                                    value={`${org.value} - ${org.label}`}
+                                    value={`${org.value} - ${org.name}`}
                                   ></option>
                                 )
                               )}

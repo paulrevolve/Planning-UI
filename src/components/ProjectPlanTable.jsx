@@ -2356,8 +2356,13 @@
 
 // export default ProjectPlanTable;
 
-import React, { useEffect, useState, useRef,  forwardRef,
-  useImperativeHandle,        } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -2423,6 +2428,7 @@ const ProjectPlanTable = forwardRef(
     const [budEacFilter, setBudEacFilter] = useState(false);
     const [showNewBusinessPopup, setShowNewBusinessPopup] = useState(false);
     const [editingDates, setEditingDates] = useState({});
+    const [allProjectPlans, setAllProjectPlans] = useState([]);
 
     const [manualProjectDates, setManualProjectDates] = useState({
       startDate: "",
@@ -2682,6 +2688,70 @@ const ProjectPlanTable = forwardRef(
         setManualProjectDates({ startDate: "", endDate: "" });
       }
     }, [filteredProjects, projectId]);
+
+    useEffect(() => {
+      const getAllPlans = async () => {
+        try {
+          const term = "";
+          const response = await axios.get(
+            `${backendUrl}/Project/GetProjectPlans/${userId}/${role}/${term}?status=${status}`
+          );
+
+          const transformedPlans = response.data.map((plan, idx) => ({
+            plId: plan.plId || plan.id || 0,
+            projId:
+              plan.fullProjectId ||
+              plan.projId ||
+              plan.project_id ||
+              plan.projectId ||
+              projectId,
+            projName: plan.projName || "",
+            plType:
+              plan.plType === "Budget"
+                ? "BUD"
+                : plan.plType === "EAC"
+                  ? "EAC"
+                  : plan.plType || "",
+            source: plan.source || "",
+            version: plan.version || 0,
+            versionCode: plan.versionCode || "",
+            finalVersion: !!plan.finalVersion,
+            isCompleted: !!plan.isCompleted,
+            isApproved: !!plan.isApproved,
+            status:
+              plan.plType && plan.version
+                ? (plan.status || "In Progress")
+                    .replace("Working", "In Progress")
+                    .replace("Completed", "Submitted")
+                : "",
+            closedPeriod: plan.closedPeriod || "",
+            templateId: plan.templateId || "",
+            createdAt: plan.createdAt || "",
+            updatedAt: plan.updatedAt || "",
+            modifiedBy: plan.modifiedBy || "",
+            approvedBy: plan.approvedBy || "",
+            createdBy: plan.createdBy || "",
+            // templateId: plan.templateId || 0,
+            projStartDt: plan.projStartDt || "",
+            projEndDt: plan.projEndDt || "",
+            orgId: plan.orgId || "",
+            fundedCost: plan.proj_f_cst_amt || "",
+            fundedFee: plan.proj_f_fee_amt || "",
+            fundedRev: plan.proj_f_tot_amt || "",
+            revenueAccount: plan.revenueAccount || "",
+            Rev: plan.revenue || plan.Rev || "",
+            revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
+          }));
+
+          const sortedPlans = sortPlansByProjIdPlTypeVersion(transformedPlans);
+
+          setAllProjectPlans(sortedPlans);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      getAllPlans();
+    }, []);
 
     const fetchPlans = async () => {
       if (!searched && projectId.trim() === "") {
@@ -3164,51 +3234,51 @@ const ProjectPlanTable = forwardRef(
     //     if (typeof onPlanSelect === "function") onPlanSelect(updatedPlan);
     //   }
     // };
-    
+
     const handleRowClick = (plan, tempDates = manualProjectDates) => {
-    // 1. Calculate effective dates (Logic preserved)
-    const isDateMissing =
-      filteredProjects.length > 0 &&
-      !(filteredProjects[0].startDate || filteredProjects[0].projStartDt);
+      // 1. Calculate effective dates (Logic preserved)
+      const isDateMissing =
+        filteredProjects.length > 0 &&
+        !(filteredProjects[0].startDate || filteredProjects[0].projStartDt);
 
-    const effectiveStartDate = plan.projStartDt || plan.startDate || "";
-    const effectiveEndDate = plan.projEndDt || plan.endDate || "";
+      const effectiveStartDate = plan.projStartDt || plan.startDate || "";
+      const effectiveEndDate = plan.projEndDt || plan.endDate || "";
 
-    // 2. Prepare the updated plan object (Logic preserved)
-    const updatedPlan = {
-      ...plan,
-      projStartDt: effectiveStartDate,
-      projEndDt: effectiveEndDate,
-      startDate: effectiveStartDate,
-      endDate: effectiveEndDate,
-      revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
-    };
-
-    // 3. Update local editing state (Logic preserved)
-    setEditingDates((prev) => ({
-      ...prev,
-      [plan.plId]: {
+      // 2. Prepare the updated plan object (Logic preserved)
+      const updatedPlan = {
+        ...plan,
+        projStartDt: effectiveStartDate,
+        projEndDt: effectiveEndDate,
         startDate: effectiveStartDate,
         endDate: effectiveEndDate,
-      },
-    }));
+        revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
+      };
 
-    // 4. FIX: Remove the 'if' condition completely.
-    // Always trigger the select action. This bypasses the issue where 
-    // multiple "New" projects (with plId 0) would block each other.
-    if (typeof onPlanSelect === "function") {
-      onPlanSelect(updatedPlan);
-    }
-  };
+      // 3. Update local editing state (Logic preserved)
+      setEditingDates((prev) => ({
+        ...prev,
+        [plan.plId]: {
+          startDate: effectiveStartDate,
+          endDate: effectiveEndDate,
+        },
+      }));
 
-  useEffect(() => {
-  if (selectedPlan && plans.length > 0) {
-    const freshPlan = getCurrentPlan();  // Latest from plans[]
-    if (freshPlan && typeof onPlanSelect === 'function') {
-      onPlanSelect(freshPlan);  // Always sync - safe, no loops
-    }
-  }
-}, [refreshKey, plans]);
+      // 4. FIX: Remove the 'if' condition completely.
+      // Always trigger the select action. This bypasses the issue where
+      // multiple "New" projects (with plId 0) would block each other.
+      if (typeof onPlanSelect === "function") {
+        onPlanSelect(updatedPlan);
+      }
+    };
+
+    useEffect(() => {
+      if (selectedPlan && plans.length > 0) {
+        const freshPlan = getCurrentPlan(); // Latest from plans[]
+        if (freshPlan && typeof onPlanSelect === "function") {
+          onPlanSelect(freshPlan); // Always sync - safe, no loops
+        }
+      }
+    }, [refreshKey, plans]);
 
     const handleDateCellChange = (plId, dateColumn, value) => {
       const dateType =
@@ -3904,19 +3974,30 @@ const ProjectPlanTable = forwardRef(
               onPlanSelect(planToSelect);
             }
 
+            // setTimeout(() => {
+            //   if (tableContainerRef.current) {
+            //     // Find the index of the newly created plan in the visible list
+            //     const index = newPlans.findIndex(
+            //       (p) => p.plId === planToSelect.plId
+            //     );
+            //     if (index !== -1) {
+            //       const rowHeight = 35; // Standard height for your text-xs rows
+            //       tableContainerRef.current.scrollTo({
+            //         top: index * rowHeight,
+            //         behavior: "smooth",
+            //       });
+            //     }
+            //   }
+            // }, 100);
             setTimeout(() => {
-              if (tableContainerRef.current) {
-                // Find the index of the newly created plan in the visible list
-                const index = newPlans.findIndex(
-                  (p) => p.plId === planToSelect.plId
-                );
-                if (index !== -1) {
-                  const rowHeight = 35; // Standard height for your text-xs rows
-                  tableContainerRef.current.scrollTo({
-                    top: index * rowHeight,
-                    behavior: "smooth",
-                  });
-                }
+              const rowElement = document.getElementById(
+                `plan-row-${planToSelect.plId}`
+              );
+              if (rowElement) {
+                rowElement.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center", // This forces the row to be in the middle of the container
+                });
               }
             }, 100);
           }
@@ -3961,8 +4042,8 @@ const ProjectPlanTable = forwardRef(
       let lockDotLevel = null;
       const masterId = plan.projId.split(".")[0];
 
-      for (const p of plans) {
-        if (p.plType && p.projId?.startsWith(masterId)) {
+      for (const p of allProjectPlans) {
+        if (p.plType === "BUD" && p.projId?.startsWith(masterId)) {
           lockDotLevel = getProjectDotLevel(p.projId);
           break;
         }
@@ -4095,7 +4176,7 @@ const ProjectPlanTable = forwardRef(
             ? response.data
             : response.data?.message || "Revenue Calculation successful!";
         toast.success(message);
-        refreshPlans()
+        refreshPlans();
       } catch (err) {
         const errorMessage =
           err.response?.data?.message ||
@@ -4371,7 +4452,7 @@ const ProjectPlanTable = forwardRef(
                   )}
 
                   {/* Detail */}
-                  {currentPlan && !isActionLoading &&  currentPlan?.plType && (
+                  {currentPlan && !isActionLoading && currentPlan?.plType && (
                     <button
                       onClick={() => {
                         if (!selectedPlan) return;
@@ -4385,7 +4466,7 @@ const ProjectPlanTable = forwardRef(
                   )}
 
                   {/* Monthly Forecast */}
-                  {currentPlan && !isActionLoading &&  currentPlan?.plType && (
+                  {currentPlan && !isActionLoading && currentPlan?.plType && (
                     <button
                       onClick={() => {
                         if (!selectedPlan) return;
@@ -4788,6 +4869,7 @@ const ProjectPlanTable = forwardRef(
                   ) : (
                     filteredPlans.map((plan, idx) => (
                       <tr
+                        id={`plan-row-${plan.plId}`}
                         key={`plan-${plan.plId || idx}-${
                           plan.projId || "unknown"
                         }`}
@@ -4796,7 +4878,8 @@ const ProjectPlanTable = forwardRef(
                           // selectedPlan.plId === plan.plId &&
                           // selectedPlan.projId === plan.projId
                           String(selectedPlan.projId) === String(plan.projId) &&
-    Number(selectedPlan.plId || 0) === Number(plan.plId || 0)
+                          Number(selectedPlan.plId || 0) ===
+                            Number(plan.plId || 0)
                             ? "bg-blue-200 hover:bg-blue-300 "
                             : "even:bg-gray-50 hover:bg-blue-50"
                         }`}
@@ -4927,7 +5010,10 @@ const ProjectPlanTable = forwardRef(
                                     );
                                   }}
                                   className={`rounded px-1 py-0.5 text-xs w-24 text-center ${
-                                  currentPlan.plType ? "": "bg-yellow-50 focus:border-blue-500 order border-blue-300" } `}
+                                    currentPlan.plType
+                                      ? ""
+                                      : "bg-yellow-50 focus:border-blue-500 order border-blue-300"
+                                  } `}
                                   disabled={currentPlan.plType}
                                   onClick={(e) => e.stopPropagation()}
                                 />

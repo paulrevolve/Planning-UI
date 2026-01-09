@@ -158,6 +158,7 @@ const ProjectAmountsTable = ({
   // Add these after pastedEntryOrgs state
   const [cachedProjectData, setCachedProjectData] = useState(null);
   const [cachedOrgData, setCachedOrgData] = useState(null);
+  const [allData, setAllData] = useState({})
   // const [allowClosedPeriodEdit, setAllowClosedPeriodEdit] = useState(false);
   const [isClosedPeriodEditable, setIsClosedPeriodEditable] = useState(false);
 const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -435,6 +436,24 @@ const getSortIcon = (key) => {
   }, [newEntry.idType]); // ✅ Only depends on idType - NO maxKbdSuffix!
 
   useEffect(() => {
+    const getAllData = async() => {
+      try {
+        const projectResponse = await axios.get(
+          `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
+        );
+        const projectData = Array.isArray(projectResponse.data)
+          ? projectResponse.data[0]
+          : projectResponse.data;
+        setAllData(projectData)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    getAllData()
+  }, [])
+
+
+  useEffect(() => {
     setShowNewForm(false);
     setNewEntry({
       id: "",
@@ -454,84 +473,86 @@ const getSortIcon = (key) => {
     setSubContractorNonLaborAccounts([]);
   }, [planId, projectId]); // Reset when planId or projectId changes
 
-  useEffect(() => {
-    const initializeAccountNames = async () => {
-      if (!projectId || !planType) return;
+  // useEffect(() => {
+  //   const initializeAccountNames = async () => {
+  //     if (!projectId || !planType) return;
 
-      try {
-        const response = await axios.get(
-          `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
-        );
-        const data = Array.isArray(response.data)
-          ? response.data[0]
-          : response.data;
+  //     try {
+  //       const response = await axios.get(
+  //         `${backendUrl}/Project/GetAllProjectByProjId/${projectId}/${planType}`
+  //       );
+  //       const data = Array.isArray(response.data)
+  //         ? response.data[0]
+  //         : response.data;
 
-        let allAccountsWithNames = [];
+  //       let allAccountsWithNames = [];
 
-        // Employee Accounts
-        if (
-          data.employeeNonLaborAccounts &&
-          Array.isArray(data.employeeNonLaborAccounts)
-        ) {
-          const employeeAccountsWithNames = data.employeeNonLaborAccounts.map(
-            (account) => ({
-              id: account.accountId || account,
-              name: account.acctName || account.accountId || String(account),
-            })
-          );
-          allAccountsWithNames.push(...employeeAccountsWithNames);
-        }
+  //       // Employee Accounts
+  //       if (
+  //         data.employeeNonLaborAccounts &&
+  //         Array.isArray(data.employeeNonLaborAccounts)
+  //       ) {
+  //         const employeeAccountsWithNames = data.employeeNonLaborAccounts.map(
+  //           (account) => ({
+  //             id: account.accountId || account,
+  //             name: account.acctName || account.accountId || String(account),
+  //           })
+  //         );
+  //         allAccountsWithNames.push(...employeeAccountsWithNames);
+  //       }
 
-        // SubContractor Accounts
-        if (
-          data.subContractorNonLaborAccounts &&
-          Array.isArray(data.subContractorNonLaborAccounts)
-        ) {
-          const subAccountsWithNames = data.subContractorNonLaborAccounts.map(
-            (account) => ({
-              id: account.accountId || account,
-              name: account.acctName || account.accountId || String(account),
-            })
-          );
-          allAccountsWithNames.push(...subAccountsWithNames);
-        }
+  //       // SubContractor Accounts
+  //       if (
+  //         data.subContractorNonLaborAccounts &&
+  //         Array.isArray(data.subContractorNonLaborAccounts)
+  //       ) {
+  //         const subAccountsWithNames = data.subContractorNonLaborAccounts.map(
+  //           (account) => ({
+  //             id: account.accountId || account,
+  //             name: account.acctName || account.accountId || String(account),
+  //           })
+  //         );
+  //         allAccountsWithNames.push(...subAccountsWithNames);
+  //       }
 
-        // ✅ Other Direct Cost Accounts - MAKE SURE THIS IS HERE
-        if (
-          data.otherDirectCostNonLaborAccounts &&
-          Array.isArray(data.otherDirectCostNonLaborAccounts)
-        ) {
-          const otherAccountsWithNames =
-            data.otherDirectCostNonLaborAccounts.map((account) => ({
-              id: account.accountId || account,
-              name: account.acctName || account.accountId || String(account),
-            }));
-          allAccountsWithNames.push(...otherAccountsWithNames);
-        }
+  //       // ✅ Other Direct Cost Accounts - MAKE SURE THIS IS HERE
+  //       if (
+  //         data.otherDirectCostNonLaborAccounts &&
+  //         Array.isArray(data.otherDirectCostNonLaborAccounts)
+  //       ) {
+  //         const otherAccountsWithNames =
+  //           data.otherDirectCostNonLaborAccounts.map((account) => ({
+  //             id: account.accountId || account,
+  //             name: account.acctName || account.accountId || String(account),
+  //           }));
+  //         allAccountsWithNames.push(...otherAccountsWithNames);
+  //       }
 
-        // Remove duplicates
-        const uniqueAccountsWithNamesMap = new Map();
-        allAccountsWithNames.forEach((acc) => {
-          if (acc.id && !uniqueAccountsWithNamesMap.has(acc.id)) {
-            uniqueAccountsWithNamesMap.set(acc.id, {
-              id: acc.id,
-              name: acc.name,
-            });
-          }
-        });
+  //       // Remove duplicates
+  //       const uniqueAccountsWithNamesMap = new Map();
+  //       allAccountsWithNames.forEach((acc) => {
+  //         if (acc.id && !uniqueAccountsWithNamesMap.has(acc.id)) {
+  //           uniqueAccountsWithNamesMap.set(acc.id, {
+  //             id: acc.id,
+  //             name: acc.name,
+  //           });
+  //         }
+  //       });
 
-        const uniqueAccountsWithNames = Array.from(
-          uniqueAccountsWithNamesMap.values()
-        );
-        setAccountOptionsWithNames(uniqueAccountsWithNames);
-      } catch (err) {
-        console.error("Failed to initialize account names", err);
-        setAccountOptionsWithNames([]);
-      }
-    };
+  //       const uniqueAccountsWithNames = Array.from(
+  //         uniqueAccountsWithNamesMap.values()
+  //       );
+  //       setAccountOptionsWithNames(uniqueAccountsWithNames);
+  //     } catch (err) {
+  //       console.error("Failed to initialize account names", err);
+  //       setAccountOptionsWithNames([]);
+  //     }
+  //   };
 
-    initializeAccountNames();
-  }, [projectId, planType]);
+  //   initializeAccountNames();
+  // }, [projectId, planType]);
+
+
 
   const syncScroll = (sourceRef, targetRef) => {
     if (!sourceRef.current || !targetRef.current) return;
@@ -4641,6 +4662,8 @@ const isIndeterminate =
   }
 }
 
+console.log('all Data ',allData)
+
 
       // **STEP 4: Apply cached data to all entries**
       // processedEntries.forEach((entry, entryIndex) => {
@@ -6538,7 +6561,7 @@ const handlePasteMultipleRows = async () => {
 )} */}
 
       {employees.length === 0 && !showNewForm && sortedDurations.length > 0 ? (
-        <div className=" bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded text-xs">
+        <div className="  border border-yellow-400 text-yellow-700 px-4 py-3 rounded text-xs">
           No forecast data available for this plan.
         </div>
       ) : (
@@ -6647,13 +6670,27 @@ const handlePasteMultipleRows = async () => {
     const value = e.target.value;
     // const newId = value === "PLC" ? "PLC" : "";
     const newId = value === "PLC" ? "PLC" : value === "Other" ? "TBD" : "";
-
+    const org_id = value === "Other" ? allData.orgId : "";
+    const org_Name = value === "Other" ? allData.orgName : "";
     
     // 1. Update the local entry state
     setNewEntries((prev) =>
-        prev.map((ent, idx) =>
-            idx === entryIndex ? { ...ent, idType: value, id: newId, firstName: "", lastName: "", acctId: "", orgId: "",orgName: "",acctName: "", status: "Act" } : ent
-        )
+      prev.map((ent, idx) =>
+        idx === entryIndex
+          ? {
+              ...ent,
+              idType: value,
+              id: newId,
+              firstName: "",
+              lastName: "",
+              acctId: "",
+              orgId: org_id,
+              orgName: org_Name,
+              acctName: "",
+              status: "Act",
+            }
+          : ent
+      )
     );
     
     
@@ -6878,15 +6915,13 @@ const handlePasteMultipleRows = async () => {
     readOnly={entry.idType !== "Other"}
             onKeyDown={(e) => e.key === " " && e.stopPropagation()}
             onChange={(e) => {
-              // || planType === "NBBUD"
-              if (entry.idType === "Other" ) {
+              if (entry.idType === "Other" || planType === "NBBUD") {
                 const cleanValue = e.target.value.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
                 setNewEntries((prev) => prev.map((ent, idx) => (idx === entryIndex ? { ...ent, firstName: cleanValue.trimStart(), lastName: "" } : ent)));
               }
             }}
             style={{ maxWidth: "100px" }}
-            // || planType === "NBBUD"
-            className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other"  ? "bg-white" : "bg-gray-100"}`}
+            className={`border border-gray-300 rounded px-1 py-0.5 text-xs ${entry.idType === "Other" || planType === "NBBUD" ? "bg-white" : "bg-gray-100"}`}
             placeholder="Name"
           />
         </td>

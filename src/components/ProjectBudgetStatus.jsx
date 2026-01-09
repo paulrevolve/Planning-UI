@@ -46,10 +46,14 @@ const ProjectBudgetStatus = () => {
   );
   const [otherColumnTotalsFromAmounts, setOtherColumnTotalsFromAmounts] =
     useState({});
- const [calculation, setCalculation] = useState(false);
+  const [calculation, setCalculation] = useState(false);
 
-
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const [finalSearchTerm, setFinalSearchTerm] = useState(""); // For the Table prop
+  const [allProjects, setAllProjects] = useState([]); // Master list from API
 
   const hoursRefs = useRef({});
   const amountsRefs = useRef({});
@@ -71,6 +75,23 @@ const ProjectBudgetStatus = () => {
   const [userName, setUserName] = useState("User");
   const [tabVisibility, setTabVisibility] = useState({});
   const planTableRef = useRef(null);
+  const searchContainerRef = useRef(null); // Create a ref for the parent container
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   //   useEffect(() => {
   //   const loadTabVisibility = async () => {
@@ -453,26 +474,41 @@ const ProjectBudgetStatus = () => {
     }
   }, [searchTerm]);
 
-  const handleSearch = async () => {
-    const term = searchTerm.trim();
+  const handleSearch = async (value) => {
+    // const term = searchTerm.trim();
 
-    setSearched(true);
-    setErrorMessage("");
+    // setSearched(true);
+    // setErrorMessage("");
+
+    // // if (!term) {
+    // //   setFilteredProjects([]);
+    // //   setSelectedPlan(null);
+    // //   setRevenueAccount("");
+    // //   setPrefixes(new Set());
+    // //   return;
+    // // }
+
+    // setLoading(true);
+
+    const term = value.trim();
 
     // if (!term) {
-    //   setFilteredProjects([]);
-    //   setSelectedPlan(null);
-    //   setRevenueAccount("");
-    //   setPrefixes(new Set());
+    //   toast.error("Please enter or select a Project ID");
     //   return;
     // }
 
+    // 1. Set these to trigger the Table loading and UI states
+    setFinalSearchTerm(term);
+    setSearched(true);
+    setErrorMessage("");
     setLoading(true);
+    setShowSuggestions(false);
 
     try {
-      const response = await axios.get(
+      const response = await axios
+        .get
         // `${backendUrl}/Project/GetAllProjectByProjId/${term}`
-      );
+        ();
       const data = Array.isArray(response.data)
         ? response.data[0]
         : response.data;
@@ -499,7 +535,7 @@ const ProjectBudgetStatus = () => {
     } catch (error) {
       try {
         const planResponse = await axios.get(
-          `${backendUrl}/Project/GetProjectPlans/${userId}/${role}/${term}?status=${statusFilter}`
+          `${backendUrl}/Project/GetProjectPlans/${userId}/${role}/dsvyuvsb?status=${statusFilter}`
         );
         const planData = Array.isArray(planResponse.data)
           ? planResponse.data[0]
@@ -546,16 +582,94 @@ const ProjectBudgetStatus = () => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") handleSearch();
+    if (e.key === "Enter") handleSearch(searchTerm);
   };
 
+  // const handleInputChange = (e) => {
+  //   setSearchTerm(e.target.value);
+  //   // handleSearch(e.target.value);
+  //   setErrorMessage("");
+  //   setSearched(false);
+  //   setFilteredProjects([]);
+  //   setSelectedPlan(null);
+  // };
+  // 1. Call API once on Focus
+  const handleFocus = async () => {
+    // Only fetch if we haven't loaded the projects yet
+    if (allProjects.length === 0) {
+      try {
+        const response = await axios.get(
+          `${backendUrl}/Project/GetAllProjectsForSearch`
+        );
+        const data = response.data || [];
+        setAllProjects(data);
+        // If there is already text in the box, filter immediately on focus
+        if (searchTerm) {
+          filterData(searchTerm, data);
+        } else {
+          setSuggestions(data); // Show all if box is empty
+        }
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+      }
+    } else {
+      // If data already exists, just show it
+      filterData(searchTerm, allProjects);
+    }
+    setShowSuggestions(true);
+  };
+
+  // 2. Local filtering logic (Shared function)
+  const filterData = (value, sourceData) => {
+    const term = value.toLowerCase();
+    const filtered = sourceData
+      .filter(
+        (proj) =>
+          proj.projectId.toLowerCase().includes(term) ||
+          proj.name.toLowerCase().includes(term)
+      )
+      .sort((a, b) => {
+        // Boost relevance: Projects starting with the search term come first
+        const aStarts = a.projectId.toLowerCase().startsWith(term);
+        const bStarts = b.projectId.toLowerCase().startsWith(term);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+        return 0;
+      });
+
+    setSuggestions(filtered);
+  };
+
+  // 3. Handle Input Change (No API calls here)
   const handleInputChange = (e) => {
-    setSearchTerm(e.target.value);
-    // handleSearch(e.target.value);
+    const value = e.target.value;
+    setSearchTerm(value);
     setErrorMessage("");
     setSearched(false);
-    setFilteredProjects([]);
-    setSelectedPlan(null);
+
+    if (value.trim() === "") {
+      setSuggestions(allProjects); // Show everything if cleared
+    } else {
+      filterData(value, allProjects);
+    }
+    setShowSuggestions(true);
+  };
+
+  // const handleSelectSuggestion = (proj) => {
+  //   setSearchTerm(proj.projectId);
+  //   setShowSuggestions(false);
+  //   // We keep allProjects but reset suggestions for the next time it opens
+  //   setSuggestions(allProjects);
+  // };
+
+  // Selection handler triggers search immediately
+  const handleSelectSuggestion = (proj) => {
+    setSearchTerm(proj.projectId);
+    setSuggestions(allProjects);
+    setShowSuggestions(false);
+
+    // Trigger search immediately with the selected ID
+    handleSearch(proj.projectId);
   };
 
   // const handlePlanSelect = (plan) => {
@@ -699,7 +813,6 @@ const ProjectBudgetStatus = () => {
   //   }
   // };
 
-
   const handlePlanSelect = (plan) => {
     // Validation: Ensure plan exists before proceeding
     if (!plan) {
@@ -708,9 +821,7 @@ const ProjectBudgetStatus = () => {
       setActiveTab(null);
       return;
     }
- 
-   
- 
+
     const project = {
       projId: plan.projId || "",
       projName: plan.projName || "",
@@ -722,18 +833,17 @@ const ProjectBudgetStatus = () => {
       fundedRev: plan.fundedRev || "",
       revenue: plan.revenue || "",
     };
- 
+
     setFilteredProjects([project]);
     setRevenueAccount(plan.revenueAccount || "");
-   
+
     // Update the selected plan state
     setSelectedPlan(plan);
     localStorage.setItem("selectedPlan", JSON.stringify(plan));
- 
+
     // Clear analysis data to ensure fresh data is loaded for the newly selected row
     setAnalysisApiData([]);
   };
- 
 
   // inside ProjectBudgetStatus
   // inside ProjectBudgetStatus
@@ -811,7 +921,7 @@ const ProjectBudgetStatus = () => {
     setActiveTab(null);
     setViewMode("plans"); // back to plan table
     setShowTabs(false); // hide tabs row
-     setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   const geistSansStyle = {
@@ -830,7 +940,7 @@ const ProjectBudgetStatus = () => {
   }
 
   const handleCalc = async () => {
-    setCalculation(true)
+    setCalculation(true);
     if (!selectedPlan) {
       toast.error("No plan selected for calculation.", {
         toastId: "no-plan-selected",
@@ -868,30 +978,60 @@ const ProjectBudgetStatus = () => {
     }
   };
 
-const getCurrentPlan = () => {
-  if (!selectedPlan) return null;
-  return selectedPlan;
-}
+  const getCurrentPlan = () => {
+    if (!selectedPlan) return null;
+    return selectedPlan;
+  };
 
   return (
     <div className="sm:p-2  space-y-6 text-sm sm:text-base text-gray-800 font-inter  mt-9 ">
       {viewMode === "plans" && (
         <div className="bg-white p-2 rounded shadow-sm border border-gray-100 mb-2 ">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* Add the ref to this wrapper div */}
+            <div
+              className="flex items-center gap-2 w-full sm:w-auto"
+              ref={searchContainerRef}
+            >
               <label className="font-semibold text-xs sm:text-sm whitespace-nowrap">
                 Project ID:
               </label>
-              <input
-                type="text"
-                className="border border-gray-300 rounded px-2 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64 bg-white shadow-inner"
-                placeholder="Search Project ID..."
-                value={searchTerm}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyPress}
-                ref={inputRef}
-                autoComplete="off"
-              />
+              <div className="relative w-full sm:w-64">
+                <input
+                  type="text"
+                  className="border border-gray-300 rounded px-2 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white shadow-inner"
+                  placeholder="Search Project ID..."
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onFocus={handleFocus}
+                  onKeyDown={handleKeyPress}
+                  ref={inputRef}
+                  autoComplete="off"
+                />
+
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="absolute z-50 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg max-h-60 overflow-auto">
+                    {suggestions.map((proj, index) => (
+                      <li
+                        key={index}
+                        className="px-3 py-2 text-xs hover:bg-blue-50 cursor-pointer border-b last:border-none"
+                        onMouseDown={(e) => {
+                          // Using onMouseDown prevents the input onBlur from firing first
+                          e.preventDefault();
+                          handleSelectSuggestion(proj);
+                        }}
+                      >
+                        <div className="font-bold text-blue-900">
+                          {proj.projectId}
+                        </div>
+                        <div className="text-gray-600 truncate">
+                          {proj.name}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-1">
@@ -908,7 +1048,7 @@ const getCurrentPlan = () => {
               </select>
             </div>
             <button
-              onClick={handleSearch}
+              onClick={() => handleSearch(searchTerm)}
               className="bg-[#17414d] text-white group-hover:text-gray px-6 py-1.5 rounded cursor-pointer text-xs sm:text-sm font-semibold   transition-all shadow-md active:scale-95 w-full sm:w-auto"
             >
               Search
@@ -948,7 +1088,8 @@ const getCurrentPlan = () => {
                 <span className="text-gray-700">
                   {getCurrentPlan().projStartDt || getCurrentPlan().startDate
                     ? safeFormatDate(
-                        getCurrentPlan().projStartDt || getCurrentPlan().startDate
+                        getCurrentPlan().projStartDt ||
+                          getCurrentPlan().startDate
                       )
                     : "N/A"}
                 </span>
@@ -1000,17 +1141,21 @@ const getCurrentPlan = () => {
               <div>
                 <span className="font-semibold blue-text">Revenue:</span>{" "}
                 <span className="text-gray-700">
-                  {Number(getCurrentPlan().revenue || 0).toLocaleString("en-US", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}
+                  {Number(getCurrentPlan().revenue || 0).toLocaleString(
+                    "en-US",
+                    {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    }
+                  )}
                 </span>
               </div>
               <div>
                 <span className="font-semibold blue-text">Backlog:</span>{" "}
                 <span className="text-gray-700">
                   {Number(
-                    (getCurrentPlan().revenue || 0) - (getCurrentPlan().fundedCost || 0)
+                    (getCurrentPlan().revenue || 0) -
+                      (getCurrentPlan().fundedCost || 0)
                   ).toLocaleString("en-US", {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
@@ -1315,7 +1460,8 @@ const getCurrentPlan = () => {
               <ProjectPlanTable
                 ref={planTableRef}
                 onExportPlan={handleExportPlan}
-                projectId={searchTerm.trim()}
+                // projectId={searchTerm.trim()}
+                projectId={finalSearchTerm}
                 searched={searched}
                 onPlanSelect={handlePlanSelect}
                 selectedPlan={selectedPlan}
