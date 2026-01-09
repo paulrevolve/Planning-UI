@@ -615,7 +615,7 @@ const IS_Report = () => {
         { grp: "EBITDA Add Back, Other Income & Expenses", ln: "Interest, Unallowable Expenses" },
         { grp: "EBITDA Add Back, Other Income & Expenses", ln: "Amortization, Unallowable Expenses" }
       ], 
-      "Other Income & Expenses"
+      // "Other Income & Expenses"
     ]);
 
     const otherIncomeTotalP = opMarginP + other.subtotalPeriod;
