@@ -997,7 +997,7 @@ const Opportunities = () => {
             const duplicatesFound = uniqueRpNames.filter(name => systemIds.has(name));
 
             setVerificationSummary({ duplicates: duplicatesFound, isVerified: true });
-            toast.success(`Verified: ${localRpItems.length}  items processed. Found ${duplicatesFound.length} existing.`);
+            toast.success(`Verified: ${localRpItems.length}  items processed. Found ${duplicatesFound.length} Projectsexisting.`);
         } catch (error) {
             toast.error("Verification failed.");
         } finally { setIsVerifying(false); }
