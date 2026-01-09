@@ -496,6 +496,8 @@ const ProjectBudgetStatus = () => {
     //   toast.error("Please enter or select a Project ID");
     //   return;
     // }
+    setSelectedPlan(null); 
+  setFilteredProjects([]);
 
     // 1. Set these to trigger the Table loading and UI states
     setFinalSearchTerm(term);
