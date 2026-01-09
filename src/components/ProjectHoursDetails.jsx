@@ -6150,24 +6150,24 @@ const ProjectHoursDetails = ({
     }
   };
 
-  const handleSaveAll = async () => {
+const handleSaveAll = async () => {
     const hasHoursChanges = Object.keys(modifiedHours).length > 0;
     const hasEmployeeChanges = Object.keys(editedEmployeeData).length > 0;
-
+ 
     if (!hasHoursChanges && !hasEmployeeChanges) {
       return true;
     }
-
+ 
     // --- STRICT VALIDATION FOR EDITED GRID DATA ---
     if (hasEmployeeChanges && planType !== "NBBUD") {
       for (const empIdx in editedEmployeeData) {
         const edit = editedEmployeeData[empIdx];
         const emp = localEmployees[empIdx];
         const emplId = emp?.emple?.emplId || "Unknown";
-
+ 
         let errorFound = false;
         let errorMsg = "";
-
+ 
         // 1. Validate Account (acctId)
         if (edit.acctId !== undefined && edit.acctId !== "") {
           const isAccValid = updateAccountOptions.some(
@@ -6178,7 +6178,7 @@ const ProjectHoursDetails = ({
             errorFound = true;
           }
         }
-
+ 
         // 2. Validate Organization (orgId)
         if (!errorFound && edit.orgId !== undefined && edit.orgId !== "") {
           const isOrgValid = updateOrganizationOptions.some(
@@ -6189,7 +6189,7 @@ const ProjectHoursDetails = ({
             errorFound = true;
           }
         }
-
+ 
         // 3. Validate PLC (glcPlc)
         if (
           !errorFound &&
@@ -6206,41 +6206,41 @@ const ProjectHoursDetails = ({
             errorFound = true;
           }
         }
-
+ 
         // If any validation failed for this specific row:
         if (errorFound) {
           toast.error(errorMsg);
-
+ 
           // AUTO-SELECT THE ROW via checkbox
           handleCheckboxSelection(parseInt(empIdx), true);
-
+ 
           // SCROLL TO THE ROW
           const rowElement = document.getElementById(`emp-row-${empIdx}`);
           if (rowElement) {
             rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
           }
-
+ 
           return false; // BLOCK SAVE COMPLETELY
         }
       }
     }
-
+ 
     setIsLoading(true);
     let successCount = 0;
     let errorCount = 0;
-
+ 
     try {
       // 1. Save employee field changes (Account, Org, PLC, etc.)
       if (hasEmployeeChanges) {
         for (const empIdx in editedEmployeeData) {
           const emp = localEmployees[empIdx];
           const editedData = editedEmployeeData[empIdx];
-
+ 
           if (!emp || !emp.emple) {
             errorCount++;
             continue;
           }
-
+ 
           const payload = {
             id: emp.emple.id || 0,
             emplId: emp.emple.emplId,
@@ -6271,7 +6271,7 @@ const ProjectHoursDetails = ({
             plId: planId,
             plForecasts: emp.emple.plForecasts || [],
           };
-
+ 
           await axios.put(
             `${backendUrl}/Employee/UpdateEmployee?plid=${planId}&TemplateId=${templateId}`,
             payload,
@@ -6279,7 +6279,7 @@ const ProjectHoursDetails = ({
               headers: { "Content-Type": "application/json" },
             }
           );
-
+ 
           // Update local state for fields
           setLocalEmployees((prev) => {
             const updated = [...prev];
@@ -6292,32 +6292,48 @@ const ProjectHoursDetails = ({
           successCount++;
         }
       }
-
+ 
       // 2. Save hours changes (the grid monthly inputs)
       if (hasHoursChanges) {
         for (const key in modifiedHours) {
           const { empIdx, uniqueKey, newValue, employee } = modifiedHours[key];
           const targetId = employee?.emple?.emplId;
           const newNumericValue = parseFloat(newValue) || 0;
-
+ 
           // Find limit
           const duration = sortedDurations.find(
             (d) => `${d.monthNo}_${d.year}` === uniqueKey
           );
           if (duration && duration.workingHours) {
             const maxLimit = duration.workingHours * 2;
-
+ 
             // 1. Sum Existing Rows (Excluding the row being edited, add new value)
+            // const existingSum = localEmployees.reduce((sum, emp, idx) => {
+            //   if (emp?.emple?.emplId === targetId) {
+            //     // If this is the row being edited, use the NEW value, otherwise use stored value
+            //     if (String(idx) === String(empIdx)) return sum;
+            //     const val = getMonthHours(emp)[uniqueKey]?.value || 0;
+            //     return sum + (parseFloat(val) || 0);
+            //   }
+            //   return sum;
+            // }, 0);
             const existingSum = localEmployees.reduce((sum, emp, idx) => {
-              if (emp?.emple?.emplId === targetId) {
-                // If this is the row being edited, use the NEW value, otherwise use stored value
-                if (String(idx) === String(empIdx)) return sum;
-                const val = getMonthHours(emp)[uniqueKey]?.value || 0;
-                return sum + (parseFloat(val) || 0);
-              }
-              return sum;
-            }, 0);
-
+  if (emp?.emple?.emplId === targetId) {
+   
+    if (String(idx) === String(empIdx)) return sum;
+ 
+   
+    const savedVal = getMonthHours(emp)[uniqueKey]?.value || 0;
+    const unsavedInput = inputValues[`${idx}_${uniqueKey}`];
+   
+   
+    const val = (unsavedInput !== undefined && unsavedInput !== "") ? unsavedInput : savedVal;
+   
+    return sum + (parseFloat(val) || 0);
+  }
+  return sum;
+}, 0);
+ 
             // 2. Sum any Unsaved New Entries for the same ID
             const newEntrySum = newEntries.reduce((sum, entry, idx) => {
               if (entry.id === targetId) {
@@ -6326,9 +6342,9 @@ const ProjectHoursDetails = ({
               }
               return sum;
             }, 0);
-
+ 
             const total = existingSum + newEntrySum + newNumericValue;
-
+ 
             if (total > maxLimit) {
               toast.error(
                 `Cannot save. Total hours for ID ${targetId} in ${duration.month} (${total.toFixed(2)}) exceed limit of ${maxLimit}.`,
@@ -6341,22 +6357,22 @@ const ProjectHoursDetails = ({
             }
           }
         }
-
+ 
         const bulkPayload = [];
         for (const key in modifiedHours) {
           const { empIdx, uniqueKey, newValue, employee } = modifiedHours[key];
           const newNumericValue = newValue === "" ? 0 : Number(newValue);
           const emp = employee;
           const forecast = getMonthHours(emp)[uniqueKey];
-
+ 
           if (!forecast || !forecast.forecastid) continue;
-
+ 
           const currentDuration = sortedDurations.find(
             (d) => `${d.monthNo}_${d.year}` === uniqueKey
           );
           if (!isMonthEditable(currentDuration, closedPeriod, planType))
             continue;
-
+ 
           bulkPayload.push({
             ...forecast,
             forecastid: Number(forecast.forecastid),
@@ -6379,7 +6395,7 @@ const ProjectHoursDetails = ({
             hrlyRate: emp.perHourRate || 0,
           });
         }
-
+ 
         if (bulkPayload.length > 0) {
           const apiType = planType === "NBBUD" ? "BUD" : planType;
           await axios.put(
@@ -6388,7 +6404,7 @@ const ProjectHoursDetails = ({
           );
         }
       }
-
+ 
       // Trigger Final Validation API
       try {
         await axios.post(
@@ -6397,17 +6413,17 @@ const ProjectHoursDetails = ({
       } catch (vErr) {
         console.warn("Validation cleanup failed", vErr);
       }
-
+ 
       // Reset states
       setModifiedHours({});
       setHasUnsavedHoursChanges(false);
       setEditedEmployeeData({});
       setHasUnsavedEmployeeChanges(false);
-
+ 
       if (errorCount > 0) {
         toast.warning(`${errorCount} entries could not be saved.`);
       }
-
+ 
       return true; // Successfully saved all data
     } catch (err) {
       toast.error(
