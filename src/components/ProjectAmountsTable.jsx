@@ -972,6 +972,8 @@ const fetchNonLaborAccounts = async () => {
     setSubContractorNonLaborAccounts(subAccs);
     setOtherDirectCostNonLaborAccounts(otherOdcAccs);
 
+    setAccountOptionsWithNames([...empAccs, ...subAccs, ...otherOdcAccs])
+
     // --- LOGIC CHANGE START ---
     let filteredList = [];
 
@@ -1283,7 +1285,40 @@ const orgLookup = useMemo(() => {
     );
     resolvedOrgName = matchedOrg ? matchedOrg.orgName || matchedOrg.label.split(' - ')[1] || organizationId : organizationId;
   }
-
+  //   console.log({
+  //     // idType: emp.emple.type || "-",
+  //     idType: formatIdType(emp.emple.type || "-"),
+  //     emplId: emp.emple.emplId || "-",
+  //     name:
+  //       emp.emple.category || emp.emple.firstName || emp.emple.lastName
+  //         ? emp.emple.category ||
+  //           `${emp.emple.lastName || ""}${
+  //             emp.emple.firstName && emp.emple.lastName ? ", " : ""
+  //           }${emp.emple.firstName || ""}`
+  //         : "-",
+  //     acctId: emp.emple.accId || "-",
+  //     acctName: (() => {
+  //       const accountId = emp.emple.accId || "-";
+  //       const accountWithName = accountOptionsWithNames.find(
+  //         (acc) => acc.accountId === accountId
+  //       );
+  //       return accountWithName ? accountWithName.acctName : "-";
+  //     })(), 
+  //     orgId: emp.emple?.orgId || '-',           // ✅ Column 6
+  // orgName: resolvedOrgName || '-',    
+  //     isRev: emp.emple.isRev ? (
+  //       <span className="text-green-600 font-sm text-xl">✓</span>
+  //     ) : (
+  //       "-"
+  //     ),
+  //     isBrd: emp.emple.isBrd ? (
+  //       <span className="text-green-600 font-sm text-xl">✓</span>
+  //     ) : (
+  //       "-"
+  //     ),
+  //     status: emp.emple.status || "-",
+  //     total: totalAmount.toFixed(2) || "-",
+  //   });
     return {
       // idType: emp.emple.type || "-",
       idType: formatIdType(emp.emple.type || "-"),
@@ -1299,10 +1334,10 @@ const orgLookup = useMemo(() => {
       acctName: (() => {
         const accountId = emp.emple.accId || "-";
         const accountWithName = accountOptionsWithNames.find(
-          (acc) => acc.id === accountId
+          (acc) => acc.accountId === accountId
         );
-        return accountWithName ? accountWithName.name : "-";
-      })(), // ADD THIS FIELD
+        return accountWithName ? accountWithName.acctName : "-";
+      })(), 
       orgId: emp.emple?.orgId || '-',           // ✅ Column 6
   orgName: resolvedOrgName || '-',    
       isRev: emp.emple.isRev ? (
@@ -3883,7 +3918,7 @@ const isIndeterminate =
     const emp = employees[rowIndex];
     if (emp && emp.emple && !hiddenRows[rowIndex]) {
       const employeeRow = getEmployeeRow(emp, rowIndex);
-      
+
       // Ensure this array matches 'headers' length exactly
       const rowData = [
         employeeRow.idType,
@@ -3898,6 +3933,8 @@ const isIndeterminate =
         employeeRow.status,
         employeeRow.total, // Positioned at index 10
       ];
+
+
 
       // Add monthly values
       const empMonthAmounts = getMonthAmounts(emp);
@@ -4662,9 +4699,6 @@ const isIndeterminate =
   }
 }
 
-console.log('all Data ',allData)
-
-
       // **STEP 4: Apply cached data to all entries**
       // processedEntries.forEach((entry, entryIndex) => {
       //   // Set employee/vendor suggestions based on type
@@ -5096,6 +5130,7 @@ const handlePasteMultipleRows = async () => {
       lastName: lastName,
       idType: idType,
       acctId: acctId,
+      acctName: acctName,
       orgId: orgId,
       orgName: orgName || '',  // ✅ NEW - store orgName from paste
       perHourRate: "",
@@ -7555,15 +7590,27 @@ if (col.key === "acctId") {
   );
 }
 
+// if (col.key === "acctName") {
+//     return (
+//         <td key={`${uniqueRowKey}-acctName`} className="tbody-td min-w-[130px]">
+//             {editedRowData[actualEmpIdx]?.acctName !== undefined
+//                 ? editedRowData[actualEmpIdx].acctName
+//                 : row.acctName || '-'}
+//         </td>
+//     );
+// }
+
 if (col.key === "acctName") {
-    return (
-        <td key={`${uniqueRowKey}-acctName`} className="tbody-td min-w-[130px]">
-            {editedRowData[actualEmpIdx]?.acctName !== undefined
-                ? editedRowData[actualEmpIdx].acctName
-                : row.acctName || '-'}
-        </td>
-    );
+  const rowSuggestions = getAccountSuggestionsByType(emp.emple.type);
+  const acctName =rowSuggestions.find((acc) => (acc.accountId || acc.id) === row.acctId)?.acctName
+
+  return (
+    <td key={`${uniqueRowKey}-acctName`} className="tbody-td min-w-[130px]">
+      {acctName}
+    </td>
+  );
 }
+
 
 if (col.key === "orgId") {
     return (

@@ -620,25 +620,66 @@ const ProjectBudgetStatus = () => {
   };
 
   // 2. Local filtering logic (Shared function)
-  const filterData = (value, sourceData) => {
-    const term = value.toLowerCase();
-    const filtered = sourceData
-      .filter(
-        (proj) =>
-          proj.projectId.toLowerCase().includes(term) ||
-          proj.name.toLowerCase().includes(term)
-      )
-      .sort((a, b) => {
-        // Boost relevance: Projects starting with the search term come first
-        const aStarts = a.projectId.toLowerCase().startsWith(term);
-        const bStarts = b.projectId.toLowerCase().startsWith(term);
-        if (aStarts && !bStarts) return -1;
-        if (!aStarts && bStarts) return 1;
-        return 0;
-      });
+  // const filterData = (value, sourceData) => {
+  //   const term = value.toLowerCase();
+  //   const filtered = sourceData
+  //     .filter(
+  //       (proj) =>
+  //         proj.projectId.toLowerCase().includes(term) ||
+  //         proj.name.toLowerCase().includes(term)
+  //     )
+  //     .sort((a, b) => {
+  //       // Boost relevance: Projects starting with the search term come first
+  //       const aStarts = a.projectId.toLowerCase().startsWith(term);
+  //       const bStarts = b.projectId.toLowerCase().startsWith(term);
+  //       if (aStarts && !bStarts) return -1;
+  //       if (!aStarts && bStarts) return 1;
+  //       return 0;
+  //     });
 
-    setSuggestions(filtered);
-  };
+  //   setSuggestions(filtered);
+  // };
+  const filterData = (value, sourceData) => {
+  if (!value) {
+    setSuggestions([]);
+    return;
+  }
+  
+  const term = value.toLowerCase().trim();
+  const filtered = sourceData.filter(
+    (proj) =>
+      proj.projectId.toLowerCase().includes(term) ||
+      proj.name.toLowerCase().includes(term)
+  );
+
+  const sorted = filtered.sort((a, b) => {
+    const aId = a.projectId.toLowerCase();
+    const bId = b.projectId.toLowerCase();
+    
+    // 1. EXACT MATCH first (e.g., "20001" when searching "20001")
+    const aExact = aId === term;
+    const bExact = bId === term;
+    if (aExact && !bExact) return -1;
+    if (!aExact && bExact) return 1;
+    
+    // 2. STARTS WITH next (boost prefix matches)
+    const aStarts = aId.startsWith(term);
+    const bStarts = bId.startsWith(term);
+    if (aStarts && !bStarts) return -1;
+    if (!aStarts && bStarts) return 1;
+    
+    // 3. HIERARCHY LEVEL: Parent (fewer dots) before children
+    const aDots = (aId.match(/\./g) || []).length;
+    const bDots = (bId.match(/\./g) || []).length;
+    if (aDots !== bDots) return aDots - bDots;
+    
+    // 4. Alphabetical within same level
+    return a.projectId.localeCompare(b.projectId);
+  });
+
+  setSuggestions(sorted);
+};
+
 
   // 3. Handle Input Change (No API calls here)
   const handleInputChange = (e) => {
