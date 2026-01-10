@@ -5123,9 +5123,13 @@ const handlePasteMultipleRows = async () => {
       firstName = name;
     }
 
+
+const sanitizedId = id.trim();
+      const finalId =
+        idType === "Other" ? "TBD" : idType === "PLC" ? "PLC" : sanitizedId;
     // ✅ Keep ALL existing entry logic + ADD orgName
     const entry = {
-      id: id,
+      id: finalId,
       firstName: firstName,
       lastName: lastName,
       idType: idType,

@@ -885,36 +885,84 @@ const AnalysisByPeriodContent = ({
       rows.push(baseRow);
 
       // 🔹 Staff expandable
-      if (row.employees) {
+      // if (row.employees) {
+      //   row.employees.forEach((emp) => {
+      //     const empRow = {
+      //       Description: `   ${emp.name}`, // indent
+      //       Total: emp.cost ?? 0,
+      //     };
+
+      //     dynamicDateRanges.forEach((month) => {
+      //       empRow[month] = emp.monthlyCost?.[month] ?? 0;
+      //     });
+
+      //     rows.push(empRow);
+
+      //     // 🔹 Employee detail rows (Raw, Fringe, Overhead…)
+      //     Object.entries(emp.detailSummary || {}).forEach(
+      //       ([label, monthData]) => {
+      //         const detailRow = {
+      //           Description: `      ${label}`,
+      //           Total: Object.values(monthData).reduce((s, v) => s + v, 0),
+      //         };
+
+      //         dynamicDateRanges.forEach((month) => {
+      //           detailRow[month] = monthData?.[month] ?? 0;
+      //         });
+
+      //         rows.push(detailRow);
+      //       }
+      //     );
+      //   });
+      // }
+
+      if (row.employees && row.employees.length > 0) {
+        // rows.push({
+        //   Description: "Employee",
+        //   Total: 0,
+        //   ...dynamicDateRanges.reduce((acc, month) => {
+        //     acc[month] = 0;
+        //     return acc;
+        //   }, {}),
+        // });
+
         row.employees.forEach((emp) => {
           const empRow = {
-            Description: `   ${emp.name}`, // indent
+            Description: `   ${emp.name}`,
             Total: emp.cost ?? 0,
           };
-
           dynamicDateRanges.forEach((month) => {
             empRow[month] = emp.monthlyCost?.[month] ?? 0;
           });
-
           rows.push(empRow);
 
-          // 🔹 Employee detail rows (Raw, Fringe, Overhead…)
+            rows.push({
+              Description: `      Employee Hours`,
+              Total: Object.values(emp.monthlyHours || {}).reduce(
+                (sum, v) => sum + v,
+                0
+              ),
+              ...dynamicDateRanges.reduce((acc, month) => {
+                acc[month] = emp.monthlyHours?.[month] ?? 0;
+                return acc;
+              }, {}),
+            });
+
           Object.entries(emp.detailSummary || {}).forEach(
             ([label, monthData]) => {
               const detailRow = {
                 Description: `      ${label}`,
                 Total: Object.values(monthData).reduce((s, v) => s + v, 0),
               };
-
               dynamicDateRanges.forEach((month) => {
                 detailRow[month] = monthData?.[month] ?? 0;
               });
-
               rows.push(detailRow);
             }
           );
         });
       }
+
 
       // 🔹 Non-labor expandable
       if (row.nonLaborAccts) {

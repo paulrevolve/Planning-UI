@@ -3928,8 +3928,11 @@ const ProjectHoursDetails = ({
         lastName = nameParts.slice(1).join(" ") || "";
       }
 
+      const sanitizedId = id.trim();
+      const finalId =
+        idType === "Other" ? "TBD" : idType === "PLC" ? "PLC" : sanitizedId;
       const entry = {
-        id: id.trim(),
+        id: finalId,
         firstName,
         lastName,
         idType,
@@ -3937,7 +3940,6 @@ const ProjectHoursDetails = ({
         acctName,
         orgId,
         orgName: orgName || "",
-        // plcGlcCode: plc,
         plcGlcCode: plc.split("-")[0],
         perHourRate: hourRate,
         status: status || "ACT",
@@ -4809,7 +4811,7 @@ const ProjectHoursDetails = ({
     ] = row;
 
     const idType =
-      IDTYPEOPTIONS.find((opt) =>
+      ID_TYPE_OPTIONS.find((opt) =>
         opt.label.toLowerCase().includes(idTypeLabel?.toLowerCase())
       )?.value || "Employee";
 
@@ -11262,9 +11264,9 @@ const handleFillValues = () => {
                                 // const newId = value === "PLC" ? "PLC" : "";
                                 const newId = value === "PLC" ? "PLC" : value === "Other" ? "TBD" : "";
                                 const org_id =
-                                  value === "Other" ? allData.orgId : "";
+                                  value === "Other" || value === "PLC" ? allData.orgId : "";
                                 const org_Name =
-                                  value === "Other" ? allData.orgName : "";
+                                  value === "Other" || value === "PLC" ? allData.orgName : "";
                                 setNewEntries((prev) =>
                                   prev.map((ent, idx) =>
                                     idx === entryIndex
@@ -11446,10 +11448,16 @@ const handleFillValues = () => {
                                   );
                                 }
                               }}
+                              title={
+                                entry.idType === "Other"
+                                  ? "TBD (Other - not editable)"
+                                  : entry.idType === "PLC"
+                                  ? "PLC (reserved - not editable)"
+                                  : ""
+                              }
                               disabled={entry.idType === "PLC" || entry.idType === "Other"}
                               style={{ maxWidth: "90px" }}
                               className={`border border-gray-300 rounded px-1 py-0.5 text-xs outline-none focus:ring-0 ${entry.idType === "PLC" || entry.idType === "Other" ? "bg-gray-100" : ""}`}
-                              // list={`employee-id-list-${entryIndex}`}
                               list={
                                 entry.idType !== "Other"
                                   ? `employee-id-list-${entryIndex}`

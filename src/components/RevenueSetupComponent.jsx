@@ -87,7 +87,7 @@
 //       })
 //       .catch((error) => {});
 
-//     if (selectedPlan?.projId && selectedPlan?.version && selectedPlan?.plType) {
+//     if (selectedPlan?.projId && selectedPlan?.version && selectedPlan?.status) {
 //       axios
 //         .get(
 //           `${backendUrl}/ProjBgtRevSetup/GetByProjectId/${selectedPlan.projId}/${selectedPlan.version}/${selectedPlan.plType}`
@@ -226,7 +226,7 @@
 //             type="checkbox"
 //             className="text-sm font-normal"
 //             checked={overrideFundingCeilingFl}
-//             onChange={(e) => setOverrideFundingCeilingFl(e.target.checked)}
+//             onChange={(e) => setOverrideFundingCeilingFl(e.target.checked)} disabled={selectedPlan?.plType !== "In Progress"}
 //           />
 //         </div>
 //         <div>
@@ -936,6 +936,7 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
       });
   };
 
+
   return (
     <div 
       className="p-2 sm:p-4 bg-gray rounded shadow min-h-[150px] scroll-mt-16" 
@@ -951,6 +952,7 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
               setRevenueFormula(e.target.value);
               setRevenueType(e.target.value);
             }}
+            disabled={selectedPlan?.status !== "In Progress"}
             style={geistSansStyle}
           >
             <option value="">---------Select----------</option>
@@ -968,6 +970,7 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
             type="checkbox"
             className="text-sm font-normal"
             checked={overrideFundingCeilingFl}
+            disabled={selectedPlan?.status !== "In Progress"}
             onChange={(e) => setOverrideFundingCeilingFl(e.target.checked)}
           />
         </div>
@@ -977,6 +980,7 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
             type="checkbox"
             className="text-sm font-normal"
             checked={overrideSettingsFl}
+            disabled={selectedPlan?.status !== "In Progress"}
             onChange={(e) => setOverrideSettingsFl(e.target.checked)}
           />
         </div>
@@ -1004,7 +1008,8 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
                 });
                 setAtRiskValue(formatted);
               }}
-              disabled={!overrideFundingCeilingFl}
+              // disabled={!overrideFundingCeilingFl}
+              disabled={selectedPlan?.status !== "In Progress" || !overrideFundingCeilingFl}
             />
           </div>
 
@@ -1028,16 +1033,16 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
               <tr>
                 <td className="thead text-center" style={geistSansStyle}>Labor</td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={labCostFl} onChange={(e) => setLabCostFl(e.target.checked)} />
+                  <input type="checkbox" checked={labCostFl} onChange={(e) => setLabCostFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"}   />
                 </td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={labBurdFl} onChange={(e) => setLabBurdFl(e.target.checked)} />
+                  <input type="checkbox" checked={labBurdFl} onChange={(e) => setLabBurdFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={labFeeCostFl} onChange={(e) => setLabFeeCostFl(e.target.checked)} />
+                  <input type="checkbox" checked={labFeeCostFl} onChange={(e) => setLabFeeCostFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={labFeeHrsFl} onChange={(e) => setLabFeeHrsFl(e.target.checked)} />
+                  <input type="checkbox" checked={labFeeHrsFl} onChange={(e) => setLabFeeHrsFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
                 <td className="tbody-td">
                   <input
@@ -1049,22 +1054,22 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
                   />
                 </td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={labTmFl} onChange={(e) => setLabTmFl(e.target.checked)} />
+                  <input type="checkbox" checked={labTmFl} onChange={(e) => setLabTmFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
               </tr>
               <tr>
                 <td className="thead text-center" style={geistSansStyle}>Non-Labor</td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={nonLabCostFl} onChange={(e) => setNonLabCostFl(e.target.checked)} />
+                  <input type="checkbox" checked={nonLabCostFl} onChange={(e) => setNonLabCostFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={nonLabBurdFl} onChange={(e) => setNonLabBurdFl(e.target.checked)} />
+                  <input type="checkbox" checked={nonLabBurdFl} onChange={(e) => setNonLabBurdFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={nonLabFeeCostFl} onChange={(e) => setNonLabFeeCostFl(e.target.checked)} />
+                  <input type="checkbox" checked={nonLabFeeCostFl} onChange={(e) => setNonLabFeeCostFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={nonLabFeeHrsFl} onChange={(e) => setNonLabFeeHrsFl(e.target.checked)} />
+                  <input type="checkbox" checked={nonLabFeeHrsFl} onChange={(e) => setNonLabFeeHrsFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
                 <td className="tbody-td">
                   <input
@@ -1076,7 +1081,7 @@ const RevenueSetupComponent = ({ selectedPlan, revenueAccount }) => {
                   />
                 </td>
                 <td className="tbody-td">
-                  <input type="checkbox" checked={nonLabTmFl} onChange={(e) => setNonLabTmFl(e.target.checked)} />
+                  <input type="checkbox" checked={nonLabTmFl} onChange={(e) => setNonLabTmFl(e.target.checked)} disabled={selectedPlan?.status !== "In Progress"} />
                 </td>
               </tr>
             </tbody>
