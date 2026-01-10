@@ -2444,6 +2444,51 @@ const ProjectPlanTable = forwardRef(
     // Add this with your other useRef hooks
     const tableContainerRef = useRef(null);
 
+    const lastSelectedPlanRef = useRef(null);
+
+    // const handleRowClick = (plan) => {
+    //   // store last selected plan
+    //   lastSelectedPlanRef.current = plan.plId;
+
+    //   if (typeof onPlanSelect === "function") onPlanSelect(plan);
+    // };
+
+    useEffect(() => {
+      const lastPlId = sessionStorage.getItem("lastSelectedPlanId");
+      if (!lastPlId) return;
+
+      const rowElement = document.getElementById(`plan-row-${lastPlId}`);
+      if (rowElement) {
+        rowElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+
+        // Clear AFTER scrolling so it doesn’t trigger again
+        sessionStorage.removeItem("lastSelectedPlanId");
+      }
+    }, [plans]); // run after table data is loaded/refetched
+
+    useEffect(() => {
+      const scrollToSelectedPlan = () => {
+        // use ref or session storage
+        const lastPlId =
+          lastSelectedPlanRef.current ||
+          sessionStorage.getItem("lastSelectedPlanId");
+        if (!lastPlId) return;
+
+        const rowElement = document.getElementById(`plan-row-${lastPlId}`);
+        if (rowElement) {
+          rowElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center", // center row in the viewport
+          });
+        }
+      };
+
+      scrollToSelectedPlan();
+    }, [plans]); // re-run whenever plans list changes
+
     useEffect(() => {
       const fetchTemplates = async () => {
         try {
@@ -2689,69 +2734,59 @@ const ProjectPlanTable = forwardRef(
       }
     }, [filteredProjects, projectId]);
 
-    useEffect(() => {
-      const getAllPlans = async () => {
-        try {
-          const term = "";
-          const response = await axios.get(
-            `${backendUrl}/Project/GetProjectPlans/${userId}/${role}/${term}?status=${status}`
-          );
+  const getAllPlans = async () => {
+  try {
+    const term = "";
+    // Note: ensure userId, role, and status are available in this scope
+    const response = await axios.get(
+      `${backendUrl}/Project/GetProjectPlans/${userId}/${role}/${term}?status=${status}`
+    );
 
-          const transformedPlans = response.data.map((plan, idx) => ({
-            plId: plan.plId || plan.id || 0,
-            projId:
-              plan.fullProjectId ||
-              plan.projId ||
-              plan.project_id ||
-              plan.projectId ||
-              projectId,
-            projName: plan.projName || "",
-            plType:
-              plan.plType === "Budget"
-                ? "BUD"
-                : plan.plType === "EAC"
-                  ? "EAC"
-                  : plan.plType || "",
-            source: plan.source || "",
-            version: plan.version || 0,
-            versionCode: plan.versionCode || "",
-            finalVersion: !!plan.finalVersion,
-            isCompleted: !!plan.isCompleted,
-            isApproved: !!plan.isApproved,
-            status:
-              plan.plType && plan.version
-                ? (plan.status || "In Progress")
-                    .replace("Working", "In Progress")
-                    .replace("Completed", "Submitted")
-                : "",
-            closedPeriod: plan.closedPeriod || "",
-            templateId: plan.templateId || "",
-            createdAt: plan.createdAt || "",
-            updatedAt: plan.updatedAt || "",
-            modifiedBy: plan.modifiedBy || "",
-            approvedBy: plan.approvedBy || "",
-            createdBy: plan.createdBy || "",
-            // templateId: plan.templateId || 0,
-            projStartDt: plan.projStartDt || "",
-            projEndDt: plan.projEndDt || "",
-            orgId: plan.orgId || "",
-            fundedCost: plan.proj_f_cst_amt || "",
-            fundedFee: plan.proj_f_fee_amt || "",
-            fundedRev: plan.proj_f_tot_amt || "",
-            revenueAccount: plan.revenueAccount || "",
-            Rev: plan.revenue || plan.Rev || "",
-            revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
-          }));
+    const transformedPlans = response.data.map((plan) => ({
+      plId: plan.plId || plan.id || 0,
+      projId: plan.fullProjectId || plan.projId || plan.project_id || plan.projectId || projectId,
+      projName: plan.projName || "",
+      plType: plan.plType === "Budget" ? "BUD" : plan.plType === "EAC" ? "EAC" : plan.plType || "",
+      source: plan.source || "",
+      version: plan.version || 0,
+      versionCode: plan.versionCode || "",
+      finalVersion: !!plan.finalVersion,
+      isCompleted: !!plan.isCompleted,
+      isApproved: !!plan.isApproved,
+      status: plan.plType && plan.version
+          ? (plan.status || "In Progress").replace("Working", "In Progress").replace("Completed", "Submitted")
+          : "",
+      closedPeriod: plan.closedPeriod || "",
+      templateId: plan.templateId || "",
+      createdAt: plan.createdAt || "",
+      updatedAt: plan.updatedAt || "",
+      modifiedBy: plan.modifiedBy || "",
+      approvedBy: plan.approvedBy || "",
+      createdBy: plan.createdBy || "",
+      projStartDt: plan.projStartDt || "",
+      projEndDt: plan.projEndDt || "",
+      orgId: plan.orgId || "",
+      fundedCost: plan.proj_f_cst_amt || "",
+      fundedFee: plan.proj_f_fee_amt || "",
+      fundedRev: plan.proj_f_tot_amt || "",
+      revenueAccount: plan.revenueAccount || "",
+      Rev: plan.revenue || plan.Rev || "",
+      revenue: plan.revenue !== undefined ? Number(plan.revenue) : 0,
+    }));
 
-          const sortedPlans = sortPlansByProjIdPlTypeVersion(transformedPlans);
+    const sortedPlans = sortPlansByProjIdPlTypeVersion(transformedPlans);
+    setAllProjectPlans(sortedPlans);
+    return sortedPlans; // Return for immediate use in handleActionSelect
+  } catch (error) {
+    console.error("Error refreshing all plans:", error);
+    return [];
+  }
+};
 
-          setAllProjectPlans(sortedPlans);
-        } catch (error) {
-          console.log(error);
-        }
-      };
-      getAllPlans();
-    }, []);
+    // Update your useEffect to use this new function
+useEffect(() => {
+  getAllPlans();
+}, []);
 
     const fetchPlans = async () => {
       if (!searched && projectId.trim() === "") {
@@ -3269,6 +3304,9 @@ const ProjectPlanTable = forwardRef(
       if (typeof onPlanSelect === "function") {
         onPlanSelect(updatedPlan);
       }
+
+      sessionStorage.setItem("lastSelectedPlanId", plan.plId);
+      if (typeof onPlanSelect === "function") onPlanSelect(plan);
     };
 
     useEffect(() => {
@@ -3804,25 +3842,45 @@ const ProjectPlanTable = forwardRef(
       }
     };
 
+    
+
     const handleActionSelect = async (idx, action) => {
       const plan = plans[idx];
       if (action === "None") return;
 
+      // --- IMMEDIATE CONFIRMATION FOR DELETE ---
+  if (action === "Delete") {
+    const confirmed = window.confirm(`Are you sure you want to delete this plan?`);
+    if (!confirmed) return; // Exit immediately if user cancels
+  }
+
       try {
         setIsActionLoading(true);
+
+        // FETCH LATEST STATE
+    const updatedAllPlans = await getAllPlans();
+    // Refresh to get latest 'lockDotLevel'
+   const isActionStillValid = getButtonAvailability(plan, action, updatedAllPlans);
+    
+    if (!isActionStillValid) {
+      toast.error(`"${action}" is already created on another level`);
+      setIsActionLoading(false);
+      return;
+    }
+    
         if (action === "Delete") {
           if (!plan.plId || Number(plan.plId) <= 0) {
             toast.error("Cannot delete: Invalid plan ID.");
             setIsActionLoading(false);
             return;
           }
-          const confirmed = window.confirm(
-            `Are you sure you want to delete this plan`
-          );
-          if (!confirmed) {
-            setIsActionLoading(false);
-            return;
-          }
+          // const confirmed = window.confirm(
+          //   `Are you sure you want to delete this plan`
+          // );
+          // if (!confirmed) {
+          //   setIsActionLoading(false);
+          //   return;
+          // }
           toast.info("Deleting plan...");
           try {
             await axios.delete(
@@ -4032,17 +4090,19 @@ const ProjectPlanTable = forwardRef(
       return dotCount;
     };
 
-    const getActionOptions = (plan) => {
+    const getActionOptions = (plan,allPlansSource = null) => {
       let options = ["None"];
 
       if (!plan?.projId) {
         return options;
       }
 
+      const sourceData = allPlansSource || allProjectPlans || [];
+
       let lockDotLevel = null;
       const masterId = plan.projId.split(".")[0];
 
-      for (const p of allProjectPlans) {
+      for (const p of sourceData) {
         if (p.plType === "BUD" && p.projId?.startsWith(masterId)) {
           lockDotLevel = getProjectDotLevel(p.projId);
           break;
@@ -4092,8 +4152,8 @@ const ProjectPlanTable = forwardRef(
       return options;
     };
 
-    const getButtonAvailability = (plan, action) => {
-      const options = getActionOptions(plan);
+    const getButtonAvailability = (plan, action,allPlansSource = null) => {
+      const options = getActionOptions(plan,allPlansSource);
       return options.includes(action);
     };
 
