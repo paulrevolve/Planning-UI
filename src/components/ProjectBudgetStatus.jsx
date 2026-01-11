@@ -72,7 +72,7 @@ const ProjectBudgetStatus = () => {
 
   const [currentUserRole, setCurrentUserRole] = useState(null);
   const [currentPlan, setCurrentPlan] = useState(null);
-  const [userName, setUserName] = useState("User");
+  const [userName, setUserName] = useState("");
   const [tabVisibility, setTabVisibility] = useState({});
   const planTableRef = useRef(null);
   const searchContainerRef = useRef(null); // Create a ref for the parent container
@@ -318,11 +318,10 @@ const ProjectBudgetStatus = () => {
     if (userString) {
       try {
         const userObj = JSON.parse(userString);
-        setUserName(userObj.name ? capitalizeWords(userObj.name) : "User");
+        setUserName(userObj.name ? capitalizeWords(userObj.name) : null )
         setCurrentUserRole(userObj.role ? userObj.role.toLowerCase() : null);
       } catch {
         setCurrentUserRole(null);
-        setUserName("User");
       }
     }
   }, []);

@@ -764,7 +764,7 @@ const TOPBAR_HEIGHT = 45; // px
 const Dashboard = () => {
   const [currentUserRole, setCurrentUserRole] = useState(null);
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
-  const [userName, setUserName] = useState("User");
+  const [userName, setUserName] = useState("");
   const navigate = useNavigate();
 
   const handleSidebarOpen = () => {
@@ -783,15 +783,17 @@ const Dashboard = () => {
         setUserName(
           userObj.name
             ? userObj.name.replace(/\b\w/g, (c) => c.toUpperCase())
-            : "User"
+            : "null"
         );
         setCurrentUserRole(userObj.role ? userObj.role.toLowerCase() : null);
       } catch {
-        setCurrentUserRole(null);
-        setUserName("User");
+        navigate("/login", { replace: true });
       }
     }
   }, []);
+ 
+  const storedUser = localStorage.getItem("currentUser");
+  if (!storedUser) return <Navigate to="/login" replace />;
 
   const ProtectedRoute = ({ children, allowedRoles }) => {
     const storedUser = localStorage.getItem("currentUser");

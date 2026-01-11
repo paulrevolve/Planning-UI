@@ -50,7 +50,7 @@
 import React from "react"
 import logo from "../assets/logo.png"
 
-function TopBar({ name = "User", onLogout }) {
+function TopBar({ name = "", onLogout }) {
   return (
     <header className="w-full border-b border-border bg-[#0F3A46] text-white">
       <div className="mx-auto flex h-12 items-center justify-between px-4 sm:px-6 lg:px-8">

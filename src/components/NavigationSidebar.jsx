@@ -102,7 +102,7 @@ const NavigationSidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedPage, setSelectedPage] = useState(pathname);
   const [currentUserRole, setCurrentUserRole] = useState(null);
-  const [userName, setUserName] = useState("User");
+  const [userName, setUserName] = useState("");
 
   // hover state (existing)
   const [isHovered, setIsHovered] = useState(false);
@@ -112,11 +112,10 @@ const NavigationSidebar = () => {
     if (userString) {
       try {
         const userObj = JSON.parse(userString);
-        setUserName(userObj.name || "User");
+        setUserName(userObj.name);
         setCurrentUserRole(userObj.role ? userObj.role.toLowerCase() : null);
       } catch {
         setCurrentUserRole(null);
-        setUserName("User");
       }
     }
   }, []);
